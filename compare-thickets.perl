@@ -6,6 +6,7 @@ $newrange = "a7f17aa..";
 sub read_range {
 	my $bag = {};
 	$bag->{'list'} = [];
+	$bag->{'bysha1'} = {};
 	$bag->{'bysubject'} = {};
 
 	my $h, $commit = '', $state = '';
@@ -14,7 +15,9 @@ sub read_range {
 		if (/^commit (.*)/) {
 			$commit = {};
 			my @list = split(' ', $1);
-			$commit->{'sha1'} = shift(@list);
+			my $sha1 = shift(@list);
+			$bag->{'bysha1'}->{$sha1} = $commit;
+			$commit->{'sha1'} = $sha1;
 			$commit->{'parents'} = \@list;
 			$commit->{'header'} = '';
 			$commit->{'subject'} = '';
@@ -54,6 +57,34 @@ sub read_range {
 	return $bag;
 }
 
+sub infer_mapping {
+	my $a = $_[0], $b = $_[1];
+
+	my $bysubject = $b->{'bysubject'};
+	my %map = (), %reverse = ();
+	foreach my $commit (@{$a->{'list'}}) {
+		my $subject = $commit->{'subject'};
+		if (defined($bysubject->{$subject})) {
+			# cannot use $commit directly as key: stringifying it
+			# would destroy the contained values
+			$map{$commit->{'sha1'}} = $bysubject->{$subject};
+			$mapped{$bysubject->{$subject}->{'sha1'}} = $commit;
+		}
+	}
+
+foreach my $sha1 (keys %{$a->{'bysha1'}}) {
+	if (!defined($map{$sha1})) {
+		print(STDERR "Removed: $sha1 " . $a->{'bysha1'}->{$sha1}->{'subject'} . "\n");
+	}
+}
+
+foreach my $sha1 (keys %{$b->{'bysha1'}}) {
+	if (!defined($reverse{$sha1})) {
+		print(STDERR "Added: $sha1 " . $b->{'bysha1'}->{$sha1}->{'subject'} . "\n");
+	}
+}
+}
+
 sub list_subjects {
 	my $list = $_[0]->{'list'};
 	foreach my $commit (@$list) {
@@ -64,4 +95,4 @@ sub list_subjects {
 my $oldbag = read_range($oldrange);
 my $newbag = read_range($newrange);
 
-list_subjects($newbag);
+infer_mapping($oldbag, $newbag);
