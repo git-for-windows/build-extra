@@ -9,11 +9,13 @@ sub read_range {
 	$bag->{'bysubject'} = {};
 
 	my $h, $commit = '', $state = '';
-	open($h, '-|', 'git', 'log', $_[0]);
+	open($h, '-|', 'git', 'log', '--topo-order', '--parents', '--abbrev=7', '--abbrev-commit', $_[0]);
 	while (<$h>) {
 		if (/^commit (.*)/) {
 			$commit = {};
-			$commit->{'sha1'} = $1;
+			my @list = split(' ', $1);
+			$commit->{'sha1'} = shift(@list);
+			$commit->{'parents'} = \@list;
 			$commit->{'header'} = '';
 			$commit->{'subject'} = '';
 			$commit->{'message'} = '';
@@ -55,7 +57,7 @@ sub read_range {
 sub list_subjects {
 	my $list = $_[0]->{'list'};
 	foreach my $commit (@$list) {
-		print "Commit " . substr($commit->{'sha1'}, 0, 8) . ": " . $commit->{'subject'} . "\n";
+		print "Commit " . $commit->{'sha1'} . ": " . $commit->{'subject'} . ", parents: " . join(':', @{$commit->{'parents'}}) . "\n";
 	}
 }
 
