@@ -29,13 +29,29 @@ SigLevel = Optional\n^
 
 :haverepo
 
-@usr\bin\pacman -Syu --noconfirm
+@usr\bin\pacman -Sy --noconfirm msys2-runtime
 
 @FOR /f "delims=" %%a IN ('usr\bin\uname -m') DO SET arch=%%a
-@usr\bin\pacman -S --noconfirm ^
-	git mingw-w64-%arch%-toolchain python less openssh patch make tar ^
-	diffutils ca-certificates ^
-	perl-Error perl perl-Authen-SASL perl-libwww perl-MIME-tools ^
-	perl-Net-SMTP-SSL perl-TermReadKey winpty-git mingw-w64-%arch%-curl ^
-	mingw-w64-%arch%-expat mingw-w64-%arch%-openssl mingw-w64-%arch%-tcl ^
-	mingw-w64-%arch%-pcre
+@IF "i686"=="%arch%" GOTO setmingw32
+
+@set MSYSTEM=MINGW64
+
+@GOTO runinstall
+
+:setmingw32
+
+@set MSYSTEM=MINGW32
+
+:runinstall
+
+@usr\bin\sh -c "export PATH=/usr/bin:$PATH && pacman -Syu --noconfirm
+
+@set dependencies=git mingw-w64-%arch%-toolchain ^
+ python less openssh patch make tar diffutils ca-certificates ^
+ perl-Error perl perl-Authen-SASL perl-libwww perl-MIME-tools ^
+ perl-Net-SMTP-SSL perl-TermReadKey winpty-git ^
+ mingw-w64-%arch%-curl mingw-w64-%arch%-expat ^
+ mingw-w64-%arch%-openssl mingw-w64-%arch%-tcl ^
+ mingw-w64-%arch%-pcre
+
+@usr\bin\sh -c "export PATH=/usr/bin:$PATH && pacman -S --noconfirm %dependencies%"
