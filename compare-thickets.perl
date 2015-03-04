@@ -54,7 +54,33 @@ sub read_range {
 	}
 	close($h);
 
+	find_boundaries($bag);
+
 	return $bag;
+}
+
+sub find_boundaries {
+	my $bag = $_[0];
+
+	# make a mapping of all listed parents to their children
+	my $children = {};
+	foreach my $commit (@{$bag->{'list'}}) {
+		foreach my $parent (@{$commit->{'parents'}}) {
+			if (defined($children->{$parent})) {
+				push(@{$children->{$parent}}, $commit);
+			}
+			else {
+				$children->{$parent} = [ $commit ];
+			}
+		}
+	}
+
+	# remove the parents that we know about
+	foreach my $commit (@{$bag->{'list'}}) {
+		delete $children->{$commit->{'sha1'}};
+	}
+
+	$bag->{'boundaries'} = $children;
 }
 
 sub infer_mapping {
