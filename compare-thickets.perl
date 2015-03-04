@@ -83,6 +83,11 @@ sub find_boundaries {
 	$bag->{'boundaries'} = $children;
 }
 
+sub figure_out_branch_structure {
+	my $bag = $_[0];
+
+}
+
 sub infer_mapping {
 	my $a = $_[0], $b = $_[1];
 
