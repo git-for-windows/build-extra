@@ -20,3 +20,9 @@ fi
 PS1="$PS1"'\[\033[0m\]'        # change color
 PS1="$PS1"'\n'                 # new line
 PS1="$PS1"'$ '                 # prompt: always $
+
+# Override the default prompt
+if grep '^PS1' /etc/bash.bashrc > /dev/null 2>&1
+then
+	sed -i 's/^PS1/#&/' /etc/bash.bashrc
+fi
