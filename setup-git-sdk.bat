@@ -23,7 +23,7 @@
 
 @usr\bin\sed -i.bup -e '/^\[mingw32\]/i\^
 [git-for-windows]\n^
-Server = https://git-for-windows.github.io/pacman-repository/$arch\n^
+Server = https://dl.bintray.com/$repo/pacman/msys2/$arch^
 SigLevel = Optional\n^
 ' etc/pacman.conf
 
