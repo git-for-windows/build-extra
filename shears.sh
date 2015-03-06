@@ -21,7 +21,7 @@
 #
 # git fetch junio
 # BASE="$(git rev-parse ":/Start the merging-rebase")"
-# shears.sh --onto junio/master $BASE
+# shears.sh --merging --onto junio/master $BASE
 #
 # Usage: shears [options] <upstream>
 # options:
