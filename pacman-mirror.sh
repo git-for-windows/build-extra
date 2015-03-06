@@ -5,9 +5,11 @@
 #
 # A Pacman repository is like a Git repository, but for binary packages.
 #
-# This script supports two commands:
+# This script supports three commands:
 #
 # - 'fetch' to initialize (or update) a local mirror of the Pacman repository
+#
+# - 'add' to add packages to the local mirror
 #
 # - 'push' to synchronize local changes (after calling `repo-add`) to the
 #   remote Pacman repository
@@ -19,12 +21,12 @@ die () {
 
 mode=
 case "$1" in
-fetch|push)
+fetch|add|push)
 	mode="$1"
 	shift
 	;;
 *)
-	die "Usage: $0 ( fetch | push )"
+	die "Usage: $0 ( fetch | push | add <package>... )"
 	;;
 esac
 
@@ -112,7 +114,46 @@ next_db_version () { # old version
 	esac
 }
 
+add () { # <file>
+	test $# -gt 0 ||
+	die "What packages do you want to add?"
+
+	for path
+	do
+		case "$path" in
+		*-*.pkg.tar.xz)
+			# okay
+			;;
+		*)
+			die "Invalid package name: $path"
+			;;
+		esac
+		arch=${path##*-}
+		arch=${arch%.pkg.tar.xz}
+		case " $architectures " in
+		*" $arch "*)
+			# okay
+			;;
+		*)
+			die "Unknown architecture: $arch"
+			;;
+		esac
+		cp "$path" "$(arch_dir $arch)/"
+	done
+}
+
+update_local_package_databases () {
+	for arch in $architectures
+	do
+		(cd "$(arch_dir $arch)" &&
+		 repo-add git-for-windows.db.tar.xz *-$arch.pkg.tar.xz &&
+		 repo-add -f git-for-windows.files.tar.xz *-$arch.pkg.tar.xz
+		)
+	done
+}
+
 push () {
+	update_local_package_databases
 	for arch in $architectures
 	do
 		dir="$(arch_dir $arch)"
