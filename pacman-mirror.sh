@@ -51,7 +51,8 @@ fetch () {
 		 do
 			filename=$name-$arch.pkg.tar.xz
 			test -f $filename ||
-			curl -sO $base_url/$arch/$filename ||
+			curl --cacert /usr/ssl/certs/ca-bundle.crt \
+				-sLO $base_url/$arch/$filename ||
 			exit
 		 done ||
 		 exit
