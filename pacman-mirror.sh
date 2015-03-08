@@ -52,32 +52,32 @@ fetch () {
 			dir="$(arch_dir $msystem $arch)"
 			mkdir -p "$dir"
 			(cd "$dir" &&
-			 curl -sO $arch_url/git-for-windows.db.tar.xz &&
+			 curl -sfO $arch_url/git-for-windows.db.tar.xz ||
+			 continue
 			 for name in $(package_list git-for-windows.db.tar.xz)
 			 do
 				filename=$name-$arch.pkg.tar.xz
 				test -f $filename ||
 				curl --cacert /usr/ssl/certs/ca-bundle.crt \
-					-sLO $base_url/$arch/$filename ||
+					-sfLO $base_url/$arch/$filename ||
 				exit
-			 done ||
-			 exit
+			 done
 			)
 		done
 	done
 }
 
 upload () { # <package> <version> <msystem> <arch> <filename>
-	curl --netrc -T "$5" "$content_url/$1/$2/$3/$4/$5"
+	curl --netrc -fT "$5" "$content_url/$1/$2/$3/$4/$5"
 }
 
 publish () { # <package> <version>
-	curl --netrc -X POST "$content_url/$1/$2/publish"
+	curl --netrc -fX POST "$content_url/$1/$2/publish"
 }
 
 
 delete_version () { # <package> <version>
-	curl --netrc -X DELETE "$packages_url/$1/versions/$2"
+	curl --netrc -fX DELETE "$packages_url/$1/versions/$2"
 }
 
 package_list () { # db.tar.xz
@@ -183,8 +183,8 @@ push () {
 			dir="$(arch_dir $msystem $arch)"
 			mkdir -p "$dir"
 			(cd "$dir" &&
-			 curl -s $arch_url/git-for-windows.db.tar.xz > .remote
-			) || exit
+			 curl -sf $arch_url/git-for-windows.db.tar.xz > .remote
+			)
 		done
 	done
 
