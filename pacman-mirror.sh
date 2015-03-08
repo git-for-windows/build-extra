@@ -152,7 +152,9 @@ add () { # <file>
 			die "Unknown architecture: $arch"
 			;;
 		esac
-		cp "$path" "$(arch_dir $msystem $arch)/"
+		dir="$(arch_dir $msystem $arch)"
+		mkdir -p "$dir"
+		cp "$path" "$dir/"
 	done
 }
 
