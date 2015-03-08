@@ -30,40 +30,45 @@ fetch|add|push)
 	;;
 esac
 
-base_url=https://dl.bintray.com/git-for-windows/pacman/msys2
+base_url=https://dl.bintray.com/git-for-windows/pacman
 api_url=https://api.bintray.com
 content_url=$api_url/content/git-for-windows/pacman
 packages_url=$api_url/packages/git-for-windows/pacman
 mirror=/var/local/pacman-mirror
 
+msystems="msys2 mingw"
 architectures="i686 x86_64"
 
-arch_dir () { # architecture
-	echo "$mirror/$1"
+arch_dir () { # <msystem> <architecture>
+	echo "$mirror/$1/$2"
 }
 
 fetch () {
-	for arch in $architectures
+	for msystem in $msystems
 	do
-		dir="$(arch_dir $arch)"
-		mkdir -p "$dir"
-		(cd "$dir" &&
-		 curl -sO $base_url/$arch/git-for-windows.db.tar.xz &&
-		 for name in $(package_list git-for-windows.db.tar.xz)
-		 do
-			filename=$name-$arch.pkg.tar.xz
-			test -f $filename ||
-			curl --cacert /usr/ssl/certs/ca-bundle.crt \
-				-sLO $base_url/$arch/$filename ||
-			exit
-		 done ||
-		 exit
-		)
+		for arch in $architectures
+		do
+			arch_url=$base_url/$msystem/$arch
+			dir="$(arch_dir $msystem $arch)"
+			mkdir -p "$dir"
+			(cd "$dir" &&
+			 curl -sO $arch_url/git-for-windows.db.tar.xz &&
+			 for name in $(package_list git-for-windows.db.tar.xz)
+			 do
+				filename=$name-$arch.pkg.tar.xz
+				test -f $filename ||
+				curl --cacert /usr/ssl/certs/ca-bundle.crt \
+					-sLO $base_url/$arch/$filename ||
+				exit
+			 done ||
+			 exit
+			)
+		done
 	done
 }
 
-upload () { # <package> <version> <arch> <filename>
-	curl --netrc -T "$4" "$content_url/$1/$2/msys2/$3/$4"
+upload () { # <package> <version> <msystem> <arch> <filename>
+	curl --netrc -T "$5" "$content_url/$1/$2/$3/$4/$5"
 }
 
 publish () { # <package> <version>
@@ -120,6 +125,15 @@ add () { # <file>
 
 	for path
 	do
+		case "${path##*/}" in
+		mingw-w64-*)
+			msystem=mingw
+			;;
+		*)
+			msystem=msys2
+			;;
+		esac
+
 		case "$path" in
 		*-*.pkg.tar.xz)
 			# okay
@@ -138,39 +152,56 @@ add () { # <file>
 			die "Unknown architecture: $arch"
 			;;
 		esac
-		cp "$path" "$(arch_dir $arch)/"
+		cp "$path" "$(arch_dir $msystem $arch)/"
 	done
 }
 
 update_local_package_databases () {
-	for arch in $architectures
+	for msystem in $msystems
 	do
-		(cd "$(arch_dir $arch)" &&
-		 repo-add git-for-windows.db.tar.xz *-$arch.pkg.tar.xz &&
-		 repo-add -f git-for-windows.files.tar.xz *-$arch.pkg.tar.xz
-		)
+		for arch in $architectures
+		do
+			(cd "$(arch_dir $msystem $arch)" &&
+			 repo-add git-for-windows.db.tar.xz \
+				*-$arch.pkg.tar.xz &&
+			 repo-add -f git-for-windows.files.tar.xz \
+				*-$arch.pkg.tar.xz
+			)
+		done
 	done
 }
 
 push () {
 	update_local_package_databases
-	for arch in $architectures
+	for msystem in $msystems
 	do
-		dir="$(arch_dir $arch)"
-		mkdir -p "$dir"
-		(cd "$dir" &&
-		 curl -s $base_url/$arch/git-for-windows.db.tar.xz > .remote
-		) || exit
+		for arch in $architectures
+		do
+			arch_url=$base_url/$msystem/$arch
+			dir="$(arch_dir $msystem $arch)"
+			mkdir -p "$dir"
+			(cd "$dir" &&
+			 curl -s $arch_url/git-for-windows.db.tar.xz > .remote
+			) || exit
+		done
 	done
 
-	old_list="$((for arch in $architectures
+	old_list="$((for msystem in $msystems
 		do
-			package_list "$(arch_dir $arch)/.remote"
+			for arch in $architectures
+			do
+				dir="$(arch_dir $msystem $arch)"
+				package_list "$dir/.remote"
+			done
 		done) |
 		sort | uniq)"
-	new_list="$((for arch in $architectures
+	new_list="$((for msystem in $msystems
 		do
-			package_list "$(arch_dir $arch)/git-for-windows.db.tar.xz"
+			for arch in $architectures
+			do
+				dir="$(arch_dir $msystem $arch)"
+				package_list "$dir/git-for-windows.db.tar.xz"
+			done
 		done) |
 		sort | uniq)"
 
@@ -206,30 +237,38 @@ push () {
 	do
 		basename=${name%%-[0-9]*}
 		version=${name#$basename-}
-		for arch in $architectures
+		for msystem in $msystems
 		do
-			filename=$name-$arch.pkg.tar.xz
-			(cd "$(arch_dir $arch)" &&
-			 if test -f $filename
-			 then
-				upload $basename $version $arch $filename
-			 fi) || exit
+			for arch in $architectures
+			do
+				filename=$name-$arch.pkg.tar.xz
+				(cd "$(arch_dir $msystem $arch)" &&
+				 if test -f $filename
+				 then
+					upload $basename $version \
+						$msystem $arch $filename
+				 fi) || exit
+			done
 		done
 		publish $basename $version
 	done
 
 	delete_version package-database "$db_version"
 
-	for arch in $architectures
+	for msystem in $msystems
 	do
-		(cd "$(arch_dir $arch)" &&
-		 for suffix in db db.tar.xz files files.tar.xz
-		 do
-			filename=git-for-windows.$suffix
-			test ! -f $filename ||
-			upload package-database $next_db_version $arch $filename
-		 done
-		) || exit
+		for arch in $architectures
+		do
+			(cd "$(arch_dir $msystem $arch)" &&
+			 for suffix in db db.tar.xz files files.tar.xz
+			 do
+				filename=git-for-windows.$suffix
+				test ! -f $filename ||
+				upload package-database $next_db_version \
+					$msystem $arch $filename
+			 done
+			) || exit
+		done
 	done
 	publish package-database $next_db_version
 }
