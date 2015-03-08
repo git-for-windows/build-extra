@@ -230,7 +230,7 @@ push () {
 			;;
 		*)
 			package_exists $basename ||
-			die "The package $basename does not yet exist..."
+			die "The package $basename does not yet exist... Add it at https://bintray.com/git-for-windows/pacman/new/package?pkgPath="
 			;;
 		esac
 	done
