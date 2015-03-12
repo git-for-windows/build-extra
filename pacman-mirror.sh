@@ -164,9 +164,9 @@ update_local_package_databases () {
 		for arch in $architectures
 		do
 			(cd "$(arch_dir $msystem $arch)" &&
-			 repo-add git-for-windows.db.tar.xz \
+			 repo-add --new git-for-windows.db.tar.xz \
 				*-$arch.pkg.tar.xz &&
-			 repo-add -f git-for-windows.files.tar.xz \
+			 repo-add -f --new git-for-windows.files.tar.xz \
 				*-$arch.pkg.tar.xz
 			)
 		done
