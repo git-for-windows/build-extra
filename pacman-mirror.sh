@@ -193,6 +193,7 @@ push () {
 			for arch in $architectures
 			do
 				dir="$(arch_dir $msystem $arch)"
+				test -s "$dir/.remote" &&
 				package_list "$dir/.remote"
 			done
 		done) |
