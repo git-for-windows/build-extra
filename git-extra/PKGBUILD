@@ -1,0 +1,63 @@
+# Maintainer: nalla <nalla@hamal.uberspace.de>
+
+pkgname=('git-extra')
+_ver_base=1.0
+pkgver=1.0.34.190438b
+pkgrel=1
+pkgdesc="Git for Windows extra files"
+arch=('i686' 'x86_64')
+url="https://github.com/git-for-windows/build-extra"
+license=('GPL')
+groups=('VCS')
+depends=('vim')
+source=(
+  '..\\vimrc'
+  '..\\vi'
+  '..\\nsswitch.conf'
+  '..\\gitconfig'
+  '..\\profile.d\\git.sh'
+  '..\\profile.d\\aliases.sh'
+)
+md5sums=(
+  'e7ad03fffc29e619e402dbd5ec9ef74c'
+  'bfb591886b2a28af3334521e71198b74'
+  '55c0c25e13fb1245ae11aa3a84f077db'
+  'df3b343408c3dc3b1b67c4585f6ebac4'
+  'dd7b1e8f7b48bdc24205933a17b0e3bd'
+  '67edf2be27b24fa866bc714a42cc14eb'
+)
+install='git-extra.install'
+pkgver() {
+  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+}
+
+build() {
+  case "$CARCH" in
+    i686)
+      mingwdir="mingw32"
+    ;;
+    x86_64)
+      mingwdir="mingw64"
+    ;;
+  esac
+
+  printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
+    "export LC_ALL=C" \
+    "post_install () {" \
+    "test -f /$mingwdir/etc/gitconfig || cat > /$mingwdir/etc/gitconfig <<\\GITCONFIG" \
+    "$(cat $srcdir/gitconfig)" \
+    "GITCONFIG" \
+    "}" \
+    "post_upgrade () {" \
+    "    post_install" \
+    "}" > $srcdir/../$pkgname.install
+}
+
+package() {
+  install -d -m755 $pkgdir/etc/profile.d
+  install -d -m755 $pkgdir/usr/bin
+  install -m755 $srcdir/vimrc $pkgdir/etc
+  install -m755 $srcdir/vi $pkgdir/usr/bin
+  install -m755 $srcdir/git.sh $pkgdir/etc/profile.d
+  install -m755 $srcdir/aliases.sh $pkgdir/etc/profile.d
+}
