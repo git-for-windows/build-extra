@@ -32,12 +32,15 @@ pkgver() {
 }
 
 build() {
-  printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
+  printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
     "export LC_ALL=C" \
     "post_install () {" \
     "for dir in mingw32 mingw64; do test ! -d /\$dir || test -f /\$dir/etc/gitconfig || cat > /\$dir/etc/gitconfig <<\\GITCONFIG; done" \
     "$(cat $srcdir/gitconfig)" \
     "GITCONFIG" \
+    "grep -q '^db_home: windows' /etc/nsswitch.conf || cat > /etc/nsswitch.conf <<\\NSSWITCH" \
+    "$(cat $srcdir/nsswitch.conf)" \
+    "NSSWITCH" \
     "}" \
     "post_upgrade () {" \
     "    post_install" \
