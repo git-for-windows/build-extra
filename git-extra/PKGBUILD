@@ -44,7 +44,7 @@ build() {
     "}" \
     "post_upgrade () {" \
     "    post_install" \
-    "}" > $srcdir/../$pkgname.install
+    "}" > $startdir/$pkgname.install
 }
 
 package() {
