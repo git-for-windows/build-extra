@@ -10,22 +10,6 @@ url="https://github.com/git-for-windows/build-extra"
 license=('GPL')
 groups=('VCS')
 depends=('vim')
-source=(
-  '..\\vimrc'
-  '..\\vi'
-  '..\\nsswitch.conf'
-  '..\\gitconfig'
-  '..\\profile.d\\git.sh'
-  '..\\profile.d\\aliases.sh'
-)
-md5sums=(
-  'SKIP'
-  'SKIP'
-  'SKIP'
-  'SKIP'
-  'SKIP'
-  'SKIP'
-)
 install='git-extra.install'
 pkgver() {
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
@@ -36,10 +20,10 @@ build() {
     "export LC_ALL=C" \
     "post_install () {" \
     "for dir in mingw32 mingw64; do test ! -d /\$dir || test -f /\$dir/etc/gitconfig || cat > /\$dir/etc/gitconfig <<\\GITCONFIG; done" \
-    "$(cat $srcdir/gitconfig)" \
+    "$(cat $startdir/gitconfig)" \
     "GITCONFIG" \
     "grep -q '^db_home: windows' /etc/nsswitch.conf || cat > /etc/nsswitch.conf <<\\NSSWITCH" \
-    "$(cat $srcdir/nsswitch.conf)" \
+    "$(cat $startdir/nsswitch.conf)" \
     "NSSWITCH" \
     "}" \
     "post_upgrade () {" \
@@ -50,8 +34,8 @@ build() {
 package() {
   install -d -m755 $pkgdir/etc/profile.d
   install -d -m755 $pkgdir/usr/bin
-  install -m755 $srcdir/vimrc $pkgdir/etc
-  install -m755 $srcdir/vi $pkgdir/usr/bin
-  install -m755 $srcdir/git.sh $pkgdir/etc/profile.d
-  install -m755 $srcdir/aliases.sh $pkgdir/etc/profile.d
+  install -m755 $startdir/vimrc $pkgdir/etc
+  install -m755 $startdir/vi $pkgdir/usr/bin
+  install -m755 $startdir/git-prompt.sh $pkgdir/etc/profile.d
+  install -m755 $startdir/aliases.sh $pkgdir/etc/profile.d
 }
