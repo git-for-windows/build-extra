@@ -19,12 +19,12 @@ source=(
   '..\\profile.d\\aliases.sh'
 )
 md5sums=(
-  'e7ad03fffc29e619e402dbd5ec9ef74c'
-  'bfb591886b2a28af3334521e71198b74'
-  '55c0c25e13fb1245ae11aa3a84f077db'
-  'df3b343408c3dc3b1b67c4585f6ebac4'
-  'dd7b1e8f7b48bdc24205933a17b0e3bd'
-  '67edf2be27b24fa866bc714a42cc14eb'
+  'SKIP'
+  'SKIP'
+  'SKIP'
+  'SKIP'
+  'SKIP'
+  'SKIP'
 )
 install='git-extra.install'
 pkgver() {
