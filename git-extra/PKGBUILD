@@ -25,6 +25,8 @@ build() {
     "grep -q '^db_home: windows' /etc/nsswitch.conf || cat > /etc/nsswitch.conf <<\\NSSWITCH" \
     "$(cat $startdir/nsswitch.conf)" \
     "NSSWITCH" \
+    "! grep -q '^PS1=' /etc/bash.bashrc ||" \
+    "sed -i 's/^PS1=/#&/' /etc/bash.bashrc" \
     "}" \
     "post_upgrade () {" \
     "    post_install" \
