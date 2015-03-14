@@ -9,7 +9,7 @@ arch=('i686' 'x86_64')
 url="https://github.com/git-for-windows/build-extra"
 license=('GPL')
 groups=('VCS')
-optdepends=('vim')
+optdepends=('vim' 'filesystem')
 install='git-extra.install'
 pkgver() {
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
