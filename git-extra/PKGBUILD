@@ -16,7 +16,7 @@ pkgver() {
 }
 
 build() {
-  printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
+  printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
     "export LC_ALL=C" \
     "post_install () {" \
     "for dir in mingw32 mingw64; do test ! -d /\$dir || test -f /\$dir/etc/gitconfig || cat > /\$dir/etc/gitconfig <<\\GITCONFIG; done" \
@@ -26,6 +26,12 @@ build() {
     "sed -i 's/^\\(db_\\(home\\|shell\\|gecos\\): \\)\\([^w]\\)/\\1windows \\3/' /etc/nsswitch.conf" \
     "! grep -q '^PS1=' /etc/bash.bashrc ||" \
     "sed -i 's/^PS1=/#&/' /etc/bash.bashrc" \
+    "grep -q git-for-windows etc/pacman.conf ||" \
+    "sed -i -e '/^\[mingw32\]/i\
+[git-for-windows]\n\
+Server = https://dl.bintray.com/\$repo/pacman/\$arch\n\
+SigLevel = Optional\n\
+' etc/pacman.conf" \
     "}" \
     "post_upgrade () {" \
     "    post_install" \
