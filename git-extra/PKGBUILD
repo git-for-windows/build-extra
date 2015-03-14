@@ -16,15 +16,14 @@ pkgver() {
 }
 
 build() {
-  printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
+  printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
     "export LC_ALL=C" \
     "post_install () {" \
     "for dir in mingw32 mingw64; do test ! -d /\$dir || test -f /\$dir/etc/gitconfig || cat > /\$dir/etc/gitconfig <<\\GITCONFIG; done" \
     "$(cat $startdir/gitconfig)" \
     "GITCONFIG" \
-    "grep -q '^db_home: windows' /etc/nsswitch.conf || cat > /etc/nsswitch.conf <<\\NSSWITCH" \
-    "$(cat $startdir/nsswitch.conf)" \
-    "NSSWITCH" \
+    "grep -q '^db_home: windows' /etc/nsswitch.conf ||" \
+    "sed -i 's/^\\(db_\\(home\\|shell\\|gecos\\): \\)\\([^w]\\)/\\1windows \\3/' /etc/nsswitch.conf" \
     "! grep -q '^PS1=' /etc/bash.bashrc ||" \
     "sed -i 's/^PS1=/#&/' /etc/bash.bashrc" \
     "}" \
