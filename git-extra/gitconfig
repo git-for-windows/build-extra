@@ -1,6 +1,6 @@
 [core]
 	symlinks = false
-	autocrlf = false
+	autocrlf = true
 [color]
 	diff = auto
 	status = auto
@@ -16,4 +16,3 @@
 	textconv = astextplain
 [rebase]
 	autosquash = true
-

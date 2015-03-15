@@ -1,0 +1,32 @@
+export LC_ALL=C
+post_install () {
+for dir in mingw32 mingw64; do test ! -d /$dir || test -f /$dir/etc/gitconfig || cat > /$dir/etc/gitconfig <<\GITCONFIG; done
+[core]
+	symlinks = false
+	autocrlf = true
+[color]
+	diff = auto
+	status = auto
+	branch = auto
+	interactive = true
+[pack]
+	packSizeLimit = 2g
+[help]
+	format = html
+[http]
+	sslCAinfo = /ssl/certs/ca-bundle.crt
+[diff "astextplain"]
+	textconv = astextplain
+[rebase]
+	autosquash = true
+GITCONFIG
+grep -q '^db_home: windows' /etc/nsswitch.conf ||
+sed -i 's/^\(db_\(home\|shell\|gecos\): \)\([^w]\)/\1windows \3/' /etc/nsswitch.conf
+! grep -q '^PS1=' /etc/bash.bashrc ||
+sed -i 's/^PS1=/#&/' /etc/bash.bashrc
+grep -q git-for-windows etc/pacman.conf ||
+sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://dl.bintray.com/$repo/pacman/$arch\nSigLevel = Optional\n' etc/pacman.conf
+}
+post_upgrade () {
+    post_install
+}

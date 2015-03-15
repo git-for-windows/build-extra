@@ -9,55 +9,40 @@ arch=('i686' 'x86_64')
 url="https://github.com/git-for-windows/build-extra"
 license=('GPL')
 groups=('VCS')
-depends=('vim')
-source=(
-  '..\\vimrc'
-  '..\\vi'
-  '..\\nsswitch.conf'
-  '..\\gitconfig'
-  '..\\profile.d\\git.sh'
-  '..\\profile.d\\aliases.sh'
-)
-md5sums=(
-  'e7ad03fffc29e619e402dbd5ec9ef74c'
-  'bfb591886b2a28af3334521e71198b74'
-  '55c0c25e13fb1245ae11aa3a84f077db'
-  'df3b343408c3dc3b1b67c4585f6ebac4'
-  'dd7b1e8f7b48bdc24205933a17b0e3bd'
-  '67edf2be27b24fa866bc714a42cc14eb'
-)
+optdepends=('vim' 'filesystem')
 install='git-extra.install'
 pkgver() {
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
 }
 
 build() {
-  case "$CARCH" in
-    i686)
-      mingwdir="mingw32"
-    ;;
-    x86_64)
-      mingwdir="mingw64"
-    ;;
-  esac
-
-  printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
+  printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
     "export LC_ALL=C" \
     "post_install () {" \
-    "test -f /$mingwdir/etc/gitconfig || cat > /$mingwdir/etc/gitconfig <<\\GITCONFIG" \
-    "$(cat $srcdir/gitconfig)" \
+    "for dir in mingw32 mingw64; do test ! -d /\$dir || test -f /\$dir/etc/gitconfig || cat > /\$dir/etc/gitconfig <<\\GITCONFIG; done" \
+    "$(cat $startdir/gitconfig)" \
     "GITCONFIG" \
+    "grep -q '^db_home: windows' /etc/nsswitch.conf ||" \
+    "sed -i 's/^\\(db_\\(home\\|shell\\|gecos\\): \\)\\([^w]\\)/\\1windows \\3/' /etc/nsswitch.conf" \
+    "! grep -q '^PS1=' /etc/bash.bashrc ||" \
+    "sed -i 's/^PS1=/#&/' /etc/bash.bashrc" \
+    "grep -q git-for-windows etc/pacman.conf ||" \
+    "sed -i -e '/^\[mingw32\]/i\
+[git-for-windows]\n\
+Server = https://dl.bintray.com/\$repo/pacman/\$arch\n\
+SigLevel = Optional\n\
+' etc/pacman.conf" \
     "}" \
     "post_upgrade () {" \
     "    post_install" \
-    "}" > $srcdir/../$pkgname.install
+    "}" > $startdir/$pkgname.install
 }
 
 package() {
   install -d -m755 $pkgdir/etc/profile.d
   install -d -m755 $pkgdir/usr/bin
-  install -m755 $srcdir/vimrc $pkgdir/etc
-  install -m755 $srcdir/vi $pkgdir/usr/bin
-  install -m755 $srcdir/git.sh $pkgdir/etc/profile.d
-  install -m755 $srcdir/aliases.sh $pkgdir/etc/profile.d
+  install -m755 $startdir/vimrc $pkgdir/etc
+  install -m755 $startdir/vi $pkgdir/usr/bin
+  install -m755 $startdir/git-prompt.sh $pkgdir/etc/profile.d
+  install -m755 $startdir/aliases.sh $pkgdir/etc/profile.d
 }
