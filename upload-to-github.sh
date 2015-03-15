@@ -11,7 +11,7 @@ die "Usage: $0 <tag-name> <path>..."
 tagname="$1"
 shift
 
-url=https://api.github.com/repos/msysgit/msysgit/releases
+url=https://api.github.com/repos/git-for-windows/build-extra/releases
 id="$(curl --netrc -s $url |
 	grep -B1 "\"tag_name\": \"$tagname\"" |
 	sed -n 's/.*"id": *\([0-9]*\).*/\1/p')"
