@@ -28,7 +28,7 @@ esac
 GIT_BRANCH="${2:-master}"
 GIT_CLONE_URL=https://github.com/git-for-windows/git
 
-TARGET="$HOME"/git-sdk-"$1".exe
+TARGET="$HOME"/git-sdk-installer-"$1".7z.exe
 OPTS7="-m0=lzma -mx=9 -md=64M"
 TMPPACK=/tmp.7z
 SHARE="$(cd "$(dirname "$0")" && pwd)"
@@ -75,4 +75,5 @@ echo "Creating archive" &&
  echo ';!@InstallEnd@!' &&
  cat "$TMPPACK") > "$TARGET" &&
 echo "Success! You will find the new installer at \"$TARGET\"." &&
+echo "It is a self-extracting .7z archive (just append .exe to the filename)" &&
 rm $TMPPACK
