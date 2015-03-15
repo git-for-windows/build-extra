@@ -32,19 +32,10 @@ pkgver() {
 }
 
 build() {
-  case "$CARCH" in
-    i686)
-      mingwdir="mingw32"
-    ;;
-    x86_64)
-      mingwdir="mingw64"
-    ;;
-  esac
-
   printf '%s\n%s\n%s\n%s\n%s\n%s\n%s\n' \
     "export LC_ALL=C" \
     "post_install () {" \
-    "test -f /$mingwdir/etc/gitconfig || cat > /$mingwdir/etc/gitconfig <<\\GITCONFIG" \
+    "for dir in mingw32 mingw64; do test ! -d /\$dir || test -f /\$dir/etc/gitconfig || cat > /\$dir/etc/gitconfig <<\\GITCONFIG; done" \
     "$(cat $srcdir/gitconfig)" \
     "GITCONFIG" \
     "}" \
