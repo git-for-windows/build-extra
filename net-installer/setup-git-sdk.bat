@@ -37,6 +37,6 @@
 @IF MINGW32 == %MSYSTEM% CALL %cwd%\autorebase.bat
 
 @REM now clone the Git sources, build it, and start an interactive shell
-@bash --login -c "mkdir -p /usr/src && cd /usr/src && counter=1; while test $counter -lt 5; do git -c core.autocrlf=false clone -b master https://github.com/git-for-windows/git; status=$?; test $status = 0 && break; test $status = 128 || exit $status; counter=$(($counter+1)); done && cd git && git config core.autocrlf false && make install; bash -i"
+@bash --login -c "mkdir -p /usr/src && cd /usr/src && counter=1; while test $counter -lt 5; do git -c core.autocrlf=false clone -b @@GIT_BRANCH@@ https://github.com/git-for-windows/git; status=$?; test $status = 0 && break; test $status = 128 || exit $status; counter=$(($counter+1)); done && cd git && git config core.autocrlf false && make install; bash -i"
 
 @IF NOT ERRORLEVEL 0 bash --login -i
