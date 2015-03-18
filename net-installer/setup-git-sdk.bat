@@ -33,10 +33,12 @@
 	mingw-w64-@@ARCH@@-pcre
 
 @REM Avoid overlapping address ranges
-@IF MINGW32 == %MSYSTEM% ECHO "Auto-rebasing .dll files"
-@IF MINGW32 == %MSYSTEM% CALL %cwd%\autorebase.bat
+@IF MINGW32 == %MSYSTEM% (
+	ECHO "Auto-rebasing .dll files"
+	CALL %cwd%\autorebase.bat
+)
 
 @REM now clone the Git sources, build it, and start an interactive shell
-@bash --login -c "mkdir -p /usr/src && cd /usr/src && counter=1; while test $counter -lt 5; do git -c core.autocrlf=false clone -b master https://github.com/git-for-windows/git; status=$?; test $status = 0 && break; test $status = 128 || exit $status; counter=$(($counter+1)); done && cd git && git config core.autocrlf false && make install; bash -i"
+@bash --login -c "mkdir -p /usr/src && cd /usr/src && counter=1; while test $counter -lt 5; do git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git; status=$?; test $status = 0 && break; test $status = 128 || exit $status; counter=$(($counter+1)); done && cd git && make install; bash -i"
 
 @IF NOT ERRORLEVEL 0 bash --login -i
