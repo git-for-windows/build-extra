@@ -1,7 +1,7 @@
 # Maintainer: nalla <nalla@hamal.uberspace.de>
 
 pkgname=('git-extra')
-_ver_base=1.0
+_ver_base=1.1
 pkgver=1.0.59.04c1fa8
 pkgrel=1
 pkgdesc="Git for Windows extra files"
@@ -12,7 +12,7 @@ groups=('VCS')
 optdepends=('vim' 'filesystem')
 install='git-extra.install'
 pkgver() {
-  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD)" "$(git rev-parse --short HEAD)"
+  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD -- .)" "$(git rev-parse --short HEAD)"
 }
 
 build() {
