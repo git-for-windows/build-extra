@@ -41,4 +41,4 @@
 @REM now clone the Git sources, build it, and start an interactive shell
 @bash --login -c "mkdir -p /usr/src && cd /usr/src && git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git && cd git && make install; bash -i"
 
-@IF NOT ERRORLEVEL 0 bash --login -i
+@IF ERRORLEVEL 1 PAUSE
