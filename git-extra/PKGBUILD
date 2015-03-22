@@ -41,7 +41,7 @@ SigLevel = Optional\n\
 package() {
   install -d -m755 $pkgdir/etc/profile.d
   install -d -m755 $pkgdir/usr/bin
-  install -m755 $startdir/vimrc $pkgdir/etc
+  install -m644 $startdir/vimrc $pkgdir/etc
   install -m755 $startdir/vi $pkgdir/usr/bin
   install -m755 $startdir/git-prompt.sh $pkgdir/etc/profile.d
   install -m755 $startdir/aliases.sh $pkgdir/etc/profile.d
