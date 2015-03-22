@@ -1,0 +1,18 @@
+@REM Do not use "echo off" to not affect any child calls.
+@SETLOCAL
+
+@REM Get the absolute path to the current directory, which is assumed to be the
+@REM Git installation root.
+@FOR /F "delims=" %%I IN ("%~dp0") DO @SET git_install_root=%%~fI
+@SET PATH=%git_install_root%\usr\bin;%git_install_root%\mingw@@BITNESS@@\bin;%git_install_root%\cmd;%PATH%
+
+@IF NOT EXIST "%HOME%" @set HOME=%HOMEDRIVE%%HOMEPATH%
+@IF NOT EXIST "%HOME%" @set HOME=%USERPROFILE%
+
+@SET PLINK_PROTOCOL=ssh
+@IF NOT DEFINED TERM SET TERM=msys
+
+@SET MSYSTEM=MINGW@@BITNESS@@
+
+@CD /d %HOME%
+@CALL %COMSPEC%
