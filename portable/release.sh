@@ -3,7 +3,7 @@
 # Build the portable Git for Windows.
 
 test -z "$1" && {
-	echo "Usage: $0 <version>"
+	echo "Usage: $0 <version> [optional components]"
 	exit 1
 }
 
@@ -24,8 +24,9 @@ x86_64)
 	die "Unhandled architecture: $ARCH"
 	;;
 esac
-
-TARGET="$HOME"/PortableGit-"$1".7z.exe
+VERSION=$1
+shift
+TARGET="$HOME"/PortableGit-"$VERSION".7z.exe
 OPTS7="-m0=lzma -mx=9 -md=64M"
 TMPPACK=/tmp.7z
 SHARE="$(cd "$(dirname "$0")" && pwd)"
@@ -70,7 +71,7 @@ pacman_list () {
 
 LIST="$(pacman_list mingw-w64-$ARCH-git git-extra ncurses mintty vim \
 	sed awk less grep gnupg findutils coreutils \
-	dos2unix which |
+	dos2unix which $@|
 	grep -v -e '\.[acho]$' -e '/aclocal/' \
 		-e '/man/' \
 		-e '^/usr/include/' -e '^/mingw32/include/' \
