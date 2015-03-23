@@ -38,8 +38,8 @@
 	@EXIT 1
 )
 
-@REM next, force update pacman
-@%cwd%\usr\bin\pacman -S --force --noconfirm pacman
+@REM next, force update pacman, but first we need bash and info for that.
+@%cwd%\usr\bin\pacman -S --force --noconfirm bash info pacman
 
 @IF ERRORLEVEL 1 GOTO INSTALL_PACMAN
 
