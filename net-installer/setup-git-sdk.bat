@@ -38,8 +38,8 @@
 	@EXIT 1
 )
 
-@REM next, force update pacman
-@%cwd%\usr\bin\pacman -S --force --noconfirm pacman
+@REM next, force update pacman, but first we need bash and info for that.
+@%cwd%\usr\bin\pacman -S --force --noconfirm bash info pacman
 
 @IF ERRORLEVEL 1 GOTO INSTALL_PACMAN
 
@@ -75,6 +75,6 @@
 @bash --login -c 'SHORTCUT="$HOME/Desktop/Git SDK @@BITNESS@@-bit.lnk"; test -f "$SHORTCUT" ^|^| create-shortcut.exe --icon-file /msys2.ico --work-dir / /mingw@@BITNESS@@_shell.bat "$SHORTCUT"'
 
 @REM now clone the Git sources, build it, and start an interactive shell
-@mintty -i /msys2.ico bash --login -c "mkdir -p /usr/src && cd /usr/src && git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git && cd git && make install; bash -i"
+@mintty -i /msys2.ico bash --login -c "mkdir -p /usr/src && cd /usr/src && git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git && cd git && make install; bash --login -i"
 
 @IF ERRORLEVEL 1 PAUSE
