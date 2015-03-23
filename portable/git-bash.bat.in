@@ -8,9 +8,9 @@
 @SET MSYSTEM=MINGW@@BITNESS@@
 
 @IF NOT EXIST %git_install_root%usr\bin\mintty.exe GOTO startsh
-@START %git_install_root%usr\bin\mintty -i /usr/share/git/git-for-windows.ico /usr/bin/bash --login %*
+@START "Git Bash" "%git_install_root%usr\bin\mintty" -i /usr/share/git/git-for-windows.ico /usr/bin/bash --login %*
 @EXIT
 
 :startsh
-@START %git_install_root%usr\bin\bash --login -i %*
+@START "Git Bash" "%git_install_root%usr\bin\bash" --login -i %*
 @EXIT
