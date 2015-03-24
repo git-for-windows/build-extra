@@ -1,0 +1,16 @@
+@REM Do not use "echo off" to not affect any child calls.
+@SETLOCAL
+
+@REM Get the absolute path to the current directory, which is assumed to be the
+@REM Git installation root.
+@FOR /F "delims=" %%I IN ("%~dp0") DO @SET git_install_root=%%~fI
+
+@SET MSYSTEM=MINGW@@BITNESS@@
+
+@IF NOT EXIST %git_install_root%usr\bin\mintty.exe GOTO startsh
+@START "Git Bash" "%git_install_root%usr\bin\mintty" -i /usr/share/git/git-for-windows.ico /usr/bin/bash --login %*
+@EXIT
+
+:startsh
+@START "Git Bash" "%git_install_root%usr\bin\bash" --login -i %*
+@EXIT

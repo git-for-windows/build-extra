@@ -8,4 +8,11 @@ die () {
 test $# -gt 0 ||
 die "Usage: $0 <package-name>..."
 
-pacman -Ql $(pactree -u "$@") | grep -v '/$' | sed 's/^[^ ]* //'
+pacman -Ql $(for arg
+	do
+		pactree -u "$arg"
+	done |
+	sort |
+	uniq) |
+grep -v '/$' |
+sed 's/^[^ ]* //'
