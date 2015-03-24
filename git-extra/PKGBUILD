@@ -40,14 +40,27 @@ SigLevel = Optional\n\
     "post_upgrade () {" \
     "    post_install" \
     "}" > $startdir/$pkgname.install
+
+    gcc -o create-shortcut.exe $startdir/create-shortcut.c -luuid -lole32
 }
 
 package() {
+  case "$CARCH" in
+    i686)
+      mingwdir="mingw32"
+    ;;
+    x86_64)
+      mingwdir="mingw64"
+    ;;
+  esac
+
   install -d -m755 $pkgdir/etc/profile.d
   install -d -m755 $pkgdir/usr/bin
   install -d -m755 $pkgdir/usr/share/git
+  install -d -m755 $pkgdir/$mingwdir/bin
   install -m644 $startdir/vimrc $pkgdir/etc
   install -m755 $startdir/vi $pkgdir/usr/bin
+  install -m755 create-shortcut.exe $pkgdir/$mingwdir/bin
   install -m755 $startdir/git-prompt.sh $pkgdir/etc/profile.d
   install -m755 $startdir/aliases.sh $pkgdir/etc/profile.d
   install -m644 $startdir/msys2-32.ico $pkgdir/usr/share/git
