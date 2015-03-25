@@ -140,7 +140,18 @@ add () { # <file>
 			;;
 		esac
 		dir="$(arch_dir $arch)"
-		mkdir -p "$dir"
+		if test -d "$dir"
+		then
+			prefix="${path##*/}"
+			prefix="${prefix%%-[0-9][0-9.]*}"
+			(cd "$dir" &&
+			 for file in "$prefix"-[0-9][0-9.]*
+			 do
+				rm -v "$file"
+			 done)
+		else
+			mkdir -p "$dir"
+		fi
 		cp "$path" "$dir/"
 	done
 }
