@@ -43,19 +43,6 @@ esac
 mkdir -p "$SHARE/root/tmp" ||
 die "Could not make tmp/ directory"
 
-mkdir -p "$SHARE/root/cmd" &&
-cp /mingw$BITNESS/libexec/git-core/git-log.exe "$SHARE/root/cmd/git.exe" ||
-die "Could not copy Git wrapper"
-
-sed "s/@@BITNESS@@/$BITNESS/g" \
-< "$SHARE/git-cmd.bat.in" > "$SHARE/root/git-cmd.bat" ||
-die "Could not generate git-cmd.bat"
-
-sed "s/@@BITNESS@@/$BITNESS/g" \
-< "$SHARE/git-bash.bat.in" > "$SHARE/root/git-bash.bat" ||
-die "Could not generate git-bash.bat"
-
-
 # Make a list of files to include
 
 pacman_list () {
