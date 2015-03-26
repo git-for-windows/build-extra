@@ -58,7 +58,7 @@ pacman_list () {
 
 LIST="$(pacman_list mingw-w64-$ARCH-git git-extra ncurses mintty vim \
 	sed awk less grep gnupg findutils coreutils \
-	dos2unix which $@|
+	dos2unix which subversion "$@" |
 	grep -v -e '\.[acho]$' -e '/aclocal/' \
 		-e '/man/' \
 		-e '^/usr/include/' -e '^/mingw32/include/' \
