@@ -13,12 +13,14 @@ die () {
 }
 
 ARCH="$(uname -m)"
+PROGRAMFILESENV=PROGRAMFILES
 case "$ARCH" in
 i686)
 	BITNESS=32
 	;;
 x86_64)
 	BITNESS=64
+	PROGRAMFILESENV=ProgramW6432
 	;;
 *)
 	die "Unhandled architecture: $ARCH"
@@ -94,7 +96,7 @@ echo "Creating archive" &&
  echo 'ExtractTitle="Extracting..."' &&
  echo 'GUIFlags="8+32+64+256+4096"' &&
  echo 'GUIMode="1"' &&
- echo 'InstallPath="%PROGRAMFILES%\\Git"' &&
+ echo 'InstallPath="%'$PROGRAMFILESENV'%\\Git"' &&
  echo 'OverwriteMode="0"' &&
  echo ';!@InstallEnd@!7z' &&
  cat "$TMPPACK") > "$TARGET" &&
