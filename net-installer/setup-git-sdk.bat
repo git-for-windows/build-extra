@@ -22,6 +22,21 @@
 	@EXIT 1
 )
 
+@REM Maybe we need a proxy?
+@IF %counter% GEQ 2 (
+	@ECHO.
+	@ECHO There was a problem accessing the MSys2 repositories
+	@ECHO If your setup requires an HTTP proxy to access the web,
+	@ECHO please specify it here, otherwise leave it empty.
+	@ECHO.
+	@SET /p proxy= "HTTP proxy: "
+)
+@REM Check the proxy variable here because of delayed expansion
+@IF NOT "%proxy%" == "" (
+	@SET http_proxy=%proxy%
+	@SET https_proxy=%proxy%
+)
+
 @REM update the Pacman package indices first, then force-install msys2-runtime
 @REM (we ship with a stripped-down msys2-runtime, gpg and pacman), so that
 @REM pacman's post-install scripts run without complaining about heap problems
@@ -69,6 +84,16 @@
 @IF MINGW32 == %MSYSTEM% (
 	ECHO "Auto-rebasing .dll files"
 	CALL %cwd%\autorebase.bat
+)
+
+@REM If an HTTP proxy is requires, configure it for Git Bash sessions,
+@REM but only if the environment variable was not already set globally
+@IF DEFINED proxy (
+	@ECHO http_proxy=%proxy% > etc\profile.d\proxy.sh
+	@ECHO https_proxy=%proxy% >> etc\profile.d\proxy.sh
+	@ECHO export http_proxy https_proxy >> etc\profile.d\proxy.sh
+	@ECHO.
+	@ECHO Installed /etc/profile.d/proxy.sh to set proxy in Git Bash
 )
 
 @REM Install shortcut on the desktop
