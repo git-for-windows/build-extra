@@ -17,7 +17,7 @@
 :INSTALL_RUNTIME
 @SET /A counter+=1
 @IF %counter% GEQ 5 (
-	@ECHO "Could not install msys2-runtime"
+	@ECHO Could not install msys2-runtime
 	@PAUSE
 	@EXIT 1
 )
@@ -33,7 +33,7 @@
 :INSTALL_PACMAN
 @SET /A counter+=1
 @IF %counter% GEQ 5 (
-	@ECHO "Could not install pacman"
+	@ECHO Could not install pacman
 	@PAUSE
 	@EXIT 1
 )
@@ -47,7 +47,7 @@
 :INSTALL_REST
 @SET /A counter+=1
 @IF %counter% GEQ 5 (
-	@ECHO "Could not install the remaining packages"
+	@ECHO Could not install the remaining packages
 	@PAUSE
 	@EXIT 1
 )
@@ -67,7 +67,7 @@
 
 @REM Avoid overlapping address ranges
 @IF MINGW32 == %MSYSTEM% (
-	ECHO "Auto-rebasing .dll files"
+	ECHO Auto-rebasing .dll files
 	CALL %cwd%\autorebase.bat
 )
 
