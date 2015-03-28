@@ -30,6 +30,8 @@ test i686 != $(uname -m) ||
 case "$(md5sum.exe < /msys2.ico)" in
 292ad5cd*) cp /usr/share/git/msys2-32.ico /msys2.ico;;
 esac
+test ! -f /etc/post-install/05-home-dir.post ||
+rm /etc/post-install/05-home-dir.post
 }
 post_upgrade () {
     post_install
