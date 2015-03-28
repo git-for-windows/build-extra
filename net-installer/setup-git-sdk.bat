@@ -17,7 +17,7 @@
 :INSTALL_RUNTIME
 @SET /A counter+=1
 @IF %counter% GEQ 5 (
-	@ECHO "Could not install msys2-runtime"
+	@ECHO Could not install msys2-runtime
 	@PAUSE
 	@EXIT 1
 )
@@ -33,7 +33,7 @@
 :INSTALL_PACMAN
 @SET /A counter+=1
 @IF %counter% GEQ 5 (
-	@ECHO "Could not install pacman"
+	@ECHO Could not install pacman
 	@PAUSE
 	@EXIT 1
 )
@@ -47,7 +47,7 @@
 :INSTALL_REST
 @SET /A counter+=1
 @IF %counter% GEQ 5 (
-	@ECHO "Could not install the remaining packages"
+	@ECHO Could not install the remaining packages
 	@PAUSE
 	@EXIT 1
 )
@@ -67,14 +67,19 @@
 
 @REM Avoid overlapping address ranges
 @IF MINGW32 == %MSYSTEM% (
-	ECHO "Auto-rebasing .dll files"
+	ECHO Auto-rebasing .dll files
 	CALL %cwd%\autorebase.bat
 )
 
 @REM Install shortcut on the desktop
-@bash --login -c 'SHORTCUT="$HOME/Desktop/Git SDK @@BITNESS@@-bit.lnk"; test -f "$SHORTCUT" ^|^| create-shortcut.exe --icon-file /msys2.ico --work-dir / /mingw@@BITNESS@@_shell.bat "$SHORTCUT"'
+@ECHO.
+@ECHO Installing the 'Git SDK @@BITNESS@@-bit' shortcut on the Desktop
+@bash --login -c 'SHORTCUT="$HOME/Desktop/Git SDK @@BITNESS@@-bit.lnk"; test -f "$SHORTCUT" ^|^| create-shortcut.exe --icon-file /msys2.ico --work-dir / /git-bash.exe "$SHORTCUT"'
 
 @REM now clone the Git sources, build it, and start an interactive shell
-@mintty -i /msys2.ico bash --login -c "mkdir -p /usr/src && cd /usr/src && for project in MINGW-packages MSYS2-packages build-extra; do mkdir -p $project && (cd $project && git init && git config core.autocrlf false && git remote add origin https://github.com/git-for-windows/$project); done; git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git && cd git && make install; bash --login -i"
+@ECHO.
+@ECHO Running Git Bash to build Git and run an interactive Bash session
+@ECHO This window will close automatically once that session is over
+@mintty -i /msys2.ico bash --login -c "test -s /mingw@@BITNESS@@/ssl/certs/ca-bundle.crt || pacman -S --noconfirm mingw-w64-@@ARCH@@-ca-certificates; mkdir -p /usr/src && cd /usr/src && for project in MINGW-packages MSYS2-packages build-extra; do mkdir -p $project && (cd $project && git init && git config core.autocrlf false && git remote add origin https://github.com/git-for-windows/$project); done; git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git && cd git && make install; bash --login -i"
 
 @IF ERRORLEVEL 1 PAUSE
