@@ -96,6 +96,12 @@
 	@ECHO Installed /etc/profile.d/proxy.sh to set proxy in Git Bash
 )
 
+@REM Before running a shell, let's prevent complaints about "permission denied"
+@REM from MSys2's /etc/post-install/01-devices.post
+@IF NOT EXIST dev @MKDIR dev
+@IF NOT EXIST dev\shm @MKDIR dev\shm
+@IF NOT EXIST dev\mqueue @MKDIR dev\mqueue
+
 @REM Install shortcut on the desktop
 @ECHO.
 @ECHO Installing the 'Git SDK @@BITNESS@@-bit' shortcut on the Desktop
