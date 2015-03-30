@@ -1,6 +1,8 @@
 *.swp
 /git-extra/pkg/
 /git-extra/src/
+/installer/install.iss
+/installer/install.out
 /installer/is-unicode.exe
 /portable/root/cmd/
 /portable/root/git-bash.bat
