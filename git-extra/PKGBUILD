@@ -65,5 +65,6 @@ package() {
   install -m755 create-shortcut.exe $pkgdir/$mingwdir/bin
   install -m755 $startdir/git-prompt.sh $pkgdir/etc/profile.d
   install -m755 $startdir/aliases.sh $pkgdir/etc/profile.d
+  install -m755 $startdir/env.sh $pkgdir/etc/profile.d
   install -m644 $startdir/msys2-32.ico $pkgdir/usr/share/git
 }
