@@ -68,15 +68,12 @@ Name: ext; Description: Windows Explorer integration; Types: default
 Name: ext\reg; Description: Simple context menu (Registry based); Flags: exclusive; Types: default
 Name: ext\reg\shellhere; Description: Git Bash Here; Types: default
 Name: ext\reg\guihere; Description: Git GUI Here; Types: default
-Name: ext\cheetah; Description: Advanced context menu (git-cheetah plugin); Flags: exclusive; Types: default
 Name: assoc; Description: Associate .git* configuration files with the default text editor; Types: default
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows (not only for Git Bash)
 
 [Files]
 ; Install files that might be in use during setup under a different name.
-;Source: git-cheetah\git_shell_ext.dll; DestDir: {app}\git-cheetah; DestName: git_shell_ext.dll.new; Flags: replacesameversion; Components: ext\cheetah; AfterInstall: DeleteFromVirtualStore
-;Source: git-cheetah\git_shell_ext64.dll; DestDir: {app}\git-cheetah; DestName: git_shell_ext64.dll.new; Flags: replacesameversion; Components: ext\cheetah; AfterInstall: DeleteFromVirtualStore
 #include "file-list.iss"
 Source: {#GetEnv('SCRIPTDIR')}\ReleaseNotes.rtf; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
 
@@ -1154,22 +1151,6 @@ begin
     end;
 
     // It is either the Registry-based context menu entries, or the shell extension.
-    if IsComponentSelected('ext\cheetah') then begin
-        DeleteContextMenuEntries;
-
-        if isWin64 then begin
-            FileName:=AppDir+'\git-cheetah\git_shell_ext64.dll';
-        end else begin
-            FileName:=AppDir+'\git-cheetah\git_shell_ext.dll';
-        end;
-        if not ReplaceInUseFile(FileName,FileName+'.new',True,Msg) then begin
-            // This is in fact a critical error, but "Abort" does not work during ssPostInstall anymore and
-            // we have no other way of aborting the installation, so just notify the user and continue.
-            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-            Log('Line {#__LINE__}: Replacing file "'+FileName+'" failed.');
-        end;
-    end;
-
     {
         Restart any processes that were shut down via the Restart Manager
     }
