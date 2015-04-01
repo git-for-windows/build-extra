@@ -10,7 +10,7 @@
 #define MINGW_BITNESS '%MINGW_BITNESS%'
 #define APP_URL       'http://git-for-windows.github.io/'
 #define APP_BUILTINS  'share\git\builtins.txt'
-#define APP_BINDIMAGE 'etc\fileList-bindimage.txt'
+TODO: generate #define APP_BINDIMAGE 'share\git\bindimage.txt'
 
 #define PLINK_PATH_ERROR_MSG 'Please enter a valid path to a Plink executable.'
 
