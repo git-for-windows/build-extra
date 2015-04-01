@@ -4,6 +4,7 @@
 /installer/install.iss
 /installer/install.out
 /installer/is-unicode.exe
+/installer/file-list.iss
 /portable/root/cmd/
 /portable/root/git-bash.bat
 /portable/root/git-cmd.bat

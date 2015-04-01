@@ -7,8 +7,9 @@
 #else
 #define APP_VERSION   '%APPVERSION%'
 #endif
-#define APP_URL       'http://msysgit.github.io/'
-#define APP_BUILTINS  'etc\fileList-builtins.txt'
+#define MINGW_BITNESS '%MINGW_BITNESS%'
+#define APP_URL       'http://git-for-windows.github.io/'
+#define APP_BUILTINS  'share\git\builtins.txt'
 #define APP_BINDIMAGE 'etc\fileList-bindimage.txt'
 
 #define PLINK_PATH_ERROR_MSG 'Please enter a valid path to a Plink executable.'
@@ -22,6 +23,7 @@ LZMAUseSeparateProcess=yes
 OutputBaseFilename={#APP_NAME+'-'+APP_VERSION}
 OutputDir={#GetEnv('USERPROFILE')}
 SolidCompression=yes
+SourceDir={#GetEnv('ROOTDIR')}
 #ifdef COMPILE_FROM_IDE
 SourceDir={#GetEnv('TEMP')}\WinGit
 #endif
@@ -39,7 +41,7 @@ DisableDirPage=auto
 DefaultGroupName={#APP_NAME}
 DisableProgramGroupPage=auto
 DisableReadyPage=yes
-InfoBeforeFile=gpl-2.0.rtf
+InfoBeforeFile={#GetEnv('SCRIPTDIR')}\gpl-2.0.rtf
 PrivilegesRequired=none
 UninstallDisplayIcon={app}\etc\git.ico
 #ifndef COMPILE_FROM_IDE
@@ -51,11 +53,11 @@ VersionInfoVersion={#APP_VERSION}
 #endif
 
 ; Cosmetic
-SetupIconFile=etc\git.ico
+SetupIconFile={#GetEnv('SCRIPTDIR')}\git.ico
 WizardImageBackColor=clWhite
 WizardImageStretch=no
-WizardImageFile=git.bmp
-WizardSmallImageFile=gitsmall.bmp
+WizardImageFile={#GetEnv('SCRIPTDIR')}\git.bmp
+WizardSmallImageFile={#GetEnv('SCRIPTDIR')}\gitsmall.bmp
 
 [Types]
 ; Define a custom type to avoid getting the three default types.
@@ -76,11 +78,13 @@ Name: consolefont; Description: Use a TrueType font in all console windows (not 
 
 [Files]
 ; Install files that might be in use during setup under a different name.
-Source: git-cheetah\git_shell_ext.dll; DestDir: {app}\git-cheetah; DestName: git_shell_ext.dll.new; Flags: replacesameversion; Components: ext\cheetah; AfterInstall: DeleteFromVirtualStore
-Source: git-cheetah\git_shell_ext64.dll; DestDir: {app}\git-cheetah; DestName: git_shell_ext64.dll.new; Flags: replacesameversion; Components: ext\cheetah; AfterInstall: DeleteFromVirtualStore
+;Source: git-cheetah\git_shell_ext.dll; DestDir: {app}\git-cheetah; DestName: git_shell_ext.dll.new; Flags: replacesameversion; Components: ext\cheetah; AfterInstall: DeleteFromVirtualStore
+;Source: git-cheetah\git_shell_ext64.dll; DestDir: {app}\git-cheetah; DestName: git_shell_ext64.dll.new; Flags: replacesameversion; Components: ext\cheetah; AfterInstall: DeleteFromVirtualStore
+#include "file-list.iss"
+Source: {#GetEnv('SCRIPTDIR')}\ReleaseNotes.rtf; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
 
-Source: *; DestDir: {app}; Excludes: \*.bmp, gpl-2.0.rtf, \*.iss, \tmp.*, \bin\*install*, \git-cheetah\git_shell_ext.dll, \git-cheetah\git_shell_ext64.dll; Flags: recursesubdirs replacesameversion sortfilesbyextension; AfterInstall: DeleteFromVirtualStore
-Source: ReleaseNotes.rtf; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
+[Dirs]
+Name: "{app}\tmp"
 
 [Icons]
 Name: {group}\Git GUI; Filename: {app}\bin\wish.exe; Parameters: """{app}\libexec\git-core\git-gui"""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\etc\git.ico
@@ -156,7 +160,7 @@ Type: files; Name: {app}\libexec\git-core\git-*.exe
 Type: files; Name: {app}\libexec\git-core\git.exe
 
 ; Delete any (temporary) git-cheetah files.
-Type: files; Name: {app}\git-cheetah\*.*
+;Type: files; Name: {app}\git-cheetah\*.*
 
 ; Delete any manually created shortcuts.
 Type: files; Name: {userappdata}\Microsoft\Internet Explorer\Quick Launch\Git Bash.lnk
@@ -949,7 +953,7 @@ begin
     }
 
     // Load the built-ins from a text file.
-    FileName:=AppDir+'\{#APP_BUILTINS}';
+    FileName:=AppDir+'\{#MINGW_BITNESS}\{#APP_BUILTINS}';
     if LoadStringsFromFile(FileName,BuiltIns) then begin
         Count:=GetArrayLength(BuiltIns)-1;
 
@@ -1001,7 +1005,7 @@ begin
             FindClose(FindRec);
         end;
     end else begin
-        Msg:='Line {#__LINE__}: Unable to read file "{#APP_BUILTINS}".';
+        Msg:='Line {#__LINE__}: Unable to read file "{#MINGW_BITNESS}\{#APP_BUILTINS}".';
 
         // This is in fact a critical error, but "Abort" does not work during ssPostInstall anymore and
         // we have no other way of aborting the installation, so just notify the user and continue.
@@ -1020,8 +1024,8 @@ begin
     end else begin
         Cmd:='core.autocrlf false';
     end;
-    if not Exec(AppDir + '\bin\git.exe', 'config -f gitconfig ' + Cmd,
-                AppDir + '\etc', SW_HIDE, ewWaitUntilTerminated, i) then begin
+    if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config -f gitconfig ' + Cmd,
+                AppDir + '\{#MINGW_BITNESS}\etc', SW_HIDE, ewWaitUntilTerminated, i) then begin
         Msg:='Unable to configure the line ending conversion: ' + Cmd;
 
         // This is not a critical error, so just notify the user and continue.
