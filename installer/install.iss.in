@@ -408,9 +408,18 @@ end;
 }
 
 function InitializeSetup:Boolean;
+var
+    Msg:String;
 begin
     UpdateInfFilenames;
-    Result:=True;
+    if ('{#BITNESS}'='64') and not IsWin64 then begin
+        Msg:='The 64-bit version of Git requires a 64-bit Windows. Aborting.';
+        SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+        Log(Msg);
+        Result:=False;
+    end else begin
+        Result:=True;
+    end;
 end;
 
 procedure InitializeWizard;
