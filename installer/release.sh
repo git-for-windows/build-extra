@@ -75,12 +75,13 @@ LIST="$(pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
 		-e '^/usr/share/info/' -e '^/mingw32/share/info/' |
 	sed 's/^\///')"
 
-LIST="$(printf "%s\n%s\n%s\n%s\n%s\n%s\n" \
+LIST="$(printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n" \
 	"$LIST" \
 	etc/profile \
 	etc/bash.bash_logout \
 	etc/bash.bashrc \
 	etc/fstab \
+	etc/nsswitch.conf \
 	mingw$BITNESS/etc/gitconfig)"
 
 echo "; List of files" > file-list.iss ||
