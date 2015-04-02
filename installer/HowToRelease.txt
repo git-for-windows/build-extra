@@ -34,47 +34,44 @@ The following is missing before we release a stable installer.
 We will *not* wait for
 
     * server functionality (git-daemon, git-shell, ...).
-    * git-cheetah.
 
-An msysgit release is tagged by a tag having a postfix '.msysgit.[0-9]+'.
+A Git for Windows release is tagged by a tag having a postfix '.windows.[0-9]+'.
 
 Here is a step-by-step instruction for the maintainer:
 
-   cd /git
-   git fetch mingw
-   git fetch junio
-   git checkout master
-   git merge mingw/master
-   git merge junio/master
-   make -k test | tee test.log
-   # check test.log
-
-   make clean
-   git tag -a v<version>.msysgit.<number>
-   make install
-
-   cd /doc/git/html
+   cd /usr/src/build-extra
    git fetch
    git checkout master
-   git merge origin/master
-
-   cd /share/WinGit
+   cd /usr/src/git
+   git remote add git https://github.com/git/git
+   git fetch git
    git checkout master
-   start ReleaseNotes.rtf # edit and save
-   git commit -a
-   git tag -a -m "Git-<version>" Git-<version>
-   ./release.sh <version>
+   BASE="$(git rev-parse ":/Start the merging-rebase")"
+   ../build-extra/./shears.sh --merging --onto <git-tag> $BASE
+   git diff <gittag>..origin/master > prev.diff
+   git diff <gittag>..master > curr.diff
+   git diff --no-index prev.diff curr.diff
+   # check diff of diff
+   make clean
+   make install install-html
+   cd t
+   /usr/bin/time prove -j 5 --state=failed,save ./t[0-9]*.sh
+   git tag -a <git-tag>.windows.<number>
+
+   # Make installer
+
+   cd /usr/src/build-extra/installer
+   ./release.sh <git-tag>-<preview><date>
 
    # Test installer.
 
-   # Upload to Google code (verify sha1).
+   # Upload to GitHub (verify sha1).
 
-   cd /git
+   cd /usr/src/git
    git push master
-   git push <version>-msysgit<number>
-   cd /
-   git push master
-   git push Git-<version>
+   git push <git-tag>.windows.<number>
+   cd /usr/src/build-extra/installer
+   git push Git-<git-tag>-<preview><date>
    # Don't forget to push tags.
 
    # Reply to Junio's announcement.
