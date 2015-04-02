@@ -47,7 +47,7 @@ x86_64)
 	;;
 esac
 
-# Generate list of files to include
+echo "Generating file list to be included in the installer ..."
 pacman_list () {
 	pacman -Ql $(for arg
 		do
@@ -69,16 +69,20 @@ LIST="$(pacman_list mingw-w64-$ARCH-git git-extra ncurses mintty vim \
 		-e '^/usr/share/info/' -e '^/mingw32/share/info/' |
 	sed 's/^\///')"
 
-LIST="$LIST etc/profile etc/bash.bash_logout etc/bash.bashrc etc/fstab"
-LIST="$LIST mingw$BITNESS/etc/gitconfig"
+LIST="$(printf "%s\n%s\n%s\n%s\n%s\n%s\n" \
+	"$LIST" \
+	etc/profile \
+	etc/bash.bash_logout \
+	etc/bash.bashrc \
+	etc/fstab \
+	mingw$BITNESS/etc/gitconfig)"
 
 rm -rf file-list.iss
-for f in $LIST
-do
-	printf 'Source: %s; DestDir: {app}\%s; Flags: %s; AfterInstall: %s\n' \
-                $f $(dirname $f) replacesameversion DeleteFromVirtualStore \
-        >> file-list.iss
-done
+echo "$LIST" |
+sed -e 's|/|\\|g' \
+	-e 's|^\([^\\]*\)$|Source: \1; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore|' \
+	-e 's|^\(.*\)\\\([^\\]*\)$|Source: \1\\\2; DestDir: {app}\\\1; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore|' \
+	>> file-list.iss
 
 sed -e "s|%APPVERSION%|$version|" -e "s|%MINGW_BITNESS%|mingw$BITNESS|" < install.iss.in > install.iss ||
 exit
@@ -86,5 +90,12 @@ exit
 echo "Launching Inno Setup compiler ..." &&
 ./InnoSetup/ISCC.exe install.iss > install.out ||
 die "Could not make installer"
-git tag -a -m "Git for Windows $1" Git-$1 &&
+
+echo "Tagging Git for Windows installer release ..."
+if git rev-parse Git-$version >/dev/null 2>&1; then
+	echo "-> installer release 'Git-$version' was already tagged."
+else
+	git tag -a -m "Git for Windows $version" Git-$version
+fi
+
 echo "Installer is available as $(tail -n 1 install.out)"
