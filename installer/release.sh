@@ -63,11 +63,13 @@ pacman_list () {
 	sed 's/^[^ ]* //'
 }
 
-LIST="$(pacman_list mingw-w64-$ARCH-git git-extra ncurses mintty vim \
+LIST="$(pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
+	git-extra ncurses mintty vim \
 	sed awk less grep gnupg findutils coreutils \
 	dos2unix which subversion mingw-w64-$ARCH-tk |
 	grep -v -e '\.[acho]$' -e '/aclocal/' \
 		-e '/man/' \
+		-e '/mingw32/share/doc/git-doc/.*\.txt$' \
 		-e '^/usr/include/' -e '^/mingw32/include/' \
 		-e '^/usr/share/doc/' -e '^/mingw32/share/doc/' \
 		-e '^/usr/share/info/' -e '^/mingw32/share/info/' |
