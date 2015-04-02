@@ -68,16 +68,19 @@ fetch () {
 }
 
 upload () { # <package> <version> <arch> <filename>
-	curl --netrc -fT "$4" "$content_url/$1/$2/$3/$4"
+	curl --netrc -fT "$4" "$content_url/$1/$2/$3/$4" ||
+	die "Could not upload $4 to $1/$2/$3"
 }
 
 publish () { # <package> <version>
-	curl --netrc -fX POST "$content_url/$1/$2/publish"
+	curl --netrc -fX POST "$content_url/$1/$2/publish" ||
+	die "Could not publish $2 in $1"
 }
 
 
 delete_version () { # <package> <version>
-	curl --netrc -fX DELETE "$packages_url/$1/versions/$2"
+	curl --netrc -fX DELETE "$packages_url/$1/versions/$2" ||
+	die "Could not delete version $2 of $1"
 }
 
 package_list () { # db.tar.xz
@@ -180,8 +183,10 @@ push () {
 		dir="$(arch_dir $arch)"
 		mkdir -p "$dir"
 		(cd "$dir" &&
-		 curl -sf $arch_url/git-for-windows.db.tar.xz > .remote
-		)
+		 echo "Getting $arch_url/git-for-windows.db.tar.xz" &&
+		 curl -L $arch_url/git-for-windows.db.tar.xz > .remote
+		) ||
+		die "Could not get remote index for $arch"
 	done
 
 	old_list="$((for arch in $architectures
