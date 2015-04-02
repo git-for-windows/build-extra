@@ -69,7 +69,6 @@ Name: ext; Description: Windows Explorer integration; Types: default
 Name: ext\reg; Description: Simple context menu (Registry based); Flags: exclusive; Types: default
 Name: ext\reg\shellhere; Description: Git Bash Here; Types: default
 Name: ext\reg\guihere; Description: Git GUI Here; Types: default
-Name: ext\cheetah; Description: Advanced context menu (git-cheetah plugin); Flags: exclusive; Types: default
 Name: assoc; Description: Associate .git* configuration files with the default text editor; Types: default
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows (not only for Git Bash)
