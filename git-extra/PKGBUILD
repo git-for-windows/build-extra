@@ -60,6 +60,7 @@ package() {
   install -d -m755 $pkgdir/usr/bin
   install -d -m755 $pkgdir/usr/share/git
   install -d -m755 $pkgdir/$mingwdir/bin
+  install -m644 $startdir/inputrc $pkgdir/etc
   install -m644 $startdir/vimrc $pkgdir/etc
   install -m755 $startdir/vi $pkgdir/usr/bin
   install -m755 $startdir/wordpad $pkgdir/usr/bin
