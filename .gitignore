@@ -1,6 +1,7 @@
 *.swp
 /git-extra/pkg/
 /git-extra/src/
+/installer/bindimage.txt
 /installer/install.iss
 /installer/install.out
 /installer/is-unicode.exe
