@@ -135,7 +135,7 @@ Root: HKCU; Subkey: Software\Classes\.gitmodules; ValueType: string; ValueName: 
 ; Install under HKEY_LOCAL_MACHINE if an administrator is installing.
 Root: HKLM; Subkey: Software\Classes\.sh; ValueType: string; ValueData: sh_auto_file; Flags: createvalueifdoesntexist uninsdeletekeyifempty uninsdeletevalue; Check: IsAdminLoggedOn; Components: assoc_sh
 Root: HKLM; Subkey: Software\Classes\sh_auto_file; ValueType: string; ValueData: "Shell Script"; Flags: createvalueifdoesntexist uninsdeletekeyifempty uninsdeletevalue; Check: IsAdminLoggedOn; Components: assoc_sh
-Root: HKLM; Subkey: Software\Classes\sh_auto_file\shell\open\command; ValueType: string; ValueData: "{syswow64}\cmd.exe /C """{app}\git-bash.exe"" ""--no-cd"" ""%1"" %*"""; Flags: createvalueifdoesntexist uninsdeletekeyifempty uninsdeletevalue; Check: IsAdminLoggedOn; Components: assoc_sh; OnlyBelowVersion: 6.0
+Root: HKLM; Subkey: Software\Classes\sh_auto_file\shell\open\command; ValueType: string; ValueData: "{syswow64}\cmd.exe /C """"{app}\git-bash.exe"" ""--no-cd"" ""%1"" %*"""; Flags: createvalueifdoesntexist uninsdeletekeyifempty uninsdeletevalue; Check: IsAdminLoggedOn; Components: assoc_sh; OnlyBelowVersion: 6.0
 Root: HKLM; Subkey: Software\Classes\sh_auto_file\shell\open\command; ValueType: string; ValueData: """{app}\git-bash.exe"" ""--no-cd"" ""%1"" %*"; Flags: createvalueifdoesntexist uninsdeletekeyifempty uninsdeletevalue; Check: IsAdminLoggedOn; Components: assoc_sh; MinVersion: 6.0
 Root: HKLM; Subkey: Software\Classes\sh_auto_file\DefaultIcon; ValueType: string; ValueData: "%SystemRoot%\System32\shell32.dll,-153"; Flags: createvalueifdoesntexist uninsdeletekeyifempty uninsdeletevalue; Check: IsAdminLoggedOn; Components: assoc_sh
 Root: HKLM; Subkey: Software\Classes\sh_auto_file\ShellEx\DropHandler; ValueType: string; ValueData: {#DROP_HANDLER_GUID}; Flags: uninsdeletekeyifempty uninsdeletevalue; Check: IsAdminLoggedOn; Components: assoc_sh
@@ -961,9 +961,9 @@ begin
             end;
         end;
 
-	if not FileCopy(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-log.exe',AppDir+'\tmp\git-wrapper.exe',False) then begin
+        if not FileCopy(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-log.exe',AppDir+'\tmp\git-wrapper.exe',False) then begin
             Log('Line {#__LINE__}: Creating copy "'+AppDir+'\tmp\git-wrapper.exe" failed.');
-        end
+        end;
 
         // Create built-ins as aliases for git.exe.
         for i:=0 to Count do begin
