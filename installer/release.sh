@@ -77,7 +77,9 @@ LIST="$(printf "%s\n%s\n%s\n%s\n%s\n%s\n" \
 	etc/fstab \
 	mingw$BITNESS/etc/gitconfig)"
 
-rm -rf file-list.iss
+echo "; List of files" > file-list.iss ||
+die "Could not write to file-list.iss"
+
 echo "$LIST" |
 sed -e 's|/|\\|g' \
 	-e 's|^\([^\\]*\)$|Source: \1; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore|' \
