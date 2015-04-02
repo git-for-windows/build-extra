@@ -9,6 +9,7 @@
 #endif
 #define MINGW_BITNESS '%MINGW_BITNESS%'
 #define BITNESS       '%BITNESS%'
+#define IS%BITNESS%   ''
 #define APP_URL       'http://git-for-windows.github.io/'
 #define APP_BUILTINS  'share\git\builtins.txt'
 #define APP_BINDIMAGE 'share\git\bindimage.txt'
@@ -405,9 +406,22 @@ end;
 }
 
 function InitializeSetup:Boolean;
+var
+    Msg:String;
 begin
     UpdateInfFilenames;
+#ifdef IS32
     Result:=True;
+#else
+    if not IsWin64 then begin
+        Msg:='The 64-bit version of Git requires a 64-bit Windows. Aborting.';
+        SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+        Log(Msg);
+        Result:=False;
+    end else begin
+        Result:=True;
+    end;
+#endif
 end;
 
 procedure InitializeWizard;
