@@ -25,6 +25,9 @@ OutputBaseFilename={#APP_NAME+'-'+APP_VERSION}-{#BITNESS}-bit
 OutputDir={#GetEnv('USERPROFILE')}
 SolidCompression=yes
 SourceDir={#GetEnv('ROOTDIR')}
+#if BITNESS='64'
+ArchitecturesInstallIn64BitMode=x64
+#endif
 
 ; Installer-related
 AllowNoIcons=yes
