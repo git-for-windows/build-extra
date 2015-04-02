@@ -84,6 +84,12 @@ sed -e 's|/|\\|g' \
 	-e 's|^\(.*\)\\\([^\\]*\)$|Source: \1\\\2; DestDir: {app}\\\1; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore|' \
 	>> file-list.iss
 
+echo "Generating bindimage.txt"
+pacman -Ql mingw-w64-$ARCH-git |
+sed -n -e 's|^[^ ]* /\(.*\.exe\)$|\1|p' \
+	-e 's|^[^ ]* /\(.*\.dll\)$|\1|p' > bindimage.txt
+echo "Source: \"$SCRIPTDIR\\bindimage.txt\"; DestDir: {app}\\mingw$BITNESS\\share\git\bindimage.txt; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" >> file-list.iss
+
 sed -e "s|%APPVERSION%|$version|" -e "s|%MINGW_BITNESS%|mingw$BITNESS|" < install.iss.in > install.iss ||
 exit
 
