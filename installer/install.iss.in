@@ -8,6 +8,7 @@
 #define APP_VERSION   '%APPVERSION%'
 #endif
 #define MINGW_BITNESS '%MINGW_BITNESS%'
+#define BITNESS       '%BITNESS%'
 #define APP_URL       'http://git-for-windows.github.io/'
 #define APP_BUILTINS  'share\git\builtins.txt'
 #define APP_BINDIMAGE 'share\git\bindimage.txt'
@@ -20,7 +21,7 @@
 ; Compiler-related
 Compression=lzma2/ultra
 LZMAUseSeparateProcess=yes
-OutputBaseFilename={#APP_NAME+'-'+APP_VERSION}
+OutputBaseFilename={#APP_NAME+'-'+APP_VERSION}-{#BITNESS}-bit
 OutputDir={#GetEnv('USERPROFILE')}
 SolidCompression=yes
 SourceDir={#GetEnv('ROOTDIR')}
