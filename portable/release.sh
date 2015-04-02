@@ -71,7 +71,7 @@ LIST="$(pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
 	sed 's/^\///')"
 
 LIST="$LIST etc/profile etc/bash.bash_logout etc/bash.bashrc etc/fstab"
-LIST="$LIST mingw$BITNESS/etc/gitconfig"
+LIST="$LIST etc/nsswitch.conf mingw$BITNESS/etc/gitconfig"
 
 # 7-Zip will strip absolute paths completely... therefore, we can add another
 # root directory like this:
