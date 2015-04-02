@@ -84,7 +84,7 @@ Source: {#GetEnv('SCRIPTDIR')}\ReleaseNotes.rtf; DestDir: {app}; Flags: isreadme
 Name: "{app}\tmp"
 
 [Icons]
-Name: {group}\Git GUI; Filename: {app}\{#MINGW_BITNESS}\bin\wish.exe; Parameters: """{app}\{#MINGW_BITNESS}\libexec\git-core\git-gui"""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
+Name: {group}\Git GUI; Filename: {app}\cmd\git-gui.exe; Parameters: ""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 Name: {group}\Git Bash; Filename: {app}\git-bash.exe; Parameters: ""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 
 [Messages]
@@ -1138,7 +1138,7 @@ begin
 
     if IsComponentSelected('ext\reg\guihere') then begin
         Msg:='Git &GUI Here';
-        Cmd:='"'+AppDir+'\{#MINGW_BITNESS}\bin\wish.exe" "'+AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-gui" "--working-dir" "%1"';
+        Cmd:='"'+AppDir+'\cmd\git-gui.exe" "--working-dir" "%1"';
         if (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_gui','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_gui\command','',Cmd)) or
            (StringChangeEx(Cmd,'%1','%v',false)<>1) or
