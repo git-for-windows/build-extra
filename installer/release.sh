@@ -22,6 +22,10 @@ test $# -gt 0 ||
 die "Usage: $0 [-f] <version>"
 
 version=$1
+case "$version" in
+[0-9]*) ;; # okay
+*) die "InnoSetup requires a version that begins with a digit";;
+esac
 
 # change directory to the script's directory
 cd "$(dirname "$0")" ||
