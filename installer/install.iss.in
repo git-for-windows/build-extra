@@ -83,7 +83,7 @@ Name: "{app}\tmp"
 
 [Icons]
 Name: {group}\Git GUI; Filename: {app}\{#MINGW_BITNESS}\bin\wish.exe; Parameters: """{app}\{#MINGW_BITNESS}\libexec\git-core\git-gui"""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
-TODO: 32-bit? Name: {group}\Git Bash; Filename: {syswow64}\cmd.exe; Parameters: "/c ""{app}\git-bash.exe"""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico; OnlyBelowVersion: 6.0
+Name: {group}\Git Bash; Filename: {syswow64}\cmd.exe; Parameters: "/c ""{app}\git-bash.exe"""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico; OnlyBelowVersion: 6.0
 Name: {group}\Git Bash; Filename: {app}\git-bash.exe; Parameters: ""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico; MinVersion: 6.0
 
 [Messages]
