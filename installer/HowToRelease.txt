@@ -4,78 +4,62 @@ How to create a Windows Release
 A setup executable is named as follows
 
  - it starts with Git;
- - followed by the official git version if the release is closely
-   related to a specific version of official git;
- - followed by
-    * preview<date>, for snapshot builds.
-    * winrc#, if we reach a certain quality level and plan to release
-      a stable version.  If no bugs are found, this can be upgraded
-      to a stable release.  We use winrc instead of simply rc to avoid
-      confusion with official release candidates.  The prefix "win"
-      clearly indicates that the tag is about the Windows release.
+ - followed by the Git for Windows version of the form A.B.C.D where
+   A.B.C is the Git version on which the release is based, and
+   A.B.C.windows.D is the tag in Git for Windows' repository
+ - followed by the "bitness", i.e. "-32-bit" or "-64-bit"
 
 Examples:
 
-Git-preview20080313.exe
-Git-1.5.4-preview20071014.exe
-Git-1.5.4-winrc3.exe
-Git-1.5.4.exe
+Git-2.3.5.3-64-bit.exe
 
-We'll not necessary release a stable version for each official
-version. If we merge changes from git.git we will adjust the number.
-We will continue releasing previews until we have reached sufficient
-stability.
-
-The following is missing before we release a stable installer.
-
-    * features equivalent to official git-#-#-# available in Git Bash.
-    * good support for case insensitive filesystems.
-
-We will *not* wait for
-
-    * server functionality (git-daemon, git-shell, ...).
-    * git-cheetah.
-
-An msysgit release is tagged by a tag having a postfix '.msysgit.[0-9]+'.
+There are not necessary Git for Windows releases for each official Git
+version. A Git for Windows release is tagged by a tag having a postfix
+'.windows.[0-9]+'.
 
 Here is a step-by-step instruction for the maintainer:
 
-   cd /git
-   git fetch mingw
-   git fetch junio
+   # perform a merging rebase
+   cd /usr/src/git
+   git remote add git https://github.com/git/git
+   git fetch git
    git checkout master
-   git merge mingw/master
-   git merge junio/master
-   make -k test | tee test.log
-   # check test.log
+   BASE="$(git rev-parse ":/Start the merging-rebase")"
+   ../build-extra/./shears.sh --merging --onto <git-tag> $BASE
 
-   make clean
-   git tag -a v<version>.msysgit.<number>
-   make install
+   # check diff of diff (before vs after merging rebase)
+   git diff <gittag>..origin/master > prev.diff
+   git diff <gittag>..master > curr.diff
+   git diff --no-index prev.diff curr.diff
 
-   cd /doc/git/html
-   git fetch
-   git checkout master
-   git merge origin/master
+   # verify that the test suite passes
+   make -j5 all
+   cd t
+   /usr/bin/time prove -j 5 --state=failed,save ./t[0-9]*.sh
 
-   cd /share/WinGit
-   git checkout master
-   start ReleaseNotes.rtf # edit and save
-   git commit -a
-   git tag -a -m "Git-<version>" Git-<version>
-   ./release.sh <version>
+   # tag the new version
+   git tag -a <git-tag>.windows.<number>
+   git push origin <git-tag>.windows.<number>
 
-   # Test installer.
+   # package the new version
+   cd /usr/src/MINGW-packages/mingw-w64-git
+   makepkg-mingw -s
 
-   # Upload to Google code (verify sha1).
+   # publish the new packages
+   /usr/src/build-extra/pacman-mirror.sh fetch
+   /usr/src/build-extra/pacman-mirror.sh add mingw-w64-*<version>*
+   /usr/src/build-extra/pacman-mirror.sh push
 
-   cd /git
-   git push master
-   git push <version>-msysgit<number>
-   cd /
-   git push master
-   git push Git-<version>
-   # Don't forget to push tags.
+   # ensure current setup is up-to-date (including the Git packages)
+   pacman -Syu
+   # on 32-bit, quit all MSys shells and run \autorebase.bat now
+
+   # make installer (after updating the release notes)
+   /usr/src/build-extra/installer/release.sh <git-for-windows-version>
+
+   # upload to GitHub
+   /usr/src/build-extra/upload-to-github.sh <git-tag>.windows.<number> \
+	~/Git-<version>*.exe
 
    # Reply to Junio's announcement.
    # Start the subject of your email with '[ANNOUNCE]'.
