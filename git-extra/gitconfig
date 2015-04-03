@@ -1,6 +1,7 @@
 [core]
 	symlinks = false
 	autocrlf = true
+	fscache = true
 [color]
 	diff = auto
 	status = auto
