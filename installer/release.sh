@@ -36,6 +36,27 @@ SCRIPTDIR="$(pwd -W)"
 ROOTDIR="$(cd / && pwd -W)"
 export SCRIPTDIR ROOTDIR
 
+# Generate the ReleaseNotes.html file
+test -f ReleaseNotes.html &&
+test ReleaseNotes.html -nt ReleaseNotes.md || {
+	# Install markdown
+	type markdown ||
+	pacman -S markdown ||
+	die "Could not install markdown"
+
+	(printf '%s\n%s\n%s\n%s %s\n%s\n%s\n' \
+		'<!DOCTYPE html>' \
+		'<html>' \
+		'<head>' \
+		'<meta http-equiv="Content-Type" content="text/html;' \
+		'charset=UTF-8">' \
+		'</head>' \
+		'<body>'
+	 markdown ReleaseNotes.md ||
+	 die "Could not generate ReleaseNotes.html"
+	 printf '</body>\n</html>\n') >ReleaseNotes.html
+}
+
 # Evaluate architecture
 ARCH="$(uname -m)"
 

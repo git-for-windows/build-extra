@@ -80,7 +80,7 @@ Name: consolefont; Description: Use a TrueType font in all console windows (not 
 [Files]
 ; Install files that might be in use during setup under a different name.
 #include "file-list.iss"
-Source: {#GetEnv('SCRIPTDIR')}\ReleaseNotes.rtf; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
+Source: {#GetEnv('SCRIPTDIR')}\ReleaseNotes.html; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
 
 [Dirs]
 Name: "{app}\tmp"
