@@ -53,12 +53,14 @@ esac
 
 echo "Generating file list to be included in the installer ..."
 pacman_list () {
-	pacman -Ql $(for arg
+	package_list=$(for arg
 		do
 			pactree -u "$arg"
 		done |
 		sort |
-		uniq) |
+		uniq) &&
+	pacman -Q $package_list >package-versions.txt &&
+	pacman -Ql $package_list |
 	grep -v '/$' |
 	sed 's/^[^ ]* //'
 }
@@ -84,7 +86,9 @@ LIST="$(printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n" \
 	etc/nsswitch.conf \
 	mingw$BITNESS/etc/gitconfig)"
 
-echo "; List of files" > file-list.iss ||
+printf "; List of files\n%s\n" \
+	"Source: \"$SCRIPTDIR\\package-versions.txt\"; DestDir: {app}\\etc\\package-versions.txt; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
+>file-list.iss ||
 die "Could not write to file-list.iss"
 
 echo "$LIST" |
