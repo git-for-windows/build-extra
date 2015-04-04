@@ -195,6 +195,9 @@ const
     GC_CRLFAlways     = 2;
     GC_CRLFCommitAsIs = 3;
 
+    // Git performance tweaks options
+    GP_FSCache        = 1;
+
     // BindImageEx API constants.
     BIND_NO_BOUND_IMPORTS  = $00000001;
     BIND_NO_UPDATE         = $00000002;
@@ -214,6 +217,10 @@ var
     // Wizard page and variables for the line ending conversion options.
     CRLFPage:TWizardPage;
     RdbCRLF:array[GC_LFOnly..GC_CRLFCommitAsIs] of TRadioButton;
+
+    // Wizard page and variables for the performance tweaks options.
+    PerfTweaksPage:TWizardPage;
+    RdbPerfTweaks:array[GP_FSCache..GP_FSCache] of TCheckBox;
 
     // Wizard page and variables for the processes page.
     SessionHandle:DWORD;
@@ -434,6 +441,7 @@ var
     LblOpenSSH,LblPlink:TLabel;
     PuTTYSessions,EnvSSH:TArrayOfString;
     LblLFOnly,LblCRLFAlways,LblCRLFCommitAsIs:TLabel;
+    LblFSCache:TLabel;
     BtnPlink:TButton;
     Data:String;
 begin
@@ -772,6 +780,56 @@ begin
     end;
 
     (*
+     * Create a custom page for experimental performance tweaks.
+     *)
+
+    PerfTweaksPage:=CreateCustomPage(
+        PrevPageID
+    ,   'Configuring experimental performance tweaks'
+    ,   'Which experimental performance tweaks would you like to enable?'
+    );
+    PrevPageID:=PerfTweaksPage.ID;
+
+    // 1st option
+    RdbPerfTweaks[GP_FSCache]:=TCheckBox.Create(PerfTweaksPage);
+    with RdbPerfTweaks[GP_FSCache] do begin
+        Parent:=PerfTweaksPage.Surface;
+        Caption:='Enable file system caching';
+        Left:=ScaleX(4);
+        Top:=ScaleY(8);
+        Width:=ScaleX(405);
+        Height:=ScaleY(17);
+        Font.Style:=[fsBold];
+        TabOrder:=0;
+        Checked:=False;
+    end;
+    LblFSCache:=TLabel.Create(PerfTweaksPage);
+    with LblFSCache do begin
+        Parent:=PerfTweaksPage.Surface;
+        Caption:=
+            'File system data will be read in bulk and cached in memory for certain' + #13 +
+            'operations ("core.fscache" is set to "true"). This provides a significant' + #13 +
+            'performance boost and should be safe but may result in unexpected behavior.';
+        Left:=ScaleX(28);
+        Top:=ScaleY(32);
+        Width:=ScaleX(405);
+        Height:=ScaleY(39);
+    end;
+
+    // Restore the settings chosen during a previous install.
+    Data:=GetPreviousData('Performance Tweaks FSCache','Disabled');
+
+    // Use settings from the user provided INF.
+    if ShouldLoadInf then begin
+        Data:=LoadInfString('Setup','PerformanceTweaksFSCache','Disabled');
+    end;
+
+    if Data='Enabled' then begin
+        RdbPath[GP_FSCache].Checked:=True;
+    end;
+
+
+    (*
      * Create a custom page for finding the processes that lock a module.
      *)
 
@@ -1054,6 +1112,23 @@ begin
     end;
 
     {
+        Configure performance tweaks
+    }
+
+    if RdbPerfTweaks[GP_FSCache].checked then begin
+        Cmd:='core.fscache true';
+
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config -f gitconfig ' + Cmd,
+                    AppDir + '\{#MINGW_BITNESS}\etc', SW_HIDE, ewWaitUntilTerminated, i) then begin
+            Msg:='Unable to enable the experimental performance tweak: ' + Cmd;
+
+            // This is not a critical error, so just notify the user and continue.
+            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+            Log(Msg);
+        end;
+    end;
+
+    {
         Modify the environment
 
         This must happen no later than ssPostInstall to make
@@ -1241,7 +1316,17 @@ begin
     SetPreviousData(PreviousDataKey,'CRLF Option',Data);
     if ShouldSaveInf then begin
         SaveInfString('Setup','CRLFOption',Data);
-    end;    
+    end;
+
+    // Performance tweaks options.
+    Data:='Disabled';
+    if RdbPerfTweaks[GP_FSCache].Checked then begin
+        Data:='Enabled';
+    end;
+    SetPreviousData(PreviousDataKey,'Performance Tweaks FSCache',Data);
+    if ShouldSaveInf then begin
+        SaveInfString('Setup','PerformanceTweaksFSCache',Data);
+    end;
 end;
 
 {
