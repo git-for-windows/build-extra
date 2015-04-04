@@ -1,0 +1,65 @@
+How to create a Windows Release
+===============================
+
+A setup executable is named as follows
+
+ - it starts with Git;
+ - followed by the Git for Windows version of the form A.B.C.D where
+   A.B.C is the Git version on which the release is based, and
+   A.B.C.windows.D is the tag in Git for Windows' repository
+ - followed by the "bitness", i.e. "-32-bit" or "-64-bit"
+
+Examples:
+
+Git-2.3.5.3-64-bit.exe
+
+There are not necessary Git for Windows releases for each official Git
+version. A Git for Windows release is tagged by a tag having a postfix
+'.windows.[0-9]+'.
+
+Here is a step-by-step instruction for the maintainer:
+
+   # perform a merging rebase
+   cd /usr/src/git
+   git remote add git https://github.com/git/git
+   git fetch git
+   git checkout master
+   BASE="$(git rev-parse ":/Start the merging-rebase")"
+   ../build-extra/./shears.sh --merging --onto <git-tag> $BASE
+
+   # check diff of diff (before vs after merging rebase)
+   git diff <gittag>..origin/master > prev.diff
+   git diff <gittag>..master > curr.diff
+   git diff --no-index prev.diff curr.diff
+
+   # verify that the test suite passes
+   make -j5 all
+   cd t
+   /usr/bin/time prove -j 5 --state=failed,save ./t[0-9]*.sh
+
+   # tag the new version
+   git tag -a <git-tag>.windows.<number>
+   git push origin <git-tag>.windows.<number>
+
+   # package the new version
+   cd /usr/src/MINGW-packages/mingw-w64-git
+   makepkg-mingw -s
+
+   # publish the new packages
+   /usr/src/build-extra/pacman-mirror.sh fetch
+   /usr/src/build-extra/pacman-mirror.sh add mingw-w64-*<version>*
+   /usr/src/build-extra/pacman-mirror.sh push
+
+   # ensure current setup is up-to-date (including the Git packages)
+   pacman -Syu
+   # on 32-bit, quit all MSys shells and run \autorebase.bat now
+
+   # make installer (after updating the release notes)
+   /usr/src/build-extra/installer/release.sh <git-for-windows-version>
+
+   # upload to GitHub
+   /usr/src/build-extra/upload-to-github.sh <git-tag>.windows.<number> \
+	~/Git-<version>*.exe
+
+   # Reply to Junio's announcement.
+   # Start the subject of your email with '[ANNOUNCE]'.

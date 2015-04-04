@@ -1,6 +1,15 @@
 *.swp
 /git-extra/pkg/
 /git-extra/src/
+/installer/ReleaseNotes.html
+/installer/bindimage.txt
+/installer/install.iss
+/installer/install.out
+/installer/is-unicode.exe
+/installer/file-list.iss
+/markdown/*.zip
+/markdown/pkg/
+/markdown/src/
 /portable/root/cmd/
 /portable/root/git-bash.bat
 /portable/root/git-cmd.bat
