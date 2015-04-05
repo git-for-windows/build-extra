@@ -73,39 +73,9 @@ x86_64)
 esac
 
 echo "Generating file list to be included in the installer ..."
-pacman_list () {
-	package_list=$(for arg
-		do
-			pactree -u "$arg"
-		done |
-		sort |
-		uniq) &&
-	pacman -Q $package_list >package-versions.txt &&
-	pacman -Ql $package_list |
-	grep -v '/$' |
-	sed 's/^[^ ]* //'
-}
-
-LIST="$(pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
-	git-extra ncurses mintty vim \
-	sed awk less grep gnupg findutils coreutils \
-	dos2unix which subversion mingw-w64-$ARCH-tk |
-	grep -v -e '\.[acho]$' -e '/aclocal/' \
-		-e '/man/' \
-		-e '/mingw32/share/doc/git-doc/.*\.txt$' \
-		-e '^/usr/include/' -e '^/mingw32/include/' \
-		-e '^/usr/share/doc/' -e '^/mingw32/share/doc/' \
-		-e '^/usr/share/info/' -e '^/mingw32/share/info/' |
-	sed 's/^\///')"
-
-LIST="$(printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n" \
-	"$LIST" \
-	etc/profile \
-	etc/bash.bash_logout \
-	etc/bash.bashrc \
-	etc/fstab \
-	etc/nsswitch.conf \
-	mingw$BITNESS/etc/gitconfig)"
+LIST="$(ARCH=$ARCH BITNESS=$BITNESS PACKAGE_VERSIONS_FILE=package-versions.txt \
+	sh "$SCRIPTDIR"/../make-file-list.sh)" ||
+die "Could not generate file list"
 
 printf "; List of files\n%s\n" \
 	"Source: \"$SCRIPTDIR\\package-versions.txt\"; DestDir: {app}\\etc\\package-versions.txt; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
