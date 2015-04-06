@@ -37,6 +37,14 @@ Here is a step-by-step instruction for the maintainer:
    cd t
    /usr/bin/time prove -j 5 --state=failed,save ./t[0-9]*.sh
 
+   # install the git binaries
+   make install
+
+   # make & install the html documentation
+   cd /usr/src/git/Documentation
+   make html
+   DIFF='diff' HOME='/mingw64' make install-html
+
    # tag the new version
    git tag -a <git-tag>.windows.<number>
    git push origin <git-tag>.windows.<number>
