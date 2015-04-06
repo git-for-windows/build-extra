@@ -75,7 +75,7 @@ Name: ext\reg\shellhere; Description: Git Bash Here; Types: default
 Name: ext\reg\guihere; Description: Git GUI Here; Types: default
 Name: assoc; Description: Associate .git* configuration files with the default text editor; Types: default
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
-Name: consolefont; Description: Use a TrueType font in all console windows (not only for Git Bash)
+Name: consolefont; Description: Use a TrueType font in all console windows
 
 [Files]
 ; Install files that might be in use during setup under a different name.
