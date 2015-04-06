@@ -6,12 +6,20 @@ die () {
 }
 
 test $# -ge 2 ||
-die "Usage: $0 <tag-name> <path>..."
+die "Usage: $0 [--repo=<repo>] <tag-name> <path>..."
+
+repo=build-extra
+case "$1" in
+--repo=*)
+	repo=${1#--repo=}
+	shift
+	;;
+esac
 
 tagname="$1"
 shift
 
-url=https://api.github.com/repos/git-for-windows/build-extra/releases
+url=https://api.github.com/repos/git-for-windows/$repo/releases
 id="$(curl --netrc -s $url |
 	grep -B1 "\"tag_name\": \"$tagname\"" |
 	sed -n 's/.*"id": *\([0-9]*\).*/\1/p')"
