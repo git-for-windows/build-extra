@@ -831,7 +831,7 @@ begin
     end;
 
     if Data='Enabled' then begin
-        RdbPath[GP_FSCache].Checked:=True;
+        RdbPerfTweaks[GP_FSCache].Checked:=True;
     end;
 
 
