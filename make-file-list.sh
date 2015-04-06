@@ -14,8 +14,8 @@ pacman_list () {
 		do
 			pactree -u "$arg"
 		done |
-		grep -ve "^mingw-w64-$ARCH-gnutls$" -e '^db$' -e '^info$' \
-			-e '^heimdal$' |
+		grep -ve "^mingw-w64-$ARCH-rtmpdump-git$" -e '^db$' \
+			-e '^info$' -e '^heimdal$' |
 		sort |
 		uniq) &&
 	if test -n "$PACKAGE_VERSIONS_FILE"
