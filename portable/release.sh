@@ -28,7 +28,7 @@ x86_64)
 esac
 VERSION=$1
 shift
-TARGET="$HOME"/PortableGit-"$BITNESS"-bit-"$VERSION".7z.exe
+TARGET="$HOME"/PortableGit-"$VERSION"-"$BITNESS"-bit.7z.exe
 OPTS7="-m0=lzma -mx=9 -md=64M"
 TMPPACK=/tmp.7z
 SHARE="$(cd "$(dirname "$0")" && pwd)"
