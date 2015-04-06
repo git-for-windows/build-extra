@@ -40,6 +40,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../share/doc/gettext/' \
 	-e '^/mingw../share/doc/git-doc/.*\.txt$' \
 	-e '^/mingw../share/info/' \
+	-e '^/mingw../share/locale/' \
 	-e '^/mingw../lib/gettext/' -e '^/mingw../share/gettext/' \
 	-e '^/usr/include/' -e '^/mingw../include/' \
 	-e '^/usr/share/doc/' \
