@@ -28,7 +28,7 @@ esac
 GIT_BRANCH="${2:-master}"
 GIT_CLONE_URL=https://github.com/git-for-windows/git
 
-TARGET="$HOME"/git-sdk-$BITNESS-installer-"$1".7z.exe
+TARGET="$HOME"/git-sdk-installer-"$1"-$BITNESS.7z.exe
 OPTS7="-m0=lzma -mx=9 -md=64M"
 TMPPACK=/tmp.7z
 SHARE="$(cd "$(dirname "$0")" && pwd)"
