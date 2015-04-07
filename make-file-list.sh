@@ -35,6 +35,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '/man/' -e '/pkgconfig/' -e '/emacs/' \
 	-e '^/usr/lib/python' -e '^/usr/lib/ruby' \
 	-e '^/usr/share/awk' -e '^/usr/share/subversion' \
+	-e '^/etc/skel/' -e '^/mingw../etc/skel/' \
 	-e '^/usr/bin/svn' \
 	-e '^/mingw../share/doc/gettext/' \
 	-e '^/mingw../share/doc/lib' \
