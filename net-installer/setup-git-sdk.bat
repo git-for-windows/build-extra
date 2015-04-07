@@ -73,6 +73,7 @@
 	perl-Error perl perl-Authen-SASL perl-libwww perl-MIME-tools ^
 	perl-Net-SMTP-SSL perl-TermReadKey dos2unix asciidoc xmlto ^
 	subversion mintty vim git-extra ^
+	mingw-w64-@@ARCH@@-git-doc-html ^
 	mingw-w64-@@ARCH@@-git mingw-w64-@@ARCH@@-toolchain ^
 	mingw-w64-@@ARCH@@-curl mingw-w64-@@ARCH@@-expat ^
 	mingw-w64-@@ARCH@@-openssl mingw-w64-@@ARCH@@-tcl ^
