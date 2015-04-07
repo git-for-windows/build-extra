@@ -14,8 +14,6 @@ pacman_list () {
 		do
 			pactree -u "$arg"
 		done |
-		grep -ve "^mingw-w64-$ARCH-rtmpdump-git$" -e '^db$' \
-			-e '^info$' -e '^heimdal$' |
 		sort |
 		uniq) &&
 	if test -n "$PACKAGE_VERSIONS_FILE"
@@ -41,6 +39,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../share/doc/lib' \
 	-e '^/mingw../share/doc/pcre/' \
 	-e '^/mingw../share/doc/git-doc/.*\.txt$' \
+	-e '^/mingw../share/locale/' \
 	-e '^/mingw../lib/gettext/' -e '^/mingw../share/gettext/' \
 	-e '^/usr/include/' -e '^/mingw../include/' \
 	-e '^/usr/share/doc/' \
