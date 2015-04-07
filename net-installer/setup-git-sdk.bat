@@ -111,6 +111,6 @@
 @ECHO.
 @ECHO Running Git Bash to build Git and run an interactive Bash session
 @ECHO This window will close automatically once that session is over
-@mintty -i /msys2.ico bash --login -c "test -s /mingw@@BITNESS@@/ssl/certs/ca-bundle.crt || pacman -S --noconfirm mingw-w64-@@ARCH@@-ca-certificates; mkdir -p /usr/src && cd /usr/src && for project in MINGW-packages MSYS2-packages build-extra; do mkdir -p $project && (cd $project && git init && git config core.autocrlf false && git remote add origin https://github.com/git-for-windows/$project); done; git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git && cd git && make install; bash --login -i"
+@mintty -i /msys2.ico bash --login -c "pacman -S --noconfirm mingw-w64-@@ARCH@@-ca-certificates; mkdir -p /usr/src && cd /usr/src && for project in MINGW-packages MSYS2-packages build-extra; do mkdir -p $project && (cd $project && git init && git config core.autocrlf false && git remote add origin https://github.com/git-for-windows/$project); done; git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git && cd git && make install; bash --login -i"
 
 @IF ERRORLEVEL 1 PAUSE
