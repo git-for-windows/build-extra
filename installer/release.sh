@@ -44,17 +44,20 @@ test ReleaseNotes.html -nt ReleaseNotes.md || {
 	pacman -S markdown ||
 	die "Could not install markdown"
 
-	(printf '%s\n%s\n%s\n%s %s\n%s\n%s\n' \
+	(printf '%s\n%s\n%s\n%s %s\n%s %s\n%s\n%s\n%s\n' \
 		'<!DOCTYPE html>' \
 		'<html>' \
 		'<head>' \
 		'<meta http-equiv="Content-Type" content="text/html;' \
 		'charset=UTF-8">' \
+		'<link rel="stylesheet"' \
+		' href="usr/share/git/ReleaseNotes.css">' \
 		'</head>' \
-		'<body>'
+		'<body class="details">' \
+		'<div class="content">'
 	 markdown ReleaseNotes.md ||
 	 die "Could not generate ReleaseNotes.html"
-	 printf '</body>\n</html>\n') >ReleaseNotes.html
+	 printf '</div>\n</body>\n</html>\n') >ReleaseNotes.html
 }
 
 # Evaluate architecture
@@ -80,6 +83,11 @@ die "Could not generate file list"
 printf "; List of files\n%s\n" \
 	"Source: \"$SCRIPTDIR\\package-versions.txt\"; DestDir: {app}\\etc\\package-versions.txt; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 >file-list.iss ||
+die "Could not write to file-list.iss"
+
+printf "; List of files\n%s\n" \
+	"Source: \"$SCRIPTDIR\\usr\\share\\git\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
+>>file-list.iss ||
 die "Could not write to file-list.iss"
 
 echo "$LIST" |
