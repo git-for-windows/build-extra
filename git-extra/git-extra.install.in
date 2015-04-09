@@ -1,0 +1,34 @@
+export LC_ALL=C
+
+post_install () {
+	for dir in mingw32 mingw64
+	do
+		test ! -d /$dir ||
+		test -f /$dir/etc/gitconfig ||
+		cat > /$dir/etc/gitconfig <<\GITCONFIG
+@@GITCONFIG@@
+GITCONFIG
+	done
+
+	grep -q '^db_home: windows' /etc/nsswitch.conf ||
+	sed -i 's/^\(db_\(home\|shell\|gecos\): \)\([^w]\)/\1windows \3/' \
+		/etc/nsswitch.conf
+
+	! grep -q '^PS1=' /etc/bash.bashrc ||
+	sed -i 's/^PS1=/#&/' /etc/bash.bashrc
+
+	grep -q git-for-windows etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://dl.bintray.com/$repo/pacman/$arch\nSigLevel = Optional\n' etc/pacman.conf
+
+	test i686 != $(uname -m) ||
+	case "$(md5sum.exe < /msys2.ico)" in
+	292ad5cd*) cp /usr/share/git/msys2-32.ico /msys2.ico;;
+	esac
+
+	test ! -f /etc/post-install/05-home-dir.post ||
+	rm /etc/post-install/05-home-dir.post
+}
+
+post_upgrade () {
+	post_install
+}
