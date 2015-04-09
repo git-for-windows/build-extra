@@ -43,7 +43,7 @@ SigLevel = Optional\n\
     "    post_install" \
     "}" > $startdir/$pkgname.install
 
-    gcc -o create-shortcut.exe $startdir/create-shortcut.c -luuid -lole32
+  gcc -o create-shortcut.exe $startdir/create-shortcut.c -luuid -lole32
 }
 
 package() {
