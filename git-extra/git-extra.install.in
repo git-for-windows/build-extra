@@ -27,6 +27,9 @@ GITCONFIG
 
 	test ! -f /etc/post-install/05-home-dir.post ||
 	rm /etc/post-install/05-home-dir.post
+
+	! grep -q '^TMP=' /etc/profile ||
+	sed -i 's/^TE\?MP=/#&/' /etc/profile
 }
 
 post_upgrade () {
