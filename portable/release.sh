@@ -65,11 +65,11 @@ echo "Creating archive" &&
 (cd / && 7za a $OPTS7 $TMPPACK $LIST) &&
 (cat "$SCRIPT_PATH/../7-Zip/7zSD.sfx" &&
  echo ';!@Install@!UTF-8!' &&
- echo 'Title="Portable Git for Windows"' &&
- echo 'BeginPrompt="This program installs a complete Git for Windows"' &&
- echo 'CancelPrompt="Do you want to cancel Git installation?"' &&
+ echo 'Title="Portable Git for Windows '$BITNESS'-bit"' &&
+ echo 'BeginPrompt="This archive extracts a complete Git for Windows '$BITNESS'-bit"' &&
+ echo 'CancelPrompt="Do you want to cancel the portable Git installation?"' &&
  echo 'ExtractDialogText="Please, wait..."' &&
- echo 'ExtractPathText="Where do you want to install Git for Windows?"' &&
+ echo 'ExtractPathText="Where do you want to install portable Git?"' &&
  echo 'ExtractTitle="Extracting..."' &&
  echo 'GUIFlags="8+32+64+256+4096"' &&
  echo 'GUIMode="1"' &&
@@ -80,4 +80,3 @@ echo "Creating archive" &&
 echo "Success! You will find the new installer at \"$TARGET\"." &&
 echo "It is a self-extracting .7z archive (just append .exe to the filename)" &&
 rm $TMPPACK
-

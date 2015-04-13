@@ -61,10 +61,10 @@ echo "Creating archive" &&
 (cat "$SCRIPT_PATH/../7-Zip/7zSD.sfx" &&
  echo ';!@Install@!UTF-8!' &&
  echo 'Title="Git for Windows '$BITNESS'-bit SDK"' &&
- echo 'BeginPrompt="This archive bootstraps an SDK to build, test and package Git for Windows '$BITNESS'-bit"' &&
- echo 'CancelPrompt="Do you want to cancel the Git '$BITNESS'-bit SDK installation?"' &&
+ echo 'BeginPrompt="This archive extracts an SDK to build, test and package Git for Windows '$BITNESS'-bit"' &&
+ echo 'CancelPrompt="Do you want to cancel the Git SDK installation?"' &&
  echo 'ExtractDialogText="Please, wait..."' &&
- echo 'ExtractPathText="Where do you want to install the Git '$BITNESS'-bit SDK?"' &&
+ echo 'ExtractPathText="Where do you want to install the Git SDK?"' &&
  echo 'ExtractTitle="Extracting..."' &&
  echo 'GUIFlags="8+32+64+256+4096"' &&
  echo 'GUIMode="1"' &&
