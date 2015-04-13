@@ -58,7 +58,7 @@ die "Could not install 7-Zip"
 
 echo "Creating archive" &&
 (cd / && 7za -x'!var/lib/pacman/*' a $OPTS7 "$TMPPACK" $fileList) &&
-(cat "$SCRIPT_PATH/7zSD.sfx" &&
+(cat "$SCRIPT_PATH/../7-Zip/7zSD.sfx" &&
  echo ';!@Install@!UTF-8!' &&
  echo 'Title="Git for Windows '$BITNESS'-bit SDK"' &&
  echo 'BeginPrompt="This archive bootstraps an SDK to build, test and package Git for Windows '$BITNESS'-bit"' &&
