@@ -65,7 +65,6 @@ echo "Creating archive" &&
 (cd / && 7za a $OPTS7 $TMPPACK $LIST) &&
 (cat "$SCRIPT_PATH/../7-Zip/7zSD.sfx" &&
  echo ';!@Install@!UTF-8!' &&
- echo 'Progress="yes"' &&
  echo 'Title="Portable Git for Windows"' &&
  echo 'BeginPrompt="This program installs a complete Git for Windows"' &&
  echo 'CancelPrompt="Do you want to cancel Git installation?"' &&
