@@ -31,13 +31,13 @@ GIT_CLONE_URL=https://github.com/git-for-windows/git
 TARGET="$HOME"/git-sdk-installer-"$1"-$BITNESS.7z.exe
 OPTS7="-m0=lzma -mx=9 -md=64M"
 TMPPACK=/tmp.7z
-SHARE="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
 sed -e "s|@@ARCH@@|$ARCH|g" \
 	-e "s|@@BITNESS@@|$BITNESS|g" \
 	-e "s|@@GIT_BRANCH@@|$GIT_BRANCH|g" \
 	-e "s|@@GIT_CLONE_URL@@|$GIT_CLONE_URL|g" \
-< "$SHARE"/setup-git-sdk.bat > /setup-git-sdk.bat ||
+< "$SCRIPT_PATH"/setup-git-sdk.bat > /setup-git-sdk.bat ||
 die "Could not generate setup script"
 
 fileList="$(cd / && echo \
@@ -58,7 +58,7 @@ die "Could not install 7-Zip"
 
 echo "Creating archive" &&
 (cd / && 7za -x'!var/lib/pacman/*' a $OPTS7 "$TMPPACK" $fileList) &&
-(cat "$SHARE/7zSD.sfx" &&
+(cat "$SCRIPT_PATH/7zSD.sfx" &&
  echo ';!@Install@!UTF-8!' &&
  echo 'Title="Git for Windows '$BITNESS'-bit SDK"' &&
  echo 'BeginPrompt="This archive bootstraps an SDK to build, test and package Git for Windows '$BITNESS'-bit"' &&

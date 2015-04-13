@@ -31,28 +31,28 @@ shift
 TARGET="$HOME"/PortableGit-"$VERSION"-"$BITNESS"-bit.7z.exe
 OPTS7="-m0=lzma -mx=9 -md=64M"
 TMPPACK=/tmp.7z
-SHARE="$(cd "$(dirname "$0")" && pwd)"
+SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
-case "$SHARE" in
+case "$SCRIPT_PATH" in
 *" "*)
-	die "This script cannot handle spaces in $SHARE"
+	die "This script cannot handle spaces in $SCRIPT_PATH"
 	;;
 esac
 
 
 # Generate a couple of files dynamically
 
-mkdir -p "$SHARE/root/tmp" ||
+mkdir -p "$SCRIPT_PATH/root/tmp" ||
 die "Could not make tmp/ directory"
 
 # Make a list of files to include
-LIST="$(ARCH=$ARCH BITNESS=$BITNESS sh "$SHARE"/../make-file-list.sh "$@")" ||
+LIST="$(ARCH=$ARCH BITNESS=$BITNESS sh "$SCRIPT_PATH"/../make-file-list.sh "$@")" ||
 die "Could not generate file list"
 
 # 7-Zip will strip absolute paths completely... therefore, we can add another
 # root directory like this:
 
-LIST="$LIST $SHARE/root/*"
+LIST="$LIST $SCRIPT_PATH/root/*"
 
 
 # Make the self-extracting package
@@ -63,7 +63,7 @@ die "Could not install 7-Zip"
 
 echo "Creating archive" &&
 (cd / && 7za a $OPTS7 $TMPPACK $LIST) &&
-(cat "$SHARE/../net-installer/7zSD.sfx" &&
+(cat "$SCRIPT_PATH/../net-installer/7zSD.sfx" &&
  echo ';!@Install@!UTF-8!' &&
  echo 'Progress="yes"' &&
  echo 'Title="Portable Git for Windows"' &&
