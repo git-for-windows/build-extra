@@ -99,9 +99,8 @@
 
 @REM Before running a shell, let's prevent complaints about "permission denied"
 @REM from MSys2's /etc/post-install/01-devices.post
-@IF NOT EXIST dev @MKDIR dev
-@IF NOT EXIST dev\shm @MKDIR dev\shm
-@IF NOT EXIST dev\mqueue @MKDIR dev\mqueue
+@MKDIR %cwd%\dev\shm 2> NUL
+@MKDIR %cwd%\dev\mqueue 2> NUL
 
 @REM Install shortcut on the desktop
 @ECHO.
