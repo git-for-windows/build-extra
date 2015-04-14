@@ -102,15 +102,16 @@
 @MKDIR %cwd%\dev\shm 2> NUL
 @MKDIR %cwd%\dev\mqueue 2> NUL
 
-@REM Install shortcut on the desktop
-@ECHO.
-@ECHO Installing the 'Git SDK @@BITNESS@@-bit' shortcut on the Desktop
-@bash --login -c 'SHORTCUT="$HOME/Desktop/Git SDK @@BITNESS@@-bit.lnk"; test -f "$SHORTCUT" ^|^| create-shortcut.exe --icon-file /msys2.ico --work-dir / /git-bash.exe "$SHORTCUT"'
+@IF NOT DEFINED JENKINS_URL (
+	@REM Install shortcut on the desktop
+	@ECHO.
+	@ECHO Installing the 'Git SDK @@BITNESS@@-bit' shortcut on the Desktop
+	@bash --login -c 'SHORTCUT="$HOME/Desktop/Git SDK @@BITNESS@@-bit.lnk"; test -f "$SHORTCUT" ^|^| create-shortcut.exe --icon-file /msys2.ico --work-dir / /git-bash.exe "$SHORTCUT"'
 
-@REM now clone the Git sources, build it, and start an interactive shell
-@ECHO.
-@ECHO Running Git Bash to build Git and run an interactive Bash session
-@ECHO This window will close automatically once that session is over
-@mintty -i /msys2.ico bash --login -c "mkdir -p /usr/src && cd /usr/src && for project in MINGW-packages MSYS2-packages build-extra; do mkdir -p $project && (cd $project && git init && git config core.autocrlf false && git remote add origin https://github.com/git-for-windows/$project); done; git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git && cd git && make install; bash --login -i"
+	@REM now clone the Git sources, build it, and start an interactive shell
+	@bash --login -c "mkdir -p /usr/src && cd /usr/src && for project in MINGW-packages MSYS2-packages build-extra; do mkdir -p $project && (cd $project && git init && git config core.autocrlf false && git remote add origin https://github.com/git-for-windows/$project); done; git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git && cd git && make install"
 
-@IF ERRORLEVEL 1 PAUSE
+	@IF ERRORLEVEL 1 PAUSE
+
+	@start mintty -i /msys2.ico -t "Git SDK @@BITNESS@@-bit" bash --login -i
+)
