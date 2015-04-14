@@ -45,8 +45,26 @@ GITCONFIG
 	test ! -f /etc/post-install/05-home-dir.post ||
 	rm /etc/post-install/05-home-dir.post
 
-	! grep -q '^TMP=' /etc/profile ||
-	sed -i 's/^TE\?MP=/#&/' /etc/profile
+	! grep -qi '^TMP=' /etc/profile ||
+	sed -i 's/^TE\?MP=/#&/i' /etc/profile
+	! grep -q '^unset TMP' /etc/profile ||
+	sed -i 's/^unset TMP/#&/' /etc/profile
+	grep -q '^test -d "$TMPDIR"' /etc/profile || {
+		if lineno="$(grep -n '^#TEMP=' /etc/profile)"
+		then
+			lineno=${lineno%%:*}
+		else
+			lineno='$'
+		fi
+		sed -i "$lineno"'a\
+case "$TMP" in *\\\\*) TMP="$(cygpath -m "$TMP")";; esac\
+case "$TEMP" in *\\\\*) TEMP="$(cygpath -m "$TEMP")";; esac\
+test -d "$TMPDIR" || test ! -d "$TMP" || {\
+  TMPDIR="$TMP"\
+  export TMPDIR\
+}\
+' /etc/profile
+	}
 
 	# fix version skew
 	tmptag_url=https://github.com/git-for-windows/MINGW-packages/releases/
@@ -54,7 +72,7 @@ GITCONFIG
 	for arch in i686 x86_64
 	do
 		prefix=mingw-w64-$arch
-		case "$(pacman -Q $prefix-curl $prefix-nettle)" in
+		case "$(pacman -Q $prefix-curl $prefix-nettle 2> /dev/null)" in
 		*7.41.0-1*3.1-1*)
 			nettle=$prefix-nettle-2.7.1-3-any.pkg.tar.xz
 			(cd /var/cache/pacman/pkg &&
