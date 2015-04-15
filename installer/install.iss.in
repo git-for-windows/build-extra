@@ -973,7 +973,7 @@ begin
 end;
 
 // Procedure to create hardlinks for builtins. This procedure relies upon that
-// git-wrapper.exe is already copied to {app}/tmp.
+// git-wrapper.exe is already copied to {app}\tmp.
 procedure CopyBuiltin(FileName:String);
 var
     AppDir:String;
