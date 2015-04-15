@@ -1262,7 +1262,6 @@ begin
         end;
     end;
 
-    // It is either the Registry-based context menu entries, or the shell extension.
     {
         Restart any processes that were shut down via the Restart Manager
     }
