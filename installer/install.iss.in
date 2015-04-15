@@ -314,18 +314,18 @@ begin
         Modules[0]:=ExpandConstant('{app}\usr\bin\msys-2.0.dll');
         Modules[1]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl85.dll');
         Modules[2]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk85.dll');
-        Modules[1]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl86.dll');
-        Modules[2]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk86.dll');
-        Modules[3]:=ExpandConstant('{app}\git-cheetah\git_shell_ext.dll');
-        Modules[4]:=ExpandConstant('{app}\git-cheetah\git_shell_ext64.dll');
+        Modules[3]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl86.dll');
+        Modules[4]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk86.dll');
+        Modules[5]:=ExpandConstant('{app}\git-cheetah\git_shell_ext.dll');
+        Modules[6]:=ExpandConstant('{app}\git-cheetah\git_shell_ext64.dll');
         SessionHandle:=FindProcessesUsingModules(Modules,Processes);
     end else begin
         SetArrayLength(Modules,5);
         Modules[0]:=ExpandConstant('{app}\usr\bin\msys-2.0.dll');
         Modules[1]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl85.dll');
         Modules[2]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk85.dll');
-        Modules[1]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl86.dll');
-        Modules[2]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk86.dll');
+        Modules[3]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl86.dll');
+        Modules[4]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk86.dll');
         SessionHandle:=FindProcessesUsingModules(Modules,ProcsCloseRequired);
 
         SetArrayLength(Modules,2);
