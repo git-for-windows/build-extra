@@ -58,7 +58,7 @@ LIST="$LIST $SCRIPT_PATH/root/*"
 # Make the self-extracting package
 
 type 7za ||
-pacman -S p7zip ||
+pacman -S --noconfirm p7zip ||
 die "Could not install 7-Zip"
 
 echo "Creating archive" &&
