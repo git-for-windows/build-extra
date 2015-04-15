@@ -1005,7 +1005,7 @@ end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
 var
-    AppDir,DllPath,FileName,TempName,Cmd,Msg:String;
+    AppDir,DllPath,FileName,Cmd,Msg:String;
     BuiltIns,ImageNames,EnvPath,EnvHome:TArrayOfString;
     Count,i:Longint;
     LinkCreated:Boolean;
@@ -1190,7 +1190,6 @@ begin
     }
 
     Cmd:=AppDir+'\git-bash.exe';
-    TempName:='';
     FileName:=AppDir+'\{#MINGW_BITNESS}\share\git\git-for-windows.ico';
 
     if IsComponentSelected('icons\quicklaunch') then begin
@@ -1198,7 +1197,7 @@ begin
             ExpandConstant('{userappdata}\Microsoft\Internet Explorer\Quick Launch\Git Bash.lnk')
         ,   'Git Bash'
         ,   Cmd
-        ,   TempName
+        ,   ''
         ,   '%HOMEDRIVE%%HOMEPATH%'
         ,   FileName
         ,   0
@@ -1211,7 +1210,7 @@ begin
             GetShellFolder('desktop')+'\Git Bash.lnk'
         ,   'Git Bash'
         ,   Cmd
-        ,   TempName
+        ,   ''
         ,   '%HOMEDRIVE%%HOMEPATH%'
         ,   FileName
         ,   0
