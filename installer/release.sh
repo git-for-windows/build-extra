@@ -85,8 +85,7 @@ printf "; List of files\n%s\n" \
 >file-list.iss ||
 die "Could not write to file-list.iss"
 
-printf "; List of files\n%s\n" \
-	"Source: \"$SCRIPTDIR\\usr\\share\\git\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
+printf "Source: \"$SCRIPTDIR\\usr\\share\\git\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 >>file-list.iss ||
 die "Could not write to file-list.iss"
 
