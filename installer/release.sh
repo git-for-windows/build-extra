@@ -107,7 +107,7 @@ sed -e "s|%APPVERSION%|$version|g" \
 exit
 
 echo "Launching Inno Setup compiler ..." &&
-./InnoSetup/ISCC.exe install.iss > install.out ||
+./InnoSetup/ISCC.exe install.iss > install.log ||
 die "Could not make installer"
 
 echo "Tagging Git for Windows installer release ..."
@@ -117,4 +117,4 @@ else
 	git tag -a -m "Git for Windows $version" Git-$version
 fi
 
-echo "Installer is available as $(tail -n 1 install.out)"
+echo "Installer is available as $(tail -n 1 install.log)"
