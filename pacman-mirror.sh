@@ -57,7 +57,14 @@ fetch () {
 		 continue
 		 for name in $(package_list git-for-windows.db.tar.xz)
 		 do
-			filename=$name-$arch.pkg.tar.xz
+			case "$name" in
+			mingw-w64-*)
+				filename=$name-any.pkg.tar.xz
+				;;
+			*)
+				filename=$name-$arch.pkg.tar.xz
+				;;
+			esac
 			test -f $filename ||
 			curl --cacert /usr/ssl/certs/ca-bundle.crt \
 				-sfLO $base_url/$arch/$filename ||
@@ -128,16 +135,19 @@ add () { # <file>
 
 	for path
 	do
-		case "$path" in
+		case "${path##*/}" in
+		mingw-w64-*.pkg.tar.xz)
+			arch=${path##*/mingw-w64-}
+			arch=${arch%%-*}
+			;;
 		*-*.pkg.tar.xz)
-			# okay
+			arch=${path##*-}
+			arch=${arch%.pkg.tar.xz}
 			;;
 		*)
 			die "Invalid package name: $path"
 			;;
 		esac
-		arch=${path##*-}
-		arch=${arch%.pkg.tar.xz}
 		case " $architectures " in
 		*" $arch "*)
 			# okay
@@ -168,9 +178,9 @@ update_local_package_databases () {
 	do
 		(cd "$(arch_dir $arch)" &&
 		 repo-add --new git-for-windows.db.tar.xz \
-			*-$arch.pkg.tar.xz &&
+			*.pkg.tar.xz &&
 		 repo-add -f --new git-for-windows.files.tar.xz \
-			*-$arch.pkg.tar.xz
+			*.pkg.tar.xz
 		)
 	done
 }
@@ -237,7 +247,14 @@ push () {
 		version=${name#$basename-}
 		for arch in $architectures
 		do
-			filename=$name-$arch.pkg.tar.xz
+			case "$name" in
+			mingw-w64-*)
+				filename=$name-any.pkg.tar.xz
+				;;
+			*)
+				filename=$name-$arch.pkg.tar.xz
+				;;
+			esac
 			(cd "$(arch_dir $arch)" &&
 			 if test -f $filename
 			 then
