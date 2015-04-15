@@ -75,5 +75,5 @@ echo "Creating archive" &&
  echo ';!@InstallEnd@!' &&
  cat "$TMPPACK") > "$TARGET" &&
 echo "Success! You will find the new installer at \"$TARGET\"." &&
-echo "It is a self-extracting .7z archive (just append .exe to the filename)" &&
+echo "It is a self-extracting .7z archive." &&
 rm $TMPPACK
