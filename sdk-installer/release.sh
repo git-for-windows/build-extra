@@ -53,7 +53,7 @@ fileList="$(cd / && echo \
 	setup-git-sdk.bat)"
 
 type 7za ||
-pacman -S --noconfirm p7zip ||
+pacman -Sy --noconfirm p7zip ||
 die "Could not install 7-Zip"
 
 echo "Creating archive" &&

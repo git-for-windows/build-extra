@@ -41,7 +41,7 @@ test -f ReleaseNotes.html &&
 test ReleaseNotes.html -nt ReleaseNotes.md || {
 	# Install markdown
 	type markdown ||
-	pacman -S --noconfirm markdown ||
+	pacman -Sy --noconfirm markdown ||
 	die "Could not install markdown"
 
 	(printf '%s\n%s\n%s\n%s %s\n%s %s\n%s\n%s\n%s\n' \
