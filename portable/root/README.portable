@@ -39,9 +39,9 @@ to your %path%.
 How to start using PortableGit
 ------------------------------
 
-If you are comfortable with a Unix-like shell, just launch 'git-bash.bat'.
+If you are comfortable with a Unix-like shell, just launch 'git-bash.exe'.
 
-If not, just launch 'git-cmd.bat'.
+If not, just launch 'git-cmd.exe'.
 
 Alternatively, you can execute these commands to modify the %path%
 variable temporarily:
