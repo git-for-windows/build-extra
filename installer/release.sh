@@ -41,7 +41,7 @@ test -f ReleaseNotes.html &&
 test ReleaseNotes.html -nt ReleaseNotes.md || {
 	# Install markdown
 	type markdown ||
-	pacman -S markdown ||
+	pacman -Sy --noconfirm markdown ||
 	die "Could not install markdown"
 
 	(printf '%s\n%s\n%s\n%s %s\n%s %s\n%s\n%s\n%s\n' \
@@ -85,8 +85,7 @@ printf "; List of files\n%s\n" \
 >file-list.iss ||
 die "Could not write to file-list.iss"
 
-printf "; List of files\n%s\n" \
-	"Source: \"$SCRIPTDIR\\usr\\share\\git\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
+printf "Source: \"$SCRIPTDIR\\usr\\share\\git\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 >>file-list.iss ||
 die "Could not write to file-list.iss"
 
@@ -108,7 +107,7 @@ sed -e "s|%APPVERSION%|$version|g" \
 exit
 
 echo "Launching Inno Setup compiler ..." &&
-./InnoSetup/ISCC.exe install.iss > install.out ||
+./InnoSetup/ISCC.exe install.iss > install.log ||
 die "Could not make installer"
 
 echo "Tagging Git for Windows installer release ..."
@@ -118,4 +117,4 @@ else
 	git tag -a -m "Git for Windows $version" Git-$version
 fi
 
-echo "Installer is available as $(tail -n 1 install.out)"
+echo "Installer is available as $(tail -n 1 install.log)"
