@@ -137,7 +137,7 @@ add () { # <file>
 	do
 		case "${path##*/}" in
 		mingw-w64-*.pkg.tar.xz)
-			arch=${path##*/mingw-w64-}
+			arch=${path##mingw-w64-}
 			arch=${arch%%-*}
 			;;
 		*-*.pkg.tar.xz)
