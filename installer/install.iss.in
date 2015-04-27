@@ -1070,6 +1070,7 @@ begin
             end;
         end;
 
+        // Copy git-wrapper to the temp directory.
         if not FileCopy(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-log.exe',AppDir+'\tmp\git-wrapper.exe',False) then begin
             Log('Line {#__LINE__}: Creating copy "'+AppDir+'\tmp\git-wrapper.exe" failed.');
         end;
@@ -1087,6 +1088,11 @@ begin
             if FileExists(FileName) then begin
                 CopyBuiltin(FileName);
             end;
+        end;
+
+        // Delete git-wrapper from the temp directory.
+        if not DeleteFile(AppDir+'\tmp\git-wrapper.exe') then begin
+            Log('Line {#__LINE__}: Deleting temporary "'+AppDir+'\tmp\git-wrapper.exe" failed.');
         end;
     end else begin
         Msg:='Line {#__LINE__}: Unable to read file "{#MINGW_BITNESS}\{#APP_BUILTINS}".';
