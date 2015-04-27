@@ -13,14 +13,12 @@ die () {
 }
 
 ARCH="$(uname -m)"
-PROGRAMFILESENV=PROGRAMFILES
 case "$ARCH" in
 i686)
 	BITNESS=32
 	;;
 x86_64)
 	BITNESS=64
-	PROGRAMFILESENV=ProgramW6432
 	;;
 *)
 	die "Unhandled architecture: $ARCH"
