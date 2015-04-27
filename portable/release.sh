@@ -73,7 +73,7 @@ echo "Creating archive" &&
  echo 'ExtractTitle="Extracting..."' &&
  echo 'GUIFlags="8+32+64+256+4096"' &&
  echo 'GUIMode="1"' &&
- echo 'InstallPath="%'$PROGRAMFILESENV'%\\Git"' &&
+ echo 'InstallPath="%%S\\PortableGit"' &&
  echo 'OverwriteMode="0"' &&
  echo ';!@InstallEnd@!' &&
  cat "$TMPPACK") > "$TARGET" &&
