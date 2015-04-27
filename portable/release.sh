@@ -75,6 +75,7 @@ echo "Creating archive" &&
  echo 'GUIMode="1"' &&
  echo 'InstallPath="%'$PROGRAMFILESENV'%\\Git"' &&
  echo 'OverwriteMode="0"' &&
+ echo 'RunProgram="git-bash.exe -c exit"' &&
  echo ';!@InstallEnd@!' &&
  cat "$TMPPACK") > "$TARGET" &&
 echo "Success! You will find the new installer at \"$TARGET\"." &&
