@@ -1,5 +1,5 @@
-#Git Release Notes (Git-2.3.5-preview20150402)
-Last update: 2 April 2015
+#Git Release Notes (Git-2.3.6-preview20150425)
+Last update: 25 April 2015
 
 ##Introduction
 
@@ -27,6 +27,14 @@ Should you encounter other problems, please search [the mailing list](http://gro
 This software contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
 This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, msys and a number of libraries and utilities from the GNU project.
+
+##Changes since Git-2.3.5-preview20150402
+* Fixed encoding issues in Git Bash and keept the TMP environment variable intact.
+* Downgraded the `nettle` packages due to an [*MSYS2* issue](https://github.com/Alexpux/MINGW-packages/issues/549)
+* A couple of fixes to the Windows-specific Git wrapper
+* Git wrapper now refuses to use `$HOMEDRIVE$HOMEPATH` if it points to a non-existing directory (this can happen if it points to a network drive that just so happens to be Disconnected Right Now).
+* Much smoother interaction with the `mintty` terminal emulator
+* Respects the newly introduced Windows-wide `%PROGRAMDATA%\Git\config` configuration
 
 ##Changes since Git-1.9.5-preview20150402
 
