@@ -34,6 +34,7 @@ package() {
   esac
 
   install -d -m755 $pkgdir/etc/profile.d
+  install -d -m755 $pkgdir/etc/post-install
   install -d -m755 $pkgdir/usr/bin
   install -d -m755 $pkgdir/usr/share/git
   install -d -m755 $pkgdir/$mingwdir/bin
@@ -46,4 +47,5 @@ package() {
   install -m755 $startdir/aliases.sh $pkgdir/etc/profile.d
   install -m755 $startdir/env.sh $pkgdir/etc/profile.d
   install -m644 $startdir/msys2-32.ico $pkgdir/usr/share/git
+  install -m644 $startdir/99-post-install-cleanup.post $pkgdir/etc/post-install
 }
