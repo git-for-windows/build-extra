@@ -1,5 +1,5 @@
-#Git Release Notes (Git-2.3.6-preview20150425)
-Last update: 25 April 2015
+#Git Release Notes (Git-2.3.7-preview20150429)
+Last update: 29 April 2015
 
 ##Introduction
 
@@ -15,20 +15,33 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
 * The Logitec QuickCam software can cause spurious crashes. See ["Why does make often crash creating a sh.exe.stackdump file when I try to compile my source code?"](http://www.mingw.org/wiki/Environment_issues) on the MinGW Wiki.
 * The Quick Launch icon will only be installed for the user running setup (typically the Administrator). This is a technical restriction and will not change.
 * [cURL](http://curl.haxx.se) uses `$HOME/_netrc` instead of `$HOME/.netrc`.
-* If you want to specify a different location for `--upload-pack`, you have to start the absolute path with two slashes. Otherwise MSys will mangle the path.
-* Likewise, if you want to pass the `-L/regex/` option to git log, MSys will misinterpret it as an absolute path and mangle it into a DOS-style one. You can prevent that by putting a semicolon into the regular expression, e.g. `git log -L/\;*needle/`.
+* If you want to specify a different location for `--upload-pack` in Git Bash, you have to start the absolute path with two slashes. Otherwise MSys2 will mangle the path.
+* Likewise, if you want to pass the `-L/regex/` option to `git log` in Git Bash, MSys2 will misinterpret it as an absolute path and mangle it into a DOS-style one. You can prevent that by putting a semicolon into the regular expression, e.g. `git log -L/\;*needle/`.
 * If configured to use Plink, you will have to connect with [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/) first and accept the host key.
-* As merge tools are executed using the MSys bash, options starting with "/" need to be handled specially: MSys would interpret that as a POSIX path, so you need to double the slash (Issue 226).  Example: instead of "/base", say "//base".  Also, extra care has to be paid to pass Windows programs Windows paths, as they have no clue about MSys style POSIX paths -- You can use something like `$(cmd //c echo "$POSIXPATH")`.
-* Unless you define the environment variable `MSYS_WATCH_FSTAB` (the value must be a non-empty string), Git Bash will not see any drives that have been attached after bash was started. This is a workaround to help the speed of cmd scripts using parts of Git that are implemented as shell scripts.
+* As merge tools are executed using the MSys2 bash, options starting with "/" need to be handled specially: MSys2 would interpret that as a POSIX path, so you need to double the slash (Issue 226).  Example: instead of "/base", say "//base".  Also, extra care has to be paid to pass Windows programs Windows paths, as they have no clue about MSys2 style POSIX paths -- You can use something like `$(cmd //c echo "$POSIXPATH")`.
 
-Should you encounter other problems, please search [the mailing list](http://groups.google.com/group/git-for-windows) first and ask there if you do not find anything.
+Should you encounter other problems, please search [the bug tracker](https://github.com/git-for-windows/git/issues) and [the mailing list](http://groups.google.com/group/git-for-windows) first and ask there if you do not find anything.
 
 ##Licenses
 This software contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
-This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, msys and a number of libraries and utilities from the GNU project.
+This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project.
+
+##Changes since Git-2.3.6-preview20150425
+
+###New Features
+* Comes with Git 2.3.7
+
+###Bug fix
+* A flawed "fix" that ignores submodules during rebases was dropped
+* The home directory can be overridden using the `$HOME` environment variable again
 
 ##Changes since Git-2.3.5-preview20150402
+
+###New Features
+* Comes with Git 2.3.6
+
+###Bug fixes
 * Fixed encoding issues in Git Bash and keept the TMP environment variable intact.
 * Downgraded the `nettle` packages due to an [*MSYS2* issue](https://github.com/Alexpux/MINGW-packages/issues/549)
 * A couple of fixes to the Windows-specific Git wrapper
