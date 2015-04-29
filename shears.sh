@@ -23,7 +23,7 @@
 # BASE="$(git rev-parse ":/Start the merging-rebase")"
 # shears.sh --merging --onto junio/master $BASE
 #
-# Usage: shears [options] <upstream>
+# Usage: shears [options] ( <upstream> | merging-rebase )
 # options:
 #  -m,--merging[=<message>]
 #     start the rebased branch by a fake merge of the previous state
@@ -81,7 +81,7 @@ die "Not in a Git directory"
 
 help () {
 	cat >&2 << EOF
-Usage: $0 [options] <upstream>
+Usage: $0 [options] ( <upstream> | merging-rebase )
 
 Options:
 -m|--merging[=<msg>]	allow fast-forwarding the current to the rebased branch
@@ -598,6 +598,13 @@ help
 
 head="$(git rev-parse HEAD)" &&
 upstream="$1" &&
+if test merging-rebase = "$upstream"
+then
+	upstream="$(git rev-list --grep="^Start the merging-rebase" \
+		-1 --first-parent HEAD)"
+	git rev-parse --verify "$upstream" > /dev/null ||
+	die "Could not find the start of the latest merging rebase!"
+fi &&
 onto=${onto:-$upstream}||
 die "Could not determine rebase parameters"
 
