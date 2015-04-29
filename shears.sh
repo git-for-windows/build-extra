@@ -276,7 +276,7 @@ merge2branch_name () {
 
 commit_name_map=
 name_commit () {
-	name="$(echo "$commit_name_map" |
+	name="$(printf '%s' "$commit_name_map" |
 	sed -n "s/^$1 //p")"
 	echo "${name:-$1}"
 }
@@ -325,12 +325,12 @@ EOF
 	todo="$(printf '%s\n%s\n' "$todo" \
 		"mark onto")"
 
-	toberebased=" $(echo "$list" | cut -f 1 -d ' ' | tr '\n' ' ')"
+	toberebased=" $(printf '%s' "$list" | cut -f 1 -d ' ' | tr '\n' ' ')"
 	handled=
 	needslabel=
 
 	# each tip is an end point of a commit->first parent chain
-	branch_tips="$(echo "$list" |
+	branch_tips="$(printf '%s' "$list" |
 		cut -f 3- -d ' ' |
 		tr ' ' '\n' |
 		grep -v '^$')"
@@ -342,7 +342,7 @@ EOF
 	# set up the map tip -> branch name
 	for tip in $branch_tips
 	do
-		merged_by="$(echo "$list" |
+		merged_by="$(printf '%s' "$list" |
 			sed -n "s/^\([^ ]*\) [^ ]* $tip$/\1/p" |
 			head -n 1)"
 		if test -n "$merged_by"
@@ -353,19 +353,19 @@ EOF
 				"$tip $branch_name" "$commit_name_map")"
 		fi
 	done
-	branch_name_dupes="$(echo "$commit_name_map" |
+	branch_name_dupes="$(printf '%s' "$commit_name_map" |
 		sed 's/[^ ]* //' |
 		sort |
 		uniq -d)"
 	if test -n "$branch_name_dupes"
 	then
-		exprs="$(echo "$branch_name_dupes" |
+		exprs="$(printf '%s' "$branch_name_dupes" |
 			while read branch_name
 			do
 				printf " -e '%s'" \
 					"$(string2regex "$branch_name")"
 			done)"
-		commit_name_map="$(echo "$commit_name_map" |
+		commit_name_map="$(printf '%s' "$commit_name_map" |
 			eval grep -v $exprs)"
 	fi
 
@@ -399,7 +399,7 @@ EOF
 				;;
 			esac
 
-			line="$(echo "$list" | grep "^$commit ")"
+			line="$(printf '%s' "$list" | grep "^$commit ")"
 			# if there is no line, branch from the 'onto' commit
 			if test -z "$line"
 			then
@@ -427,8 +427,8 @@ EOF
 				;;
 			*)
 				# non-merge commit
-				line="$(echo "$origtodo" |
-					grep "^pick $commit")"
+				line="$(printf '%s' "$origtodo" |
+					grep "^[a-z]* $commit")"
 				if test -z "$line"
 				then
 					line="# skip $commit"
@@ -443,7 +443,7 @@ EOF
 		branch_name="$(name_commit "$tip")"
 		test -n "$branch_name" &&
 		test "$branch_name" = "$tip" ||
-		subtodo="$(echo "$subtodo" |
+		subtodo="$(printf '%s' "$subtodo" |
 			sed -e "1a\\
 # Branch: $branch_name")"
 
@@ -452,13 +452,13 @@ EOF
 
 	for commit in $needslabel
 	do
-		linenumber="$(echo "$todo" |
+		linenumber="$(printf '%s' "$todo" |
 			grep -n -e "^\(pick\|# skip\) $commit" \
 				-e "^merge [-_\\.0-9a-zA-Z/ ]* -C $commit")"
 		linenumber=${linenumber%%:*}
 		test -n "$linenumber" ||
 		die "Internal error: could not find $commit ($(name_commit $commit)) in $todo"
-		todo="$(echo "$todo" |
+		todo="$(printf '%s' "$todo" |
 			sed "${linenumber}a\\
 mark $(name_commit $commit)\\
 ")"
@@ -467,7 +467,7 @@ mark $(name_commit $commit)\\
 	lastline=9999
 	while true
 	do
-		fixup="$(echo "$todo" |
+		fixup="$(printf '%s' "$todo" |
 			sed "$lastline,\$d" |
 			grep -n -e '^pick [^ ]* \(fixup\|squash\)!' |
 			tail -n 1)"
@@ -481,14 +481,14 @@ mark $(name_commit $commit)\\
 		command=${oneline%%!*}
 		oneline="${oneline#*! }"
 		oneline_regex="^pick [^ ]* $(string2regex "$oneline")\$"
-		targetline="$(echo "$todo" |
+		targetline="$(printf '%s' "$todo" |
 			sed "$linenumber,\$d" |
 			grep -n "$oneline_regex" |
 			tail -n 1)"
 		targetline=${targetline%%:*}
 		if test -n "$targetline"
 		then
-			todo="$(echo "$todo" |
+			todo="$(printf '%s' "$todo" |
 				sed -e "${linenumber}d" \
 					-e "${targetline}a\\
 $command $shortsha1 $oneline")"
@@ -518,27 +518,27 @@ $command $shortsha1 $oneline")"
 		do
 			msg="$(git show -s --format=%s $sha1)"
 			msg_regex="^pick [^ ]* $(string2regex "$msg")\$"
-			linenumber="$(echo "$todo" |
+			linenumber="$(printf '%s' "$todo" |
 				grep -n "$msg_regex" |
 				sed 's/:.*//')"
 			test -n "$linenumber" ||
 			die "Not a commit to rebase: $msg"
 			test 1 = $(echo "$linenumber" | wc -l) ||
 			die "More than one match for: $msg"
-			echo "$todo" |
+			printf '%s' "$todo" |
 			sed -n "${linenumber}p" >> "$partfile"
-			todo="$(echo "$todo" |
+			todo="$(printf '%s' "$todo" |
 				sed "${linenumber}d")"
 		done
 
-		linenumber="$(echo "$todo" |
+		linenumber="$(printf '%s' "$todo" |
 			grep -n "^bud\$" |
 			tail -n 1 |
 			sed 's/:.*//')"
 
 		printf 'mark %s\n\nbud\n' \
 			"$(name_commit $mark)" >> "$partfile"
-		todo="$(echo "$todo" |
+		todo="$(printf '%s' "$todo" |
 			sed -e "${linenumber}r$partfile" \
 				-e "\$a\\
 merge refs/rewritten/$mark -C $(name_commit $merge)")"
@@ -549,7 +549,7 @@ merge refs/rewritten/$mark -C $(name_commit $merge)")"
 			printf ' %s' $(name_commit $commit)
 		done)"
 	todo="$(printf '%s\n\n%s' "$todo" "cleanup $needslabel")"
-	echo "$todo" | uniq
+	printf '%s' "$todo" | uniq
 }
 
 this="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
