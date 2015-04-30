@@ -27,8 +27,8 @@ post_install () {
 GITCONFIG
 	done
 
-	grep -q '^db_home: windows' /etc/nsswitch.conf ||
-	sed -i 's/^\(db_\(home\|shell\|gecos\): \)\([^w]\)/\1windows \3/' \
+	grep -q '^db_home: env windows' /etc/nsswitch.conf ||
+	sed -i 's/^\(db_\(home\|shell\|gecos\): \)\([^w]\)/\1env windows \3/' \
 		/etc/nsswitch.conf
 
 	! grep -q '^PS1=' /etc/bash.bashrc ||
