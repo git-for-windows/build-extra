@@ -16,7 +16,7 @@
 
 #define PLINK_PATH_ERROR_MSG 'Please enter a valid path to a Plink executable.'
 
-#define DROP_HANDLER_GUID '{{86C86720-42A0-1069-A2E8-08002B30309D}'
+#define DROP_HANDLER_GUID '{{60254CA5-953B-11CF-8C96-00AA00B8708C}'
 
 [Setup]
 ; Compiler-related
