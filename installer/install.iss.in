@@ -36,6 +36,7 @@ AppName={#APP_NAME}
 AppPublisher=The Git Development Community
 AppPublisherURL={#APP_URL}
 AppVersion={#APP_VERSION}
+ChangesAssociations=yes
 ChangesEnvironment=yes
 CloseApplications=no
 DefaultDirName={pf}\{#APP_NAME}
