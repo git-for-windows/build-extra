@@ -1302,8 +1302,8 @@ begin
         Run post-install scripts to set up system environment
     }
 
-    Cmd:=AppDir+'\git-bash.exe';
-    if not Exec(Cmd, '-c exit', AppDir, SW_HIDE, ewWaitUntilTerminated, i) then begin
+    Cmd:=AppDir+'\usr\bin\bash.exe';
+    if not Exec(Cmd, '--login -c exit', AppDir, SW_HIDE, ewWaitUntilTerminated, i) then begin
       Msg:='Line {#__LINE__}: Unable to run post-install scripts.';
 
       // This is not a critical error, so just notify the user and continue.
