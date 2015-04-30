@@ -73,6 +73,10 @@ echo "Creating archive" &&
  echo 'GUIMode="1"' &&
  echo 'InstallPath="%%S\\PortableGit"' &&
  echo 'OverwriteMode="0"' &&
+ if test 32 = "$BITNESS"
+ then
+	echo 'RunProgram="usr\bin\dash.exe -c 'usr/bin/rebaseall -p'"'
+ fi &&
  echo 'RunProgram="usr\bin\bash.exe --login -c exit"' &&
  echo ';!@InstallEnd@!' &&
  cat "$TMPPACK") > "$TARGET" &&
