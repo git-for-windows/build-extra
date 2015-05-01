@@ -40,11 +40,16 @@ esac
 
 # Generate a couple of files dynamically
 
+mkdir -p "$SCRIPT_PATH/root/etc" ||
+die "Could not make etc/ directory"
+
 mkdir -p "$SCRIPT_PATH/root/tmp" ||
 die "Could not make tmp/ directory"
 
 # Make a list of files to include
-LIST="$(ARCH=$ARCH BITNESS=$BITNESS sh "$SCRIPT_PATH"/../make-file-list.sh "$@")" ||
+LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
+	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/root/etc/package-versions.txt \
+	sh "$SCRIPT_PATH"/../make-file-list.sh "$@")" ||
 die "Could not generate file list"
 
 # 7-Zip will strip absolute paths completely... therefore, we can add another
