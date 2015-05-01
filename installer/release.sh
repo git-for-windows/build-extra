@@ -81,7 +81,7 @@ LIST="$(ARCH=$ARCH BITNESS=$BITNESS PACKAGE_VERSIONS_FILE=package-versions.txt \
 die "Could not generate file list"
 
 printf "; List of files\n%s\n%s\n" \
-	"Source: \"$SCRIPTDIR\\package-versions.txt\"; DestDir: {app}\\etc\\package-versions.txt; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"$SCRIPTDIR\\package-versions.txt\"; DestDir: {app}\\etc; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"$SCRIPTDIR\\usr\\share\\git\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 >file-list.iss ||
 die "Could not write to file-list.iss"
