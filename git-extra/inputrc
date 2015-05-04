@@ -22,8 +22,8 @@ set visible-stats off
 set mark-directories on
 set mark-symlinked-directories on
 
-# Show all instead of beeping first
-set show-all-if-ambiguous on
+# Beep first, show all only upon double-Tab
+set show-all-if-ambiguous off
 
 # MSYSTEM is emacs based
 $if mode=emacs
