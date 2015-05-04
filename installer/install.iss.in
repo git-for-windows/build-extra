@@ -1310,6 +1310,21 @@ begin
         end;
     end;
 
+#ifdef IS32
+    {
+        Rebase all the .dll files in usr\bin
+    }
+
+    Cmd:=AppDir+'\usr\bin\dash.exe';
+    if not Exec(Cmd, '-c ./rebaseall -p', AppDir+'\usr\bin', SW_HIDE, ewWaitUntilTerminated, i) then begin
+      Msg:='Line {#__LINE__}: Unable to rebase DLLs.';
+
+      // This is not a critical error, so just notify the user and continue.
+      SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+      Log(msg);
+    end;
+#endif
+
     {
         Run post-install scripts to set up system environment
     }
