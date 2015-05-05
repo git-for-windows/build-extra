@@ -27,7 +27,7 @@ pacman_list () {
 }
 
 pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
-	git-extra ncurses mintty vim openssh \
+	git-extra ncurses mintty vim openssh winpty \
 	sed awk less grep gnupg findutils coreutils \
 	dos2unix which subversion mingw-w64-$ARCH-tk "$@" |
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
