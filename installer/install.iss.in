@@ -1018,6 +1018,53 @@ begin
     end;
 end;
 
+procedure CleanupWhenUpgrading;
+var
+    Domain,ErrorCode:Integer;
+    Msg,Key,Path,ProgramData,UninstallString:String;
+begin
+    Key:='Microsoft\Windows\CurrentVersion\Uninstall\Git_is1';
+    if RegKeyExists(HKEY_LOCAL_MACHINE,'Software\Wow6432Node\'+Key) then begin
+        Domain:=HKEY_LOCAL_MACHINE;
+        Key:='Software\Wow6432Node\'+Key;
+    end else if RegKeyExists(HKEY_CURRENT_USER,'Software\Wow6432Node\'+Key) then begin
+        Domain:=HKEY_CURRENT_USER;
+        Key:='Software\Wow6432Node\'+Key;
+    end else if RegKeyExists(HKEY_LOCAL_MACHINE,'Software\'+Key) then begin
+        Domain:=HKEY_LOCAL_MACHINE;
+        Key:='Software\'+Key;
+    end else if RegKeyExists(HKEY_CURRENT_USER,'Software\'+Key) then begin
+        Domain:=HKEY_CURRENT_USER;
+        Key:='Software\'+Key;
+    end else
+        Domain:=-1;
+    if Domain<>-1 then begin
+        if RegQueryStringValue(Domain,Key,'Inno Setup: App Path',Path) then begin
+            ProgramData:=ExpandConstant('{commonappdata}');
+            if FileExists(Path+'\etc\gitconfig') and not FileExists(ProgramData+'\Git\config') then begin
+                if not ForceDirectories(ProgramData+'\Git') then begin
+                    Msg:='Could not initialize Windows-wide Git config.';
+                    SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+                    Log(Msg);
+                end else if not FileCopy(Path+'\etc\gitconfig',ProgramData+'\Git\config',False) then begin
+                    Msg:='Could not copy old Git config to Windows-wide location.';
+                    SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+                    Log(Msg);
+                end;
+            end;
+        end;
+
+        if RegQueryStringValue(Domain,Key,'UninstallString',UninstallString) then
+            // Using ShellExec() here, in case privilege elevation is required
+            if not ShellExec('',UninstallString,'/SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then begin
+                Msg:='Could not uninstall previous version. Trying to continue anyway.';
+                SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+                Log(Msg);
+            end;
+    end;
+end;
+
+
 procedure CurStepChanged(CurStep:TSetupStep);
 var
     AppDir,ProgramData,DllPath,FileName,Cmd,Msg:String;
@@ -1035,6 +1082,8 @@ begin
         except
             Log('Line {#__LINE__}: RmShutdown not supported.');
         end;
+
+        CleanupWhenUpgrading();
 
         Exit;
     end;
