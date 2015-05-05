@@ -1,5 +1,5 @@
-#Git Release Notes (Git-2.3.7-preview20150429)
-Last update: 29 April 2015
+#Git 2.4.0 Release Notes
+Last update: 5 May 2015
 
 ##Introduction
 
@@ -26,6 +26,19 @@ Should you encounter other problems, please search [the bug tracker](https://git
 This software contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
 This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project.
+
+##Changes since Git-2.3.7-preview20150429
+
+###New Features
+* Comes with Git 2.4.0
+* Git for Windows now installs its configuration into a Windows-wide location: `%PROGRAMDATA%\Git\config` (which will be shared by libgit2-based applications with the next libgit2 version)
+
+###Bug fix
+* Fixed a regression where *Git Bash* would not start properly on Windows XP
+* Tab completion works like on Linux and MacOSX (double-Tab required to show ambiguous completions)
+* In 32-bit setups, all the MSys2 `.dll`'s address ranges are adjusted ("auto-rebased") as part of the installation process
+* The post-install scripts of MSys2 are now executed as part of the installation process, too
+* All files that are part of the installation will now be registered so they are deleted upon uninstall
 
 ##Changes since Git-2.3.6-preview20150425
 
