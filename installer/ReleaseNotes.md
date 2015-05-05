@@ -28,13 +28,20 @@ This software contains Embedded CAcert Root Certificates. For more information p
 
 This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project.
 
+##Changes since Git-2.4.0 (May 5th 2015)
+
+###Bug fixes
+
+* The `.sh` file association was fixed
+* The installer will now remove files from a previous Git for Windows versions, particularly important for 32-bit -> 64-bit upgrades
+
 ##Changes since Git-2.3.7-preview20150429
 
 ###New Features
 * Comes with Git 2.4.0
 * Git for Windows now installs its configuration into a Windows-wide location: `%PROGRAMDATA%\Git\config` (which will be shared by libgit2-based applications with the next libgit2 version)
 
-###Bug fix
+###Bug fixes
 * Fixed a regression where *Git Bash* would not start properly on Windows XP
 * Tab completion works like on Linux and MacOSX (double-Tab required to show ambiguous completions)
 * In 32-bit setups, all the MSys2 `.dll`'s address ranges are adjusted ("auto-rebased") as part of the installation process
