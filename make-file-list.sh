@@ -56,6 +56,7 @@ mingw$BITNESS/etc/gitconfig
 etc/post-install/01-devices.post
 etc/post-install/03-mtab.post
 etc/post-install/06-windows-files.post
+usr/bin/start
 usr/bin/dash.exe
 usr/bin/rebase.exe
 usr/bin/rebaseall
