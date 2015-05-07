@@ -1,5 +1,5 @@
-#Git 2.4.0 Release Notes
-Last update: 5 May 2015
+#Git 2.4.0.2 Release Notes
+Last update: 7 May 2015
 
 ##Introduction
 
@@ -34,6 +34,10 @@ This package contains software from a number of other projects including zlib, c
 
 * The `.sh` file association was fixed
 * The installer will now remove files from a previous Git for Windows versions, particularly important for 32-bit -> 64-bit upgrades
+
+###New Features
+
+* The installer now offers the choice between opening the _Git Bash_ in a MinTTY (default) or a regular Windows console window (Git for Windows 1.x' setting).
 
 ##Changes since Git-2.3.7-preview20150429
 
