@@ -7,7 +7,7 @@ The easiest way to install Git for Windows SDK is via the [Git SDK installer](ht
 To check out the `build-extra` project in the Git SDK, issue the following commands in the Git SDK Bash:
 
 ```sh
-cd /usr/src/git
+cd /usr/src/build-extra
 git fetch
 git checkout master
 ```
