@@ -82,6 +82,7 @@ Name: consolefont; Description: Use a TrueType font in all console windows
 ; Install files that might be in use during setup under a different name.
 #include "file-list.iss"
 Source: {#GetEnv('SCRIPTDIR')}\ReleaseNotes.html; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
+Source: {#GetEnv('SCRIPTDIR')}\edit-git-bash.dll; Flags: dontcopy
 
 [Dirs]
 Name: "{app}\tmp"
@@ -198,6 +199,29 @@ external 'CreateHardLinkW@Kernel32.dll stdcall delayload setuponly';
 external 'CreateHardLinkA@Kernel32.dll stdcall delayload setuponly';
 #endif
 
+function EditGitBash(ExePath:WideString;Resource:WideString):Integer;
+external 'edit_git_bash@files:edit-git-bash.dll stdcall delayload setuponly';
+
+function OverrideGitBashCommandLine(GitBashPath:String;CommandLine:String):Integer;
+var
+    Msg:String;
+begin
+    Result:=EditGitBash(GitBashPath,CommandLine);
+    if Result<>0 then begin
+        if Result=1 then begin
+            Msg:='Unable to edit '+GitBashPath+' (out of memory).';
+        end else if Result=2 then begin
+            Msg:='Unable to open '+GitBashPath+' for editing.';
+        end else if Result=3 then begin
+            Msg:='Unable to edit the command-line of '+GitBashPath+'.';
+        end else if Result=4 then begin
+            Msg:='Unable to close '+GitBashPath+' after editing.';
+        end;
+        SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+        Log(Msg);
+    end;
+end;
+
 function BindImageEx(Flags:DWORD;ImageName,DllPath,SymbolPath:AnsiString;StatusRoutine:Integer):Boolean;
 external 'BindImageEx@Imagehlp.dll stdcall delayload setuponly';
 
@@ -215,6 +239,10 @@ const
     GC_LFOnly         = 1;
     GC_CRLFAlways     = 2;
     GC_CRLFCommitAsIs = 3;
+
+    // Git Bash terminal settings.
+    GB_MinTTY         = 1;
+    GB_ConHost        = 2;
 
     // Git performance tweaks options
     GP_FSCache        = 1;
@@ -238,6 +266,10 @@ var
     // Wizard page and variables for the line ending conversion options.
     CRLFPage:TWizardPage;
     RdbCRLF:array[GC_LFOnly..GC_CRLFCommitAsIs] of TRadioButton;
+
+    // Wizard page and variables for the terminal emulator settings.
+    BashTerminalPage:TWizardPage;
+    RdbBashTerminal:array[GB_MinTTY..GB_ConHost] of TRadioButton;
 
     // Wizard page and variables for the performance tweaks options.
     PerfTweaksPage:TWizardPage;
@@ -462,6 +494,7 @@ var
     LblOpenSSH,LblPlink:TLabel;
     PuTTYSessions,EnvSSH:TArrayOfString;
     LblLFOnly,LblCRLFAlways,LblCRLFCommitAsIs:TLabel;
+    LblMinTTY,LblConHost:TLabel;
     LblFSCache:TLabel;
     BtnPlink:TButton;
     Data:String;
@@ -798,6 +831,85 @@ begin
         RdbCRLF[GC_CRLFAlways].Checked:=True;
     end else if Data='CRLFCommitAsIs' then begin
         RdbCRLF[GC_CRLFCommitAsIs].Checked:=True;
+    end;
+
+    (*
+     * Create a custom page for Git Bash's terminal emulator setting.
+     *)
+
+    BashTerminalPage:=CreateCustomPage(
+        PrevPageID
+    ,   'Configuring the terminal emulator to use with Git Bash'
+    ,   'Which terminal emulator do you want to use with your Git Bash?'
+    );
+    PrevPageID:=BashTerminalPage.ID;
+
+    // 1st choice
+    RdbBashTerminal[GB_MinTTY]:=TRadioButton.Create(BashTerminalPage);
+    with RdbBashTerminal[GB_MinTTY] do begin
+        Parent:=BashTerminalPage.Surface;
+        Caption:='Use MinTTY (the default terminal of MSys2)';
+        Left:=ScaleX(4);
+        Top:=ScaleY(8);
+        Width:=ScaleX(405);
+        Height:=ScaleY(17);
+        Font.Style:=[fsBold];
+        TabOrder:=0;
+        Checked:=True;
+    end;
+    LblMinTTY:=TLabel.Create(BashTerminalPage);
+    with LblMinTTY do begin
+        Parent:=BashTerminalPage.Surface;
+        Caption:=
+            'Git Bash will use MinTTY as terminal emulator, which sports a resizable window,' + #13 +
+	    'non-rectangular selections and a Unicode font. Windows console programs (such as' + #13 +
+	    'an interactive Python console) must be launched via `winpty` to work in MinTTY.';
+        Left:=ScaleX(28);
+        Top:=ScaleY(32);
+        Width:=ScaleX(405);
+        Height:=ScaleY(47);
+    end;
+
+    // 2nd choice
+    RdbBashTerminal[GB_ConHost]:=TRadioButton.Create(BashTerminalPage);
+    with RdbBashTerminal[GB_ConHost] do begin
+        Parent:=BashTerminalPage.Surface;
+        Caption:='Use Windows'' default console window';
+        Left:=ScaleX(4);
+        Top:=ScaleY(80);
+        Width:=ScaleX(405);
+        Height:=ScaleY(17);
+        Font.Style:=[fsBold];
+        TabOrder:=1;
+        Checked:=False;
+    end;
+    LblConHost:=TLabel.Create(BashTerminalPage);
+    with LblConHost do begin
+        Parent:=BashTerminalPage.Surface;
+        Caption:=
+            'Git will use the default console window of Windows ("cmd.exe"), which works well' + #13 +
+	    'with Win32 console programs such as interactive Python or node.js, but the window' + #13 +
+	    'is not freely resizable, allows only rectangular text selections, has a very' + #13 +
+	    'limited default scroll-back, and needs to be configured to us a Unicode font in' + #13 +
+	    'order to display non-ASCII characters correctly.';
+        Left:=ScaleX(28);
+        Top:=ScaleY(104);
+        Width:=ScaleX(405);
+        Height:=ScaleY(67);
+    end;
+
+    // Restore the setting chosen during a previous install.
+    Data:=GetPreviousData('Bash Terminal Option','MinTTY');
+
+    // Use settings from the user provided INF.
+    if ShouldLoadInf then begin
+        Data:=LoadInfString('Setup','BashTerminalOption','MinTTY');
+    end;
+
+    if Data='MinTTY' then begin
+        RdbBashTerminal[GB_MinTTY].Checked:=True;
+    end else if Data='ConHost' then begin
+        RdbBashTerminal[GB_ConHost].Checked:=True;
     end;
 
     (*
@@ -1216,6 +1328,20 @@ begin
     end;
 
     {
+        Configure the terminal window for Git Bash
+    }
+
+    if RdbBashTerminal[GB_ConHost].checked then begin
+        if FileCopy(AppDir+'\git-cmd.exe',AppDir+'\git-bash.exe',False) then begin
+            OverrideGitBashCommandLine(AppDir+'\git-bash.exe','SHOW_CONSOLE=1 @@COMSPEC@@ /C "@@EXEPATH@@\usr\bin\bash.exe" --login -i');
+        end else begin
+            Msg:='Unable to configure `git-bash.exe`';
+            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+            Log(Msg);
+        end;
+    end;
+
+    {
         Configure performance tweaks
     }
 
@@ -1446,6 +1572,16 @@ begin
     SetPreviousData(PreviousDataKey,'CRLF Option',Data);
     if ShouldSaveInf then begin
         SaveInfString('Setup','CRLFOption',Data);
+    end;
+
+    // Bash's terminal emulator options.
+    Data:='MinTTY';
+    if RdbBashTerminal[GB_ConHost].Checked then begin
+        Data:='ConHost';
+    end;
+    SetPreviousData(PreviousDataKey,'Bash Terminal Option',Data);
+    if ShouldSaveInf then begin
+        SaveInfString('Setup','BashTerminalOption',Data);
     end;
 
     // Performance tweaks options.
