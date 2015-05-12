@@ -1168,13 +1168,14 @@ begin
             end;
         end;
 
-        if RegQueryStringValue(Domain,Key,'UninstallString',UninstallString) then
+        if RegQueryStringValue(Domain,Key,'UninstallString',UninstallString) then begin
             // Using ShellExec() here, in case privilege elevation is required
-            if not ShellExec('',UninstallString,'/SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then begin
+            if not ShellExec('',UninstallString,'/NORESTART','',SW_SHOW,ewWaitUntilTerminated,ErrorCode) then begin
                 Msg:='Could not uninstall previous version. Trying to continue anyway.';
                 SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
                 Log(Msg);
             end;
+        end;
     end;
 end;
 
