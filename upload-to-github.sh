@@ -46,6 +46,7 @@ do
 		contenttype=application/zip
 		;;
 	*)
+		contenttype="$(file --brief --mime-type "$path")" ||
 		die "Unknown file type: $path"
 		;;
 	esac
