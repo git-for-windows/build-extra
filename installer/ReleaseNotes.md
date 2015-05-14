@@ -1,5 +1,5 @@
-#Git 2.4.0.2 Release Notes
-Last update: 7 May 2015
+#Git 2.4.1.1 Release Notes
+Last update: 14 May 2015
 
 ##Introduction
 
@@ -27,6 +27,17 @@ Should you encounter other problems, please search [the bug tracker](https://git
 This software contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
 This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project.
+
+##Changes since Git-2.4.0(2) (May 7th 2015)
+
+###New Features
+
+* Comes with Git 2.4.1
+
+###Bug fixes
+
+* When selecting the standard Windows console window for `Git Bash`, a regression was fixed that triggered [an extra console window](https://github.com/git-for-windows/git/issues/148) to be opened.
+* The password [can be entered interactively again](https://github.com/git-for-windows/git/issues/124) when `git push`ing to a HTTPS remote.
 
 ##Changes since Git-2.4.0 (May 5th 2015)
 
