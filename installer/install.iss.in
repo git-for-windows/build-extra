@@ -1331,13 +1331,7 @@ begin
     }
 
     if RdbBashTerminal[GB_ConHost].checked then begin
-        if FileCopy(AppDir+'\git-cmd.exe',AppDir+'\git-bash.exe',False) then begin
-            OverrideGitBashCommandLine(AppDir+'\git-bash.exe','SHOW_CONSOLE=1 @@COMSPEC@@ /C "@@EXEPATH@@\usr\bin\bash.exe" --login -i');
-        end else begin
-            Msg:='Unable to configure `git-bash.exe`';
-            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-            Log(Msg);
-        end;
+        OverrideGitBashCommandLine(AppDir+'\git-bash.exe','SHOW_CONSOLE=1 @@COMSPEC@@ /C "@@EXEPATH@@\usr\bin\bash.exe" --login -i');
     end;
 
     {
