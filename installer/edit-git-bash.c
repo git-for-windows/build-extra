@@ -33,7 +33,6 @@ int edit_git_bash(LPWSTR git_bash_path, LPWSTR new_command_line)
 	int len, alloc, result = 0;
 	WCHAR *buffer;
 
-//MessageBox(NULL, L"Hello", L"Hello", MB_OK);
 	len = wcslen(new_command_line);
 	alloc = 2 * (len + 16);
 	buffer = calloc(alloc, 1);
@@ -48,9 +47,7 @@ int edit_git_bash(LPWSTR git_bash_path, LPWSTR new_command_line)
         if (!UpdateResource(handle, RT_STRING, MAKEINTRESOURCE(1),
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 			buffer, alloc))
-{print_error(L"Bah", GetLastError());
 		result = 3;
-}
         if (!EndUpdateResource(handle, FALSE))
 		return 4;
 
