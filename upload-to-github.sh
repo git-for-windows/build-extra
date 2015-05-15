@@ -26,7 +26,9 @@ id="$(curl --netrc -s $url |
 	grep -B1 "\"tag_name\": \"$tagname\"" |
 	sed -n 's/.*"id": *\([0-9]*\).*/\1/p')"
 test -n "$id" || {
-	out="$(curl --netrc -s -XPOST -d '{"tag_name":"'"$tagname"'"}' $url)" ||
+	out="$(curl --netrc -s -XPOST -d \
+		'{"tag_name":"'"$tagname"'","draft":true,"prerelease":true}' \
+		$url)" ||
 	die "Error creating release: $out"
 	id="$(echo "$out" |
 		sed -n 's/^  "id": *\([0-9]*\).*/\1/p')"

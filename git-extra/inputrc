@@ -41,6 +41,8 @@ $if mode=emacs
   "\e[1;3D": "\e\e[D"               # Alt-Left
   "\e[1;3C": "\e\e[C"               # Alt-Right
 
+  "\e[Z": complete                  # Shift-Tab
+
   $if term=msys # RXVT
     "\e[7~": beginning-of-line      # Home Key
     "\e[8~": end-of-line            # End Key
