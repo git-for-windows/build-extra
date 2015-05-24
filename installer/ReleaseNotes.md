@@ -28,6 +28,16 @@ This software contains Embedded CAcert Root Certificates. For more information p
 
 This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project.
 
+##Changes since Git-2.4.1 (May 14th 2015)
+
+###New Features
+
+* On Windows Vista and later, [NTFS junctions can be used to emulate symlinks now](https://github.com/git-for-windows/git/pull/156); To enable this emulation, the `MSYS` environment variable needs to be set to `winsymlinks:nativestrict`.
+
+###Bug fixes
+
+* Just like Git for Windows 1.x, [pressing Shift+Tab in the Git Bash triggers tab completion](https://github.com/git-for-windows/build-extra/pull/59).
+
 ##Changes since Git-2.4.0(2) (May 7th 2015)
 
 ###New Features
