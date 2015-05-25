@@ -37,6 +37,7 @@ This package contains software from a number of other projects including zlib, c
 ###Bug fixes
 
 * Just like Git for Windows 1.x, [pressing Shift+Tab in the Git Bash triggers tab completion](https://github.com/git-for-windows/build-extra/pull/59).
+* [Auto-mount the temporary directory of the current user to `/tmp/` again](https://github.com/git-for-windows/msys2-runtime/pull/9), just like Git for Windows 1.x did (thanks to MSys1's hard-coded mount point).
 
 ##Changes since Git-2.4.0(2) (May 7th 2015)
 
