@@ -716,7 +716,7 @@ begin
         // Restore the setting chosen during a previous install.
         Data:=GetPreviousData('SSH Option','OpenSSH');
 
-        // Use settings from the user provided INF. 
+        // Use settings from the user provided INF.
         if ShouldLoadInf then begin
             Data:=LoadInfString('Setup','SSHOption','OpenSSH');
         end;
@@ -1612,7 +1612,7 @@ begin
     SetPreviousData(PreviousDataKey,'SSH Option',Data);
     if ShouldSaveInf then begin
         SaveInfString('Setup','SSHOption',Data);
-    end;    
+    end;
 
     // Line ending conversion options.
     Data:='';
