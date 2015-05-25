@@ -162,6 +162,9 @@ Type: files; Name: {app}\{#MINGW_BITNESS}\bin\git-*.exe
 Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\git-*.exe
 Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\git.exe
 
+; Delete copied *.dll files
+Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\*.dll
+
 ; Delete the dynamical generated MSYS2 files
 Type: files; Name: {app}\etc\hosts
 Type: files; Name: {app}\etc\mtab
@@ -1175,6 +1178,52 @@ begin
     end;
 end;
 
+procedure HardlinkOrCopy(Target,Source:String);
+var
+    LinkCreated:Boolean;
+begin
+    try
+        // This will throw an exception on pre-Win2k systems.
+        LinkCreated:=CreateHardLink(Target,Source,0);
+    except
+        LinkCreated:=False;
+        Log('Line {#__LINE__}: Creating hardlink "'+Target+'" failed, will try a copy.');
+    end;
+
+    if not LinkCreated then begin
+        if not FileCopy(Source,Target,False) then begin
+            Log('Line {#__LINE__}: Creating copy "'+Target+'" failed.');
+        end;
+    end;
+end;
+
+procedure MaybeHardlinkDLLFiles;
+var
+    FindRec: TFindRec;
+    AppDir,Bin,LibExec,System32:String;
+begin
+    AppDir:=ExpandConstant('{app}');
+    Bin:=AppDir+'\{#MINGW_BITNESS}\bin\';
+    LibExec:=AppDir+'\{#MINGW_BITNESS}\libexec\git-core\';
+#ifdef IS64
+    System32:=ExpandConstant('{sys}\');
+#else
+    System32:=ExpandConstant('{syswow64}\');
+#endif
+
+    if FindFirst(ExpandConstant(Bin+'*.dll'), FindRec) then
+    try
+        repeat
+            if ((FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY) = 0) and
+                    FileExists(System32+FindRec.Name) then begin
+                HardlinkOrCopy(LibExec+FindRec.Name,Bin+FindRec.Name);
+            end;
+        until
+            not FindNext(FindRec);
+    finally
+        FindClose(FindRec);
+    end;
+end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
 var
@@ -1228,6 +1277,18 @@ begin
     except
         Log('Line {#__LINE__}: An exception occurred while calling BindImageEx.');
     end;
+
+    {
+        Copy dlls from "/mingw64/bin" to "/mingw64/libexec/git-core" if they are
+        conflicting with system ones. For example, if a dll named "ssleay32.dll" in
+        "/mingw64/bin" is also present in "%SystemRoot\System32", the version in
+        "/mingw64/bin" is copied to "/mingw64/libexec/git-core". This call ensures
+        that the dll in "/mingw64/libexec/git-core" is picked first when Windows load
+        dll dependencies for executables in "/mingw64/libexec/git-core".
+        (See https://github.com/git-for-windows/git/issues/145)
+    }
+
+    MaybeHardlinkDLLFiles();
 
     {
         Create the built-ins
