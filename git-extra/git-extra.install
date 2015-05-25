@@ -45,6 +45,10 @@ GITCONFIG
 	test ! -f /etc/post-install/05-home-dir.post ||
 	rm /etc/post-install/05-home-dir.post
 
+	grep -qw usertemp /etc/fstab ||
+	sed -i '$a\
+none /tmp usertemp binary,posix=0 0 0' /etc/fstab
+
 	! grep -qi '^TMP=' /etc/profile ||
 	sed -i 's/^TE\?MP=/#&/i' /etc/profile
 	! grep -q '^unset TMP' /etc/profile ||
