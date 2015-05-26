@@ -1,0 +1,22 @@
+ln_or_cp () {
+	ln "$@" ||
+	echo cp "$@" ||
+	echo "ERROR: could not link $*" >&2
+}
+
+hardlink_all_dlls () {
+	exec_path="$(git --exec-path)" ||
+	return
+
+	prefix_path="${exec_path%libexec/git-core}"
+	if test "a$prefix_path" != "a$exec_path"
+	then
+		for dll in "$prefix_path"bin/*.dll
+		do
+			test -f "$exec_path"/${dll##*/} ||
+			ln_or_cp "$dll" "$exec_path"
+		done
+	fi
+}
+
+hardlink_all_dlls
