@@ -1,5 +1,5 @@
-#Git 2.4.1.1 Release Notes
-Last update: 14 May 2015
+#Git 2.4.2.1 Release Notes
+Last update: 27 May 2015
 
 ##Introduction
 
@@ -33,6 +33,7 @@ This package contains software from a number of other projects including zlib, c
 ###New Features
 
 * On Windows Vista and later, [NTFS junctions can be used to emulate symlinks now](https://github.com/git-for-windows/git/pull/156); To enable this emulation, the `MSYS` environment variable needs to be set to `winsymlinks:nativestrict`.
+* The *Git Bash* learned to support [several options to support running the Bash in arbitrary terminal emulators](https://github.com/git-for-windows/git/commit/ac6b03cb4).
 
 ###Bug fixes
 
