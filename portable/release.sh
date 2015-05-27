@@ -80,9 +80,10 @@ echo "Creating archive" &&
  echo 'OverwriteMode="0"' &&
  if test 32 = "$BITNESS"
  then
-	echo 'RunProgram="usr\bin\dash.exe -c 'usr/bin/rebaseall -p'"'
+	echo "RunProgram=\"git-bash.exe --no-needs-console --hide --no-cd --command=usr\\bin\\dash.exe -c 'dash usr/bin/rebaseall -p; bash --login -c exit'\""
+ else
+	echo "RunProgram=\"git-bash.exe --no-needs-console --hide --no-cd --command=usr\\bin\\bash.exe --login -c exit\""
  fi &&
- echo 'RunProgram="usr\bin\bash.exe --login -c exit"' &&
  echo ';!@InstallEnd@!' &&
  cat "$TMPPACK") > "$TARGET" &&
 echo "Success! You will find the new installer at \"$TARGET\"." &&
