@@ -17,7 +17,13 @@
 # 2.3.7.msysgit.1
 #id=${1:-1235013}
 # 2.4.0.msysgit.1
-id=${1:-1257687}
+#id=${1:-1257687}
+# 2.4.0.msysgit.2
+#id=${1:-1272221}
+# 2.4.1.msysgit.1
+#id=${1:-1296332}
+# 2.4.2.msysgit.1
+id=${1:-1345088}
 
 curl -s https://api.github.com/repos/git-for-windows/git/releases/$id/assets |
 grep -e '"name":' -e '"download_count":'
