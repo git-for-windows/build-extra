@@ -32,6 +32,9 @@ GITCONFIG
 	sed -i '$a\
 none /tmp usertemp binary,posix=0 0 0' /etc/fstab
 
+	! grep -q '^export TERM=' /etc/profile ||
+	sed -i 's/^export TERM=/test -n "$TERM" || &/' /etc/profile
+
 	! grep -qi '^TMP=' /etc/profile ||
 	sed -i 's/^TE\?MP=/#&/i' /etc/profile
 	! grep -q '^unset TMP' /etc/profile ||
