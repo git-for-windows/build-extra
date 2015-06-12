@@ -47,7 +47,9 @@ GITCONFIG
 
 	grep -qw usertemp /etc/fstab ||
 	sed -i '$a\
-none /tmp usertemp binary,posix=0 0 0' /etc/fstab
+none /tmp usertemp binary,posix=0,noacl 0 0' /etc/fstab
+	grep -qw usertemp.*noacl /etc/fstab ||
+	sed -i '$s/^none \/tmp usertemp [^ ]*/&,noacl/' /etc/fstab
 
 	! grep -q '^export TERM=' /etc/profile ||
 	sed -i 's/^export TERM=/test -n "$TERM" || &/' /etc/profile
