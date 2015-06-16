@@ -53,6 +53,24 @@ Adjust the 'gitdir' according to your setup.  As long as you do not
 close the command window, you can now simply type "git" or "gitk" to
 really call "c:\portablegit\cmd\git.cmd" or "c:\portablegit\cmd\gitk.cmd".
 
+By default, git-cmd and git-bash use the user's home directory  as the working
+directory when run. You can override this by  passing the following arguments
+to them. Note, that both git-cmd and git-bash admit these switches:
+
+        git-bash --cd=<dir> to use dir as the  directory specified in <dir>.
+        git-bash --no-cd to specify the current directory.
+
+As an alternative, to  use a relative directory, you can use the cd nvironment
+variable, like so:
+        git-bash --cd %cd%/home will use the directory named "home" inside the current directory.
+
+In addition, if you set the HOME environment variable (either permanently or
+for the current session only) you can make git store the configuration files
+and the cloned repositories in the directory specified in that variable. And if
+you don't specify --cd or --no-cd, git-bash and git-cmd will use that as the
+working directory, too. For example:
+        set home=%cd%/home
+will use the relative directory named home.
 
 Quick start
 -----------
