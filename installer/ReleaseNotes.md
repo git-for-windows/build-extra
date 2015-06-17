@@ -28,6 +28,13 @@ This software contains Embedded CAcert Root Certificates. For more information p
 
 This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project.
 
+##Changes since Git-2.4.3 (June 12th 2015)
+
+###New Features
+
+* Comes with Git 2.4.4
+* The POSIX-to-Windows path mangling [can now be turned off](https://github.com/git-for-windows/msys2-runtime/pull/11) by setting the `MSYS_NO_PATHCONV` environment variable. This even works for individual command lines: `MSYS_NO_PATHCONV=1 cmd /c dir /x` will list the files in the current directory along with their 8.3 versions.
+
 ##Changes since Git-2.4.2 (May 27th 2015)
 
 ###New Features
