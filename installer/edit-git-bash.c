@@ -5,6 +5,7 @@
 #include <windows.h>
 #include <stdlib.h>
 
+#ifdef _DEBUG
 static void print_error(LPCWSTR prefix, DWORD error_number)
 {
 	LPWSTR buffer = NULL;
@@ -25,6 +26,7 @@ static void print_error(LPCWSTR prefix, DWORD error_number)
 	MessageBox(NULL, buffer, prefix, MB_OK);
 	LocalFree((HLOCAL)buffer);
 }
+#endif
 
 WINAPI __declspec(dllexport)
 int edit_git_bash(LPWSTR git_bash_path, LPWSTR new_command_line)
