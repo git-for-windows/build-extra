@@ -46,6 +46,13 @@ die "Could not make etc/ directory"
 mkdir -p "$SCRIPT_PATH/root/tmp" ||
 die "Could not make tmp/ directory"
 
+mkdir -p "$SCRIPT_PATH/root/bin" ||
+die "Could not make bin/ directory"
+
+cp /cmd/git.exe "$SCRIPT_PATH/root/bin/git.exe" &&
+cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/bash.exe" ||
+die "Could not install bin/ redirectors"
+
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/root/etc/package-versions.txt \

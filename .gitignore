@@ -11,5 +11,6 @@
 /markdown/*.zip
 /markdown/pkg/
 /markdown/src/
+/portable/root/bin/
 /portable/root/cmd/
 /portable/root/etc/

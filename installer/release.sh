@@ -80,9 +80,11 @@ LIST="$(ARCH=$ARCH BITNESS=$BITNESS PACKAGE_VERSIONS_FILE=package-versions.txt \
 	sh "$SCRIPTDIR"/../make-file-list.sh)" ||
 die "Could not generate file list"
 
-printf "; List of files\n%s\n%s\n" \
+printf "; List of files\n%s\n%s\n%s\n%s\n" \
 	"Source: \"$SCRIPTDIR\\package-versions.txt\"; DestDir: {app}\\etc; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"$SCRIPTDIR\\usr\\share\\git\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"cmd\\git.exe\"; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: bash.exe; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 >file-list.iss ||
 die "Could not write to file-list.iss"
 
