@@ -1,5 +1,9 @@
 #define STRICT
+#ifdef WITH_MAIN_FUNCTION
+#include <stdio.h>
+#else
 #define WIN32_LEAN_AND_MEAN
+#endif
 #define UNICODE
 #define _UNICODE
 #include <windows.h>
@@ -55,3 +59,25 @@ int edit_git_bash(LPWSTR git_bash_path, LPWSTR new_command_line)
 
 	return result;
 }
+
+#ifdef WITH_MAIN_FUNCTION
+int main()
+{
+	LPWSTR command_line = GetCommandLineW();
+	int argc, result;
+	LPWSTR *argv;
+
+	argv = CommandLineToArgvW(command_line, &argc);
+	if (argc != 3) {
+		fwprintf(stderr, L"Usage: %s <exe> <command-line>\n", argv[0]);
+		exit(1);
+	}
+
+	result = edit_git_bash(argv[1], argv[2]);
+
+	if (result)
+		fwprintf(stderr, L"Error code %d\n", result);
+
+	return !!result;
+}
+#endif
