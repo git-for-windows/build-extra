@@ -1,4 +1,5 @@
 *.swp
+/edit-git-bash.exe
 /git-extra/pkg/
 /git-extra/src/
 /installer/ReleaseNotes.html
