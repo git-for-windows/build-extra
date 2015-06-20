@@ -1,5 +1,5 @@
-#Git 2.4.3.1 Release Notes
-Last update: 12 June 2015
+#Git 2.4.4.2 Release Notes
+Last update: 20 June 2015
 
 ##Introduction
 
@@ -35,7 +35,14 @@ This package contains software from a number of other projects including zlib, c
 * Comes with Git 2.4.4
 * The POSIX-to-Windows path mangling [can now be turned off](https://github.com/git-for-windows/msys2-runtime/pull/11) by setting the `MSYS_NO_PATHCONV` environment variable. This even works for individual command lines: `MSYS_NO_PATHCONV=1 cmd /c dir /x` will list the files in the current directory along with their 8.3 versions.
 
-##Changes since Git-2.4.2 (May 27th 2015)
+###Bug fixes
+
+* `git-bash.exe` [no longer changes the working directory to the user's home directory](https://github.com/git-for-windows/git/issues/130).
+* Git [can now clone into a drive root](https://github.com/msysgit/git/issues/359), e.g. `C:\`.
+* For backwards-compatibility, redirectors are installed into `/bin/bash.exe` and `/bin/git.exe`, e.g. [to support SourceTree and TortoiseGit better](https://github.com/git-for-windows/git/issues/208).
+* When using `core.symlinks = true` while cloning repositories with symbolic links pointing to directories, [`git status` no longer shows bogus modifications](https://github.com/git-for-windows/git/issues/210).
+
+*##Changes since Git-2.4.2 (May 27th 2015)
 
 ###New Features
 
