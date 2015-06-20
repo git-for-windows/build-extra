@@ -42,7 +42,7 @@ This package contains software from a number of other projects including zlib, c
 * For backwards-compatibility, redirectors are installed into `/bin/bash.exe` and `/bin/git.exe`, e.g. [to support SourceTree and TortoiseGit better](https://github.com/git-for-windows/git/issues/208).
 * When using `core.symlinks = true` while cloning repositories with symbolic links pointing to directories, [`git status` no longer shows bogus modifications](https://github.com/git-for-windows/git/issues/210).
 
-*##Changes since Git-2.4.2 (May 27th 2015)
+##Changes since Git-2.4.2 (May 27th 2015)
 
 ###New Features
 
