@@ -88,8 +88,8 @@ Name: "{app}\tmp"
 
 [Icons]
 Name: {group}\Git GUI; Filename: {app}\cmd\git-gui.exe; Parameters: ""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
-Name: {group}\Git Bash; Filename: {app}\git-bash.exe; Parameters: ""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
-Name: {group}\Git CMD; Filename: {app}\git-cmd.exe; Parameters: ""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
+Name: {group}\Git Bash; Filename: {app}\git-bash.exe; Parameters: "--cd-to-home"; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
+Name: {group}\Git CMD; Filename: {app}\git-cmd.exe; Parameters: "--cd-to-home"; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 
 [Messages]
 BeveledLabel={#APP_URL}
@@ -1475,7 +1475,7 @@ begin
             ExpandConstant('{userappdata}\Microsoft\Internet Explorer\Quick Launch\Git Bash.lnk')
         ,   'Git Bash'
         ,   Cmd
-        ,   ''
+        ,   '--cd-to-home'
         ,   '%HOMEDRIVE%%HOMEPATH%'
         ,   FileName
         ,   0
@@ -1488,7 +1488,7 @@ begin
             GetShellFolder('desktop')+'\Git Bash.lnk'
         ,   'Git Bash'
         ,   Cmd
-        ,   ''
+        ,   '--cd-to-home'
         ,   '%HOMEDRIVE%%HOMEPATH%'
         ,   FileName
         ,   0
