@@ -50,7 +50,8 @@ mkdir -p "$SCRIPT_PATH/root/bin" ||
 die "Could not make bin/ directory"
 
 cp /cmd/git.exe "$SCRIPT_PATH/root/bin/git.exe" &&
-cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/bash.exe" ||
+cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/bash.exe" &&
+cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/sh.exe" ||
 die "Could not install bin/ redirectors"
 
 # Make a list of files to include
