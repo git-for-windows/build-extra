@@ -70,7 +70,7 @@
 @REM now update the rest
 @%cwd%\usr\bin\pacman -S --force --noconfirm ^
 	base python less openssh patch make tar diffutils ca-certificates ^
-	perl-Error perl perl-Authen-SASL perl-libwww perl-MIME-tools ^
+	git perl-Error perl perl-Authen-SASL perl-libwww perl-MIME-tools ^
 	perl-Net-SMTP-SSL perl-TermReadKey dos2unix asciidoc xmlto ^
 	subversion mintty vim git-extra p7zip markdown winpty ^
 	mingw-w64-@@ARCH@@-git-doc-html ^
