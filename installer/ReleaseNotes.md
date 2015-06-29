@@ -1,5 +1,5 @@
-#Git 2.4.4.2 Release Notes
-Last update: 28 June 2015
+#Git 2.4.5.1 Release Notes
+Last update: 29 June 2015
 
 ##Introduction
 
@@ -27,6 +27,16 @@ Should you encounter other problems, please search [the bug tracker](https://git
 This software contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
 This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project.
+
+##Changes since Git-2.4.4 (June 20th 2015)
+
+###New Features
+
+* Comes with Git 2.4.5
+
+###Bug fixes
+
+* Git Bash [no longer crashes when called with `TERM=msys`](https://github.com/git-for-windows/git/issues/222). This reinstates compatibility with GitHub for Windows.
 
 ##Changes since Git-2.4.3 (June 12th 2015)
 
