@@ -1,5 +1,5 @@
 #Git 2.4.4.2 Release Notes
-Last update: 20 June 2015
+Last update: 28 June 2015
 
 ##Introduction
 
@@ -19,6 +19,7 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
 * Likewise, if you want to pass the `-L/regex/` option to `git log` in Git Bash, MSys2 will misinterpret it as an absolute path and mangle it into a DOS-style one. You can prevent that by putting a semicolon into the regular expression, e.g. `git log -L/\;*needle/`.
 * If configured to use Plink, you will have to connect with [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/) first and accept the host key.
 * As merge tools are executed using the MSys2 bash, options starting with "/" need to be handled specially: MSys2 would interpret that as a POSIX path, so you need to double the slash (Issue 226).  Example: instead of "/base", say "//base".  Also, extra care has to be paid to pass Windows programs Windows paths, as they have no clue about MSys2 style POSIX paths -- You can use something like `$(cmd //c echo "$POSIXPATH")`.
+* Git for Windows will not allow commits containing DOS-style truncated 8.3-format filenames ending with a tilde and digit, such as `mydocu~1.txt`. A workaround is to set `core.protectNTFS=` to `false`, which is not advised. Instead, add a rule to .gitignore to ignore the file(s), or rename the file(s).
 
 Should you encounter other problems, please search [the bug tracker](https://github.com/git-for-windows/git/issues) and [the mailing list](http://groups.google.com/group/git-for-windows) first and ask there if you do not find anything.
 
