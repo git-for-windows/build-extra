@@ -10,6 +10,7 @@ General release notes covering the history of the core git commands are included
 See [http://git-scm.com/](http://git-scm.com/) for further details about Git including ports to other operating systems. Git for Windows is currently hosted at [https://git-for-windows.github.io/](https://git-for-windows.github.io/).
 
 #Known issues
+* Some console programs interact correctly with MinTTY only when called through `winpty` (e.g. the Python console needs to be started as `winpty python` instead of just `python`).
 * Some commands are not yet supported on Windows and excluded from the installation; namely: `git archimport`, `git cvsexportcommit`, `git cvsimport`, `git cvsserver`, `git instaweb`, `git shell`.
 * As Git for Windows is shipped without Python support, all Git commands requiring Python are not yet supported; namely: `git p4`, `git remote-hg`.
 * The Logitec QuickCam software can cause spurious crashes. See ["Why does make often crash creating a sh.exe.stackdump file when I try to compile my source code?"](http://www.mingw.org/wiki/Environment_issues) on the MinGW Wiki.
