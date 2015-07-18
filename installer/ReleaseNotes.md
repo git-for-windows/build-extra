@@ -29,6 +29,17 @@ This software contains Embedded CAcert Root Certificates. For more information p
 
 This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project.
 
+##Changes since Git-2.4.5 (June 29th 2015)
+
+###New Features
+
+* Comes with Git 2.4.5
+
+###Bug fixes
+
+* Git for Windows handles symlinks now, [even if core.symlinks does not tell Git to generate symlinks itself](https://github.com/git-for-windows/git/pull/220).
+* `git svn` learned [*not* to reuse incompatible on-disk caches left over from previous Git for Windows versions](https://github.com/git-for-windows/git/pull/246).
+
 ##Changes since Git-2.4.4 (June 20th 2015)
 
 ###New Features
