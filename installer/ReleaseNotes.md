@@ -1,5 +1,5 @@
-#Git 2.4.5.1 Release Notes
-Last update: 29 June 2015
+#Git 2.4.6.1 Release Notes
+Last update: 18 July 2015
 
 ##Introduction
 
