@@ -33,7 +33,7 @@ This package contains software from a number of other projects including zlib, c
 
 ###New Features
 
-* Comes with Git 2.4.5
+* Comes with Git 2.4.6
 
 ###Bug fixes
 
