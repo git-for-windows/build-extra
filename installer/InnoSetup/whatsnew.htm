@@ -21,10 +21,23 @@
 
 <div class="bluehead"><span class="head1">Inno Setup 5</span><br /><span class="head2">Revision History</span></div>
 
-<p>Copyright &copy; 1997-2014 <a href="http://www.jrsoftware.org/">Jordan Russell</a>. All rights reserved.<br />
-Portions Copyright &copy; 2000-2014 Martijn Laan. All rights reserved.<br />
+<p>Copyright &copy; 1997-2015 <a href="http://www.jrsoftware.org/">Jordan Russell</a>. All rights reserved.<br />
+Portions Copyright &copy; 2000-2015 Martijn Laan. All rights reserved.<br />
 For conditions of distribution and use, see <a href="http://www.jrsoftware.org/files/is/license.txt">LICENSE.TXT</a>.
 </p>
+
+<p><a name="5.5.6"></a><span class="ver">5.5.6 </span><span class="date">(2015-07-16)</span></p>
+<ul>
+<li>Added the Windows 10 "compatibility" section to the various manifest resources used by Inno Setup.</li>
+<li>Added new [Setup] section directive: <tt>SignToolRetryCount</tt>, which defaults to <tt>2</tt>. Specifies the number of times the Setup Compiler should automatically retry digital signing on any errors.</li>
+<li>Added new [Setup] section directive: <tt>SetupMutex</tt>. Can be used to prevent Setup from running while Setup is already running.</li>
+<li><i>Fix:</i> Console-mode compiler (ISCC) change: Renamed /DO and /EO command line parameters to /O- and /O+ to avoid possible conflicts with /D.</li>
+<li>Pascal Scripting change: Unicode Inno Setup: Added new functions <tt>VarIsClear</tt> and <tt>UnpinShellLink</tt>.</li>
+<li>Inno Setup Preprocessor (ISPP) change: Added new function <tt>ForceDirectories</tt>.</li>
+<li>Unicode [Code] based on RemObjects Pascal Script Git commit db0d6f521113a31b34a76aeefd79fb148a9c4bfd.</li>
+<li>Various documentation improvements. Contributed by <a href="https://github.com/jogo-" target="_blank">jogo-</a> via <a href="https://github.com/jrsoftware" target="_blank">GitHub</a>.</li>
+<li>Minor tweaks.</li>
+</ul>
 
 <p><a name="5.5.5"></a><span class="ver">5.5.5 </span><span class="date">(2014-07-09)</span></p>
 <ul>
@@ -46,7 +59,7 @@ For conditions of distribution and use, see <a href="http://www.jrsoftware.org/f
 </li>
 <li>Inno Setup Preprocessor (ISPP) changes:
 <ul>
-  <li>Added function <tt>DeleteFileNow</tt>.</li>
+  <li>Added new function <tt>DeleteFileNow</tt>.</li>
   <li>Added 64-bit support to function <tt>ReadReg</tt>.</li>
 </ul>
 </li>
@@ -72,7 +85,7 @@ For conditions of distribution and use, see <a href="http://www.jrsoftware.org/f
 <p><a name="5.5.3"></a><span class="ver">5.5.3 </span><span class="date">(2013-01-30)</span></p>
 <ul>
 <li>Windows 8 change: [Icons] section flag <tt>excludefromshowinnewinstall</tt> now additionally prevents the new shortcut from being automatically pinned the Start screen.</li>
-<li>Added new command line parameters supported by Setup: /HELP and /?. Cause Setup to display the list of accepted command line parameters in a message box, exiting with exit code 0 afterwards. Ignored if the <tt>UseSetupLdr</tt> [Setup] section directive was set to <tt>no</tt>.</li>
+<li>Added new command line parameters supported by Setup: /HELP and /?. Causes Setup to display the list of accepted command line parameters in a message box, exiting with exit code 0 afterwards. Ignored if the <tt>UseSetupLdr</tt> [Setup] section directive was set to <tt>no</tt>.</li>
 <li>Added new command line parameter supported by Inno Setup's own installer: /PORTABLE=1. Causes Inno Setup's own installer to not create an uninstaller nor an entry in the <i>Add/Remove Programs</i> Control Panel applet. Also supported by QuickStart Pack's installer.</li>
 <li>Added workaround for bug in 64-bit Windows which in some cases would cause Windows to display an error message when a user tries to change the icon of an installed shortcut.</li>
 <li>Updated the compiler and document icons, created by Motaz Alnuweiri.</li>
