@@ -28,7 +28,15 @@ GITCONFIG
 	done
 
 	grep -q '^db_home: env windows' /etc/nsswitch.conf ||
-	sed -i 's/^\(db_\(home\|shell\|gecos\): \)\(windows \)\?\([^w]\)/\1env windows \4/' \
+	sed -i 's/^\(db_home: \)\(windows \)\?\([^w]\)/\1env windows \3/' \
+		/etc/nsswitch.conf
+
+	! grep -q '^db_shell: [^#]*cygwin' /etc/nsswitch.conf ||
+	sed -i 's/^\(db_shell: \)\(env \)\?\(windows \)\?/\1env windows # /' \
+		/etc/nsswitch.conf
+
+	! grep -q '^db_gecos: [^#]*\(cygwin\|windows\)' /etc/nsswitch.conf ||
+	sed -i 's/^\(db_gecos: \)\(env \)\?\([^e]\)/\1env # \3/' \
 		/etc/nsswitch.conf
 
 	! grep -q '^PS1=' /etc/bash.bashrc ||
