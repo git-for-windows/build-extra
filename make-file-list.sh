@@ -43,7 +43,25 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../lib/gettext/' -e '^/mingw../share/gettext/' \
 	-e '^/usr/include/' -e '^/mingw../include/' \
 	-e '^/usr/share/doc/' \
-	-e '^/usr/share/info/' -e '^/mingw../share/info/' |
+	-e '^/usr/share/info/' -e '^/mingw../share/info/' \
+	-e '^/mingw../share/git-doc/technical/' \
+	-e '^/mingw../itcl/' \
+	-e '^/mingw../t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
+	-e '^/mingw../bin/\(autopoint\|[a-z]*-config\)$' \
+	-e '^/mingw../bin/lib\(asprintf\|gettext\|gnutlsxx\|pcre[0-9a-z]\|quadmath\|stdc++\)[^/]*\.dll$' \
+	-e '^/mingw../bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\)[^/]*\.exe$' \
+	-e '^/mingw../.*/git-\(remote-testsvn\|shell\)\.exe$' \
+	-e '^/mingw../lib/tdbc' \
+	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
+	-e '^/mingw../share/locale/' \
+	-e '^/usr/bin/msys-\(db\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
+	-e '^/usr/bin/dumper\.exe$' \
+	-e '^/usr/share/locale/' \
+	-e '^/usr/share.*/magic$' \
+	-e '^/usr/share/perl5/core_perl/Unicode/Collate/Locale/' \
+	-e '^/usr/share/perl5/core_perl/pods/' \
+	-e '^/usr/share/vim/vim74/lang/' |
+grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(dumb|xterm.*)$)' |
 sed 's/^\///'
 
 cat <<EOF
