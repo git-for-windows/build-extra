@@ -29,6 +29,17 @@ This software contains Embedded CAcert Root Certificates. For more information p
 
 This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project.
 
+##Changes since Git-2.4.6 (July 18th 2015)
+
+###New Features
+
+* Comes with Git 2.5.0
+
+###Bug fixes
+
+* The size of the installers [was reduced again](https://github.com/git-for-windows/git/issues/262), almost to the levels of Git for Windows 1.x.
+* Under certain circumstances, when the Windows machine is part of a Windows domain with lots of users, the startup of the *Git Bash* [is now faster](https://github.com/git-for-windows/git/issues/193).
+
 ##Changes since Git-2.4.5 (June 29th 2015)
 
 ###New Features
