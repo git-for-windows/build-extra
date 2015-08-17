@@ -34,11 +34,14 @@ This package contains software from a number of other projects including zlib, c
 ###New Features
 
 * Comes with Git 2.5.0
+* On Windows 7 and later, [the *Git Bash* can now correctly be pinned to the task bar](https://github.com/git-for-windows/git/issues/263).
 
 ###Bug fixes
 
 * The size of the installers [was reduced again](https://github.com/git-for-windows/git/issues/262), almost to the levels of Git for Windows 1.x.
 * Under certain circumstances, when the Windows machine is part of a Windows domain with lots of users, the startup of the *Git Bash* [is now faster](https://github.com/git-for-windows/git/issues/193).
+* Git [no longer warns about being unable to read bogus Git attributes](https://github.com/git-for-windows/git/issues/255).
+* The Git for Windows installer [shrank in size again](https://github.com/git-for-windows/git/issues/262), almost to the size of the Git for Windows 1.x installers.
 
 ##Changes since Git-2.4.5 (June 29th 2015)
 
