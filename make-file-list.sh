@@ -61,7 +61,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/share/perl5/core_perl/Unicode/Collate/Locale/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
 	-e '^/usr/share/vim/vim74/lang/' |
-grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(dumb|xterm.*)$)' |
+grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)$)' |
 sed 's/^\///'
 
 cat <<EOF
