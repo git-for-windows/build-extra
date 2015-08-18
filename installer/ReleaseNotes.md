@@ -1,33 +1,35 @@
-#Git 2.5.0.1 Release Notes
-Last update: 17 August 2015
+#Git 2.5.0 Release Notes
+Last update: 18 August 2015
 
 ##Introduction
 
-These release notes describe issues specific to the Git for Windows release.
+These release notes describe issues specific to the Git for Windows release. The release notes covering the history of the core git commands can be found [in the Git project](https://github.com/git/git/tree/master/Documentation/RelNotes).
 
-General release notes covering the history of the core git commands are included in the subdirectory `mingw64\share\doc\git-doc\RelNotes` of the installation directory (`mingw32\share\doc\git-doc\RelNotes` in 32-bit setups).
-
-See [http://git-scm.com/](http://git-scm.com/) for further details about Git including ports to other operating systems. Git for Windows is currently hosted at [https://git-for-windows.github.io/](https://git-for-windows.github.io/).
+See [http://git-scm.com/](http://git-scm.com/) for further details about Git including ports to other operating systems. Git for Windows is hosted at [https://git-for-windows.github.io/](https://git-for-windows.github.io/).
 
 #Known issues
-* Some console programs interact correctly with MinTTY only when called through `winpty` (e.g. the Python console needs to be started as `winpty python` instead of just `python`).
-* Some commands are not yet supported on Windows and excluded from the installation; namely: `git archimport`, `git cvsexportcommit`, `git cvsimport`, `git cvsserver`, `git instaweb`, `git shell`.
-* As Git for Windows is shipped without Python support, all Git commands requiring Python are not yet supported; namely: `git p4`, `git remote-hg`.
-* The Logitec QuickCam software can cause spurious crashes. See ["Why does make often crash creating a sh.exe.stackdump file when I try to compile my source code?"](http://www.mingw.org/wiki/Environment_issues) on the MinGW Wiki.
-* The Quick Launch icon will only be installed for the user running setup (typically the Administrator). This is a technical restriction and will not change.
-* [cURL](http://curl.haxx.se) uses `$HOME/_netrc` instead of `$HOME/.netrc`.
-* If you want to specify a different location for `--upload-pack` in Git Bash, you have to start the absolute path with two slashes. Otherwise MSys2 will mangle the path.
-* Likewise, if you want to pass the `-L/regex/` option to `git log` in Git Bash, MSys2 will misinterpret it as an absolute path and mangle it into a DOS-style one. You can prevent that by putting a semicolon into the regular expression, e.g. `git log -L/\;*needle/`.
 * If configured to use Plink, you will have to connect with [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/) first and accept the host key.
-* As merge tools are executed using the MSys2 bash, options starting with "/" need to be handled specially: MSys2 would interpret that as a POSIX path, so you need to double the slash (Issue 226).  Example: instead of "/base", say "//base".  Also, extra care has to be paid to pass Windows programs Windows paths, as they have no clue about MSys2 style POSIX paths -- You can use something like `$(cmd //c echo "$POSIXPATH")`.
-* Git for Windows will not allow commits containing DOS-style truncated 8.3-format filenames ending with a tilde and digit, such as `mydocu~1.txt`. A workaround is to set `core.protectNTFS=` to `false`, which is not advised. Instead, add a rule to .gitignore to ignore the file(s), or rename the file(s).
+* Some console programs interact correctly with MinTTY only when called through `winpty` (e.g. the Python console needs to be started as `winpty python` instead of just `python`).
+* [cURL](http://curl.haxx.se) uses `$HOME/_netrc` instead of `$HOME/.netrc`.
+* If you specify command-line options starting with a slash, POSIX-to-Windows path conversion will kick in converting e.g. "`/usr/bin/bash.exe`" to "`C:\Program Files\Git\usr\bin\bash.exe`". When that is not desired -- e.g. "`--upload-pack=/opt/git/bin/git-upload-pack`" or "`-L/regex/`" -- you need to set the environment variable `MSYS_NO_PATHCONV` temporarily, like so:
 
-Should you encounter other problems, please search [the bug tracker](https://github.com/git-for-windows/git/issues) and [the mailing list](http://groups.google.com/group/git-for-windows) first and ask there if you do not find anything.
+  > `MSYS_NO_PATHCONV=1 git blame -L/pathconv/ msys2_path_conv.cc`
+
+  Alternatively, you can double the first slash to avoid POSIX-to-Windows path conversion.
+* Git for Windows will not allow commits containing DOS-style truncated 8.3-format filenames ending with a tilde and digit, such as `mydocu~1.txt`. A workaround is to call `git config core.protectNTFS false`, which is not advised. Instead, add a rule to .gitignore to ignore the file(s), or rename the file(s).
+* Many Windows programs (including the Windows Explorer) have problems with directory trees nested so deeply that the absolute path is longer than 260 characters. Therefore, Git for Windows refuses to check out such files by default. You can overrule this default by setting `core.longPaths`, e.g. `git clone -c core.longPaths=true ...`.
+*   Some commands are not yet supported on Windows and excluded from the installation.
+*   As Git for Windows is shipped without Python support, all Git commands requiring Python are not yet supported; e.g. `git p4`.
+*   The Quick Launch icon will only be installed for the user running setup (typically the Administrator). This is a technical restriction and will not change.
+
+Should you encounter other problems, please search [the bug tracker](https://github.com/git-for-windows/git/issues) and [the mailing list](http://groups.google.com/group/git-for-windows), chances are that the problem was reported already. If it has not been reported, please follow [our bug reporting guidelines](https://github.com/git-for-windows/git/wiki/Issue-reporting-guidelines) and [report the bug](https://github.com/git-for-windows/git/issues/new).
 
 ##Licenses
-This software contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
+Git is licensed under the GNU Public License version 2.
 
-This package contains software from a number of other projects including zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project.
+Git for Windows also contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
+
+This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
 
 ##Changes since Git-2.4.6 (July 18th 2015)
 

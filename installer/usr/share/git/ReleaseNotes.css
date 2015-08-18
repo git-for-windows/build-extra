@@ -284,9 +284,13 @@ footer li {
 
 .details p {
 	color: #EBEBEB;
-	line-height: 1.9375em;
+	line-height: 1.4em;
 	margin-bottom: 0.3125em;
 	text-shadow: 0 -1px rgba(0, 0, 0, 0.35);
+}
+
+.details li, .details li p {
+	line-height: 1.2em;
 }
 
 .details .vcentercontainer:first-child {
