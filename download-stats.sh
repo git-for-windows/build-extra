@@ -14,17 +14,17 @@
 #id=${1:-1148462}
 # 2.3.6.windows.2
 #id=${1:-1215956}
-# 2.3.7.msysgit.1
+# 2.3.7.windows.1
 #id=${1:-1235013}
-# 2.4.0.msysgit.1
+# 2.4.0.windows.1
 #id=${1:-1257687}
-# 2.4.0.msysgit.2
+# 2.4.0.windows.2
 #id=${1:-1272221}
-# 2.4.1.msysgit.1
+# 2.4.1.windows.1
 #id=${1:-1296332}
-# 2.4.2.msysgit.1
+# 2.4.2.windows.1
 #id=${1:-1345088}
-# 2.4.3.msysgit.1
+# 2.4.3.windows.1
 id=${1:-1409345}
 
 curl -s https://api.github.com/repos/git-for-windows/git/releases/$id/assets |
