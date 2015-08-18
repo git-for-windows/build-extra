@@ -93,8 +93,8 @@ Name: {group}\Git CMD; Filename: {app}\git-cmd.exe; Parameters: "--cd-to-home"; 
 
 [Messages]
 BeveledLabel={#APP_URL}
-SetupAppTitle={#APP_NAME} Setup
-SetupWindowTitle={#APP_NAME} Setup
+SetupAppTitle={#APP_NAME} {#APP_VERSION} Setup
+SetupWindowTitle={#APP_NAME} {#APP_VERSION} Setup
 
 [Registry]
 ; There is no "Console" key in HKLM.
