@@ -1,7 +1,15 @@
 #!/bin/sh
 
 # This script shows the download stats on GitHub. Update the id using the
-# output of curl -s https://api.github.com/repos/git-for-windows/git/releases
+# output of:
+#
+# curl -s https://api.github.com/repos/git-for-windows/git/releases |
+# tac |
+# sed -n '/^    "tag_name":/{
+#  N;
+#  s/.*"tag_name": "\([^"]*\)"[^"]*"id": \([0-9]*\).*/# \1\nid=${1:-\2}/p
+# }'
+
 # 2.3.4.windows.2
 #id=${1:-1093748}
 # 2.3.5.windows.4
@@ -25,7 +33,15 @@
 # 2.4.2.windows.1
 #id=${1:-1345088}
 # 2.4.3.windows.1
-id=${1:-1409345}
+#id=${1:-1409345}
+# v2.4.4.windows.2
+#id=${1:-1441039}
+# v2.4.5.windows.1
+#id=${1:-1471836}
+# v2.4.6.windows.1
+#id=${1:-1554860}
+# 2.5.0.windows.1
+id=${1:-1683962}
 
 curl -s https://api.github.com/repos/git-for-windows/git/releases/$id/assets |
 grep -e '"name":' -e '"download_count":'
