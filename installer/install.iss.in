@@ -1224,6 +1224,7 @@ end;
 procedure CurStepChanged(CurStep:TSetupStep);
 var
     AppDir,ProgramData,DllPath,FileName,Cmd,Msg:String;
+    PackSizeLimit:AnsiString;
     BuiltIns,ImageNames,EnvPath,EnvHome:TArrayOfString;
     Count,i:Longint;
     LinkCreated:Boolean;
@@ -1342,6 +1343,17 @@ begin
         end;
     end;
     if FileExists(ProgramData + '\Git\config') then begin
+#ifdef IS64
+        FileName:=AppDir+'tmp\packsize.txt';
+        if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config -f config pack.packsizelimit  >"'+FileName+'"',AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+            LogError('Unable to read packsize limit')
+        else if not LoadStringFromFile(FileName,PackSizeLimit) then
+            LogError('Unable to read redirected packsize limit')
+        else if (PackSizeLimit='2g'#10) and not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config -f config --unset pack.packsizelimit',AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+            LogError('Unable to unset packsize limit');
+SuppressibleMsgBox('PackSizeLimit: "'+PackSizeLimit+'"',mbError,MB_OK,IDOK);
+        DeleteFile(FileName);
+#endif
         Cmd:='http.sslCAInfo "' + AppDir + '/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
         StringChangeEx(Cmd,'\','/',True);
         if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config -f config '+Cmd,
