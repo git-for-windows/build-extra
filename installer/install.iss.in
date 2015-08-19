@@ -864,8 +864,8 @@ begin
         Parent:=BashTerminalPage.Surface;
         Caption:=
             'Git Bash will use MinTTY as terminal emulator, which sports a resizable window,' + #13 +
-            'non-rectangular selections and a Unicode font. Windows console programs (such as' + #13 +
-            'an interactive Python console) must be launched via `winpty` to work in MinTTY.';
+            'non-rectangular selections and a Unicode font. Windows console programs (such' + #13 +
+            'as interactive Python) must be launched via `winpty` to work in MinTTY.';
         Left:=ScaleX(28);
         Top:=ScaleY(32);
         Width:=ScaleX(405);
@@ -890,10 +890,10 @@ begin
         Parent:=BashTerminalPage.Surface;
         Caption:=
             'Git will use the default console window of Windows ("cmd.exe"), which works well' + #13 +
-            'with Win32 console programs such as interactive Python or node.js, but the window' + #13 +
-            'is not freely resizable, allows only rectangular text selections, has a very' + #13 +
-            'limited default scroll-back, and needs to be configured to us a Unicode font in' + #13 +
-            'order to display non-ASCII characters correctly.';
+            'with Win32 console programs such as interactive Python or node.js, but the' + #13 +
+            'window is not freely resizable, allows only rectangular text selections, has a' + #13 +
+            'very limited default scroll-back, and needs to be configured to use a Unicode' + #13 +
+            'font in order to display non-ASCII characters correctly.';
         Left:=ScaleX(28);
         Top:=ScaleY(104);
         Width:=ScaleX(405);
