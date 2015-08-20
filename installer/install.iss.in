@@ -892,7 +892,7 @@ begin
             'Git will use the default console window of Windows ("cmd.exe"), which works well' + #13 +
             'with Win32 console programs such as interactive Python or node.js, but the window' + #13 +
             'is not freely resizable, allows only rectangular text selections, has a very' + #13 +
-            'limited default scroll-back, and needs to be configured to us a Unicode font in' + #13 +
+            'limited default scroll-back, and needs to be configured to use a Unicode font in' + #13 +
             'order to display non-ASCII characters correctly.';
         Left:=ScaleX(28);
         Top:=ScaleY(104);
