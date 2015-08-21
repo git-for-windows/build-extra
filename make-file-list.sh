@@ -26,6 +26,10 @@ pacman_list () {
 	sed 's/^[^ ]* //'
 }
 
+# Packages that have been added after Git SDK 1.0.0 was released...
+pacman -S --needed --noconfirm mingw-w64-$ARCH-connect >&2 ||
+die "Could not install required packages"
+
 pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
 	git-extra ncurses mintty vim openssh winpty \
 	sed awk less grep gnupg tar findutils coreutils diffutils \
