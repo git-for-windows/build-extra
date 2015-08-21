@@ -71,6 +71,7 @@ sed 's/^\///'
 
 cat <<EOF
 etc/profile
+etc/profile.d/lang.sh
 etc/bash.bash_logout
 etc/bash.bashrc
 etc/fstab
