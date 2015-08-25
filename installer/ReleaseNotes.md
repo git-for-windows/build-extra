@@ -31,6 +31,17 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
 
+##Changes since Git-2.5.0 (August 18th 2015)
+
+###Bug fixes
+
+* Backspace [works now](https://github.com/git-for-windows/git/issues/282) with ConHost-based (`cmd.exe`) terminal.
+* When there is a `~/.bashrc` but no `~/.bash_profile`, [the latter will be created automatically](https://github.com/git-for-windows/build-extra/pull/71).
+* When calling a non-login shell, [the prompt now works](https://github.com/git-for-windows/build-extra/pull/72).
+* The text in the installer describing the terminal emulator options [is no longer cut off](https://github.com/git-for-windows/build-extra/pull/69).
+* The `connect.exe` tool to allow SSH connections via HTTP/HTTPS/SOCKS proxies [is included in Git for Windows again](https://github.com/git-for-windows/build-extra/pull/73), as it was in Git for Windows 1.x.
+* The `LANG` variable is [no longer left unset](https://github.com/git-for-windows/git/issues/298) (which caused troubles with vim).
+
 ##Changes since Git-2.4.6 (July 18th 2015)
 
 ###New Features
