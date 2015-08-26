@@ -35,6 +35,9 @@
 @IF NOT "%proxy%" == "" @(
 	@SET http_proxy=%proxy%
 	@SET https_proxy=%proxy%
+	@IF %counter% EQU 2 @(
+		@COPY "%cwd%"\etc\pacman.conf.proxy "%cwd%"\etc\pacman.conf
+	)
 )
 
 @REM update the Pacman package indices first, then force-install msys2-runtime
