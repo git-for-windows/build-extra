@@ -40,7 +40,7 @@
 @REM update the Pacman package indices first, then force-install msys2-runtime
 @REM (we ship with a stripped-down msys2-runtime, gpg and pacman), so that
 @REM pacman's post-install scripts run without complaining about heap problems
-@%cwd%\usr\bin\pacman -Sy --force --noconfirm msys2-runtime
+@"%cwd%"\usr\bin\pacman -Sy --force --noconfirm msys2-runtime
 
 @IF ERRORLEVEL 1 GOTO INSTALL_RUNTIME
 
@@ -54,7 +54,7 @@
 )
 
 @REM next, force update pacman, but first we need bash and info for that.
-@%cwd%\usr\bin\pacman -S --force --noconfirm bash info pacman
+@"%cwd%"\usr\bin\pacman -S --force --noconfirm bash info pacman
 
 @IF ERRORLEVEL 1 GOTO INSTALL_PACMAN
 
@@ -68,7 +68,7 @@
 )
 
 @REM now update the rest
-@%cwd%\usr\bin\pacman -S --force --noconfirm ^
+@"%cwd%"\usr\bin\pacman -S --force --noconfirm ^
 	base python less openssh patch make tar diffutils ca-certificates ^
 	git perl-Error perl perl-Authen-SASL perl-libwww perl-MIME-tools ^
 	perl-Net-SMTP-SSL perl-TermReadKey dos2unix asciidoc xmlto ^
@@ -84,7 +84,7 @@
 @REM Avoid overlapping address ranges
 @IF MINGW32 == %MSYSTEM% @(
 	ECHO Auto-rebasing .dll files
-	CALL %cwd%\autorebase.bat
+	CALL "%cwd%"\autorebase.bat
 )
 
 @REM If an HTTP proxy is requires, configure it for Git Bash sessions,
@@ -99,8 +99,8 @@
 
 @REM Before running a shell, let's prevent complaints about "permission denied"
 @REM from MSys2's /etc/post-install/01-devices.post
-@MKDIR %cwd%\dev\shm 2> NUL
-@MKDIR %cwd%\dev\mqueue 2> NUL
+@MKDIR "%cwd%"\dev\shm 2> NUL
+@MKDIR "%cwd%"\dev\mqueue 2> NUL
 
 @IF NOT DEFINED JENKINS_URL @(
 	@REM Install shortcut on the desktop
