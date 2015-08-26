@@ -16,14 +16,14 @@
 @SET /A counter=0
 :INSTALL_RUNTIME
 @SET /A counter+=1
-@IF %counter% GEQ 5 (
+@IF %counter% GEQ 5 @(
 	@ECHO Could not install msys2-runtime
 	@PAUSE
 	@EXIT 1
 )
 
 @REM Maybe we need a proxy?
-@IF %counter% GEQ 2 (
+@IF %counter% GEQ 2 @(
 	@ECHO.
 	@ECHO There was a problem accessing the MSys2 repositories
 	@ECHO If your setup requires an HTTP proxy to access the web,
@@ -32,7 +32,7 @@
 	@SET /p proxy= "HTTP proxy: "
 )
 @REM Check the proxy variable here because of delayed expansion
-@IF NOT "%proxy%" == "" (
+@IF NOT "%proxy%" == "" @(
 	@SET http_proxy=%proxy%
 	@SET https_proxy=%proxy%
 )
@@ -47,7 +47,7 @@
 @SET /A counter=0
 :INSTALL_PACMAN
 @SET /A counter+=1
-@IF %counter% GEQ 5 (
+@IF %counter% GEQ 5 @(
 	@ECHO Could not install pacman
 	@PAUSE
 	@EXIT 1
@@ -61,7 +61,7 @@
 @SET /A counter=0
 :INSTALL_REST
 @SET /A counter+=1
-@IF %counter% GEQ 5 (
+@IF %counter% GEQ 5 @(
 	@ECHO Could not install the remaining packages
 	@PAUSE
 	@EXIT 1
@@ -82,14 +82,14 @@
 @IF ERRORLEVEL 1 GOTO INSTALL_REST
 
 @REM Avoid overlapping address ranges
-@IF MINGW32 == %MSYSTEM% (
+@IF MINGW32 == %MSYSTEM% @(
 	ECHO Auto-rebasing .dll files
 	CALL %cwd%\autorebase.bat
 )
 
 @REM If an HTTP proxy is requires, configure it for Git Bash sessions,
 @REM but only if the environment variable was not already set globally
-@IF DEFINED proxy (
+@IF DEFINED proxy @(
 	@ECHO http_proxy=%proxy% > etc\profile.d\proxy.sh
 	@ECHO https_proxy=%proxy% >> etc\profile.d\proxy.sh
 	@ECHO export http_proxy https_proxy >> etc\profile.d\proxy.sh
@@ -102,7 +102,7 @@
 @MKDIR %cwd%\dev\shm 2> NUL
 @MKDIR %cwd%\dev\mqueue 2> NUL
 
-@IF NOT DEFINED JENKINS_URL (
+@IF NOT DEFINED JENKINS_URL @(
 	@REM Install shortcut on the desktop
 	@ECHO.
 	@ECHO Installing the 'Git SDK @@BITNESS@@-bit' shortcut on the Desktop
