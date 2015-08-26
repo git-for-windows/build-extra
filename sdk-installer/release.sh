@@ -28,16 +28,20 @@ esac
 GIT_BRANCH="${2:-master}"
 GIT_CLONE_URL=https://github.com/git-for-windows/git
 
+FAKEROOTDIR="$(cd "$(dirname "$0")" && pwd)/root"
 TARGET="$HOME"/git-sdk-installer-"$1"-$BITNESS.7z.exe
 OPTS7="-m0=lzma -mx=9 -md=64M"
 TMPPACK=/tmp.7z
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
+mkdir -p "$FAKEROOTDIR" ||
+die "Could not create fake root directory"
+
 sed -e "s|@@ARCH@@|$ARCH|g" \
 	-e "s|@@BITNESS@@|$BITNESS|g" \
 	-e "s|@@GIT_BRANCH@@|$GIT_BRANCH|g" \
 	-e "s|@@GIT_CLONE_URL@@|$GIT_CLONE_URL|g" \
-< "$SCRIPT_PATH"/setup-git-sdk.bat > /setup-git-sdk.bat ||
+<"$SCRIPT_PATH"/setup-git-sdk.bat >"$FAKEROOTDIR"/setup-git-sdk.bat ||
 die "Could not generate setup script"
 
 fileList="$(cd / && echo \
@@ -49,8 +53,8 @@ fileList="$(cd / && echo \
 	usr/bin/msys-crypto-*.dll \
 	usr/bin/msys-ssl-*.dll \
 	usr/ssl/certs/ca-bundle.crt \
-	var/lib/pacman \
-	setup-git-sdk.bat)"
+	var/lib/pacman)
+	$FAKEROOTDIR/setup-git-sdk.bat"
 
 type 7za ||
 pacman -Sy --noconfirm p7zip ||
