@@ -1200,22 +1200,17 @@ end;
 procedure MaybeHardlinkDLLFiles;
 var
     FindRec: TFindRec;
-    AppDir,Bin,LibExec,System32:String;
+    AppDir,Bin,LibExec:String;
 begin
     AppDir:=ExpandConstant('{app}');
     Bin:=AppDir+'\{#MINGW_BITNESS}\bin\';
     LibExec:=AppDir+'\{#MINGW_BITNESS}\libexec\git-core\';
-#ifdef IS64
-    System32:=ExpandConstant('{sys}\');
-#else
-    System32:=ExpandConstant('{syswow64}\');
-#endif
 
     if FindFirst(ExpandConstant(Bin+'*.dll'), FindRec) then
     try
         repeat
             if ((FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY) = 0) and
-                    FileExists(System32+FindRec.Name) then begin
+                    not FileExists(LibExec+FindRec.Name) then begin
                 HardlinkOrCopy(LibExec+FindRec.Name,Bin+FindRec.Name);
             end;
         until
