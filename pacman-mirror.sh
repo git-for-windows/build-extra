@@ -213,53 +213,55 @@ push () {
 	to_upload="$(printf "%s\n%s\n%s\n" "$old_list" "$old_list" "$new_list" |
 		sort | uniq -u)"
 
-	test -n "$to_upload" || {
+	test -n "$to_upload" || test "x$old_list" != "x$new_list" || {
 		echo "Nothing to be done" >&2
 		return
 	}
 
-	to_upload_basenames="$(echo "$to_upload" |
-		sed 's/-[0-9].*//' |
-		sort | uniq)"
-
 	db_version="$(db_version)"
 	next_db_version="$(next_db_version "$db_version")"
 
-	# Verify that the packages exist already
-	for basename in $to_upload_basenames
-	do
-		case " $(echo "$old_list" | tr '\n' ' ')" in
-		*" $basename"-[0-9]*)
-			;;
-		*)
-			package_exists $basename ||
-			die "The package $basename does not yet exist... Add it at https://bintray.com/git-for-windows/pacman/new/package?pkgPath="
-			;;
-		esac
-	done
+	test -z "$to_upload" || {
+		to_upload_basenames="$(echo "$to_upload" |
+			sed 's/-[0-9].*//' |
+			sort | uniq)"
 
-	for name in $to_upload
-	do
-		basename=${name%%-[0-9]*}
-		version=${name#$basename-}
-		for arch in $architectures
+		# Verify that the packages exist already
+		for basename in $to_upload_basenames
 		do
-			case "$name" in
-			mingw-w64-*)
-				filename=$name-any.pkg.tar.xz
+			case " $(echo "$old_list" | tr '\n' ' ')" in
+			*" $basename"-[0-9]*)
 				;;
 			*)
-				filename=$name-$arch.pkg.tar.xz
+				package_exists $basename ||
+				die "The package $basename does not yet exist... Add it at https://bintray.com/git-for-windows/pacman/new/package?pkgPath="
 				;;
 			esac
-			(cd "$(arch_dir $arch)" &&
-			 if test -f $filename
-			 then
-				upload $basename $version $arch $filename
-			 fi) || exit
 		done
-		publish $basename $version
-	done
+
+		for name in $to_upload
+		do
+			basename=${name%%-[0-9]*}
+			version=${name#$basename-}
+			for arch in $architectures
+			do
+				case "$name" in
+				mingw-w64-*)
+					filename=$name-any.pkg.tar.xz
+					;;
+				*)
+					filename=$name-$arch.pkg.tar.xz
+					;;
+				esac
+				(cd "$(arch_dir $arch)" &&
+				 if test -f $filename
+				 then
+					upload $basename $version $arch $filename
+				 fi) || exit
+			done
+			publish $basename $version
+		done
+	}
 
 	delete_version package-database "$db_version"
 
