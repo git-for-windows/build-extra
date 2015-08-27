@@ -28,29 +28,39 @@ esac
 GIT_BRANCH="${2:-master}"
 GIT_CLONE_URL=https://github.com/git-for-windows/git
 
+FAKEROOTDIR="$(cd "$(dirname "$0")" && pwd)/root"
 TARGET="$HOME"/git-sdk-installer-"$1"-$BITNESS.7z.exe
 OPTS7="-m0=lzma -mx=9 -md=64M"
 TMPPACK=/tmp.7z
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
+mkdir -p "$FAKEROOTDIR/usr/bin" "$FAKEROOTDIR/etc" ||
+die "Could not create fake root directory"
+
 sed -e "s|@@ARCH@@|$ARCH|g" \
 	-e "s|@@BITNESS@@|$BITNESS|g" \
 	-e "s|@@GIT_BRANCH@@|$GIT_BRANCH|g" \
 	-e "s|@@GIT_CLONE_URL@@|$GIT_CLONE_URL|g" \
-< "$SCRIPT_PATH"/setup-git-sdk.bat > /setup-git-sdk.bat ||
+<"$SCRIPT_PATH"/setup-git-sdk.bat >"$FAKEROOTDIR"/setup-git-sdk.bat ||
 die "Could not generate setup script"
+
+cp /usr/bin/dash.exe "$FAKEROOTDIR/usr/bin/sh.exe" &&
+sed -e 's/^#\(XferCommand.*curl\).*/\1 --anyauth -C - -s -L -f %u >%o/' \
+	</etc/pacman.conf >"$FAKEROOTDIR/etc/pacman.conf.proxy" ||
+die "Could not copy extra files into fake root"
 
 fileList="$(cd / && echo \
 	etc/pacman.* \
-	usr/bin/gpg.exe \
 	usr/bin/pacman.exe \
-	$(ldd /usr/bin/gpg.exe |
-	  sed -n 's/.* \/\(usr\/bin\/.*\.dll\) .*/\1/p') \
-	usr/bin/msys-crypto-*.dll \
-	usr/bin/msys-ssl-*.dll \
+	usr/bin/curl.exe \
+	usr/bin/gpg.exe \
+	$(ldd /usr/bin/gpg.exe /usr/bin/curl.exe |
+	  sed -n 's/.* \/\(usr\/bin\/.*\.dll\) .*/\1/p' |
+	  sort |
+	  uniq) \
 	usr/ssl/certs/ca-bundle.crt \
-	var/lib/pacman \
-	setup-git-sdk.bat)"
+	var/lib/pacman)
+	$FAKEROOTDIR/setup-git-sdk.bat $FAKEROOTDIR/etc $FAKEROOTDIR/usr"
 
 type 7za ||
 pacman -Sy --noconfirm p7zip ||

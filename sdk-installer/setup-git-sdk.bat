@@ -16,14 +16,14 @@
 @SET /A counter=0
 :INSTALL_RUNTIME
 @SET /A counter+=1
-@IF %counter% GEQ 5 (
+@IF %counter% GEQ 5 @(
 	@ECHO Could not install msys2-runtime
 	@PAUSE
 	@EXIT 1
 )
 
 @REM Maybe we need a proxy?
-@IF %counter% GEQ 2 (
+@IF %counter% GEQ 2 @(
 	@ECHO.
 	@ECHO There was a problem accessing the MSys2 repositories
 	@ECHO If your setup requires an HTTP proxy to access the web,
@@ -32,43 +32,46 @@
 	@SET /p proxy= "HTTP proxy: "
 )
 @REM Check the proxy variable here because of delayed expansion
-@IF NOT "%proxy%" == "" (
+@IF NOT "%proxy%" == "" @(
 	@SET http_proxy=%proxy%
 	@SET https_proxy=%proxy%
+	@IF %counter% EQU 2 @(
+		@COPY "%cwd%"\etc\pacman.conf.proxy "%cwd%"\etc\pacman.conf
+	)
 )
 
 @REM update the Pacman package indices first, then force-install msys2-runtime
 @REM (we ship with a stripped-down msys2-runtime, gpg and pacman), so that
 @REM pacman's post-install scripts run without complaining about heap problems
-@%cwd%\usr\bin\pacman -Sy --force --noconfirm msys2-runtime
+@"%cwd%"\usr\bin\pacman -Sy --force --noconfirm msys2-runtime
 
 @IF ERRORLEVEL 1 GOTO INSTALL_RUNTIME
 
 @SET /A counter=0
 :INSTALL_PACMAN
 @SET /A counter+=1
-@IF %counter% GEQ 5 (
+@IF %counter% GEQ 5 @(
 	@ECHO Could not install pacman
 	@PAUSE
 	@EXIT 1
 )
 
 @REM next, force update pacman, but first we need bash and info for that.
-@%cwd%\usr\bin\pacman -S --force --noconfirm bash info pacman
+@"%cwd%"\usr\bin\pacman -S --force --noconfirm bash info pacman
 
 @IF ERRORLEVEL 1 GOTO INSTALL_PACMAN
 
 @SET /A counter=0
 :INSTALL_REST
 @SET /A counter+=1
-@IF %counter% GEQ 5 (
+@IF %counter% GEQ 5 @(
 	@ECHO Could not install the remaining packages
 	@PAUSE
 	@EXIT 1
 )
 
 @REM now update the rest
-@%cwd%\usr\bin\pacman -S --force --noconfirm ^
+@"%cwd%"\usr\bin\pacman -S --force --noconfirm ^
 	base python less openssh patch make tar diffutils ca-certificates ^
 	git perl-Error perl perl-Authen-SASL perl-libwww perl-MIME-tools ^
 	perl-Net-SMTP-SSL perl-TermReadKey dos2unix asciidoc xmlto ^
@@ -82,14 +85,14 @@
 @IF ERRORLEVEL 1 GOTO INSTALL_REST
 
 @REM Avoid overlapping address ranges
-@IF MINGW32 == %MSYSTEM% (
+@IF MINGW32 == %MSYSTEM% @(
 	ECHO Auto-rebasing .dll files
-	CALL %cwd%\autorebase.bat
+	CALL "%cwd%"\autorebase.bat
 )
 
 @REM If an HTTP proxy is requires, configure it for Git Bash sessions,
 @REM but only if the environment variable was not already set globally
-@IF DEFINED proxy (
+@IF DEFINED proxy @(
 	@ECHO http_proxy=%proxy% > etc\profile.d\proxy.sh
 	@ECHO https_proxy=%proxy% >> etc\profile.d\proxy.sh
 	@ECHO export http_proxy https_proxy >> etc\profile.d\proxy.sh
@@ -99,10 +102,10 @@
 
 @REM Before running a shell, let's prevent complaints about "permission denied"
 @REM from MSys2's /etc/post-install/01-devices.post
-@MKDIR %cwd%\dev\shm 2> NUL
-@MKDIR %cwd%\dev\mqueue 2> NUL
+@MKDIR "%cwd%"\dev\shm 2> NUL
+@MKDIR "%cwd%"\dev\mqueue 2> NUL
 
-@IF NOT DEFINED JENKINS_URL (
+@IF NOT DEFINED JENKINS_URL @(
 	@REM Install shortcut on the desktop
 	@ECHO.
 	@ECHO Installing the 'Git SDK @@BITNESS@@-bit' shortcut on the Desktop
