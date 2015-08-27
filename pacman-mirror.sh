@@ -11,6 +11,8 @@
 #
 # - 'add' to add packages to the local mirror
 #
+# - 'remove' to make the next 'push' skip the given package(s)
+#
 # - 'push' to synchronize local changes (after calling `repo-add`) to the
 #   remote Pacman repository
 
@@ -25,12 +27,12 @@ export CURL_CA_BUNDLE
 
 mode=
 case "$1" in
-fetch|add|push)
+fetch|add|remove|push)
 	mode="$1"
 	shift
 	;;
 *)
-	die "Usage: $0 ( fetch | push | add <package>... )"
+	die "Usage: $0 ( fetch | push | ( add | remove ) <package>... )"
 	;;
 esac
 
@@ -173,6 +175,22 @@ add () { # <file>
 		cp "$path" "$dir/"
 	done
 }
+
+remove () { # <package>...
+	test $# -gt 0 ||
+	die "What packages do you want to add?"
+
+	for package
+	do
+		for arch in $architectures
+		do
+			(cd "$(arch_dir $arch)" &&
+			 rm $package-*.pkg.tar.xz &&
+			 repo-remove git-for-windows.db.tar.xz $package)
+		done
+	done
+}
+
 
 update_local_package_databases () {
 	for arch in $architectures
