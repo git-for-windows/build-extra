@@ -69,6 +69,9 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)$)' |
 sed 's/^\///'
 
+test -z "$PACKAGE_VERSIONS_FILE" ||
+pacman -Q filesystem dash rebase >"$PACKAGE_VERSIONS_FILE"
+
 cat <<EOF
 etc/profile
 etc/profile.d/lang.sh
