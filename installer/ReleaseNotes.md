@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ##Changes since Git-2.5.0 (August 18th 2015)
 
+###New Features
+
+* Comes with Git 2.5.1
+
 ###Bug fixes
 
 * Backspace [works now](https://github.com/git-for-windows/git/issues/282) with ConHost-based (`cmd.exe`) terminal.
