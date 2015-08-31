@@ -1,5 +1,5 @@
-#Git 2.5.0 Release Notes
-Last update: 18 August 2015
+#Git 2.5.1 Release Notes
+Last update: 31 August 2015
 
 ##Introduction
 
