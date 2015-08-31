@@ -32,7 +32,7 @@ die "Could not install required packages"
 
 pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
 	git-extra ncurses mintty vim openssh winpty \
-	sed awk less grep gnupg tar findutils coreutils diffutils \
+	sed awk less grep gnupg tar findutils coreutils diffutils patch \
 	dos2unix which subversion mingw-w64-$ARCH-tk \
 	mingw-w64-$ARCH-connect "$@" |
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
