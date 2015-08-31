@@ -45,7 +45,7 @@ This package contains software from a number of other projects including Bash, z
 * `call start-ssh-agent` [no longer spits out bogus lines](https://github.com/git-for-windows/git/issues/314).
 * It is now possible [even behind NTLM-authenticated proxies](https://github.com/git-for-windows/git/issues/309) to install [Git for Windows' SDK](https://git-for-windows.github.io/#download-sdk).
 * We [can handle the situation now](https://github.com/git-for-windows/git/issues/318) when the first `$PATH` elements point outside of Git for Windows' `bin/` directories and contain `.dll` files that interfere with our own (e.g. PostgreSQL's `libintl-8.dll`).
-* The patch package, which was included in msysgit but [not in Git for Windows](https://github.com/git-for-windows/git/issues/221) is now included.
+* The `patch` tool [is now included again](https://github.com/git-for-windows/build-extra/pull/74) as it was in Git for Windows 1.x.
 
 ##Changes since Git-2.4.6 (July 18th 2015)
 
