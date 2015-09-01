@@ -1,15 +1,23 @@
 #!/bin/sh
 
-# This script shows the download stats on GitHub. Update the id using the
-# output of:
-#
-# curl -s https://api.github.com/repos/git-for-windows/git/releases |
-# tac |
-# sed -n '/^    "tag_name":/{
-#  N;
-#  s/.*"tag_name": "\([^"]*\)"[^"]*"id": \([0-9]*\).*/# \1\nid=${1:-\2}/p
-# }'
+# This script shows the download stats on GitHub. Update the ids by calling
+# this script with the `--update` option
 
+test "--update" != "$1" || {
+	curl -s \
+	 https://api.github.com/repos/git-for-windows/git/releases |
+	tac |
+	sed -n '/^    "tag_name":/{
+    N;
+    s/.*"tag_name": "\([^"]*\)"[^"]*"id": \([0-9]*\).*/# \1\n#id=${1:-\2}/p
+}' | sed '$s/^#//' >"${0%.sh}".ids &&
+	echo "$ids" |
+	sed -i -e '/^#\( v\?2.*windows\|id=\)/d' -e '/^id=/d' \
+		-e "/^# IDs/r${0%.sh}.ids" "$0"
+	exit
+}
+
+# IDs
 # 2.3.4.windows.2
 #id=${1:-1093748}
 # 2.3.5.windows.4
