@@ -22,6 +22,10 @@ GITCONFIG
 	sed -i 's/^\(db_gecos: \)\(env \)\?\([^e]\)/\1env # \3/' \
 		/etc/nsswitch.conf
 
+	! grep -q '^group: [^#]*db' /etc/nsswitch.conf ||
+	sed -i 's/^\(group: \)\(.* \)\?\(db\)/\1\2# \3/' \
+		/etc/nsswitch.conf
+
 	! grep -q '^PS1=' /etc/bash.bashrc ||
 	sed -i 's/^PS1=/#&/' /etc/bash.bashrc
 
