@@ -2,6 +2,7 @@
 /download-stats.ids
 /git-extra/pkg/
 /git-extra/src/
+/git-extra/git-extra-*.pkg.tar.xz
 /installer/ReleaseNotes.html
 /installer/bindimage.txt
 /installer/install.iss
