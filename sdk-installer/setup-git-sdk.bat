@@ -13,6 +13,28 @@
 @REM set MSYSTEM so that MSys2 starts up in the correct mode
 @set MSYSTEM=MINGW@@BITNESS@@
 
+@REM need to rebase just to make sure that it still works even with 32-bit
+@REM Windows 10
+@SET initialrebase=false
+@IF MINGW32 == %MSYSTEM% @(
+	@FOR /F "tokens=4 delims=.[XP " %%i IN ('ver') DO @SET ver=%%i
+	@IF 10 LEQ %ver @(
+		@SET initialrebase=false
+	)
+)
+
+@IF %initialrebase% == true @(
+	@REM we copy `rebase.exe` because it links to `msys-2.0.dll`.
+	@IF NOT EXIST "%cwd%"\bin\rebase.exe @(
+		@IF NOT EXIST "%cwd%"\bin @MKDIR "%cwd%"\bin
+		@COPY "%cwd%"\usr\bin\rebase.exe "%cwd%"\bin\rebase.exe
+	)
+	@IF NOT EXIST bin\msys-2.0.dll @(
+		@COPY usr\bin\msys-2.0.dll bin\msys-2.0.dll
+	)
+	@"%cwd%"\bin\rebase.exe -b 0x63000000 "%cwd%"\usr\bin\msys-2.0.dll
+)
+
 @SET /A counter=0
 :INSTALL_RUNTIME
 @SET /A counter+=1
@@ -44,6 +66,12 @@
 @REM (we ship with a stripped-down msys2-runtime, gpg and pacman), so that
 @REM pacman's post-install scripts run without complaining about heap problems
 @"%cwd%"\usr\bin\pacman -Sy --needed --force --noconfirm msys2-runtime
+
+@REM need to rebase just to make sure that it still works even with 32-bit
+@REM Windows 10
+@IF %initialrebase% == true @(
+	@"%cwd%"\bin\rebase.exe -b 0x63000000 "%cwd%"\usr\bin\msys-2.0.dll
+)
 
 @IF ERRORLEVEL 1 GOTO INSTALL_RUNTIME
 
