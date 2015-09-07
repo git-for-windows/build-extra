@@ -43,7 +43,7 @@
 @REM update the Pacman package indices first, then force-install msys2-runtime
 @REM (we ship with a stripped-down msys2-runtime, gpg and pacman), so that
 @REM pacman's post-install scripts run without complaining about heap problems
-@"%cwd%"\usr\bin\pacman -Sy --force --noconfirm msys2-runtime
+@"%cwd%"\usr\bin\pacman -Sy --needed --force --noconfirm msys2-runtime
 
 @IF ERRORLEVEL 1 GOTO INSTALL_RUNTIME
 
@@ -57,7 +57,7 @@
 )
 
 @REM next, force update pacman, but first we need bash and info for that.
-@"%cwd%"\usr\bin\pacman -S --force --noconfirm bash info pacman
+@"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm bash info pacman
 
 @IF ERRORLEVEL 1 GOTO INSTALL_PACMAN
 
@@ -71,7 +71,7 @@
 )
 
 @REM now update the rest
-@"%cwd%"\usr\bin\pacman -S --force --noconfirm ^
+@"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm ^
 	base python less openssh patch make tar diffutils ca-certificates ^
 	git perl-Error perl perl-Authen-SASL perl-libwww perl-MIME-tools ^
 	perl-Net-SMTP-SSL perl-TermReadKey dos2unix asciidoc xmlto ^
@@ -112,7 +112,7 @@
 	@bash --login -c 'SHORTCUT="$HOME/Desktop/Git SDK @@BITNESS@@-bit.lnk"; test -f "$SHORTCUT" ^|^| create-shortcut.exe --icon-file /msys2.ico --work-dir / /git-bash.exe "$SHORTCUT"'
 
 	@REM now clone the Git sources, build it, and start an interactive shell
-	@bash --login -c "mkdir -p /usr/src && cd /usr/src && for project in MINGW-packages MSYS2-packages build-extra; do mkdir -p $project && (cd $project && git init && git config core.autocrlf false && git remote add origin https://github.com/git-for-windows/$project); done; git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git && cd git && make install"
+	@bash --login -c "mkdir -p /usr/src && cd /usr/src && for project in MINGW-packages MSYS2-packages build-extra; do test ! -d $project && mkdir -p $project && (cd $project && git init && git config core.autocrlf false && git remote add origin https://github.com/git-for-windows/$project); done; if test ! -d git; then git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git; fi && cd git && make install"
 
 	@IF ERRORLEVEL 1 PAUSE
 
