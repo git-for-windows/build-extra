@@ -54,6 +54,9 @@ cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/bash.exe" &&
 cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/sh.exe" ||
 die "Could not install bin/ redirectors"
 
+cp $SCRIPT_PATH/../post-install.bat $SCRIPT_PATH/root/ ||
+die "Could not copy post-install script"
+
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/root/etc/package-versions.txt \
@@ -86,12 +89,7 @@ echo "Creating archive" &&
  echo 'GUIMode="1"' &&
  echo 'InstallPath="%%S\\PortableGit"' &&
  echo 'OverwriteMode="0"' &&
- if test 32 = "$BITNESS"
- then
-	echo "RunProgram=\"git-bash.exe --no-needs-console --hide --no-cd --command=usr\\bin\\dash.exe -c 'dash usr/bin/rebaseall -p; bash --login -c exit'\""
- else
-	echo "RunProgram=\"git-bash.exe --no-needs-console --hide --no-cd --command=usr\\bin\\bash.exe --login -c exit\""
- fi &&
+ echo "RunProgram=\"git-bash.exe --no-needs-console --hide --no-cd --command=post-install.bat\"" &&
  echo ';!@InstallEnd@!' &&
  cat "$TMPPACK") > "$TARGET" &&
 echo "Success! You will find the new installer at \"$TARGET\"." &&
