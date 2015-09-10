@@ -1,5 +1,5 @@
-#Git 2.5.1 Release Notes
-Last update: 31 August 2015
+#Git 2.5.2 Release Notes
+Last update: 10 September 2015
 
 ##Introduction
 
@@ -31,6 +31,23 @@ Git is licensed under the GNU Public License version 2.
 Git for Windows also contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
 This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
+
+##Changes since Git-2.5.1 (August 31th 2015)
+
+###New Features
+
+* Comes with Git 2.5.2
+* Alternates [can now point to UNC paths](https://github.com/git-for-windows/git/pull/286), i.e. network drives.
+
+###Bug fixes
+
+* The MSys2 runtime was taught [not to look hard for groups](https://github.com/git-for-windows/git/issues/193), speeding up *Git Bash*'s startup time.
+* A [work around](https://github.com/git-for-windows/git/issues/361) was added for [issues](https://github.com/git-for-windows/git/wiki/32-bit-issues) when installing 32-bit Git for Windows on 64-bit Windows 10.
+* The installer [no longer freezes](https://github.com/git-for-windows/git/issues/351) when there are interactive commands in the user's `.profile`.
+* `git rebase --skip` [was speeded up again](https://github.com/git-for-windows/git/issues/365).
+* The redirector in `/bin/bash.exe` now adjusts the `PATH` environment variable correctly (i.e. so that Git's executables are found) before launching the *real* Bash, even when called without `--login`.
+* When installing Git for Windows to a location whose path is longer than usual, Git commands [no longer trigger occasional `Bad address` errors](https://github.com/git-for-windows/git/issues/303).
+* Git [no longer asks for a DVD to be inserted again](https://github.com/git-for-windows/git/issues/329) when one has been ejected from the `D:` drive.
 
 ##Changes since Git-2.5.0 (August 18th 2015)
 
