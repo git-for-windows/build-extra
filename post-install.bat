@@ -15,6 +15,25 @@
 @REM We cannot use %PROCESSOR_ARCHITECTURE% for this test because it is
 @REM allowed to install a 32-bit Git for Windows into a 64-bit system.
 @IF EXIST mingw32\bin\git.exe @(
+	@REM We need to rebase just to make sure that it still works even with
+	@REM 32-bit Windows 10
+	@FOR /F "tokens=4 delims=.[XP " %%i IN ('ver') DO @SET ver=%%i
+	@IF 10 LEQ %ver @(
+		@REM We copy `rebase.exe` because it links to `msys-2.0.dll`
+		@REM (and @REM thus prevents modifying it). It is okay to
+		@REM execute `rebase.exe`, though, because the DLL base address
+		@REM problems only really show when other processes are
+		@REM `fork()`ed and `rebase.exe` does no such thing.
+		@IF NOT EXIST bin\rebase.exe @(
+			@IF NOT EXIST bin @MKDIR bin
+			@COPY usr\bin\rebase.exe bin\rebase.exe
+		)
+		@IF NOT EXIST bin\msys-2.0.dll @(
+			@COPY usr\bin\msys-2.0.dll bin\msys-2.0.dll
+		)
+		@bin\rebase.exe -b 0x64000000 usr\bin\msys-2.0.dll
+	)
+
 	usr\bin\dash.exe -c '/usr/bin/dash usr/bin/rebaseall -p'
 )
 

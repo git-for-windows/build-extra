@@ -188,6 +188,15 @@ Type: files; Name: {app}\Git Bash.lnk
 Type: dirifempty; Name: {app}\home\{username}
 Type: dirifempty; Name: {app}\home
 
+#ifdef IS32
+; Delete the files required for rebaseall
+Type: files; Name: {app}\bin\msys-2.0.dll
+Type: files; Name: {app}\bin\rebase.exe
+Type: dirifempty; Name: {app}\bin
+Type: files; Name: {app}\etc\rebase.db.i386
+Type: dirifempty; Name: {app}\etc
+#endif
+
 [Code]
 #include "helpers.inc.iss"
 #include "environment.inc.iss"
