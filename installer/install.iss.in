@@ -188,6 +188,15 @@ Type: files; Name: {app}\Git Bash.lnk
 Type: dirifempty; Name: {app}\home\{username}
 Type: dirifempty; Name: {app}\home
 
+#ifdef IS32
+; Delete the files required for rebaseall
+Type: files; Name: {app}\bin\msys-2.0.dll
+Type: files; Name: {app}\bin\rebase.exe
+Type: dirifempty; Name: {app}\bin
+Type: files; Name: {app}\etc\rebase.db.i386
+Type: dirifempty; Name: {app}\etc
+#endif
+
 [Code]
 #include "helpers.inc.iss"
 #include "environment.inc.iss"
@@ -1535,27 +1544,12 @@ begin
         end;
     end;
 
-#ifdef IS32
-    {
-        Rebase all the .dll files in usr\bin
-    }
-
-    Cmd:=AppDir+'\usr\bin\dash.exe';
-    if not Exec(Cmd, '-c ./rebaseall -p', AppDir+'\usr\bin', SW_HIDE, ewWaitUntilTerminated, i) then begin
-      Msg:='Line {#__LINE__}: Unable to rebase DLLs.';
-
-      // This is not a critical error, so just notify the user and continue.
-      SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-      Log(msg);
-    end;
-#endif
-
     {
         Run post-install scripts to set up system environment
     }
 
-    Cmd:=AppDir+'\usr\bin\bash.exe';
-    if not Exec(Cmd, '--login -c exit', AppDir, SW_HIDE, ewWaitUntilTerminated, i) then begin
+    Cmd:=AppDir+'\post-install.bat';
+    if not Exec(Cmd, '', AppDir, SW_HIDE, ewWaitUntilTerminated, i) then begin
       Msg:='Line {#__LINE__}: Unable to run post-install scripts.';
 
       // This is not a critical error, so just notify the user and continue.
