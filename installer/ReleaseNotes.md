@@ -1,5 +1,5 @@
-#Git 2.5.2 Release Notes
-Last update: 10 September 2015
+#Git 2.5.2(2) Release Notes
+Last update: 13 September 2015
 
 ##Introduction
 
