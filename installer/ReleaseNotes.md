@@ -32,6 +32,15 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
 
+##Changes since Git-2.5.2 (September 10th 2015)
+
+###Bug fixes
+
+* The Git GUI [can be launched from the Start menu again](https://github.com/git-for-windows/git/issues/376).
+* It [now works](https://github.com/git-for-windows/git/pull/305) to call `git add -p -- .` when there is a large number of files.
+* The Arrow keys can be used in the Bash history again [when run in the Windows console](https://github.com/git-for-windows/git/issues/353).
+* Tab completion in the context of a large Active Directory [is no longer slow](https://github.com/git-for-windows/git/issues/377).
+
 ##Changes since Git-2.5.1 (August 31th 2015)
 
 ###New Features
