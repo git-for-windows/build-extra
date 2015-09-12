@@ -69,6 +69,10 @@ none /tmp usertemp binary,posix=0,noacl 0 0' /etc/fstab
 	! grep -q '^export TERM=' /etc/profile ||
 	sed -i 's/^export TERM=/test -n "$TERM" || &/' /etc/profile
 
+	! grep -q ' $1 == ~\* ' /usr/share/bash-completion/bash_completion ||
+	sed -i 's/\( \$1 == \|printf -v \$2 \)\(~\* \|~%q \)/\1\\\2/' \
+		/usr/share/bash-completion/bash_completion
+
 	! grep -qi '^TMP=' /etc/profile ||
 	sed -i 's/^TE\?MP=/#&/i' /etc/profile
 	! grep -q '^unset TMP' /etc/profile ||
