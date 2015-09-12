@@ -71,4 +71,11 @@ $if mode=emacs
     "\e[21~": "Function Key 10"
     "\e[23~": "Function Key 11"
   $endif
+
+  $if term=cygwin
+    "\e[A": previous-history # Cursor Up
+    "\e[B": next-history     # Cursor Down
+    "\e[C": forward-char     # Cursor Right
+    "\e[D": backward-char    # Cursor Left
+  $endif
 $endif
