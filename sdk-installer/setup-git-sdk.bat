@@ -108,7 +108,8 @@
 	mingw-w64-@@ARCH@@-git mingw-w64-@@ARCH@@-toolchain ^
 	mingw-w64-@@ARCH@@-curl mingw-w64-@@ARCH@@-expat ^
 	mingw-w64-@@ARCH@@-openssl mingw-w64-@@ARCH@@-tcl ^
-	mingw-w64-@@ARCH@@-pcre mingw-w64-@@ARCH@@-connect
+	mingw-w64-@@ARCH@@-pcre mingw-w64-@@ARCH@@-connect ^
+	git-flow
 
 @IF ERRORLEVEL 1 GOTO INSTALL_REST
 
