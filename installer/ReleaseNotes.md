@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ###New Features
 
 * Includes [`git flow`](http://nvie.com/posts/a-successful-git-branching-model/).
+* By configuring `git config core.editor notepad`, users [can now use `notepad.exe` as their default editor](https://github.com/git-for-windows/git/issues/381). Configuring `git config format.commitMessageColumns 72` will be picked up by the notepad wrapper and line-wrap the commit message after the user edited it.
 
 ##Changes since Git-2.5.2 (September 10th 2015)
 
