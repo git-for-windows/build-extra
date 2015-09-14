@@ -41,6 +41,7 @@ package() {
   install -m644 $startdir/inputrc $pkgdir/etc
   install -m644 $startdir/vimrc $pkgdir/etc
   install -m755 $startdir/vi $pkgdir/usr/bin
+  install -m755 $startdir/notepad $pkgdir/usr/bin
   install -m755 $startdir/wordpad $pkgdir/usr/bin
   install -m755 create-shortcut.exe $pkgdir/$mingwdir/bin
   install -m755 $startdir/git-prompt.sh $pkgdir/etc/profile.d
