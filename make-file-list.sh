@@ -14,7 +14,8 @@ pacman_list () {
 		do
 			pactree -u "$arg"
 		done |
-		grep -v -e '^db$' -e '^info$' -e '^heimdal$' |
+		grep -v -e '^db$' -e '^info$' -e '^heimdal$' \
+			-e '^git$' -e '^util-linux$' |
 		sort |
 		uniq) &&
 	if test -n "$PACKAGE_VERSIONS_FILE"
@@ -27,14 +28,14 @@ pacman_list () {
 }
 
 # Packages that have been added after Git SDK 1.0.0 was released...
-pacman -S --needed --noconfirm mingw-w64-$ARCH-connect >&2 ||
+pacman -S --needed --noconfirm mingw-w64-$ARCH-connect git-flow >&2 ||
 die "Could not install required packages"
 
 pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
 	git-extra ncurses mintty vim openssh winpty \
 	sed awk less grep gnupg tar findutils coreutils diffutils patch \
 	dos2unix which subversion mingw-w64-$ARCH-tk \
-	mingw-w64-$ARCH-connect "$@" |
+	mingw-w64-$ARCH-connect git-flow "$@" |
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '/man/' -e '/pkgconfig/' -e '/emacs/' \
 	-e '^/usr/lib/python' -e '^/usr/lib/ruby' \
@@ -70,7 +71,7 @@ grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)
 sed 's/^\///'
 
 test -z "$PACKAGE_VERSIONS_FILE" ||
-pacman -Q filesystem dash rebase >>"$PACKAGE_VERSIONS_FILE"
+pacman -Q filesystem dash rebase util-linux >>"$PACKAGE_VERSIONS_FILE"
 
 cat <<EOF
 etc/profile
@@ -87,4 +88,5 @@ usr/bin/start
 usr/bin/dash.exe
 usr/bin/rebase.exe
 usr/bin/rebaseall
+usr/bin/getopt.exe
 EOF
