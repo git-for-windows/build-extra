@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 * The `.vimrc` in the home directory [is now allowed to have DOS line endings](https://github.com/git-for-windows/git/issues/364).
 * The `README.portable` file of the portable Git [mentions the need to run `post-install.bat`](https://github.com/git-for-windows/git/issues/394) when the archive was extracted manually.
+* Home directories for user names [with non-ASCII characters](https://github.com/git-for-windows/git/issues/331) are [handled](https://github.com/git-for-windows/git/issues/336) correctly [now](https://github.com/git-for-windows/git/issues/383).
 
 ##Changes since Git-2.5.2 (September 10th 2015)
 
