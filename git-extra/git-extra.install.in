@@ -8,6 +8,12 @@ post_install () {
 		cat > /$dir/etc/gitconfig <<\GITCONFIG
 @@GITCONFIG@@
 GITCONFIG
+		test ! -d /$dir ||
+		test -f /$dir/etc/gitattributes ||
+		cat > /$dir/etc/gitattributes <<\GITATTRIBUTES
+@@GITATTRIBUTES@@
+
+GITATTRIBUTES
 	done
 
 	grep -q '^db_home: env windows' /etc/nsswitch.conf ||
