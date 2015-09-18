@@ -50,6 +50,7 @@ This package contains software from a number of other projects including Bash, z
 * The `README.portable` file of the portable Git [mentions the need to run `post-install.bat`](https://github.com/git-for-windows/git/issues/394) when the archive was extracted manually.
 * Home directories for user names [with non-ASCII characters](https://github.com/git-for-windows/git/issues/331) are [handled](https://github.com/git-for-windows/git/issues/336) correctly [now](https://github.com/git-for-windows/git/issues/383).
 * The documentation [no longer shows plain-text `linkgit:...` "links"](https://github.com/git-for-windows/git/issues/404) but proper hyperlinks instead.
+* The `mtab` link [is written to `/etc/mtab` again, as it should](https://github.com/git-for-windows/git/issues/404).
 * When run inside the PowerShell, Git no longer gets confused when the current directory's path and what is recorded in the file system differs in case (e.g. "GIT/" vs "Git/").
 
 ##Changes since Git-2.5.2 (September 10th 2015)
