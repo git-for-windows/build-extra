@@ -25,6 +25,21 @@ post_install () {
 [rebase]
 	autosquash = true
 GITCONFIG
+		test ! -d /$dir ||
+		test -f /$dir/etc/gitattributes ||
+		cat > /$dir/etc/gitattributes <<\GITATTRIBUTES
+*.doc	diff=astextplain
+*.DOC	diff=astextplain
+*.docx	diff=astextplain
+*.DOCX	diff=astextplain
+*.dot	diff=astextplain
+*.DOT	diff=astextplain
+*.pdf	diff=astextplain
+*.PDF	diff=astextplain
+*.rtf	diff=astextplain
+*.RTF	diff=astextplain
+
+GITATTRIBUTES
 	done
 
 	grep -q '^db_home: env windows' /etc/nsswitch.conf ||
