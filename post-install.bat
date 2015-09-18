@@ -38,7 +38,7 @@
 )
 
 @REM Run the post-install scripts
-@usr\bin\bash.exe --norc -c "export PATH=/usr/bin:$PATH; for p in $(export LC_COLLATE=C; echo /etc/post-install/*.post); do test -e \"$p\" && . \"$p\"; done"
+@usr\bin\bash.exe --norc -c "export PATH=/usr/bin:$PATH; export SYSCONFDIR=/etc; for p in $(export LC_COLLATE=C; echo /etc/post-install/*.post); do test -e \"$p\" && . \"$p\"; done"
 
 @REM Remove this script
 @DEL post-install.bat
