@@ -55,7 +55,9 @@ test "--update" != "$1" || {
 # v2.5.2.windows.1
 #id=${1:-1796452}
 # v2.5.2.windows.2
-id=${1:-1804946}
+#id=${1:-1804946}
+# v2.5.3.windows.1
+id=${1:-1835755}
 
 curl -s https://api.github.com/repos/git-for-windows/git/releases/$id/assets |
 grep -e '"name":' -e '"download_count":'
