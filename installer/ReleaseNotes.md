@@ -1,5 +1,5 @@
-#Git 2.5.2(2) Release Notes
-Last update: 13 September 2015
+#Git 2.5.3 Release Notes
+Last update: 18 September 2015
 
 ##Introduction
 
@@ -36,6 +36,7 @@ This package contains software from a number of other projects including Bash, z
 
 ###New Features
 
+* Comes with Git 2.5.3.
 * Includes [`git flow`](http://nvie.com/posts/a-successful-git-branching-model/).
 * By configuring `git config core.editor notepad`, users [can now use `notepad.exe` as their default editor](https://github.com/git-for-windows/git/issues/381). Configuring `git config format.commitMessageColumns 72` will be picked up by the notepad wrapper and line-wrap the commit message after the user edited it.
 * The Subversion bindings for use with `git svn` [were upgraded to version 1.9.1](https://github.com/git-for-windows/git/issues/374).
@@ -49,6 +50,7 @@ This package contains software from a number of other projects including Bash, z
 * The `README.portable` file of the portable Git [mentions the need to run `post-install.bat`](https://github.com/git-for-windows/git/issues/394) when the archive was extracted manually.
 * Home directories for user names [with non-ASCII characters](https://github.com/git-for-windows/git/issues/331) are [handled](https://github.com/git-for-windows/git/issues/336) correctly [now](https://github.com/git-for-windows/git/issues/383).
 * The documentation [no longer shows plain-text `linkgit:...` "links"](https://github.com/git-for-windows/git/issues/404) but proper hyperlinks instead.
+* When run inside the PowerShell, Git no longer gets confused when the current directory's path and what is recorded in the file system differs in case (e.g. "GIT/" vs "Git/").
 
 ##Changes since Git-2.5.2 (September 10th 2015)
 
