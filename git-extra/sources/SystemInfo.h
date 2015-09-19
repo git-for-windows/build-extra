@@ -87,7 +87,7 @@ public:
 	typedef DWORD (WINAPI *PNtQueryInformationThread)(HANDLE, ULONG, PVOID,	DWORD, DWORD* );
 	typedef DWORD (WINAPI *PNtQueryInformationFile)(HANDLE, PVOID,	PVOID, DWORD, DWORD );
 	typedef DWORD (WINAPI *PNtQueryInformationProcess)(HANDLE, DWORD, PVOID, DWORD, PVOID );
-	
+
 public:
 	static PNtQuerySystemInformation	NtQuerySystemInformation;
 	static PNtQueryObject				NtQueryObject;
@@ -212,10 +212,10 @@ public:
 		{
 		DWORD		ProcessId;
 		DWORD		ThreadId;
-		HANDLE		ThreadHandle;	
+		HANDLE		ThreadHandle;
 		} THREAD_INFORMATION;
 
-	
+
 	typedef struct _BASIC_THREAD_INFORMATION {
 		DWORD u1;
 		DWORD u2;
@@ -276,7 +276,7 @@ public:
 		//OB_TYPE_DEVICE,
 		//OB_TYPE_DRIVER,
 		OB_TYPE_IO_COMPLETION,
-		OB_TYPE_FILE                        
+		OB_TYPE_FILE
 	} SystemHandleType;
 
 public:
@@ -309,7 +309,7 @@ public:
 
 	BOOL SetFilter( LPCTSTR lpTypeFilter, BOOL bRefresh = TRUE );
 	const string& GetFilter();
-	
+
 	BOOL Refresh();
 
 public:
@@ -420,7 +420,7 @@ public:
 
 protected:
 	static BOOL CALLBACK EnumerateWindows( HWND hwnd, LPARAM lParam );
-	
+
 public:
 	DWORD m_processId;
 	list< WINDOW_INFO > m_WindowInfos;

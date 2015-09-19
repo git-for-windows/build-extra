@@ -9,7 +9,7 @@
 // SystemInfo.cpp v1.1
 //
 // History:
-// 
+//
 // Date      Version     Description
 // ----------------------------------------------------------------------------
 // 10/16/00	 1.0	     Initial version
@@ -97,17 +97,17 @@ BOOL SystemInfoUtils::GetFsFileName( LPCTSTR lpDeviceFileName,
 			// Network drive?
 			if ( _tcsnicmp( _T("\\Device\\LanmanRedirector\\"),
 						lpDeviceName, 25 ) == 0 ) {
-				//Mapped network drive 
+				//Mapped network drive
 
 				char cDriveLetter;
 				DWORD dwParam;
 
 				TCHAR lpSharedName[0x1000];
 
-				if ( _stscanf(  lpDeviceName, 
-					_T("\\Device\\LanmanRedirector\\;%c:%d\\%s"), 
-					&cDriveLetter, 
-					&dwParam, 
+				if ( _stscanf(  lpDeviceName,
+					_T("\\Device\\LanmanRedirector\\;%c:%d\\%s"),
+					&cDriveLetter,
+					&dwParam,
 					lpSharedName ) != 3 )
 					continue;
 
@@ -115,7 +115,7 @@ BOOL SystemInfoUtils::GetFsFileName( LPCTSTR lpDeviceFileName,
 					_T("\\Device\\LanmanRedirector\\") );
 				_tcscat( lpDeviceName, lpSharedName );
 			}
-			
+
 			// Is this the drive letter we are looking for?
 			if ( _tcsnicmp( lpDeviceName, lpDeviceFileName,
 						_tcslen( lpDeviceName ) ) == 0 )
@@ -141,7 +141,7 @@ BOOL SystemInfoUtils::GetDeviceFileName( LPCTSTR lpFsFileName,
 	BOOL rc = FALSE;
 	TCHAR lpDrive[3];
 
-	// Get the drive letter 
+	// Get the drive letter
 	// unfortunetaly it works only with DOS file names
 	_tcsncpy( lpDrive, lpFsFileName, 2 );
 	lpDrive[2] = _T('\0');
@@ -163,17 +163,17 @@ BOOL SystemInfoUtils::GetDeviceFileName( LPCTSTR lpFsFileName,
 		// Network drive?
 		if ( _tcsnicmp( _T("\\Device\\LanmanRedirector\\"),
 					lpDeviceName, 25 ) == 0 ) {
-			//Mapped network drive 
+			//Mapped network drive
 
 			char cDriveLetter;
 			DWORD dwParam;
 
 			TCHAR lpSharedName[0x1000];
 
-			if ( _stscanf(  lpDeviceName, 
-				_T("\\Device\\LanmanRedirector\\;%c:%d\\%s"), 
-				&cDriveLetter, 
-				&dwParam, 
+			if ( _stscanf(  lpDeviceName,
+				_T("\\Device\\LanmanRedirector\\;%c:%d\\%s"),
+				&cDriveLetter,
+				&dwParam,
 				lpSharedName ) != 3 )
 				return FALSE;
 
@@ -197,7 +197,7 @@ DWORD SystemInfoUtils::GetNTMajorVersion()
 {
    OSVERSIONINFOEX osvi;
    BOOL bOsVersionInfoEx;
-   
+
    // Try calling GetVersionEx using the OSVERSIONINFOEX structure,
    // which is supported on Windows 2000.
    //
@@ -213,7 +213,7 @@ DWORD SystemInfoUtils::GetNTMajorVersion()
       // If OSVERSIONINFOEX doesn't work, try OSVERSIONINFO.
 
       osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFO);
-      if (! GetVersionEx ( (OSVERSIONINFO *) &osvi) ) 
+      if (! GetVersionEx ( (OSVERSIONINFO *) &osvi) )
          return FALSE;
    }
 
@@ -273,7 +273,7 @@ BOOL INtDll::Init()
 SystemProcessInformation::SystemProcessInformation( BOOL bRefresh )
 {
 	m_pBuffer = (UCHAR*)VirtualAlloc ((void*)0x100000,
-						BufferSize, 
+						BufferSize,
 						MEM_COMMIT,
 						PAGE_READWRITE);
 
@@ -293,7 +293,7 @@ BOOL SystemProcessInformation::Refresh()
 
 	if ( !NtDllStatus || m_pBuffer == NULL )
 		return FALSE;
-	
+
 	// query the process information
 	if ( INtDll::NtQuerySystemInformation( 5, m_pBuffer, BufferSize, NULL )
 			!= 0 )
@@ -303,7 +303,7 @@ BOOL SystemProcessInformation::Refresh()
 
 	SYSTEM_PROCESS_INFORMATION* pSysProcess =
 		(SYSTEM_PROCESS_INFORMATION*)m_pBuffer;
-	do 
+	do
 	{
 		// fill the process information map
 		m_ProcessInfos[pSysProcess->dUniqueProcessId] = pSysProcess;
@@ -354,10 +354,10 @@ BOOL SystemThreadInformation::Refresh()
 	// Iterating through the found Thread objects
 	for (list<SystemHandleInformation::SYSTEM_HANDLE>::iterator iter = hi.m_HandleInfos.begin(); iter != hi.m_HandleInfos.end(); iter++) {
 		SystemHandleInformation::SYSTEM_HANDLE& h = *iter;
-		
+
 		ti.ProcessId = h.ProcessID;
 		ti.ThreadHandle = (HANDLE)h.HandleNumber;
-		
+
 		// This is one of the threads we are lokking for
 		if ( SystemHandleInformation::GetThreadId( ti.ThreadHandle,
 					ti.ThreadId, ti.ProcessId ) )
@@ -377,7 +377,7 @@ SystemHandleInformation::SystemHandleInformation( DWORD pID, BOOL bRefresh,
 		LPCTSTR lpTypeFilter )
 {
 	m_processId = pID;
-	
+
 	// Set the filter
 	SetFilter( lpTypeFilter, bRefresh );
 }
@@ -452,7 +452,7 @@ BOOL SystemHandleInformation::Refresh()
 			VirtualAlloc( NULL, size = needed + 256,
 					MEM_COMMIT, PAGE_READWRITE );
 	}
-	
+
 	if ( pSysHandleInformation == NULL )
 		return FALSE;
 
@@ -463,18 +463,18 @@ BOOL SystemHandleInformation::Refresh()
 		ret = FALSE;
 		goto cleanup;
 	}
-	
+
 	// Iterating through the objects
 	for ( i = 0; i < pSysHandleInformation->Count; i++ )
 	{
 		if ( !IsSupportedHandle( pSysHandleInformation->Handles[i] ) )
 			continue;
-		
+
 		// ProcessId filtering check
 		if ( pSysHandleInformation->Handles[i].ProcessID ==
 				m_processId || m_processId == (DWORD)-1 ) {
 			BOOL bAdd = FALSE;
-			
+
 			if ( m_strTypeFilter == _T("") )
 				bAdd = TRUE;
 			else
@@ -491,11 +491,11 @@ BOOL SystemHandleInformation::Refresh()
 
 			// That's it. We found one.
 			if ( bAdd )
-			{	
+			{
 				pSysHandleInformation->Handles[i].HandleType =
 					(WORD)(pSysHandleInformation
 					       ->Handles[i].HandleType % 256);
-				
+
 				m_HandleInfos.push_back( pSysHandleInformation
 						->Handles[i] );
 
@@ -504,7 +504,7 @@ BOOL SystemHandleInformation::Refresh()
 	}
 
 cleanup:
-	
+
 	if ( pSysHandleInformation != NULL )
 		VirtualFree( pSysHandleInformation, 0, MEM_RELEASE );
 
@@ -540,7 +540,7 @@ BOOL SystemHandleInformation::GetTypeToken( HANDLE h, string& str,
 	HANDLE handle;
 	HANDLE hRemoteProcess = NULL;
 	BOOL remote = processId != GetCurrentProcessId();
-	
+
 	if ( !NtDllStatus )
 		return FALSE;
 
@@ -548,7 +548,7 @@ BOOL SystemHandleInformation::GetTypeToken( HANDLE h, string& str,
 	{
 		// Open the remote process
 		hRemoteProcess = OpenProcess( processId );
-		
+
 		if ( hRemoteProcess == NULL )
 			return FALSE;
 
@@ -581,7 +581,7 @@ BOOL SystemHandleInformation::GetTypeToken( HANDLE h, string& str,
 		if ( handle != NULL )
 			CloseHandle( handle );
 	}
-	
+
 	if ( lpBuffer != NULL )
 		delete [] lpBuffer;
 
@@ -604,7 +604,7 @@ BOOL SystemHandleInformation::GetTypeFromTypeToken( LPCTSTR typeToken,
 		WORD& type )
 {
 	const WORD count = 27;
-	string constStrTypes[count] = { 
+	string constStrTypes[count] = {
 		_T(""), _T(""), _T("Directory"), _T("SymbolicLink"),
 		_T("Token"), _T("Process"), _T("Thread"), _T("Unknown7"),
 		_T("Event"), _T("EventPair"), _T("Mutant"), _T("Unknown11"),
@@ -622,7 +622,7 @@ BOOL SystemHandleInformation::GetTypeFromTypeToken( LPCTSTR typeToken,
 			type = i;
 			return TRUE;
 		}
-		
+
 	return FALSE;
 }
 
@@ -646,14 +646,14 @@ BOOL SystemHandleInformation::GetNameByType( HANDLE h, WORD type, string& str, D
 	HANDLE hRemoteProcess = NULL;
 	BOOL remote = processId != GetCurrentProcessId();
 	DWORD dwId = 0;
-	
+
 	if ( !NtDllStatus )
 		return FALSE;
 
 	if ( remote )
 	{
 		hRemoteProcess = OpenProcess( processId );
-		
+
 		if ( hRemoteProcess == NULL )
 			return FALSE;
 
@@ -671,7 +671,7 @@ BOOL SystemHandleInformation::GetNameByType( HANDLE h, WORD type, string& str, D
 
 		hex << "PID: 0x" << std::hex << dwId;
 		str = hex.str();
-			
+
 		ret = TRUE;
 		goto cleanup;
 		break;
@@ -680,7 +680,7 @@ BOOL SystemHandleInformation::GetNameByType( HANDLE h, WORD type, string& str, D
 		GetThreadId( handle, dwId );
 
 		hex << "TID: 0x" << std::hex << dwId;
-				
+
 		ret = TRUE;
 		goto cleanup;
 		break;
@@ -708,7 +708,7 @@ BOOL SystemHandleInformation::GetNameByType( HANDLE h, WORD type, string& str, D
 		SystemInfoUtils::Unicode2string( (UNICODE_STRING*)lpBuffer, str );
 		ret = TRUE;
 	}
-	
+
 cleanup:
 
 	if ( remote )
@@ -722,7 +722,7 @@ cleanup:
 
 	if ( lpBuffer != NULL )
 		delete [] lpBuffer;
-	
+
 	return ret;
 }
 
@@ -733,7 +733,7 @@ BOOL SystemHandleInformation::GetThreadId( HANDLE h, DWORD& threadID, DWORD proc
 	HANDLE handle;
 	HANDLE hRemoteProcess = NULL;
 	BOOL remote = processId != GetCurrentProcessId();
-	
+
 	if ( !NtDllStatus )
 		return FALSE;
 
@@ -741,7 +741,7 @@ BOOL SystemHandleInformation::GetThreadId( HANDLE h, DWORD& threadID, DWORD proc
 	{
 		// Open process
 		hRemoteProcess = OpenProcess( processId );
-		
+
 		if ( hRemoteProcess == NULL )
 			return FALSE;
 
@@ -750,7 +750,7 @@ BOOL SystemHandleInformation::GetThreadId( HANDLE h, DWORD& threadID, DWORD proc
 	}
 	else
 		handle = h;
-	
+
 	// Get the thread information
 	if ( INtDll::NtQueryInformationThread( handle, 0, &ti, sizeof(ti), NULL ) == 0 )
 		threadID = ti.ThreadId;
@@ -786,10 +786,10 @@ BOOL SystemHandleInformation::GetProcessId( HANDLE h, DWORD& processId, DWORD re
 	HANDLE hRemoteProcess = NULL;
 	BOOL remote = remoteProcessId != GetCurrentProcessId();
 	SystemProcessInformation::PROCESS_BASIC_INFORMATION pi;
-	
+
 	ZeroMemory( &pi, sizeof(pi) );
 	processId = 0;
-	
+
 	if ( !NtDllStatus )
 		return FALSE;
 
@@ -797,7 +797,7 @@ BOOL SystemHandleInformation::GetProcessId( HANDLE h, DWORD& processId, DWORD re
 	{
 		// Open process
 		hRemoteProcess = OpenProcess( remoteProcessId );
-		
+
 		if ( hRemoteProcess == NULL )
 			return FALSE;
 
@@ -830,13 +830,13 @@ BOOL SystemHandleInformation::GetProcessId( HANDLE h, DWORD& processId, DWORD re
 void SystemHandleInformation::GetFileNameThread( PVOID pParam )
 {
 	// This thread function for getting the filename
-	// if access denied, we hang up in this function, 
+	// if access denied, we hang up in this function,
 	// so if it times out we just kill this thread
 	GetFileNameThreadParam* p = (GetFileNameThreadParam*)pParam;
 
 	UCHAR lpBuffer[0x1000];
 	DWORD iob[2];
-	
+
 	p->rc = INtDll::NtQueryInformationFile( p->hFile, iob, lpBuffer, sizeof(lpBuffer), 9 );
 
 	if ( p->rc == 0 )
@@ -851,7 +851,7 @@ BOOL SystemHandleInformation::GetFileName( HANDLE h, string& str, DWORD processI
 	HANDLE handle;
 	HANDLE hRemoteProcess = NULL;
 	BOOL remote = processId != GetCurrentProcessId();
-	
+
 	if ( !NtDllStatus )
 		return FALSE;
 
@@ -859,7 +859,7 @@ BOOL SystemHandleInformation::GetFileName( HANDLE h, string& str, DWORD processI
 	{
 		// Open process
 		hRemoteProcess = OpenProcess( processId );
-		
+
 		if ( hRemoteProcess == NULL )
 			return FALSE;
 
@@ -884,7 +884,7 @@ BOOL SystemHandleInformation::GetFileName( HANDLE h, string& str, DWORD processI
 
 	// Wait for finishing the thread
 	if ( WaitForSingleObject( hThread, 100 ) == WAIT_TIMEOUT )
-	{	
+	{
 		// Access denied
 		// Terminate the thread
 		TerminateThread( hThread, 0 );
@@ -906,7 +906,7 @@ cleanup:
 		if ( handle != NULL )
 			CloseHandle( handle );
 	}
-		
+
 	return ret;
 }
 
@@ -946,12 +946,12 @@ void SystemModuleInformation::GetModuleListForProcess( DWORD processID )
 	//Get module handles
     if ( !(*m_EnumProcessModules)( hProcess, hModules, cbNeeded, &cbNeeded ) )
 		goto cleanup;
-	
+
 	for ( i = 0; i < cbNeeded / sizeof( HMODULE ); i++ )
 	{
 		moduleInfo.ProcessId = processID;
 		moduleInfo.Handle = hModules[i];
-		
+
 		//Get module full paths
 		if ( (*m_GetModuleFileNameEx)( hProcess, hModules[i], moduleInfo.FullPath, _MAX_PATH ) )
 			m_ModuleInfos.push_back( moduleInfo );
@@ -972,10 +972,10 @@ BOOL SystemModuleInformation::Refresh()
 	m_GetModuleFileNameEx = NULL;
 
 	m_ModuleInfos.clear();
-	
+
 	//Load Psapi.dll
 	HINSTANCE hDll = LoadLibrary( "PSAPI.DLL" );
- 
+
 	if ( hDll == NULL )
 	{
 		rc = FALSE;
@@ -985,7 +985,7 @@ BOOL SystemModuleInformation::Refresh()
 	//Get Psapi.dll functions
 	m_EnumProcessModules = (PEnumProcessModules)GetProcAddress( hDll, "EnumProcessModules" );
 
-	m_GetModuleFileNameEx = (PGetModuleFileNameEx)GetProcAddress( hDll, 
+	m_GetModuleFileNameEx = (PGetModuleFileNameEx)GetProcAddress( hDll,
 #ifdef UNICODE
 								"GetModuleFileNameExW" );
 #else
@@ -997,7 +997,7 @@ BOOL SystemModuleInformation::Refresh()
 		rc = FALSE;
 		goto cleanup;
 	}
-	
+
 	// Everey process or just a particular one
 	if ( m_processId != -1 )
 		// For a particular one
@@ -1008,7 +1008,7 @@ BOOL SystemModuleInformation::Refresh()
 		DWORD pID;
 		SystemProcessInformation::SYSTEM_PROCESS_INFORMATION* p = NULL;
 		SystemProcessInformation pi( TRUE );
-		
+
 		if ( pi.m_ProcessInfos.empty() )
 		{
 			rc = FALSE;
@@ -1022,7 +1022,7 @@ BOOL SystemModuleInformation::Refresh()
 			GetModuleListForProcess( pID );
 		}
 	}
-	
+
 	rc = TRUE;
 
 cleanup:
@@ -1054,7 +1054,7 @@ BOOL SystemWindowInformation::Refresh()
 
 	// Enumerating the windows
 	EnumWindows( EnumerateWindows, (LPARAM)this );
-	
+
 	return TRUE;
 }
 

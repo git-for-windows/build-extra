@@ -32,7 +32,7 @@ void WhoUsesModule( LPCTSTR lpFileName, BOOL bFullPathCheck )
 	string processName;
 	BOOL bShow = FALSE;
 	SystemProcessInformation::SYSTEM_PROCESS_INFORMATION* p;
-	
+
 	SystemProcessInformation pi;
 	SystemModuleInformation mi;
 
@@ -49,7 +49,7 @@ void WhoUsesModule( LPCTSTR lpFileName, BOOL bFullPathCheck )
 	}
 
 	pi.Refresh();
-			
+
 	_tprintf( _T("%-6s  %-20s  %s\n"), _T("PID"), _T("Name"), _T("Path") );
 	_tprintf( _T("------------------------------------------------------------------\n") );
 
@@ -60,7 +60,7 @@ void WhoUsesModule( LPCTSTR lpFileName, BOOL bFullPathCheck )
 			bShow =	_tcsicmp( m.FullPath, lpFileName ) == 0;
 		else
 			bShow =	_tcsicmp( GetFileNamePosition(m.FullPath), lpFileName ) == 0;
-		
+
 		if ( bShow )
 		{
 			p = pi.m_ProcessInfos[m.ProcessId];
@@ -70,9 +70,9 @@ void WhoUsesModule( LPCTSTR lpFileName, BOOL bFullPathCheck )
 			else
 				processName = "";
 
-				_tprintf( _T("0x%04X  %-20s  %s\n"), 
-					m.ProcessId, 
-					processName.c_str(), 
+				_tprintf( _T("0x%04X  %-20s  %s\n"),
+					m.ProcessId,
+					processName.c_str(),
 					m.FullPath );
 		}
 	}
@@ -105,7 +105,7 @@ void WhoUsesFile( LPCTSTR lpFileName, BOOL bFullPathCheck )
 		_tprintf( _T("No handle information\n") );
 		return;
 	}
-	
+
 	pi.Refresh();
 
 	_tprintf( _T("%-6s  %-20s  %s\n"), _T("PID"), _T("Name"), _T("Path") );
@@ -124,7 +124,7 @@ void WhoUsesFile( LPCTSTR lpFileName, BOOL bFullPathCheck )
 		//NT4 Stupid thing if it is the services.exe and I call GetName :((
 		if ( INtDll::dwNTMajorVersion == 4 && _tcsicmp( processName.c_str(), _T("services.exe" ) ) == 0 )
 			continue;
-		
+
 		hi.GetName( (HANDLE)h.HandleNumber, name, (DWORD)h.ProcessID );
 
 		if ( bFullPathCheck )
@@ -139,9 +139,9 @@ void WhoUsesFile( LPCTSTR lpFileName, BOOL bFullPathCheck )
 				fsFilePath = "";
 				SystemInfoUtils::GetFsFileName( name.c_str(), fsFilePath );
 			}
-			
-			_tprintf( _T("0x%04X  %-20s  %s\n"), 
-				h.ProcessID, 
+
+			_tprintf( _T("0x%04X  %-20s  %s\n"),
+				h.ProcessID,
 				processName.c_str(),
 				!bFullPathCheck ? fsFilePath.c_str() : lpFileName );
 		}
@@ -175,7 +175,7 @@ void EnableDebugPriv( void )
 
 	if ( ! AdjustTokenPrivileges( hToken, FALSE, &tkp, sizeof tkp, NULL, NULL ) )
 		_tprintf( _T("AdjustTokenPrivileges() failed, Error = %d SeDebugPrivilege is not available.\n"), GetLastError() );
-		
+
 	CloseHandle( hToken );
 }
 
@@ -206,7 +206,7 @@ int _tmain(int argc, TCHAR* argv[])
 	BOOL bFullPathCheck = FALSE;
 	BOOL bUsage = TRUE;
 	TCHAR lpFilePath[_MAX_PATH];
-	
+
 	for ( int i = 1; i < argc; i++ )
 	{
 		if ( _tcsicmp( argv[i], _T("-h" ) ) == 0 || _tcsicmp( argv[i], _T("-?" ) ) == 0 )
@@ -255,11 +255,11 @@ int _tmain(int argc, TCHAR* argv[])
 	}
 	else
 		_tcscpy( lpFilePath, GetFileNamePosition( lpPath ) );
-	
+
 	if ( bModule )
 		WhoUsesModule( lpFilePath, bFullPathCheck );
 	else
 		WhoUsesFile( lpFilePath, bFullPathCheck );
-	
+
 	return 0;
 }
