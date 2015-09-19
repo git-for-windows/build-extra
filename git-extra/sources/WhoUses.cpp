@@ -71,7 +71,7 @@ void WhoUsesModule( LPCTSTR lpFileName, BOOL bFullPathCheck )
 				processName = "";
 
 				_tprintf( _T("0x%04X  %-20s  %s\n"),
-					m.ProcessId,
+					(unsigned int)m.ProcessId,
 					processName.c_str(),
 					m.FullPath );
 		}
@@ -125,7 +125,7 @@ void WhoUsesFile( LPCTSTR lpFileName, BOOL bFullPathCheck )
 		if ( INtDll::dwNTMajorVersion == 4 && _tcsicmp( processName.c_str(), _T("services.exe" ) ) == 0 )
 			continue;
 
-		hi.GetName( (HANDLE)h.HandleNumber, name, (DWORD)h.ProcessID );
+		hi.GetName( (HANDLE)(DWORD_PTR)h.HandleNumber, name, (DWORD)h.ProcessID );
 
 		if ( bFullPathCheck )
 			bShow =	_tcsicmp( name.c_str(), deviceFileName.c_str() ) == 0;
@@ -141,7 +141,7 @@ void WhoUsesFile( LPCTSTR lpFileName, BOOL bFullPathCheck )
 			}
 
 			_tprintf( _T("0x%04X  %-20s  %s\n"),
-				h.ProcessID,
+				(unsigned int)h.ProcessID,
 				processName.c_str(),
 				!bFullPathCheck ? fsFilePath.c_str() : lpFileName );
 		}
@@ -158,13 +158,13 @@ void EnableDebugPriv( void )
 	if ( ! OpenProcessToken( GetCurrentProcess(),
 		TOKEN_ADJUST_PRIVILEGES | TOKEN_QUERY, &hToken ) )
 	{
-		_tprintf( _T("OpenProcessToken() failed, Error = %d SeDebugPrivilege is not available.\n") , GetLastError() );
+		_tprintf( _T("OpenProcessToken() failed, Error = %d SeDebugPrivilege is not available.\n") , (int)GetLastError() );
 		return;
 	}
 
 	if ( ! LookupPrivilegeValue( NULL, SE_DEBUG_NAME, &sedebugnameValue ) )
 	{
-		_tprintf( _T("LookupPrivilegeValue() failed, Error = %d SeDebugPrivilege is not available.\n"), GetLastError() );
+		_tprintf( _T("LookupPrivilegeValue() failed, Error = %d SeDebugPrivilege is not available.\n"), (int)GetLastError() );
 		CloseHandle( hToken );
 		return;
 	}
@@ -174,7 +174,7 @@ void EnableDebugPriv( void )
 	tkp.Privileges[0].Attributes = SE_PRIVILEGE_ENABLED;
 
 	if ( ! AdjustTokenPrivileges( hToken, FALSE, &tkp, sizeof tkp, NULL, NULL ) )
-		_tprintf( _T("AdjustTokenPrivileges() failed, Error = %d SeDebugPrivilege is not available.\n"), GetLastError() );
+		_tprintf( _T("AdjustTokenPrivileges() failed, Error = %d SeDebugPrivilege is not available.\n"), (int)GetLastError() );
 
 	CloseHandle( hToken );
 }
@@ -249,7 +249,7 @@ int _tmain(int argc, TCHAR* argv[])
 	{
 		if ( GetFullPathName( lpPath, _MAX_PATH, lpFilePath, NULL ) == 0 )
 		{
-			_tprintf( _T("GetFullPathName() failed. Error = %d\n"), GetLastError() );
+			_tprintf( _T("GetFullPathName() failed. Error = %d\n"), (int)GetLastError() );
 			return -2;
 		}
 	}

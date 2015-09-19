@@ -100,7 +100,7 @@ BOOL SystemInfoUtils::GetFsFileName( LPCTSTR lpDeviceFileName,
 				//Mapped network drive
 
 				char cDriveLetter;
-				DWORD dwParam;
+				int dwParam;
 
 				TCHAR lpSharedName[0x1000];
 
@@ -166,7 +166,7 @@ BOOL SystemInfoUtils::GetDeviceFileName( LPCTSTR lpFsFileName,
 			//Mapped network drive
 
 			char cDriveLetter;
-			DWORD dwParam;
+			int dwParam;
 
 			TCHAR lpSharedName[0x1000];
 
@@ -356,7 +356,7 @@ BOOL SystemThreadInformation::Refresh()
 		SystemHandleInformation::SYSTEM_HANDLE& h = *iter;
 
 		ti.ProcessId = h.ProcessID;
-		ti.ThreadHandle = (HANDLE)h.HandleNumber;
+		ti.ThreadHandle = (HANDLE)(DWORD_PTR)h.HandleNumber;
 
 		// This is one of the threads we are lokking for
 		if ( SystemHandleInformation::GetThreadId( ti.ThreadHandle,
@@ -480,7 +480,7 @@ BOOL SystemHandleInformation::Refresh()
 			else
 			{
 				// Type filtering
-				GetTypeToken( (HANDLE)pSysHandleInformation
+				GetTypeToken( (HANDLE)(DWORD_PTR)pSysHandleInformation
 						->Handles[i].HandleNumber,
 						strType,
 						pSysHandleInformation
@@ -770,8 +770,6 @@ BOOL SystemHandleInformation::GetThreadId( HANDLE h, DWORD& threadID, DWORD proc
 //Process related functions
 BOOL SystemHandleInformation::GetProcessPath( HANDLE h, string& strPath, DWORD remoteProcessId )
 {
-	h; strPath; remoteProcessId;
-
 	stringstream number;
 	number << remoteProcessId;
 	strPath = number.str();
@@ -999,7 +997,7 @@ BOOL SystemModuleInformation::Refresh()
 	}
 
 	// Everey process or just a particular one
-	if ( m_processId != -1 )
+	if ( m_processId != (DWORD)-1 )
 		// For a particular one
 		GetModuleListForProcess( m_processId );
 	else
@@ -1067,7 +1065,7 @@ BOOL CALLBACK SystemWindowInformation::EnumerateWindows( HWND hwnd, LPARAM lPara
 	GetWindowThreadProcessId(hwnd, &wi.ProcessId ) ;
 
 	// Filtering by process ID
-	if ( _this->m_processId == -1 || _this->m_processId == wi.ProcessId )
+	if ( _this->m_processId == (DWORD)-1 || _this->m_processId == wi.ProcessId )
 	{
 		GetWindowText( hwnd, wi.Caption, MaxCaptionSize );
 

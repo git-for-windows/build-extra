@@ -14,12 +14,14 @@
 #error You need Windows NT to use this source code. Define WINNT!
 #endif
 
+#ifdef _MSC_VER
 #if _MSC_VER > 1000
 #pragma once
 #endif // _MSC_VER > 1000
 
 #pragma warning( disable : 4786 )
 #pragma warning( disable : 4200 )
+#endif
 
 #include <map>
 #include <string>
