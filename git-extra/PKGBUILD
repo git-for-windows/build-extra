@@ -58,5 +58,5 @@ package() {
   install -m644 $startdir/resources/msys2-32.ico $pkgdir/usr/share/git
   install -m644 $startdir/scripts/99-post-install-cleanup.post \
 	$pkgdir/etc/post-install
-  install -m755 $startdir/scripts/astextplain $pkgdir/$mingwdir/bin
+  install -m755 $startdir/scripts/astextplain $pkgdir/usr/bin
 }
