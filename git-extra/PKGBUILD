@@ -31,26 +31,17 @@ build() {
 }
 
 package() {
-  case "$CARCH" in
-    i686)
-      mingwdir="mingw32"
-    ;;
-    x86_64)
-      mingwdir="mingw64"
-    ;;
-  esac
-
   install -d -m755 $pkgdir/etc/profile.d
   install -d -m755 $pkgdir/etc/post-install
   install -d -m755 $pkgdir/usr/bin
   install -d -m755 $pkgdir/usr/share/git
-  install -d -m755 $pkgdir/$mingwdir/bin
+  install -d -m755 $pkgdir/${MINGW_PREFIX}/bin
   install -m644 $startdir/resources/inputrc $pkgdir/etc
   install -m644 $startdir/resources/vimrc $pkgdir/etc
   install -m755 $startdir/scripts/vi $pkgdir/usr/bin
   install -m755 $startdir/scripts/notepad $pkgdir/usr/bin
   install -m755 $startdir/scripts/wordpad $pkgdir/usr/bin
-  install -m755 create-shortcut.exe $pkgdir/$mingwdir/bin
+  install -m755 create-shortcut.exe $pkgdir/${MINGW_PREFIX}/bin
   install -m755 $startdir/profile.d/git-prompt.sh $pkgdir/etc/profile.d
   install -m755 $startdir/profile.d/aliases.sh $pkgdir/etc/profile.d
   install -m755 $startdir/profile.d/env.sh $pkgdir/etc/profile.d
