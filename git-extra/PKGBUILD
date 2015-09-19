@@ -27,10 +27,15 @@ prepare() {
 }
 
 build() {
-  gcc -o create-shortcut.exe $startdir/sources/create-shortcut.c -luuid -lole32
+  export CC=${MINGW_CHOST}-gcc
+  export SRCDIR=$startdir/sources
+  export BUILDDIR=build-${MINGW_CHOST}
+  mkdir -p ${BUILDDIR}
+  make -f $startdir/sources/Makefile
 }
 
 package() {
+  builddir=build-${MINGW_CHOST}
   install -d -m755 $pkgdir/etc/profile.d
   install -d -m755 $pkgdir/etc/post-install
   install -d -m755 $pkgdir/usr/bin
@@ -41,7 +46,7 @@ package() {
   install -m755 $startdir/scripts/vi $pkgdir/usr/bin
   install -m755 $startdir/scripts/notepad $pkgdir/usr/bin
   install -m755 $startdir/scripts/wordpad $pkgdir/usr/bin
-  install -m755 create-shortcut.exe $pkgdir/${MINGW_PREFIX}/bin
+  install -m755 $builddir/create-shortcut.exe $pkgdir/${MINGW_PREFIX}/bin
   install -m755 $startdir/profile.d/git-prompt.sh $pkgdir/etc/profile.d
   install -m755 $startdir/profile.d/aliases.sh $pkgdir/etc/profile.d
   install -m755 $startdir/profile.d/env.sh $pkgdir/etc/profile.d
