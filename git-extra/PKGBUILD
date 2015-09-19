@@ -16,7 +16,9 @@ pkgver() {
 }
 
 prepare() {
-  test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in ||
+  test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
+  test $startdir/$pkgname.install -nt $startdir/resources/gitconfig &&
+  test $startdir/$pkgname.install -nt $startdir/resources/gitattributes ||
   sed -e "/^@@GITCONFIG@@$/r $startdir/resources/gitconfig" \
 	-e "/^@@GITCONFIG@@$/d" \
 	-e "/^@@GITATTRIBUTES@@$/r $startdir/resources/gitattributes" \
