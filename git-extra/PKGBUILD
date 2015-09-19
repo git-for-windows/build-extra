@@ -15,14 +15,16 @@ pkgver() {
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD -- "$startdir")" "$(git rev-parse --short HEAD)"
 }
 
-build() {
+prepare() {
   test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in ||
   sed -e "/^@@GITCONFIG@@$/r $startdir/resources/gitconfig" \
 	-e "/^@@GITCONFIG@@$/d" \
 	-e "/^@@GITATTRIBUTES@@$/r $startdir/resources/gitattributes" \
 	-e "/^@@GITATTRIBUTES@@$/d" \
 	<$startdir/$pkgname.install.in >$startdir/$pkgname.install
+}
 
+build() {
   gcc -o create-shortcut.exe $startdir/sources/create-shortcut.c -luuid -lole32
 }
 
