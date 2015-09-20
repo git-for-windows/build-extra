@@ -1,6 +1,6 @@
 ln_or_cp () {
 	ln "$@" ||
-	echo cp "$@" ||
+	cp "$@" ||
 	echo "ERROR: could not link $*" >&2
 }
 
