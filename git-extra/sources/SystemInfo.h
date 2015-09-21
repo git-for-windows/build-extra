@@ -177,7 +177,7 @@ public:
 		QWORD          qKernelTime;
 		UNICODE_STRING usName;
 		DWORD	       BasePriority;
-		DWORD          dUniqueProcessId;
+		DWORD_PTR      dUniqueProcessId;
 		DWORD          dInheritedFromUniqueProcessId;
 		DWORD          dHandleCount;
 		DWORD          dReserved07;
@@ -288,7 +288,7 @@ public:
 		DWORD	ProcessID;
 		WORD	HandleType;
 		WORD	HandleNumber;
-		DWORD	KernelAddress;
+		PVOID	KernelAddress;
 		DWORD	Flags;
 	} SYSTEM_HANDLE;
 

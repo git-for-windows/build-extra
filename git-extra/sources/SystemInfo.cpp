@@ -581,8 +581,7 @@ BOOL SystemHandleInformation::GetTypeToken( HANDLE h, string& str,
 	if ( INtDll::NtQueryObject( handle, 2, lpBuffer, size, NULL ) == 0 )
 	{
 		str = _T("");
-		SystemInfoUtils::LPCWSTR2string( (LPCWSTR)(lpBuffer+0x60),
-				str );
+		SystemInfoUtils::Unicode2string( (UNICODE_STRING *)lpBuffer, str );
 
 		ret = TRUE;
 	}
