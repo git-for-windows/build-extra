@@ -271,9 +271,10 @@ BOOL INtDll::Init()
 ///////////////////////////////////////////////////////////////////////////////
 
 SystemProcessInformation::SystemProcessInformation( BOOL bRefresh )
+		: m_dBufferSize(0x10000)
 {
-	m_pBuffer = (UCHAR*)VirtualAlloc ((void*)0x100000,
-						BufferSize,
+	m_pBuffer = (UCHAR*)VirtualAlloc (NULL,
+						m_dBufferSize,
 						MEM_COMMIT,
 						PAGE_READWRITE);
 
@@ -294,10 +295,29 @@ BOOL SystemProcessInformation::Refresh()
 	if ( !NtDllStatus || m_pBuffer == NULL )
 		return FALSE;
 
-	// query the process information
-	if ( INtDll::NtQuerySystemInformation( 5, m_pBuffer, BufferSize, NULL )
-			!= 0 )
-		return FALSE;
+	while ( 1 ) {
+		// query the process information
+		NTSTATUS result = INtDll::NtQuerySystemInformation( 5,
+				m_pBuffer, m_dBufferSize, NULL );
+		if ( result == 0 )
+			break;
+		if ( result != STATUS_INFO_LENGTH_MISMATCH )
+		{
+			fprintf( stderr, "NtQuerySystemInformation: 0x%x",
+					result );
+			return FALSE;
+		}
+		VirtualFree( m_pBuffer, 0, MEM_RELEASE );
+		m_dBufferSize <<= 1;
+		m_pBuffer= (UCHAR*)VirtualAlloc( NULL, m_dBufferSize,
+					MEM_COMMIT, PAGE_READWRITE );
+		if ( m_pBuffer == NULL )
+		{
+			fprintf( stderr, "Out of memory!\n" );
+			return FALSE;
+		}
+	}
+
 
 	DWORD currentProcessID = GetCurrentProcessId(); //Current Process ID
 

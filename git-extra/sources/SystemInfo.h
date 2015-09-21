@@ -81,6 +81,8 @@ public:
 //
 ///////////////////////////////////////////////////////////////////////////////
 
+#define STATUS_INFO_LENGTH_MISMATCH ((DWORD) 0xC0000004)
+
 class INtDll
 {
 public:
@@ -185,8 +187,6 @@ public:
 		SYSTEM_THREAD  Threads[1];
 		} SYSTEM_PROCESS_INFORMATION;
 
-	enum { BufferSize = 0x10000 };
-
 public:
 	SystemProcessInformation( BOOL bRefresh = FALSE );
 	virtual ~SystemProcessInformation();
@@ -198,6 +198,7 @@ public:
 	SYSTEM_PROCESS_INFORMATION* m_pCurrentProcessInfo;
 
 protected:
+	DWORD						m_dBufferSize;
 	UCHAR*						m_pBuffer;
 };
 
