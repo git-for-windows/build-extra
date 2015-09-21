@@ -452,15 +452,20 @@ BOOL SystemHandleInformation::Refresh()
 		(SYSTEM_HANDLE_INFORMATION*)
 		VirtualAlloc( NULL, size, MEM_COMMIT, PAGE_READWRITE );
 
-	if ( pSysHandleInformation == NULL )
-		return FALSE;
+	while ( 1 ) {
+		if ( pSysHandleInformation == NULL )
+			return FALSE;
 
-	// Query the needed buffer size for the objects ( system wide )
-	if ( INtDll::NtQuerySystemInformation( 16, pSysHandleInformation,
-				size, &needed ) != 0 )
-	{
-		if ( needed == 0 )
+		// Query the needed buffer size for the objects ( system wide )
+		DWORD result = INtDll::NtQuerySystemInformation( 16,
+				pSysHandleInformation, size, &needed );
+		if ( result == 0 )
+			break;
+
+		if ( result != STATUS_INFO_LENGTH_MISMATCH )
 		{
+			fprintf( stderr, "NtQuerySystemInformation: 0x%x\n",
+					result );
 			ret = FALSE;
 			goto cleanup;
 		}
@@ -471,17 +476,6 @@ BOOL SystemHandleInformation::Refresh()
 		pSysHandleInformation = (SYSTEM_HANDLE_INFORMATION*)
 			VirtualAlloc( NULL, size = needed + 256,
 					MEM_COMMIT, PAGE_READWRITE );
-	}
-
-	if ( pSysHandleInformation == NULL )
-		return FALSE;
-
-	// Query the objects ( system wide )
-	if ( INtDll::NtQuerySystemInformation( 16, pSysHandleInformation,
-				size, NULL ) != 0 )
-	{
-		ret = FALSE;
-		goto cleanup;
 	}
 
 	// Iterating through the objects
