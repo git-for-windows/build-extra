@@ -15,42 +15,46 @@ pkgver() {
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD -- "$startdir")" "$(git rev-parse --short HEAD)"
 }
 
-build() {
-  test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in ||
-  sed -e "/^@@GITCONFIG@@$/r $startdir/gitconfig" -e "/^@@GITCONFIG@@$/d" \
-	-e "/^@@GITATTRIBUTES@@$/r $startdir/gitattributes" \
+prepare() {
+  test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
+  test $startdir/$pkgname.install -nt $startdir/resources/gitconfig &&
+  test $startdir/$pkgname.install -nt $startdir/resources/gitattributes ||
+  sed -e "/^@@GITCONFIG@@$/r $startdir/resources/gitconfig" \
+	-e "/^@@GITCONFIG@@$/d" \
+	-e "/^@@GITATTRIBUTES@@$/r $startdir/resources/gitattributes" \
 	-e "/^@@GITATTRIBUTES@@$/d" \
 	<$startdir/$pkgname.install.in >$startdir/$pkgname.install
+}
 
-  gcc -o create-shortcut.exe $startdir/create-shortcut.c -luuid -lole32
+build() {
+  export CC=${MINGW_CHOST}-gcc
+  export CXX=${MINGW_CHOST}-g++
+  export SRCDIR=$startdir/sources
+  export BUILDDIR=build-${MINGW_CHOST}
+  mkdir -p ${BUILDDIR}
+  make -f $startdir/sources/Makefile
 }
 
 package() {
-  case "$CARCH" in
-    i686)
-      mingwdir="mingw32"
-    ;;
-    x86_64)
-      mingwdir="mingw64"
-    ;;
-  esac
-
+  builddir=build-${MINGW_CHOST}
   install -d -m755 $pkgdir/etc/profile.d
   install -d -m755 $pkgdir/etc/post-install
   install -d -m755 $pkgdir/usr/bin
   install -d -m755 $pkgdir/usr/share/git
-  install -d -m755 $pkgdir/$mingwdir/bin
-  install -m644 $startdir/inputrc $pkgdir/etc
-  install -m644 $startdir/vimrc $pkgdir/etc
-  install -m755 $startdir/vi $pkgdir/usr/bin
-  install -m755 $startdir/notepad $pkgdir/usr/bin
-  install -m755 $startdir/wordpad $pkgdir/usr/bin
-  install -m755 create-shortcut.exe $pkgdir/$mingwdir/bin
-  install -m755 $startdir/git-prompt.sh $pkgdir/etc/profile.d
-  install -m755 $startdir/aliases.sh $pkgdir/etc/profile.d
-  install -m755 $startdir/env.sh $pkgdir/etc/profile.d
-  install -m755 $startdir/bash_profile.sh $pkgdir/etc/profile.d
-  install -m644 $startdir/msys2-32.ico $pkgdir/usr/share/git
-  install -m644 $startdir/99-post-install-cleanup.post $pkgdir/etc/post-install
-  install -m755 $startdir/astextplain $pkgdir/$mingwdir/bin
+  install -d -m755 $pkgdir/${MINGW_PREFIX}/bin
+  install -m644 $startdir/resources/inputrc $pkgdir/etc
+  install -m644 $startdir/resources/vimrc $pkgdir/etc
+  install -m755 $startdir/scripts/vi $pkgdir/usr/bin
+  install -m755 $startdir/scripts/notepad $pkgdir/usr/bin
+  install -m755 $startdir/scripts/wordpad $pkgdir/usr/bin
+  install -m755 $builddir/create-shortcut.exe $pkgdir/${MINGW_PREFIX}/bin
+  install -m755 $builddir/WhoUses.exe $pkgdir/${MINGW_PREFIX}/bin
+  install -m755 $startdir/profile.d/git-prompt.sh $pkgdir/etc/profile.d
+  install -m755 $startdir/profile.d/aliases.sh $pkgdir/etc/profile.d
+  install -m755 $startdir/profile.d/env.sh $pkgdir/etc/profile.d
+  install -m755 $startdir/profile.d/bash_profile.sh $pkgdir/etc/profile.d
+  install -m644 $startdir/resources/msys2-32.ico $pkgdir/usr/share/git
+  install -m644 $startdir/scripts/99-post-install-cleanup.post \
+	$pkgdir/etc/post-install
+  install -m755 $startdir/scripts/astextplain $pkgdir/usr/bin
 }
