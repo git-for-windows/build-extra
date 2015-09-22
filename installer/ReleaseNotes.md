@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 ###Bug Fixes
 
 * The portable version avoids DLL search path problems [even when installed into a FAT filesystem](https://github.com/git-for-windows/git/issues/390).
+* Configuring `notepad` as editor without configuring a width for commit messages [no longer triggers an error message](https://github.com/git-for-windows/git/issues/430).
 
 ##Changes since Git-2.5.2(2) (September 13th 2015)
 
