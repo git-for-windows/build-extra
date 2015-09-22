@@ -1,5 +1,5 @@
 #Git 2.5.3 Release Notes
-Last update: 18 September 2015
+Latest update: 18 September 2015
 
 ##Introduction
 
