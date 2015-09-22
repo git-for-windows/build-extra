@@ -1396,7 +1396,7 @@ begin
     }
 
     if RdbBashTerminal[GB_ConHost].checked then begin
-        OverrideGitBashCommandLine(AppDir+'\git-bash.exe','SHOW_CONSOLE=1 @@COMSPEC@@ /C "@@EXEPATH@@\usr\bin\bash.exe" --login -i');
+        OverrideGitBashCommandLine(AppDir+'\git-bash.exe','SHOW_CONSOLE=1 APPEND_QUOTE=1 @@COMSPEC@@ /S /C ""@@EXEPATH@@\usr\bin\bash.exe" --login -i');
     end;
 
     {
