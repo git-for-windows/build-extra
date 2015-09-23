@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ###New Features
 
 * The `WhoUses.exe` tool to determine which process holds a lock on a given file (which was shipped with Git for Windows 1.x) gets installed alongside Git for Windows again.
+* The values `CurrentVersion`, `InstallPath` and `LibexecPath` are [added to the `HKEY_LOCAL_MACHINE\Software\GitForWindows` registry key](https://github.com/git-for-windows/git/issues/427) to help third-party add-ons to find us.
 
 ###Bug Fixes
 
