@@ -18,8 +18,8 @@ desired. Your user account needs write access to the selected directory.
 (You can move that directory with all its contents to a different place or
 computer at any time should you later desire so).
 
-*NOTE*: if you decide to unpack the archive using 7-Zip manually, you should
-consider to run the `post-install.bat` script. Git might not run correctly
+*NOTE*: if you decide to unpack the archive using 7-Zip manually, you must
+run the `post-install.bat` script. Git will not run correctly
 otherwise.
 
 Functional differences to the non-portable Git for Windows
