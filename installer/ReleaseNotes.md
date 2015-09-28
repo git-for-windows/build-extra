@@ -43,6 +43,8 @@ This package contains software from a number of other projects including Bash, z
 
 * The portable version avoids DLL search path problems [even when installed into a FAT filesystem](https://github.com/git-for-windows/git/issues/390).
 * Configuring `notepad` as editor without configuring a width for commit messages [no longer triggers an error message](https://github.com/git-for-windows/git/issues/430).
+* When using Windows' default console for *Git Bash*, [the `.sh` file associations work again](https://github.com/git-for-windows/git/issues/396).
+* Portable Git's `README` [is now clearer about the need to run `post-install.bat` when unpacking manually](https://github.com/git-for-windows/build-extra/pull/83).
 
 ##Changes since Git-2.5.2(2) (September 13th 2015)
 
