@@ -1,11 +1,11 @@
 #!/bin/sh
 
 # This script helps Git for Windows developers to manage their Pacman
-# repository.
+# repository and their local pacman package-database.
 #
 # A Pacman repository is like a Git repository, but for binary packages.
 #
-# This script supports three commands:
+# This script supports seven commands:
 #
 # - 'fetch' to initialize (or update) a local mirror of the Pacman repository
 #
@@ -15,11 +15,21 @@
 #
 # - 'push' to synchronize local changes (after calling `repo-add`) to the
 #   remote Pacman repository
+#
+# - 'files' shows files that are not owned by any package.
+#
+# - 'dirs' shows directories that are not owned by any package.
+#
+# - 'orphans' removes any package that became an orphan.
 
 die () {
-	echo "$*" >&2
+	printf "$*" >&2
 	exit 1
 }
+
+# temporary fifo files
+fifo_find="/var/tmp/disowned.find"
+fifo_pacman="/var/tmp/disowned.pacman"
 
 # MSys2's mingw-w64-$arch-ca-certificates seem to lag behind ca-certificates
 CURL_CA_BUNDLE=/usr/ssl/certs/ca-bundle.crt
@@ -27,12 +37,14 @@ export CURL_CA_BUNDLE
 
 mode=
 case "$1" in
-fetch|add|remove|push)
+fetch|add|remove|push|files|dirs|orphans)
 	mode="$1"
 	shift
 	;;
 *)
-	die "Usage: $0 ( fetch | push | ( add | remove ) <package>... )"
+	die "Usage:\n" \
+		" $0 ( fetch | push | ( add | remove ) <package>... )\n" \
+		" $0 ( files | dirs | orphans )"
 	;;
 esac
 
@@ -295,6 +307,47 @@ push () {
 		) || exit
 	done
 	publish package-database $next_db_version
+}
+
+reset_fifo_files () {
+	rm -f "$fifo_find"
+	rm -f "$fifo_pacman"
+}
+
+dirs () {
+	reset_fifo_files
+
+	find / \( -path '/dev' -o -path '/bin' -o -path '/usr/src' \
+		-o -path '/tmp' -o -path '/proc' -o -path '/home' \
+		-o -path '/var/lib/pacman' -o -path '/var/cache/pacman' \) \
+		-prune -o -type d -print | sed 's/\([^/]\)$/\1\//' | \
+		sort -u > "$fifo_find"
+
+	pacman -Qlq | sort -u > "$fifo_pacman"
+
+	comm -23 "$fifo_find" "$fifo_pacman"
+
+	reset_fifo_files
+}
+
+files () {
+	reset_fifo_files
+
+	find / \( -path '/dev' -o -path '/bin' -o -path '/usr/src' \
+		-o -path '/tmp' -o -path '/proc' -o -path "$fifo_find" \
+		-o -path '/home' -o -path '/var/lib/pacman' \
+		-o -path '/var/cache/pacman' \) -prune -o -type f -print | \
+		sort -u > "$fifo_find"
+
+	pacman -Qlq | sort -u > "$fifo_pacman"
+
+	comm -23 "$fifo_find" "$fifo_pacman"
+
+	reset_fifo_files
+}
+
+orphans () {
+	pacman -Rns $(pacman -Qtdq) 2> /dev/null || echo 'no orphans found..'
 }
 
 eval "$mode" "$@"
