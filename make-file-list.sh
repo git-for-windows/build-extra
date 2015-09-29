@@ -28,9 +28,16 @@ pacman_list () {
 }
 
 # Packages that have been added after Git SDK 1.0.0 was released...
-pacman -S --needed --noconfirm mingw-w64-$ARCH-connect git-flow unzip docx2txt \
-	mingw-w64-$ARCH-antiword mingw-w64-$ARCH-xpdf >&2 ||
-die "Could not install required packages"
+required=
+for req in mingw-w64-$ARCH-connect git-flow unzip docx2txt \
+	mingw-w64-$ARCH-antiword mingw-w64-$ARCH-xpdf
+do
+	test -d /var/lib/pacman/local/$req-[0-9]* ||
+	required="$required $req"
+done
+test -z "$required" ||
+pacman -S --noconfirm $required >&2 ||
+die "Could not install required packages: $required"
 
 pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
 	git-extra ncurses mintty vim openssh winpty \
