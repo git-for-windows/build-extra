@@ -1,5 +1,5 @@
-#Git 2.5.3 Release Notes
-Latest update: 18 September 2015
+#Git 2.6.0 Release Notes
+Latest update: 29 September 2015
 
 ##Introduction
 
@@ -36,8 +36,11 @@ This package contains software from a number of other projects including Bash, z
 
 ###New Features
 
+* Comes with Git 2.6.0
 * The `WhoUses.exe` tool to determine which process holds a lock on a given file (which was shipped with Git for Windows 1.x) [gets installed alongside Git for Windows again](https://github.com/git-for-windows/git/issues/408).
 * The values `CurrentVersion`, `InstallPath` and `LibexecPath` are [added to the `HKEY_LOCAL_MACHINE\Software\GitForWindows` registry key](https://github.com/git-for-windows/git/issues/427) to help third-party add-ons to find us.
+* When fetching or pushing with Git *without* a console, we now [fall back to Git GUI's `askpass` helper](https://github.com/git-for-windows/git/issues/428) to ask for pass phrases.
+* When run through `<INSTALL_PATH>\cmd\git.exe`, Git [will find tools in `$HOME/bin`](https://github.com/git-for-windows/git/issues/429) now.
 
 ###Bug Fixes
 
@@ -45,6 +48,12 @@ This package contains software from a number of other projects including Bash, z
 * Configuring `notepad` as editor without configuring a width for commit messages [no longer triggers an error message](https://github.com/git-for-windows/git/issues/430).
 * When using Windows' default console for *Git Bash*, [the `.sh` file associations work again](https://github.com/git-for-windows/git/issues/396).
 * Portable Git's `README` [is now clearer about the need to run `post-install.bat` when unpacking manually](https://github.com/git-for-windows/build-extra/pull/83).
+* [We use the `winpty` trick now](https://github.com/git-for-windows/git/issues/436) to run `ipython` interactively, too.
+* When the environment variable `HOME` is not set, we [now](https://github.com/git-for-windows/git/issues/414) fall back [correctly](https://github.com/git-for-windows/git/issues/434) to use `HOMEDRIVE` and `HOMEPATH`.
+* The home directory is now [set correctly](https://github.com/git-for-windows/git/issues/435) when running as the `SYSTEM` user.
+* The environment variable `GIT_WORK_TREE` [may now differ in lower/upper case with the Git's idea of the current working directory](https://github.com/git-for-windows/git/issues/402).
+* Running `git clone --dissociate ...` [no longer locks the pack files during the repacking phase](https://github.com/git-for-windows/git/issues/446).
+* Upstream cURL fixes for NTLM proxy issues ("Unknown SSL error") [were backported](https://github.com/git-for-windows/git/issues/373).
 
 ##Changes since Git-2.5.2(2) (September 13th 2015)
 
