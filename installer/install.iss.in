@@ -1440,15 +1440,15 @@ begin
     // Get the current user's directories in PATH.
     EnvPath:=GetEnvStrings('PATH',IsAdminLoggedOn);
 
-    // First, remove the installation directory from PATH in any case.
-    for i:=0 to GetArrayLength(EnvPath)-1 do begin
-        if Pos(AppDir+'\',EnvPath[i]+'\')=1 then begin
-            EnvPath[i]:='';
-        end;
-    end;
-
     // Modify the PATH variable as requested by the user.
     if RdbPath[GP_Cmd].Checked or RdbPath[GP_CmdTools].Checked then begin
+        // First, remove the current installation directory from PATH.
+        for i:=0 to GetArrayLength(EnvPath)-1 do begin
+            if Pos(AppDir+'\',EnvPath[i]+'\')=1 then begin
+                EnvPath[i]:='';
+            end;
+        end;
+
         i:=GetArrayLength(EnvPath);
         SetArrayLength(EnvPath,i+1);
 
@@ -1747,7 +1747,7 @@ end;
 // function.
 procedure CurUninstallStepChanged(CurUninstallStep:TUninstallStep);
 var
-    AppDir,FileName,Msg:String;
+    AppDir,FileName,Msg,PathOption:String;
     EnvPath:TArrayOfString;
     i:Longint;
 begin
@@ -1778,24 +1778,28 @@ begin
     DeleteMarkedEnvString('GIT_SSH');
     DeleteMarkedEnvString('SVN_SSH');
 
-    // Get the current user's directories in PATH.
-    EnvPath:=GetEnvStrings('PATH',IsAdminLoggedOn);
+    // Only remove the installation directory from PATH if the previous
+    // installation 'Path Option' modified it.
+    PathOption:=GetPreviousData('Path Option','BashOnly');
+    if (PathOption='Cmd') or (PathOption='CmdTools') then begin
+        // Get the current user's directories in PATH.
+        EnvPath:=GetEnvStrings('PATH',IsAdminLoggedOn);
 
-    // Remove the installation directory from PATH in any case, even if it
-    // was not added by the installer.
-    for i:=0 to GetArrayLength(EnvPath)-1 do begin
-        if Pos(AppDir+'\',EnvPath[i]+'\')=1 then begin
-            EnvPath[i]:='';
+        // Remove the installation directory from PATH.
+        for i:=0 to GetArrayLength(EnvPath)-1 do begin
+            if Pos(AppDir+'\',EnvPath[i]+'\')=1 then begin
+                EnvPath[i]:='';
+            end;
         end;
-    end;
 
-    // Reset the current user's directories in PATH.
-    if not SetEnvStrings('PATH',EnvPath,True,IsAdminLoggedOn,True) then begin
-        Msg:='Line {#__LINE__}: Unable to revert any possible changes to PATH.';
+        // Reset the current user's directories in PATH.
+        if not SetEnvStrings('PATH',EnvPath,True,IsAdminLoggedOn,True) then begin
+            Msg:='Line {#__LINE__}: Unable to revert any possible changes to PATH.';
 
-        // This is not a critical error, so just notify the user and continue.
-        SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-        Log(Msg);
+            // This is not a critical error, so just notify the user and continue.
+            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+            Log(Msg);
+        end;
     end;
 
     if FileExists(FileName) and (not DeleteFile(FileName)) then begin
