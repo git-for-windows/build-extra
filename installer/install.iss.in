@@ -513,6 +513,20 @@ begin
     end;
 end;
 
+function ReplayChoice(Key,Default:String):String;
+begin
+    // Restore the settings chosen during a previous install.
+    Result:=GetPreviousData(Key,Default);
+
+    // Use settings from the user provided INF.
+    if ShouldLoadInf then begin
+        // .inf files do not like keys with spaces.
+        StringChangeEx(Key,' ','',True);
+        Result:=LoadInfString('Setup',Key,Default);
+    end;
+
+end;
+
 procedure InitializeWizard;
 var
     PrevPageID:Integer;
@@ -625,12 +639,7 @@ begin
     end;
 
     // Restore the setting chosen during a previous install.
-    Data:=GetPreviousData('Path Option','BashOnly');
-
-    // Use settings from the user provided INF.
-    if ShouldLoadInf then begin
-        Data:=LoadInfString('Setup','PathOption','BashOnly');
-    end;
+    Data:=ReplayChoice('Path Option','BashOnly');
 
     if Data='BashOnly' then begin
         RdbPath[GP_BashOnly].Checked:=True;
@@ -738,12 +747,7 @@ begin
         end;
 
         // Restore the setting chosen during a previous install.
-        Data:=GetPreviousData('SSH Option','OpenSSH');
-
-        // Use settings from the user provided INF.
-        if ShouldLoadInf then begin
-            Data:=LoadInfString('Setup','SSHOption','OpenSSH');
-        end;
+        Data:=ReplayChoice('SSH Option','OpenSSH');
 
         if Data='OpenSSH' then begin
             RdbSSH[GS_OpenSSH].Checked:=True;
@@ -844,12 +848,7 @@ begin
     end;
 
     // Restore the setting chosen during a previous install.
-    Data:=GetPreviousData('CRLF Option','CRLFAlways');
-
-    // Use settings from the user provided INF.
-    if ShouldLoadInf then begin
-        Data:=LoadInfString('Setup','CRLFOption','CRLFAlways');
-    end;
+    Data:=ReplayChoice('CRLF Option','CRLFAlways');
 
     if Data='LFOnly' then begin
         RdbCRLF[GC_LFOnly].Checked:=True;
@@ -925,12 +924,7 @@ begin
     end;
 
     // Restore the setting chosen during a previous install.
-    Data:=GetPreviousData('Bash Terminal Option','MinTTY');
-
-    // Use settings from the user provided INF.
-    if ShouldLoadInf then begin
-        Data:=LoadInfString('Setup','BashTerminalOption','MinTTY');
-    end;
+    Data:=ReplayChoice('Bash Terminal Option','MinTTY');
 
     if Data='MinTTY' then begin
         RdbBashTerminal[GB_MinTTY].Checked:=True;
@@ -976,12 +970,7 @@ begin
     end;
 
     // Restore the settings chosen during a previous install.
-    Data:=GetPreviousData('Performance Tweaks FSCache','Disabled');
-
-    // Use settings from the user provided INF.
-    if ShouldLoadInf then begin
-        Data:=LoadInfString('Setup','PerformanceTweaksFSCache','Disabled');
-    end;
+    Data:=ReplayChoice('Performance Tweaks FSCache','Disabled');
 
     if Data='Enabled' then begin
         RdbPerfTweaks[GP_FSCache].Checked:=True;
