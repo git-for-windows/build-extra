@@ -32,6 +32,13 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
 
+##Changes since Git-2.6.0 (September 29th 2015)
+
+###Bug Fixes
+
+* The `PATH` variable [is now really left alone](https://github.com/git-for-windows/git/issues/438) when choosing the *"Use Git from Git Bash only"* option in the installer. Note that upgrading Git for Windows will call the previous version's uninstaller, which might still have that bug.
+* Git GUI's *Registry>Create Desktop Icon* [now generates correct shortcuts](https://github.com/git-for-windows/git/issues/448).
+
 ##Changes since Git-2.5.3 (September 18th 2015)
 
 ###New Features
