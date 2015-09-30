@@ -54,5 +54,6 @@ do
 	esac
 	basename="$(basename "$path")"
 	curl -i --netrc -XPOST -H "Content-Type: $contenttype" \
-		--data-binary @"$path" "$url/$id/assets?name=$basename"
+		--data-binary @"$path" "$url/$id/assets?name=$basename" ||
+	die "Could not upload $path (response: $json)"
 done
