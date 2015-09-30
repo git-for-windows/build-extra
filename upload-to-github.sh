@@ -38,6 +38,7 @@ test -n "$id" || {
 
 url=https://uploads.${url#https://api.}
 
+release_url=
 for path
 do
 	case "$path" in
@@ -53,7 +54,20 @@ do
 		;;
 	esac
 	basename="$(basename "$path")"
-	curl -i --netrc -XPOST -H "Content-Type: $contenttype" \
-		--data-binary @"$path" "$url/$id/assets?name=$basename" ||
+	json="$(curl -i --netrc -XPOST -H "Content-Type: $contenttype" \
+		--data-binary @"$path" "$url/$id/assets?name=$basename")" ||
 	die "Could not upload $path (response: $json)"
+
+	url2="$(echo "${json##*\"browser_download_url\":\"}" | sed -n \
+		'1s|\([^"]*/\)download\(/[^"]*\).*|\1edit\2|'p)"
+	if test -z "$release_url"
+	then
+		release_url=$url2
+	else
+		test "a$url2" = "a$release_url" ||
+		echo "Warning: inconsistent URL: $url2 vs $release_url" >&2
+	fi
 done
+
+test -z "$release_url" ||
+printf "\nNow direct your browser to:\n\n%s\n" "$release_url"
