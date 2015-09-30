@@ -503,6 +503,16 @@ begin
 #endif
 end;
 
+procedure RecordChoice(PreviousDataKey:Integer;Key,Data:String);
+begin
+    SetPreviousData(PreviousDataKey,Key,Data);
+    if ShouldSaveInf then begin
+        // .inf files do not like keys with spaces.
+        StringChangeEx(Key,' ','',True);
+        SaveInfString('Setup',Key,Data);
+    end;
+end;
+
 procedure InitializeWizard;
 var
     PrevPageID:Integer;
@@ -1587,10 +1597,7 @@ begin
     end else if RdbPath[GP_CmdTools].Checked then begin
         Data:='CmdTools';
     end;
-    SetPreviousData(PreviousDataKey,'Path Option',Data);
-    if ShouldSaveInf then begin
-        SaveInfString('Setup','PathOption',Data);
-    end;
+    RecordChoice(PreviousDataKey,'Path Option',Data);
 
     // Git SSH options.
     Data:='';
@@ -1598,15 +1605,9 @@ begin
         Data:='OpenSSH';
     end else if RdbSSH[GS_Plink].Checked then begin
         Data:='Plink';
-        SetPreviousData(PreviousDataKey,'Plink Path',EdtPlink.Text);
-        if ShouldSaveInf then begin
-            SaveInfString('Setup','PlinkPath',EdtPlink.Text);
-        end;
+        RecordChoice(PreviousDataKey,'Plink Path',EdtPlink.Text);
     end;
-    SetPreviousData(PreviousDataKey,'SSH Option',Data);
-    if ShouldSaveInf then begin
-        SaveInfString('Setup','SSHOption',Data);
-    end;
+    RecordChoice(PreviousDataKey,'SSH Option',Data);
 
     // Line ending conversion options.
     Data:='';
@@ -1617,30 +1618,21 @@ begin
     end else if RdbCRLF[GC_CRLFCommitAsIs].Checked then begin
         Data:='CRLFCommitAsIs';
     end;
-    SetPreviousData(PreviousDataKey,'CRLF Option',Data);
-    if ShouldSaveInf then begin
-        SaveInfString('Setup','CRLFOption',Data);
-    end;
+    RecordChoice(PreviousDataKey,'CRLF Option',Data);
 
     // Bash's terminal emulator options.
     Data:='MinTTY';
     if RdbBashTerminal[GB_ConHost].Checked then begin
         Data:='ConHost';
     end;
-    SetPreviousData(PreviousDataKey,'Bash Terminal Option',Data);
-    if ShouldSaveInf then begin
-        SaveInfString('Setup','BashTerminalOption',Data);
-    end;
+    RecordChoice(PreviousDataKey,'Bash Terminal Option',Data);
 
     // Performance tweaks options.
     Data:='Disabled';
     if RdbPerfTweaks[GP_FSCache].Checked then begin
         Data:='Enabled';
     end;
-    SetPreviousData(PreviousDataKey,'Performance Tweaks FSCache',Data);
-    if ShouldSaveInf then begin
-        SaveInfString('Setup','PerformanceTweaksFSCache',Data);
-    end;
+    RecordChoice(PreviousDataKey,'Performance Tweaks FSCache',Data);
 end;
 
 {
