@@ -202,6 +202,10 @@ Type: files; Name: {app}\etc\rebase.db.i386
 Type: dirifempty; Name: {app}\etc
 #endif
 
+; Delete recorded install options
+Type: files; Name: {app}\etc\install-options.txt
+Type: dirifempty; Name: {app}\etc
+
 [Code]
 #include "helpers.inc.iss"
 #include "environment.inc.iss"
@@ -275,6 +279,9 @@ const
     BIND_CACHE_IMPORT_DLLS = $00000008;
 
 var
+    // The options chosen at install time, to be written to /etc/install-options.txt
+    ChosenOptions:String;
+
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
     RdbPath:array[GP_BashOnly..GP_CmdTools] of TRadioButton;
@@ -488,6 +495,7 @@ end;
 
 procedure RecordChoice(PreviousDataKey:Integer;Key,Data:String);
 begin
+    ChosenOptions:=ChosenOptions+Key+': '+Data+#13#10;
     SetPreviousData(PreviousDataKey,Key,Data);
     if ShouldSaveInf then begin
         // .inf files do not like keys with spaces.
@@ -522,6 +530,8 @@ var
     BtnPlink:TButton;
     Data:String;
 begin
+
+    ChosenOptions:='';
 
     PrevPageID:=wpSelectProgramGroup;
 
@@ -1508,7 +1518,7 @@ end;
 
 procedure RegisterPreviousData(PreviousDataKey:Integer);
 var
-    Data:String;
+    Data,Path:String;
 begin
     // Git Path options.
     Data:='';
@@ -1555,6 +1565,10 @@ begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Performance Tweaks FSCache',Data);
+
+    Path:=ExpandConstant('{app}\etc\install-options.txt');
+    if not SaveStringToFile(Path,ChosenOptions,False) then
+        LogError('Could not write to '+Path);
 end;
 
 {
