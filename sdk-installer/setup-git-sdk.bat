@@ -119,7 +119,7 @@
 	CALL "%cwd%"\autorebase.bat
 )
 
-@REM If an HTTP proxy is requires, configure it for Git Bash sessions,
+@REM If an HTTP proxy is required, configure it for Git Bash sessions,
 @REM but only if the environment variable was not already set globally
 @IF DEFINED proxy @(
 	@ECHO http_proxy=%proxy% > etc\profile.d\proxy.sh
