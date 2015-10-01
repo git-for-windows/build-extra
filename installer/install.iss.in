@@ -208,6 +208,12 @@ Type: dirifempty; Name: {app}\etc
 #include "putty.inc.iss"
 #include "modules.inc.iss"
 
+procedure LogError(Msg:String);
+begin
+    SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+    Log(Msg);
+end;
+
 function CreateHardLink(lpFileName,lpExistingFileName:String;lpSecurityAttributes:Integer):Boolean;
 #ifdef UNICODE
 external 'CreateHardLinkW@Kernel32.dll stdcall delayload setuponly';
@@ -233,8 +239,7 @@ begin
         end else if Result=4 then begin
             Msg:='Unable to close '+GitBashPath+' after editing.';
         end;
-        SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-        Log(Msg);
+        LogError(Msg);
     end;
 end;
 
@@ -327,7 +332,7 @@ end;
 
 procedure DeleteContextMenuEntries;
 var
-    AppDir,Command,Msg:String;
+    AppDir,Command:String;
     RootKey,i:Integer;
     Keys:TArrayOfString;
 begin
@@ -350,11 +355,7 @@ begin
         RegQueryStringValue(RootKey,Keys[i]+'\command','',Command);
         if Pos(AppDir,Command)>0 then begin
             if not RegDeleteKeyIncludingSubkeys(RootKey,Keys[i]) then begin
-                Msg:='Line {#__LINE__}: Unable to remove "Git Bash / GUI Here" shell extension.';
-
-                // This is not a critical error, so just notify the user and continue.
-                SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-                Log(Msg);
+                LogError('Line {#__LINE__}: Unable to remove "Git Bash / GUI Here" shell extension.');
             end;
         end;
     end;
@@ -435,48 +436,34 @@ end;
 procedure SetAndMarkEnvString(Name,Value:String;Expandable:Boolean);
 var
     Env:TArrayOfString;
-    FileName,Msg:String;
+    FileName:String;
 begin
     SetArrayLength(Env,1);
     Env[0]:=Value;
 
     // Try to set the variable as specified by the user.
-    if not SetEnvStrings(Name,Env,Expandable,IsAdminLoggedOn,True) then begin
-        Msg:='Line {#__LINE__}: Unable to set the '+Name+' environment variable.';
-
-        // This is not a critical error, so just notify the user and continue.
-        SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-        Log(Msg);
-    end else begin
+    if not SetEnvStrings(Name,Env,Expandable,IsAdminLoggedOn,True) then
+        LogError('Line {#__LINE__}: Unable to set the '+Name+' environment variable.')
+    else begin
         // Mark that we have changed the variable by writing its value to a file.
         FileName:=ExpandConstant('{app}')+'\setup.ini';
-        if not SetIniString('Environment',Name,Value,FileName) then begin
-            Msg:='Line {#__LINE__}: Unable to write to file "'+FileName+'".';
-
-            // This is not a critical error, so just notify the user and continue.
-            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-            Log(Msg);
-        end;
+        if not SetIniString('Environment',Name,Value,FileName) then
+            LogError('Line {#__LINE__}: Unable to write to file "'+FileName+'".');
     end;
 end;
 
 procedure DeleteMarkedEnvString(Name:String);
 var
    Env:TArrayOfString;
-   FileName,Msg:String;
+   FileName:String;
 begin
     Env:=GetEnvStrings(Name,IsAdminLoggedOn);
     FileName:=ExpandConstant('{app}')+'\setup.ini';
 
     if (GetArrayLength(Env)=1) and
        (CompareStr(RemoveQuotes(Env[0]),GetIniString('Environment',Name,'',FileName))=0) then begin
-        if not SetEnvStrings(Name,[],False,IsAdminLoggedOn,True) then begin
-            Msg:='Line {#__LINE__}: Unable to delete the '+Name+' environment variable.';
-
-            // This is not a critical error, so just notify the user and continue.
-            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-            Log(Msg);
-        end;
+        if not SetEnvStrings(Name,[],False,IsAdminLoggedOn,True) then
+            LogError('Line {#__LINE__}: Unable to delete the '+Name+' environment variable.');
     end;
 end;
 
@@ -485,17 +472,13 @@ end;
 }
 
 function InitializeSetup:Boolean;
-var
-    Msg:String;
 begin
     UpdateInfFilenames;
 #ifdef IS32
     Result:=True;
 #else
     if not IsWin64 then begin
-        Msg:='The 64-bit version of Git requires a 64-bit Windows. Aborting.';
-        SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-        Log(Msg);
+        LogError('The 64-bit version of Git requires a 64-bit Windows. Aborting.');
         Result:=False;
     end else begin
         Result:=True;
@@ -1148,7 +1131,7 @@ end;
 procedure CleanupWhenUpgrading;
 var
     Domain,ErrorCode:Integer;
-    Msg,Key,Path,ProgramData,UninstallString:String;
+    Key,Path,ProgramData,UninstallString:String;
 begin
     Key:='Microsoft\Windows\CurrentVersion\Uninstall\Git_is1';
     if RegKeyExists(HKEY_LOCAL_MACHINE,'Software\Wow6432Node\'+Key) then begin
@@ -1169,25 +1152,17 @@ begin
         if RegQueryStringValue(Domain,Key,'Inno Setup: App Path',Path) then begin
             ProgramData:=ExpandConstant('{commonappdata}');
             if FileExists(Path+'\etc\gitconfig') and not FileExists(ProgramData+'\Git\config') then begin
-                if not ForceDirectories(ProgramData+'\Git') then begin
-                    Msg:='Could not initialize Windows-wide Git config.';
-                    SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-                    Log(Msg);
-                end else if not FileCopy(Path+'\etc\gitconfig',ProgramData+'\Git\config',False) then begin
-                    Msg:='Could not copy old Git config to Windows-wide location.';
-                    SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-                    Log(Msg);
-                end;
+                if not ForceDirectories(ProgramData+'\Git') then
+                    LogError('Could not initialize Windows-wide Git config.')
+                else if not FileCopy(Path+'\etc\gitconfig',ProgramData+'\Git\config',False) then
+                    LogError('Could not copy old Git config to Windows-wide location.');
             end;
         end;
 
         if RegQueryStringValue(Domain,Key,'UninstallString',UninstallString) then
             // Using ShellExec() here, in case privilege elevation is required
-            if not ShellExec('',UninstallString,'/SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then begin
-                Msg:='Could not uninstall previous version. Trying to continue anyway.';
-                SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-                Log(Msg);
-            end;
+            if not ShellExec('',UninstallString,'/SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
+                LogError('Could not uninstall previous version. Trying to continue anyway.');
     end;
 end;
 
@@ -1339,14 +1314,8 @@ begin
         if not DeleteFile(AppDir+'\tmp\git-wrapper.exe') then begin
             Log('Line {#__LINE__}: Deleting temporary "'+AppDir+'\tmp\git-wrapper.exe" failed.');
         end;
-    end else begin
-        Msg:='Line {#__LINE__}: Unable to read file "{#MINGW_BITNESS}\{#APP_BUILTINS}".';
-
-        // This is in fact a critical error, but "Abort" does not work during ssPostInstall anymore and
-        // we have no other way of aborting the installation, so just notify the user and continue.
-        SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-        Log(Msg);
-    end;
+    end else
+        LogError('Line {#__LINE__}: Unable to read file "{#MINGW_BITNESS}\{#APP_BUILTINS}".');
 
     // Create default system wide git config file
     if not FileExists(ProgramData + '\Git\config') then begin
@@ -1363,13 +1332,8 @@ begin
         Cmd:='http.sslCAInfo "' + AppDir + '/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
         StringChangeEx(Cmd,'\','/',True);
         if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config -f config '+Cmd,
-                ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then begin
-            Msg:='Unable to configure SSL CA info: ' + Cmd;
-
-            // This is not a critical error, so just notify the user and continue.
-            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-            Log(Msg);
-        end;
+                ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
+            LogError('Unable to configure SSL CA info: ' + Cmd);
         if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\etc\gitconfig') then begin
             Log('Line {#__LINE__}: Deleting template config "' + AppDir + '\{#MINGW_BITNESS}\etc\gitconfig" failed.');
         end;
@@ -1387,13 +1351,8 @@ begin
         Cmd:='core.autocrlf false';
     end;
     if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config -f config ' + Cmd,
-                ProgramData + '\Git', SW_HIDE, ewWaitUntilTerminated, i) then begin
-        Msg:='Unable to configure the line ending conversion: ' + Cmd;
-
-        // This is not a critical error, so just notify the user and continue.
-        SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-        Log(Msg);
-    end;
+                ProgramData + '\Git', SW_HIDE, ewWaitUntilTerminated, i) then
+        LogError('Unable to configure the line ending conversion: ' + Cmd);
 
     {
         Configure the terminal window for Git Bash
@@ -1411,13 +1370,8 @@ begin
         Cmd:='core.fscache true';
 
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config -f config ' + Cmd,
-                    ProgramData + '\Git', SW_HIDE, ewWaitUntilTerminated, i) then begin
-            Msg:='Unable to enable the experimental performance tweak: ' + Cmd;
-
-            // This is not a critical error, so just notify the user and continue.
-            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-            Log(Msg);
-        end;
+                    ProgramData + '\Git', SW_HIDE, ewWaitUntilTerminated, i) then
+            LogError('Unable to enable the experimental performance tweak: ' + Cmd);
     end;
 
     {
@@ -1463,13 +1417,8 @@ begin
     end;
 
     // Set the current user's PATH directories.
-    if not SetEnvStrings('PATH',EnvPath,True,IsAdminLoggedOn,True) then begin
-        Msg:='Line {#__LINE__}: Unable to set the PATH environment variable.';
-
-        // This is not a critical error, so just notify the user and continue.
-        SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-        Log(Msg);
-    end;
+    if not SetEnvStrings('PATH',EnvPath,True,IsAdminLoggedOn,True) then
+        LogError('Line {#__LINE__}: Unable to set the PATH environment variable.');
 
     {
         Create shortcuts that need to be created regardless of the "Don't create a Start Menu folder" toggle
@@ -1522,13 +1471,7 @@ begin
            (StringChangeEx(Cmd,'%1','%v.',false)<>1) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell\command','',Cmd)) then
-        begin
-            Msg:='Line {#__LINE__}: Unable to create "Git Bash Here" shell extension.';
-
-            // This is not a critical error, so just notify the user and continue.
-            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-            Log(Msg);
-        end;
+            LogError('Line {#__LINE__}: Unable to create "Git Bash Here" shell extension.');
     end;
 
     if IsComponentSelected('ext\guihere') then begin
@@ -1539,13 +1482,8 @@ begin
            (StringChangeEx(Cmd,'%1','%v.',false)<>1) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui\command','',Cmd))
-        then begin
-            Msg:='Line {#__LINE__}: Unable to create "Git GUI Here" shell extension.';
-
-            // This is not a critical error, so just notify the user and continue.
-            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-            Log(Msg);
-        end;
+        then
+            LogError('Line {#__LINE__}: Unable to create "Git GUI Here" shell extension.');
     end;
 
     {
@@ -1553,13 +1491,8 @@ begin
     }
 
     Cmd:=AppDir+'\post-install.bat';
-    if not Exec(Cmd, '', AppDir, SW_HIDE, ewWaitUntilTerminated, i) then begin
-      Msg:='Line {#__LINE__}: Unable to run post-install scripts.';
-
-      // This is not a critical error, so just notify the user and continue.
-      SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-      Log(msg);
-    end;
+    if not Exec(Cmd, '', AppDir, SW_HIDE, ewWaitUntilTerminated, i) then
+        LogError('Line {#__LINE__}: Unable to run post-install scripts.');
 
     {
         Restart any processes that were shut down via the Restart Manager
@@ -1728,7 +1661,7 @@ end;
 // function.
 procedure CurUninstallStepChanged(CurUninstallStep:TUninstallStep);
 var
-    AppDir,FileName,Msg,PathOption:String;
+    AppDir,FileName,PathOption:String;
     EnvPath:TArrayOfString;
     i:Longint;
 begin
@@ -1774,22 +1707,12 @@ begin
         end;
 
         // Reset the current user's directories in PATH.
-        if not SetEnvStrings('PATH',EnvPath,True,IsAdminLoggedOn,True) then begin
-            Msg:='Line {#__LINE__}: Unable to revert any possible changes to PATH.';
-
-            // This is not a critical error, so just notify the user and continue.
-            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-            Log(Msg);
-        end;
+        if not SetEnvStrings('PATH',EnvPath,True,IsAdminLoggedOn,True) then
+            LogError('Line {#__LINE__}: Unable to revert any possible changes to PATH.');
     end;
 
-    if FileExists(FileName) and (not DeleteFile(FileName)) then begin
-        Msg:='Line {#__LINE__}: Unable to delete file "'+FileName+'".';
-
-        // This is not a critical error, so just notify the user and continue.
-        SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-        Log(Msg);
-    end;
+    if FileExists(FileName) and (not DeleteFile(FileName)) then
+        LogError('Line {#__LINE__}: Unable to delete file "'+FileName+'".');
 
     {
         Delete the Windows Explorer integrations
@@ -1803,20 +1726,10 @@ begin
         FileName:=AppDir+'\git-cheetah\git_shell_ext.dll';
     end;
     if FileExists(FileName) then begin
-        if not UnregisterServer(Is64BitInstallMode,FileName,False) then begin
-            Msg:='Line {#__LINE__}: Unable to unregister file "'+FileName+'". Please do it manually by running "regsvr32 /u '+ExtractFileName(FileName)+'".';
+        if not UnregisterServer(Is64BitInstallMode,FileName,False) then
+            LogError('Line {#__LINE__}: Unable to unregister file "'+FileName+'". Please do it manually by running "regsvr32 /u '+ExtractFileName(FileName)+'".');
 
-            // This is not a critical error, so just notify the user and continue.
-            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-            Log(Msg);
-        end;
-
-        if not DeleteFile(FileName) then begin
-            Msg:='Line {#__LINE__}: Unable to delete file "'+FileName+'". Please do it manually after logging off and on again.';
-
-            // This is not a critical error, so just notify the user and continue.
-            SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-            Log(Msg);
-        end;
+        if not DeleteFile(FileName) then
+            LogError('Line {#__LINE__}: Unable to delete file "'+FileName+'". Please do it manually after logging off and on again.');
     end;
 end;
