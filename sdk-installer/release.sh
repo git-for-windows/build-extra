@@ -45,7 +45,7 @@ sed -e "s|@@ARCH@@|$ARCH|g" \
 die "Could not generate setup script"
 
 cp /usr/bin/dash.exe "$FAKEROOTDIR/usr/bin/sh.exe" &&
-sed -e 's/^#\(XferCommand.*curl\).*/\1 --anyauth -C - -s -L -f %u >%o/' \
+sed -e 's/^#\(XferCommand.*curl\).*/\1 --anyauth -C - -L -f %u >%o/' \
 	</etc/pacman.conf >"$FAKEROOTDIR/etc/pacman.conf.proxy" ||
 die "Could not copy extra files into fake root"
 
