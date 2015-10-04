@@ -1341,8 +1341,12 @@ begin
             Log('Line {#__LINE__}: Creating copy "' + ProgramData + '\Git\config" failed.');
         end;
     end;
-    if FileExists(ProgramData + '\Git\config') then begin
-        Cmd:='http.sslCAInfo "' + AppDir + '/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
+    if FileExists(ProgramData+'\Git\config') then begin
+#ifdef IS64
+        if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config pack.packsizelimit)\" && if test 2g = \"$value\"; then git config -f config --unset pack.packsizelimit; fi"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
+            LogError('Unable to read/adjust packsize limit');
+#endif
+        Cmd:='http.sslCAInfo "'+AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
         StringChangeEx(Cmd,'\','/',True);
         if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config -f config '+Cmd,
                 ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
