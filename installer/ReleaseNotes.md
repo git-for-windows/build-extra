@@ -34,10 +34,17 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git-2.6.0 (September 29th 2015)
 
+### New Features
+
+* The installer [now writes the file `/etc/install-options.txt`](https://github.com/git-for-windows/git/issues/454) to record which options were chosen at install time.
+
 ### Bug Fixes
 
 * The `PATH` variable [is now really left alone](https://github.com/git-for-windows/git/issues/438) when choosing the *"Use Git from Git Bash only"* option in the installer. Note that upgrading Git for Windows will call the previous version's uninstaller, which might still have that bug.
 * Git GUI's *Registry>Create Desktop Icon* [now generates correct shortcuts](https://github.com/git-for-windows/git/issues/448).
+* The `antiword` utility to render Word documents for use in `git diff` [now works correctly](https://github.com/git-for-windows/git/issues/453).
+* In 64-bit installations, we [no longer set a pack size limit by default](https://github.com/git-for-windows/git/issues/288).
+* When installing Git for Windows as regular user, [the installer no longer comptries to create privileged registry keys](https://github.com/git-for-windows/git/issues/455).
 
 ## Changes since Git-2.5.3 (September 18th 2015)
 
@@ -61,6 +68,7 @@ This package contains software from a number of other projects including Bash, z
 * The environment variable `GIT_WORK_TREE` [may now differ in lower/upper case with the Git's idea of the current working directory](https://github.com/git-for-windows/git/issues/402).
 * Running `git clone --dissociate ...` [no longer locks the pack files during the repacking phase](https://github.com/git-for-windows/git/issues/446).
 * Upstream cURL fixes for NTLM proxy issues ("Unknown SSL error") [were backported](https://github.com/git-for-windows/git/issues/373).
+* The 64-bit version [now includes](https://github.com/git-for-windows/git/issues/449) the `astextplain` script it lacked by mistake.
 
 ## Changes since Git-2.5.2(2) (September 13th 2015)
 
