@@ -1,5 +1,5 @@
-# Git 2.6.0 Release Notes
-Latest update: 29 September 2015
+# Git 2.6.1 Release Notes
+Latest update: 5 October 2015
 
 ## Introduction
 
@@ -36,7 +36,9 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with Git 2.6.1
 * The installer [now writes the file `/etc/install-options.txt`](https://github.com/git-for-windows/git/issues/454) to record which options were chosen at install time.
+* Replaces `git flow` with [the *AVH edition*](https://github.com/petervanderdoes/gitflow-avh) which is maintained actively, in surprising and disappointing contrast to Vincent Driessen's very own project.
 
 ### Bug Fixes
 
