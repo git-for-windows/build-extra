@@ -44,7 +44,7 @@ This package contains software from a number of other projects including Bash, z
 * Git GUI's *Registry>Create Desktop Icon* [now generates correct shortcuts](https://github.com/git-for-windows/git/issues/448).
 * The `antiword` utility to render Word documents for use in `git diff` [now works correctly](https://github.com/git-for-windows/git/issues/453).
 * In 64-bit installations, we [no longer set a pack size limit by default](https://github.com/git-for-windows/git/issues/288).
-* When installing Git for Windows as regular user, [the installer no longer comptries to create privileged registry keys](https://github.com/git-for-windows/git/issues/455).
+* When installing Git for Windows as regular user, [the installer no longer tries to create privileged registry keys](https://github.com/git-for-windows/git/issues/455).
 
 ## Changes since Git-2.5.3 (September 18th 2015)
 
