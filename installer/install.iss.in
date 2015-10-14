@@ -20,7 +20,7 @@
 
 [Setup]
 ; Compiler-related
-Compression=lzma2/ultra
+Compression=lzma2/ultra64
 LZMAUseSeparateProcess=yes
 OutputBaseFilename={#APP_NAME+'-'+APP_VERSION}-{#BITNESS}-bit
 OutputDir={#GetEnv('USERPROFILE')}
@@ -61,6 +61,7 @@ WizardImageBackColor=clWhite
 WizardImageStretch=no
 WizardImageFile={#GetEnv('SCRIPTDIR')}\git.bmp
 WizardSmallImageFile={#GetEnv('SCRIPTDIR')}\gitsmall.bmp
+MinVersion=0,5.01sp3
 
 [Types]
 ; Define a custom type to avoid getting the three default types.
