@@ -25,7 +25,7 @@ LZMAUseSeparateProcess=yes
 OutputBaseFilename={#APP_NAME+'-'+APP_VERSION}-{#BITNESS}-bit
 OutputDir={#GetEnv('USERPROFILE')}
 SolidCompression=yes
-SourceDir={#GetEnv('ROOTDIR')}
+SourceDir={#SourcePath}\..\..\..\..
 #ifdef IS64
 ArchitecturesInstallIn64BitMode=x64
 #endif
@@ -44,7 +44,7 @@ DisableDirPage=auto
 DefaultGroupName={#APP_NAME}
 DisableProgramGroupPage=auto
 DisableReadyPage=yes
-InfoBeforeFile={#GetEnv('SCRIPTDIR')}\gpl-2.0.rtf
+InfoBeforeFile={#SourcePath}\gpl-2.0.rtf
 PrivilegesRequired=none
 UninstallDisplayIcon={app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 #ifndef COMPILE_FROM_IDE
@@ -56,11 +56,11 @@ VersionInfoVersion={#APP_VERSION}
 #endif
 
 ; Cosmetic
-SetupIconFile={#GetEnv('SCRIPTDIR')}\git.ico
+SetupIconFile={#SourcePath}\git.ico
 WizardImageBackColor=clWhite
 WizardImageStretch=no
-WizardImageFile={#GetEnv('SCRIPTDIR')}\git.bmp
-WizardSmallImageFile={#GetEnv('SCRIPTDIR')}\gitsmall.bmp
+WizardImageFile={#SourcePath}\git.bmp
+WizardSmallImageFile={#SourcePath}\gitsmall.bmp
 MinVersion=0,5.01sp3
 
 [Types]
@@ -81,8 +81,8 @@ Name: consolefont; Description: Use a TrueType font in all console windows
 [Files]
 ; Install files that might be in use during setup under a different name.
 #include "file-list.iss"
-Source: {#GetEnv('SCRIPTDIR')}\ReleaseNotes.html; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
-Source: {#GetEnv('SCRIPTDIR')}\edit-git-bash.dll; Flags: dontcopy
+Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
+Source: {#SourcePath}\edit-git-bash.dll; Flags: dontcopy
 
 [Dirs]
 Name: "{app}\tmp"

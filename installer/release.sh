@@ -31,11 +31,6 @@ esac
 cd "$(dirname "$0")" ||
 die "Could not switch directory"
 
-# Export paths to inno setup file
-SCRIPTDIR="$(pwd -W)"
-ROOTDIR="$(cd / && pwd -W)"
-export SCRIPTDIR ROOTDIR
-
 # Generate the ReleaseNotes.html file
 test -f ReleaseNotes.html &&
 test ReleaseNotes.html -nt ReleaseNotes.md || {
@@ -77,16 +72,16 @@ esac
 
 echo "Generating file list to be included in the installer ..."
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS PACKAGE_VERSIONS_FILE=package-versions.txt \
-	sh "$SCRIPTDIR"/../make-file-list.sh)" ||
+	sh ../make-file-list.sh)" ||
 die "Could not generate file list"
 
 printf "; List of files\n%s\n%s\n%s\n%s\n%s\n" \
-	"Source: \"$SCRIPTDIR\\package-versions.txt\"; DestDir: {app}\\etc; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
-	"Source: \"$SCRIPTDIR\\usr\\share\\git\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"{#SourcePath}\\package-versions.txt\"; DestDir: {app}\\etc; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"{#SourcePath}\\usr\\share\\git\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"cmd\\git.exe\"; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: bash.exe; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: sh.exe; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
-	"Source: \"$SCRIPTDIR\\..\\post-install.bat\"; DestName: post-install.bat; DestDir: {app}; Flags: replacesameversion" \
+	"Source: \"{#SourcePath}\\..\\post-install.bat\"; DestName: post-install.bat; DestDir: {app}; Flags: replacesameversion" \
 >file-list.iss ||
 die "Could not write to file-list.iss"
 
@@ -100,7 +95,7 @@ echo "Generating bindimage.txt"
 pacman -Ql mingw-w64-$ARCH-git |
 sed -n -e 's|^[^ ]* /\(.*\.exe\)$|\1|p' \
 	-e 's|^[^ ]* /\(.*\.dll\)$|\1|p' > bindimage.txt
-echo "Source: \"$SCRIPTDIR\\bindimage.txt\"; DestDir: {app}\\mingw$BITNESS\\share\git\bindimage.txt; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" >> file-list.iss
+echo "Source: \"{#SourcePath}\\bindimage.txt\"; DestDir: {app}\\mingw$BITNESS\\share\git\bindimage.txt; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" >> file-list.iss
 
 sed -e "s|%APPVERSION%|$version|g" \
 	-e "s|%MINGW_BITNESS%|mingw$BITNESS|g" -e "s|%BITNESS%|$BITNESS|g" \
