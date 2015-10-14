@@ -10,6 +10,7 @@
 #define MINGW_BITNESS '%MINGW_BITNESS%'
 #define BITNESS       '%BITNESS%'
 #define IS%BITNESS%   ''
+#define APP_CONTACT_URL 'https://github.com/git-for-windows/git/wiki/Contact'
 #define APP_URL       'https://git-for-windows.github.io/'
 #define APP_BUILTINS  'share\git\builtins.txt'
 #define APP_BINDIMAGE 'share\git\bindimage.txt'
@@ -35,6 +36,7 @@ AllowNoIcons=yes
 AppName={#APP_NAME}
 AppPublisher=The Git Development Community
 AppPublisherURL={#APP_URL}
+AppSupportURL={#APP_CONTACT_URL}
 AppVersion={#APP_VERSION}
 ChangesAssociations=yes
 ChangesEnvironment=yes
