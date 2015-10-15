@@ -97,13 +97,13 @@ sed -n -e 's|^[^ ]* /\(.*\.exe\)$|\1|p' \
 	-e 's|^[^ ]* /\(.*\.dll\)$|\1|p' > bindimage.txt
 echo "Source: \"{#SourcePath}\\bindimage.txt\"; DestDir: {app}\\mingw$BITNESS\\share\git\bindimage.txt; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" >> file-list.iss
 
-sed -e "s|%APPVERSION%|$version|g" \
-	-e "s|%MINGW_BITNESS%|mingw$BITNESS|g" -e "s|%BITNESS%|$BITNESS|g" \
-<install.iss.in >install.iss ||
-exit
+printf "%s\n%s" \
+	"#define APP_VERSION '$version'" \
+	"#define BITNESS '$BITNESS'" \
+	>config.iss
 
 echo "Launching Inno Setup compiler ..." &&
-./InnoSetup/ISCC.exe install.iss > install.log ||
+./InnoSetup/ISCC.exe install.iss >install.log ||
 die "Could not make installer"
 
 echo "Tagging Git for Windows installer release ..."

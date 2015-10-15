@@ -1,15 +1,18 @@
 ; Uncomment the line below to be able to compile the script from within the IDE.
 ;#define COMPILE_FROM_IDE
 
+#include "config.iss"
+
+#if !defined(APP_VERSION) || !defined(BITNESS)
+#error "config.iss should define APP_VERSION and BITNESS"
+#endif
+
 #define APP_NAME      'Git'
 #ifdef COMPILE_FROM_IDE
+#undef APP_VERSION
 #define APP_VERSION   'Snapshot'
-#else
-#define APP_VERSION   '%APPVERSION%'
 #endif
-#define MINGW_BITNESS '%MINGW_BITNESS%'
-#define BITNESS       '%BITNESS%'
-#define IS%BITNESS%   ''
+#define MINGW_BITNESS 'mingw'+BITNESS
 #define APP_CONTACT_URL 'https://github.com/git-for-windows/git/wiki/Contact'
 #define APP_URL       'https://git-for-windows.github.io/'
 #define APP_BUILTINS  'share\git\builtins.txt'
@@ -27,7 +30,7 @@ OutputBaseFilename={#APP_NAME+'-'+APP_VERSION}-{#BITNESS}-bit
 OutputDir={#GetEnv('USERPROFILE')}
 SolidCompression=yes
 SourceDir={#SourcePath}\..\..\..\..
-#ifdef IS64
+#if BITNESS=='64'
 ArchitecturesInstallIn64BitMode=x64
 #endif
 
@@ -199,7 +202,7 @@ Type: files; Name: {app}\Git Bash.lnk
 Type: dirifempty; Name: {app}\home\{username}
 Type: dirifempty; Name: {app}\home
 
-#ifdef IS32
+#if BITNESS=='32'
 ; Delete the files required for rebaseall
 Type: files; Name: {app}\bin\msys-2.0.dll
 Type: files; Name: {app}\bin\rebase.exe
@@ -487,7 +490,7 @@ end;
 function InitializeSetup:Boolean;
 begin
     UpdateInfFilenames;
-#ifdef IS32
+#if BITNESS=='32'
     Result:=True;
 #else
     if not IsWin64 then begin
@@ -1345,7 +1348,7 @@ begin
         end;
     end;
     if FileExists(ProgramData+'\Git\config') then begin
-#ifdef IS64
+#if BITNESS=='64'
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config pack.packsizelimit)\" && if test 2g = \"$value\"; then git config -f config --unset pack.packsizelimit; fi"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to read/adjust packsize limit');
 #endif
