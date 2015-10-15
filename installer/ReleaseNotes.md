@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git-2.6.1 (October 5th 2015)
 
+### New Features
+
+* Users who are part of a Windows domain [now have sensible default values](https://github.com/git-for-windows/git/pull/487) for `user.name` and `user.email`.
+
 ### Bug Fixes
 
 * We [no longer run out of page file space](https://github.com/git-for-windows/git/pull/486) when `git fetch`ing large repositories.
