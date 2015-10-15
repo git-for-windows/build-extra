@@ -26,8 +26,13 @@
 ; Compiler-related
 Compression=lzma2/ultra64
 LZMAUseSeparateProcess=yes
+#ifdef OUTPUT_TO_TEMP
+OutputBaseFilename={#APP_VERSION}
+OutputDir={#GetEnv('TEMP')}
+#else
 OutputBaseFilename={#APP_NAME+'-'+APP_VERSION}-{#BITNESS}-bit
 OutputDir={#GetEnv('USERPROFILE')}
+#endif
 SolidCompression=yes
 SourceDir={#SourcePath}\..\..\..\..
 #if BITNESS=='64'
@@ -50,7 +55,11 @@ DefaultGroupName={#APP_NAME}
 DisableProgramGroupPage=auto
 DisableReadyPage=yes
 InfoBeforeFile={#SourcePath}\gpl-2.0.rtf
+#ifdef OUTPUT_TO_TEMP
+PrivilegesRequired=lowest
+#else
 PrivilegesRequired=poweruser
+#endif
 UninstallDisplayIcon={app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 #ifndef COMPILE_FROM_IDE
 #if Pos('-',APP_VERSION)>0
@@ -318,6 +327,9 @@ var
     ProcessesPage:TWizardPage;
     ProcessesListBox:TListBox;
     ProcessesRefresh,ContinueButton:TButton;
+#ifdef DEBUG_WIZARD_PAGE
+    DebugWizardPage:Integer;
+#endif
 
 {
     Specific helper functions
@@ -1010,12 +1022,19 @@ begin
     // This button is only used by the uninstaller.
     ContinueButton:=NIL;
 
+#ifdef DEBUG_WIZARD_PAGE
+    DebugWizardPage:={#DEBUG_WIZARD_PAGE}.ID;
+#endif
     // Initially hide the Refresh button, show it when the process page becomes current.
     ProcessesRefresh.Hide;
 end;
 
 function ShouldSkipPage(PageID:Integer):Boolean;
 begin
+#ifdef DEBUG_WIZARD_PAGE
+    Result:=PageID<>DebugWizardPage
+    Exit;
+#endif
     if (ProcessesPage<>NIL) and (PageID=ProcessesPage.ID) then begin
         // This page is only reached forward (by pressing "Next", never by pressing "Back").
         RefreshProcessList(NIL);
@@ -1238,6 +1257,9 @@ var
     Version:TWindowsVersion;
 begin
     if CurStep=ssInstall then begin
+#ifdef DEBUG_WIZARD_PAGE
+        Abort();
+#endif
         // Shutdown locking processes just before the actual installation starts.
         if SessionHandle>0 then try
             RmShutdown(SessionHandle,RmShutdownOnlyRegistered,0);
