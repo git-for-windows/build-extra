@@ -927,10 +927,10 @@ begin
         Parent:=BashTerminalPage.Surface;
         Caption:=
             'Git will use the default console window of Windows ("cmd.exe"), which works well' + #13 +
-            'with Win32 console programs such as interactive Python or node.js, but the' + #13 +
-            'window is not freely resizable, allows only rectangular text selections, has a' + #13 +
-            'very limited default scroll-back, and needs to be configured to use a Unicode' + #13 +
-            'font in order to display non-ASCII characters correctly.';
+            'with Win32 console programs such as interactive Python or node.js, but has a' + #13 +
+            'very limited default scroll-back, needs to be configured to use a Unicode font in' + #13 +
+            'order to display non-ASCII characters correctly, and prior to Windows 10 its' + #13 +
+            'window was not freely resizable and it only allowed rectangular text selections.';
         Left:=ScaleX(28);
         Top:=ScaleY(104);
         Width:=ScaleX(405);
