@@ -1,0 +1,10 @@
+PKGBUILD eol=lf
+*.bat eol=lf
+*.c eol=lf
+*.cpp eol=lf
+*.css eol=lf
+*.iss eol=lf
+*.h eol=lf
+*.md eol=lf
+*.post eol=lf
+*.txt eol=lf
