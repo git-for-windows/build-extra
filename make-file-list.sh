@@ -67,14 +67,20 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../.*/git-\(remote-testsvn\|shell\)\.exe$' \
 	-e '^/mingw../lib/tdbc' \
 	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
-	-e '^/mingw../share/locale/' \
 	-e '^/usr/bin/msys-\(db\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
 	-e '^/usr/bin/dumper\.exe$' \
-	-e '^/usr/share/locale/' \
 	-e '^/usr/share.*/magic$' \
 	-e '^/usr/share/perl5/core_perl/Unicode/Collate/Locale/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
 	-e '^/usr/share/vim/vim74/lang/' |
+if test -n "$WITH_I18N"
+then
+	cat
+else
+	grep -v \
+		-e '^/mingw../share/locale/' \
+		-e '^/usr/share/locale/'
+fi |
 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)$)' |
 sed 's/^\///'
 
