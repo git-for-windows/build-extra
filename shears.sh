@@ -365,6 +365,7 @@ EOF
 				printf " -e '%s'" \
 					"$(string2regex "$branch_name")"
 			done)"
+		test -z "$exprs" ||
 		commit_name_map="$(printf '%s' "$commit_name_map" |
 			eval grep -v $exprs)"
 	fi
