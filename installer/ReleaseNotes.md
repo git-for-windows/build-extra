@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 
 * We [no longer run out of page file space](https://github.com/git-for-windows/git/pull/486) when `git fetch`ing large repositories.
 * The description of Windows' default console is accurate now (the console became more powerful in Windows 10).
+* *Git GUI* now respects the [terminal emulation chosen at install time](https://github.com/git-for-windows/git/issues/490) when [running the *Git Bash*](https://github.com/git-for-windows/git/pull/492).
 
 ## Changes since Git-2.6.0 (September 29th 2015)
 
