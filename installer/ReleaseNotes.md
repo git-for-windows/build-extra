@@ -1,5 +1,5 @@
-# Git 2.6.1 Release Notes
-Latest update: 5 October 2015
+# Git for Windows v2.6.2 Release Notes
+Latest update: 19 October 2015
 
 ## Introduction
 
@@ -32,10 +32,11 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
 
-## Changes since Git-2.6.1 (October 5th 2015)
+## Changes since Git for Windows v2.6.1 (October 5th 2015)
 
 ### New Features
 
+* Comes with Git v2.6.2
 * Users who are part of a Windows domain [now have sensible default values](https://github.com/git-for-windows/git/pull/487) for `user.name` and `user.email`.
 
 ### Bug Fixes
