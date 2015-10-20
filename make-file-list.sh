@@ -73,7 +73,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/share/perl5/core_perl/Unicode/Collate/Locale/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
 	-e '^/usr/share/vim/vim74/lang/' |
-if test -n "$WITH_I18N"
+if test -n "$WITH_L10N"
 then
 	cat
 else
