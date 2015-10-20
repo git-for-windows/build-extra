@@ -59,7 +59,7 @@ do
 	die "Could not upload $path (response: $json)"
 
 	url2="$(echo "${json##*\"browser_download_url\":\"}" | sed -n \
-		'1s|\([^"]*/\)download\(/[^"]*\).*|\1edit\2|'p)"
+		'1s|\([^"]*/\)download\(/[^"]*/\)[^/]*".*|\1edit\2|'p)"
 	if test -z "$release_url"
 	then
 		release_url=$url2
