@@ -5,7 +5,10 @@
 #include <windows.h>
 #include <stdlib.h>
 
-#ifdef _WIN64
+#ifdef STANDALONE_EXE
+#include <shellapi.h>
+#include <stdio.h>
+#elif defined(_WIN64)
 #error "The .dll needs to be 32-bit to match InnoSetup's architecture"
 #endif
 
@@ -32,7 +35,11 @@ static void print_error(LPCWSTR prefix, DWORD error_number)
 }
 #endif
 
+#ifdef STANDALONE_EXE
+static
+#else
 WINAPI __declspec(dllexport)
+#endif
 int edit_git_bash(LPWSTR git_bash_path, LPWSTR new_command_line)
 {
 	HANDLE handle;
@@ -59,3 +66,26 @@ int edit_git_bash(LPWSTR git_bash_path, LPWSTR new_command_line)
 
 	return result;
 }
+
+#ifdef STANDALONE_EXE
+int main(int argc, char **argv)
+{
+	int wargc, result;
+	LPWSTR *wargv;
+
+	wargv = CommandLineToArgvW(GetCommandLineW(), &wargc);
+
+	if (wargc != 3) {
+		fwprintf(stderr, L"Usage: %s <path-to-exe> <new-commad-line>\n",
+			wargv[0]);
+		exit(1);
+	}
+
+	result = edit_git_bash(wargv[1], wargv[2]);
+
+	if (result)
+		fwprintf(stderr, L"Error editing %s: %d\n", wargv[1], result);
+
+	return !!result;
+}
+#endif

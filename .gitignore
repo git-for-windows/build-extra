@@ -5,6 +5,7 @@
 /git-extra/git-extra-*.pkg.tar.xz
 /installer/ReleaseNotes.html
 /installer/bindimage.txt
+/installer/edit-git-bash.exe
 /installer/install.iss
 /installer/install.log
 /installer/is-unicode.exe
