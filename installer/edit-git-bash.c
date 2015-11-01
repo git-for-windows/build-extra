@@ -5,6 +5,10 @@
 #include <windows.h>
 #include <stdlib.h>
 
+#ifdef _WIN64
+#error "The .dll needs to be 32-bit to match InnoSetup's architecture"
+#endif
+
 #ifdef DEBUG
 static void print_error(LPCWSTR prefix, DWORD error_number)
 {
