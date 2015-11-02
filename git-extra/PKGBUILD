@@ -30,7 +30,8 @@ source=('inputrc'
         'bash_profile.sh'
         'msys2-32.ico'
         '99-post-install-cleanup.post'
-        'astextplain')
+        'astextplain'
+        'git-sdk.sh')
 md5sums=('3fab57079f0322efe256e95fe29d516f'
          'e7ad03fffc29e619e402dbd5ec9ef74c'
          'bfb591886b2a28af3334521e71198b74'
@@ -47,7 +48,8 @@ md5sums=('3fab57079f0322efe256e95fe29d516f'
          'fc645b2d3dd6a7187db75a5ed9b88bae'
          'a8feb7ee2fa91bb179478f099444746f'
          'bdeb6046510aa1a6cd76e7f86673aa3f'
-         '6a1087428cd23aa7f6063d1a592cac38')
+         '6a1087428cd23aa7f6063d1a592cac38'
+         '593dbce30c442529b4351650f4422b6e')
 
 prepare() {
   test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
@@ -87,6 +89,7 @@ package() {
   install -m755 aliases.sh $pkgdir/etc/profile.d
   install -m755 env.sh $pkgdir/etc/profile.d
   install -m755 bash_profile.sh $pkgdir/etc/profile.d
+  install -m755 git-sdk.sh $pkgdir/etc/profile.d
   install -m644 msys2-32.ico $pkgdir/usr/share/git
   install -m644 99-post-install-cleanup.post $pkgdir/etc/post-install
   install -m755 astextplain $pkgdir/usr/bin

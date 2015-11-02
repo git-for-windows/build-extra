@@ -72,7 +72,8 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/share.*/magic$' \
 	-e '^/usr/share/perl5/core_perl/Unicode/Collate/Locale/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
-	-e '^/usr/share/vim/vim74/lang/' |
+	-e '^/usr/share/vim/vim74/lang/' \
+	-e '^/etc/profile.d/git-sdk.sh$' |
 if test -n "$WITH_L10N"
 then
 	cat
