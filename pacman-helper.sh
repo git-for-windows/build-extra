@@ -41,6 +41,13 @@ fetch|add|remove|push|files|dirs|orphans)
 	mode="$1"
 	shift
 	;;
+upload|publish)
+	test -n "$IKNOWWHATIMDOING" ||
+	die "You need to switch to expert mode to do that"
+
+	mode="$1"
+	shift
+	;;
 *)
 	die "Usage:\n" \
 		" $0 ( fetch | push | ( add | remove ) <package>... )\n" \
