@@ -14,7 +14,6 @@ do
 	case "$1" in
 	-f|--force)
 		force=t
-		shift
 		;;
 	--debug-wizard-page=*)
 		test_installer=t
@@ -22,11 +21,11 @@ do
 			"#define DEBUG_WIZARD_PAGE '${1#*=}'" \
 			"#define OUTPUT_TO_TEMP ''")"
 		skip_files=t
-		shift
 		;;
 	*)
 		break
 	esac
+	shift
 done
 
 if test -n "$test_installer"
