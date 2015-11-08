@@ -93,7 +93,9 @@ Name: consolefont; Description: Use a TrueType font in all console windows
 #include "file-list.iss"
 Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
+#ifdef INCLUDE_VS_NOTICE
 Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
+#endif
 Source: {#SourcePath}\edit-git-bash.dll; Flags: dontcopy
 
 [Dirs]
