@@ -5,6 +5,11 @@ die () {
 	exit 1
 }
 
+case "$1" in
+*/.git/*) ;; # needs LF line endings
+*) exec notepad.exe "$1" || die "Could not launch notepad.exe";;
+esac
+
 test $# = 1 ||
 die "Usage: $0 <file>"
 
