@@ -41,7 +41,7 @@ fetch|add|remove|push|files|dirs|orphans)
 	mode="$1"
 	shift
 	;;
-upload|publish)
+upload|publish|delete_version)
 	test -n "$IKNOWWHATIMDOING" ||
 	die "You need to switch to expert mode to do that"
 
