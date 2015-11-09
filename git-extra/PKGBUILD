@@ -14,14 +14,50 @@ install='git-extra.install'
 pkgver() {
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD -- "$startdir")" "$(git rev-parse --short HEAD)"
 }
+source=('inputrc'
+        'vimrc'
+        'vi'
+        'notepad'
+        'wordpad'
+        'create-shortcut.c'
+        'Makefile'
+        'SystemInfo.cpp'
+        'SystemInfo.h'
+        'WhoUses.cpp'
+        'git-prompt.sh'
+        'aliases.sh'
+        'env.sh'
+        'bash_profile.sh'
+        'msys2-32.ico'
+        '99-post-install-cleanup.post'
+        'astextplain'
+        'git-sdk.sh')
+md5sums=('3fab57079f0322efe256e95fe29d516f'
+         'e7ad03fffc29e619e402dbd5ec9ef74c'
+         'bfb591886b2a28af3334521e71198b74'
+         '3aee284cbe68e59aa2c3e15a1b506274'
+         'e3b411a4f2e6553e41d0c4261160dd7d'
+         'fb92ea53ef01b4f60ed04eabac81e2c7'
+         '7180794bfa88c1f687c1a7940fc62293'
+         'f0098a4ae414c44f336e52ae5fc17bce'
+         '5ab834ba300fabf88ca8c4d0d8569b8d'
+         'eb10eb010f37dfa74af52ae6d342315b'
+         '3fc2baf5bd76976b83db88c6ab809b60'
+         'f8f5ef67b89ecd9e9117488fb4701f6f'
+         '3f3dff320418411107e3111be9d4b256'
+         'fc645b2d3dd6a7187db75a5ed9b88bae'
+         'a8feb7ee2fa91bb179478f099444746f'
+         'bdeb6046510aa1a6cd76e7f86673aa3f'
+         '6a1087428cd23aa7f6063d1a592cac38'
+         '593dbce30c442529b4351650f4422b6e')
 
 prepare() {
   test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
-  test $startdir/$pkgname.install -nt $startdir/resources/gitconfig &&
-  test $startdir/$pkgname.install -nt $startdir/resources/gitattributes ||
-  sed -e "/^@@GITCONFIG@@$/r $startdir/resources/gitconfig" \
+  test $startdir/$pkgname.install -nt $startdir/gitconfig &&
+  test $startdir/$pkgname.install -nt $startdir/gitattributes ||
+  sed -e "/^@@GITCONFIG@@$/r $startdir/gitconfig" \
 	-e "/^@@GITCONFIG@@$/d" \
-	-e "/^@@GITATTRIBUTES@@$/r $startdir/resources/gitattributes" \
+	-e "/^@@GITATTRIBUTES@@$/r $startdir/gitattributes" \
 	-e "/^@@GITATTRIBUTES@@$/d" \
 	<$startdir/$pkgname.install.in >$startdir/$pkgname.install
 }
@@ -29,10 +65,10 @@ prepare() {
 build() {
   export CC=${MINGW_CHOST}-gcc
   export CXX=${MINGW_CHOST}-g++
-  export SRCDIR=$startdir/sources
+  export SRCDIR=$srcdir
   export BUILDDIR=build-${MINGW_CHOST}
   mkdir -p ${BUILDDIR}
-  make -f $startdir/sources/Makefile
+  make Makefile
 }
 
 package() {
@@ -42,19 +78,19 @@ package() {
   install -d -m755 $pkgdir/usr/bin
   install -d -m755 $pkgdir/usr/share/git
   install -d -m755 $pkgdir/${MINGW_PREFIX}/bin
-  install -m644 $startdir/resources/inputrc $pkgdir/etc
-  install -m644 $startdir/resources/vimrc $pkgdir/etc
-  install -m755 $startdir/scripts/vi $pkgdir/usr/bin
-  install -m755 $startdir/scripts/notepad $pkgdir/usr/bin
-  install -m755 $startdir/scripts/wordpad $pkgdir/usr/bin
+  install -m644 inputrc $pkgdir/etc
+  install -m644 vimrc $pkgdir/etc
+  install -m755 vi $pkgdir/usr/bin
+  install -m755 notepad $pkgdir/usr/bin
+  install -m755 wordpad $pkgdir/usr/bin
   install -m755 $builddir/create-shortcut.exe $pkgdir/${MINGW_PREFIX}/bin
   install -m755 $builddir/WhoUses.exe $pkgdir/${MINGW_PREFIX}/bin
-  install -m755 $startdir/profile.d/git-prompt.sh $pkgdir/etc/profile.d
-  install -m755 $startdir/profile.d/aliases.sh $pkgdir/etc/profile.d
-  install -m755 $startdir/profile.d/env.sh $pkgdir/etc/profile.d
-  install -m755 $startdir/profile.d/bash_profile.sh $pkgdir/etc/profile.d
-  install -m644 $startdir/resources/msys2-32.ico $pkgdir/usr/share/git
-  install -m644 $startdir/scripts/99-post-install-cleanup.post \
-	$pkgdir/etc/post-install
-  install -m755 $startdir/scripts/astextplain $pkgdir/usr/bin
+  install -m755 git-prompt.sh $pkgdir/etc/profile.d
+  install -m755 aliases.sh $pkgdir/etc/profile.d
+  install -m755 env.sh $pkgdir/etc/profile.d
+  install -m755 bash_profile.sh $pkgdir/etc/profile.d
+  install -m755 git-sdk.sh $pkgdir/etc/profile.d
+  install -m644 msys2-32.ico $pkgdir/usr/share/git
+  install -m644 99-post-install-cleanup.post $pkgdir/etc/post-install
+  install -m755 astextplain $pkgdir/usr/bin
 }
