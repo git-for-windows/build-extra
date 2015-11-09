@@ -96,17 +96,29 @@ fetch () {
 }
 
 upload () { # <package> <version> <arch> <filename>
+	test -z "$PACMANDRYRUN" || {
+		echo "upload: curl --netrc -fT $4 $content_url/$1/$2/$3/$4"
+		return
+	}
 	curl --netrc -fT "$4" "$content_url/$1/$2/$3/$4" ||
 	die "Could not upload $4 to $1/$2/$3"
 }
 
 publish () { # <package> <version>
+	test -z "$PACMANDRYRUN" || {
+		echo "publish: curl --netrc -fX POST $content_url/$1/$2/publish"
+		return
+	}
 	curl --netrc -fX POST "$content_url/$1/$2/publish" ||
 	die "Could not publish $2 in $1"
 }
 
 
 delete_version () { # <package> <version>
+	test -z "$PACMANDRYRUN" || {
+		echo "delete: curl --netrc -fX DELETE $packages_url/$1/versions/$2"
+		return
+	}
 	curl --netrc -fX DELETE "$packages_url/$1/versions/$2" ||
 	die "Could not delete version $2 of $1"
 }
