@@ -1,5 +1,5 @@
-# Git for Windows v2.6.2 Release Notes
-Latest update: 19 October 2015
+# Git for Windows v2.6.3 Release Notes
+Latest update: 10 November 2015
 
 ## Introduction
 
@@ -34,9 +34,18 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.6.2 (October 19th 2015)
 
+### New Features
+
+* Comes with [Git v2.6.3](http://article.gmane.org/gmane.comp.version-control.git/280947).
+* [Enables the stack smasher to protect against buffer overflows](https://github.com/git-for-windows/git/issues/501).
+
 ### Bug Fixes
 
 * Git Bash [works now even when choosing Windows' default console *and* installing into a short path (e.g. `C:\Git`)](https://github.com/git-for-windows/git/issues/509).
+* Notepad [can now really be used to edit commit messages](https://github.com/git-for-windows/git/issues/517).
+* Git's garbage collector [now handles stale `refs/remotes/origin/HEAD` gracefully](https://github.com/git-for-windows/git/issues/423).
+* The regression in Git for Windows 2.6.2 that it required administrator privileges to be installed [is now fixed](https://github.com/git-for-windows/build-extra/pull/86).
+* When `notepad` is configured as default editor, we no longer do anything specially [unless editing files inside `.git/`](https://github.com/git-for-windows/git/issues/488).
 
 ## Changes since Git for Windows v2.6.1 (October 5th 2015)
 
