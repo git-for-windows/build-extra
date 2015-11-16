@@ -55,7 +55,7 @@ DefaultGroupName={#APP_NAME}
 DisableProgramGroupPage=auto
 DisableReadyPage=yes
 InfoBeforeFile={#SourcePath}\gpl-2.0.rtf
-PrivilegesRequired=lowest
+PrivilegesRequired=admin
 UninstallDisplayIcon={app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 #ifndef COMPILE_FROM_IDE
 #if Pos('-',APP_VERSION)>0
