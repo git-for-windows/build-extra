@@ -22,10 +22,6 @@ do
 			"#define OUTPUT_TO_TEMP ''")"
 		skip_files=t
 		;;
-	--vs)
-		inno_defines="$(printf "%s\n%s\n%s" "$inno_defines" \
-			"#define INCLUDE_VS_NOTICE ''")"
-		;;
 	*)
 		break
 	esac

@@ -97,9 +97,7 @@ Name: consolefont; Description: Use a TrueType font in all console windows
 #include "file-list.iss"
 Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
-#ifdef INCLUDE_VS_NOTICE
-Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
-#endif
+Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore; Check: ParamIsSet('VSNOTICE')
 Source: {#SourcePath}\edit-git-bash.dll; Flags: dontcopy
 
 [Dirs]
@@ -238,6 +236,11 @@ procedure LogError(Msg:String);
 begin
     SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
     Log(Msg);
+end;
+
+function ParamIsSet(Key:String):Boolean;
+begin
+    Result:=CompareStr('0',ExpandConstant('{param:'+Key+'|0}'))<>0;
 end;
 
 function CreateHardLink(lpFileName,lpExistingFileName:String;lpSecurityAttributes:Integer):Boolean;
