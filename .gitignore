@@ -17,3 +17,5 @@
 /portable/root/etc/
 /portable/root/post-install.bat
 /sdk-installer/root/
+/archive/root/*
+!/archive/root/etc
