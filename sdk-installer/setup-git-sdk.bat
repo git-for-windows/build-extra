@@ -13,14 +13,11 @@
 @REM set MSYSTEM so that MSys2 starts up in the correct mode
 @set MSYSTEM=MINGW@@BITNESS@@
 
-@REM need to rebase just to make sure that it still works even with 32-bit
-@REM Windows 10
+@REM need to rebase just to make sure that it still works even with Windows 10
 @SET initialrebase=false
-@IF MINGW32 == %MSYSTEM% @(
-	@FOR /F "tokens=4 delims=.[XP " %%i IN ('ver') DO @SET ver=%%i
-	@IF 10 LEQ %ver @(
-		@SET initialrebase=false
-	)
+@FOR /F "tokens=4 delims=.[XP " %%i IN ('ver') DO @SET ver=%%i
+@IF 10 LEQ %ver @(
+	@SET initialrebase=false
 )
 
 @IF %initialrebase% == true @(
@@ -67,8 +64,7 @@
 @REM pacman's post-install scripts run without complaining about heap problems
 @"%cwd%"\usr\bin\pacman -Sy --needed --force --noconfirm msys2-runtime
 
-@REM need to rebase just to make sure that it still works even with 32-bit
-@REM Windows 10
+@REM need to rebase just to make sure that it still works even with Windows 10
 @IF %initialrebase% == true @(
 	@"%cwd%"\bin\rebase.exe -b 0x63000000 "%cwd%"\usr\bin\msys-2.0.dll
 )
