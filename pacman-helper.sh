@@ -193,6 +193,9 @@ add () { # <file>
 			die "Unknown architecture: $arch"
 			;;
 		esac
+
+		echo "Adding ${path##*/} to $arch/" >&2
+
 		dir="$(arch_dir $arch)"
 		if test -d "$dir"
 		then
