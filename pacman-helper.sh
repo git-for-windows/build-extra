@@ -100,6 +100,7 @@ upload () { # <package> <version> <arch> <filename>
 		echo "upload: curl --netrc -fT $4 $content_url/$1/$2/$3/$4"
 		return
 	}
+	echo "Uploading $1..." >&2
 	curl --netrc -fT "$4" "$content_url/$1/$2/$3/$4" ||
 	die "Could not upload $4 to $1/$2/$3"
 }
