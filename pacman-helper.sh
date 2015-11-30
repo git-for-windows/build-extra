@@ -302,6 +302,10 @@ push () {
 			for arch in $architectures sources
 			do
 				case "$name,$arch" in
+				mingw-w64-i686,x86_64|mingw-w64-x86_64,i686)
+					# wrong architecture
+					continue
+					;;
 				mingw-w64-i686-*,sources)
 					# sources are "included" in x86_64
 					continue
