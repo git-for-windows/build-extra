@@ -1,4 +1,11 @@
-PS1='\[\033]0;$MSYSTEM:${PWD//[^[:ascii:]]/?}\007\]' # set window title
+if test -f /etc/profile.d/git-sdk.sh
+then
+	TITLEPREFIX=SDK-${MSYSTEM#MINGW}
+else
+	TITLEPREFIX=$MSYSTEM
+fi
+
+PS1='\[\033]0;$TITLEPREFIX:${PWD//[^[:ascii:]]/?}\007\]' # set window title
 PS1="$PS1"'\n'                 # new line
 PS1="$PS1"'\[\033[32m\]'       # change to green
 PS1="$PS1"'\u@\h '             # user@host<space>
