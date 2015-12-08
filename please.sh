@@ -8,6 +8,10 @@
 # are in use, such as msys-2.0.dll or bash.exe. To that end, this script is
 # intended to run from a *separate* Bash, such as Git Bash.
 
+# Note: functions whose arguments are documented on the function name's own
+# line are actually subcommands, and running this script without any argument
+# will list all subcommands.
+
 die () {
 	printf "$@" >&2
 	exit 1
