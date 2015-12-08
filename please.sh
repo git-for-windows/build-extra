@@ -357,6 +357,19 @@ tag_git () { #
 	die "Could not push tag %s in %s\n" "$nextver" "$git_src_dir"
 }
 
+test_git () { # <bitness>
+	sdk="$(eval "echo \$sdk$1")"
+
+	echo "Testing $1-bit $("$sdk/cmd/git.exe" version)"
+
+	(cd "$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git/" &&
+	 "$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		"make GIT-CFLAGS && if test GIT-CFLAGS -nt git.res; then touch git.rc; fi && make -j5" &&
+	 cd t &&
+	 "$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
+		-c "cd \"\$(cygpath -au .)\" && GIT_TEST_INSTALLED=/mingw$1/bin/ prove --timer --jobs 5 ./t[0-9]*.sh")
+}
+
 pkg_files () {
 	pkgver="$(sed -ne \
 		'/^_basever=/{N;N;s/.*=\([0-9].*\)\n.*\npkgrel=\(.*\)/\1-\2/p}' \
