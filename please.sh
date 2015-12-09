@@ -180,6 +180,18 @@ pkg_build () {
 	MINGW)
 		require mingw-w64-toolchain mingw-w64-$arch-make
 
+		if test mingw-w64-git = "$package"
+		then
+			tag="$(git --git-dir=src/git/.git for-each-ref \
+				--format='%(refname:short)' --sort=-taggerdate \
+				--count=1 'refs/tags/*.windows.*')" &&
+			test -n "$tag" ||
+			die "Could not determine latest tag\n"
+
+			sed -i "s/^\(tag=\).*/\1${tag#v}/" PKGBUILD ||
+			die "Could not edit tag\n"
+		fi
+
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			'MAKEFLAGS=-j5 makepkg-mingw -s --noconfirm &&
 			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource' ||
