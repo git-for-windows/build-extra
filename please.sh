@@ -125,6 +125,10 @@ set_package () {
 		extra_packages="msys2-runtime-devel"
 		path=/usr/src/MSYS2-packages/$package
 		;;
+	mintty)
+		type=MSYS
+		path=/usr/src/MSYS2-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
