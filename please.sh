@@ -129,6 +129,10 @@ set_package () {
 		type=MSYS
 		path=/usr/src/MSYS2-packages/$package
 		;;
+	w3m)
+		type=MSYS
+		path=/usr/src/MSYS2-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
