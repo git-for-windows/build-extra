@@ -71,6 +71,25 @@ info () { #
 		"$warning"
 }
 
+sync () { #
+	for sdk in "$sdk32" "$sdk64"
+	do
+		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe -Sy ||
+		die "Cannot run pacman in %s\n" "$sdk"
+
+		for p in bash pacman "msys2-runtime msys2-runtime-devel"
+		do
+			"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe \
+				-S --noconfirm --needed $p ||
+			die "Could not update %s in %s\n" "$p" "$sdk"
+		done
+
+		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe \
+			-Su --noconfirm ||
+		die "Cannot update packages in %s\n" "$sdk"
+	done
+}
+
 test $# -gt 0 &&
 test help != "$*" ||
 die "Usage: $0 <command>\n\nCommands:\n%s" \
