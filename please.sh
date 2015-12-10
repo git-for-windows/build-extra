@@ -274,6 +274,79 @@ build () { # <package>
 	foreach_sdk pkg_build
 }
 
+# require_remote <nickname> <url>
+require_remote () {
+	if test -z "$(git config remote."$1".url)"
+	then
+		git remote add -f "$1" "$2"
+	else
+		test "$2" = "$(git config remote."$1".url)" ||
+		die "Incorrect URL for %s: %s\n" \
+			"$1" "$(git config remote."$1".url)"
+
+		git fetch "$1"
+	fi ||
+	die "Could not fetch from %s\n" "$1"
+}
+
+# require_push_url # [<remote>]
+require_push_url () {
+	remote=${1:-origin}
+	if test -z "$(git config remote."$remote".pushurl)"
+	then
+		pushurl="$(git config remote."$remote".url |
+			sed -n 's|^https://github.com/\(.*\)|github.com:\1|p')"
+		test -n "$pushurl" ||
+		die "Not a GitHub remote: %s\n" "$remote"
+
+		git remote set-url --push "$remote" "$pushurl" ||
+		die "Could not set push URL of %s to %s\n" "$remote" "$pushurl"
+
+		grep -q '^Host github.com$' "$HOME/.ssh/config" ||
+		die "No github.com entry in ~/.ssh/config\n"
+	fi
+}
+
+tag_git () { #
+	sdk="$sdk64" require w3m w3m
+
+	build_extra_dir="$sdk64/usr/src/build-extra"
+	(cd "$build_extra_dir" &&
+	 sdk= path=$PWD ff_master) ||
+	die "Could not update build-extra\n"
+
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	(cd "$git_src_dir" &&
+	 require_remote upstream https://github.com/git/git &&
+	 require_remote git-for-windows \
+		https://github.com/git-for-windows/git &&
+	 require_push_url git-for-windows) || exit
+
+	nextver="$(sed -ne \
+		'1s/.* \(v[0-9][.0-9]*\)(\([0-9][0-9]*\)) .*/\1.windows.\2/p' \
+		-e '1s/.* \(v[0-9][.0-9]*\) .*/\1.windows.1/p' \
+		<"$build_extra_dir/installer/ReleaseNotes.md")"
+	! git --git-dir="$git_src_dir" rev-parse --verify \
+		refs/tags/"$nextver" >/dev/null 2>&1 ||
+	die "Already tagged: %s\n" "$nextver"
+
+	notes="$("$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		'markdown </usr/src/build-extra/installer/ReleaseNotes.md |
+		 w3m -dump -cols 72 -T text/html | \
+		 sed -n "/^Changes since/,\${:1;p;n;/^Changes/q;b1}"')"
+
+	tag_message="$(printf "%s\n\n%s" \
+		"$(sed -n '1s/.*\(Git for Windows v[^ ]*\).*/\1/p' \
+		<"$build_extra_dir/installer/ReleaseNotes.md")" "$notes")" &&
+	(cd "$git_src_dir" &&
+	 git tag -m "$tag_message" -a "$nextver" git-for-windows/master) ||
+	die "Could not tag %s in %s\n" "$nextver" "$git_src_dir"
+
+	(cd "$git_src_dir" &&
+	 git push git-for-windows "$nextver") ||
+	die "Could not push tag %s in %s\n" "$nextver" "$git_src_dir"
+}
+
 test $# -gt 0 &&
 test help != "$*" ||
 die "Usage: $0 <command>\n\nCommands:\n%s" \
