@@ -357,6 +357,96 @@ tag_git () { #
 	die "Could not push tag %s in %s\n" "$nextver" "$git_src_dir"
 }
 
+pkg_files () {
+	pkgver="$(git show HEAD | sed -n '/^+pkgver=/{N;s/^.*=\(.*\)\n[ +]pkgrel=\(.*\)/\1-\2/p}')"
+	test -n "$pkgver" ||
+	die "%s: could not determine pkgver\n" "$sdk/$path"
+
+	test "a$sdk" = "a$sdk32" &&
+	arch=i686 ||
+	arch=x86_64
+
+	for p in $package $extra_packages
+	do
+		case "$p" in
+		mingw-w64-*)
+			suffix=-${p#mingw-w64-}-$pkgver-any.pkg.tar.xz
+			case "$1" in
+			--i686|--x86_64)
+				printf " mingw-w64${1#-}$suffix"
+				;;
+			'')
+				printf " mingw-w64-$arch$suffix"
+				;;
+			*)
+				die "Whoops: unknown option %s\n" "$1"
+				;;
+			esac
+			;;
+		git-extra)
+			prefix=$p-$pkgver
+			suffix=.pkg.tar.xz
+			case "$1" in
+			--for-upload)
+				printf " $prefix-i686$suffix"
+				printf " $prefix-x86_64$suffix"
+				;;
+			--i686|--x86_64)
+				printf " $prefix${1#-}$suffix"
+				;;
+			'')
+				printf " $prefix-$arch$suffix"
+				;;
+			*)
+				die "Whoops: unknown option %s\n" "$1"
+				;;
+			esac
+			;;
+		*)
+			printf " $p-$pkgver-$arch.pkg.tar.xz"
+			;;
+		esac
+	done
+}
+
+pkg_install () {
+	require_clean_worktree
+
+	files="$(pkg_files)" || exit
+
+	case "$package" in
+	msys2-runtime)
+		require_not_in_use "$sdk" "usr/bin/msys-2.0.dll"
+		;;
+	bash)
+		require_not_in_use "$sdk" "usr/bin/sh.exe"
+		require_not_in_use "$sdk" "usr/bin/bash.exe"
+		;;
+	esac
+
+	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		"pacman -U --noconfirm $files"
+
+	if test MINGW = "$type"
+	then
+		"$sdk32/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			"pacman -U --noconfirm $(pkg_files --i686)"
+	fi
+}
+
+install () { # <package>
+	set_package "$1"
+
+	case "$package" in
+	msys2-runtime|bash)
+		is_independent_shell ||
+		die "Need to run from a different shell (try Git Bash)\n"
+		;;
+	esac
+
+	foreach_sdk pkg_install
+}
+
 test $# -gt 0 &&
 test help != "$*" ||
 die "Usage: $0 <command>\n\nCommands:\n%s" \
