@@ -386,6 +386,9 @@ pkg_files () {
 	test -n "$pkgver" ||
 	die "%s: could not determine pkgver\n" "$sdk/$path"
 
+	test a--for-upload != "a$1" ||
+	echo $package-$pkgver.src.tar.gz
+
 	test "a$sdk" = "a$sdk32" &&
 	arch=i686 ||
 	arch=x86_64
@@ -396,6 +399,10 @@ pkg_files () {
 		mingw-w64-*)
 			suffix=-${p#mingw-w64-}-$pkgver-any.pkg.tar.xz
 			case "$1" in
+			--for-upload)
+				printf " mingw-w64-i686$suffix"
+				printf " mingw-w64-x86_64$suffix"
+				;;
 			--i686|--x86_64)
 				printf " mingw-w64${1#-}$suffix"
 				;;
@@ -469,6 +476,34 @@ install () { # <package>
 	esac
 
 	foreach_sdk pkg_install
+}
+
+pacman_helper () {
+	"$sdk64/git-cmd.exe" --command=usr\\bin\\bash.exe -l \
+		"$sdk64/usr/src/build-extra/pacman-helper.sh" "$@"
+}
+
+pkg_upload () {
+	require_clean_worktree
+
+	files="$(pkg_files --for-upload)" || exit
+
+	pacman_helper add $files
+}
+
+upload () { # <package>
+	set_package "$1"
+
+	grep -q '^machine api\.bintray\.com$' "$HOME"/_netrc ||
+	die "Missing BinTray entries in ~/_netrc\n"
+
+	(cd "$sdk64/$path" &&
+	 require_push_url origin) || exit
+
+	pacman_helper fetch &&
+	foreach_sdk pkg_upload &&
+	pacman_helper push ||
+	die "Could not upload %s\n" "$package"
 }
 
 test $# -gt 0 &&
