@@ -161,6 +161,88 @@ update () { # <package>
 	foreach_sdk ff_master
 }
 
+# require <metapackage> <telltale>
+require () {
+	test -d "$sdk"/var/lib/pacman/local/"$2"-[0-9]* ||
+	"$sdk"/git-cmd.exe --command=usr\\bin\\pacman.exe \
+		-Sy --needed --noconfirm "$1" ||
+	die "Could not install %s\n" "$1"
+}
+
+pkg_build () {
+	require_clean_worktree
+
+	test "a$sdk" = "a$sdk32" &&
+	arch=i686 ||
+	arch=x86_64
+
+	case "$type" in
+	MINGW)
+		require mingw-w64-toolchain mingw-w64-$arch-make
+
+		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			'MAKEFLAGS=-j5 makepkg-mingw -s --noconfirm &&
+			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource' ||
+		die "%s: could not build\n" "$sdk/$path"
+
+		git commit -s -m "$package: new version" PKGBUILD ||
+		die "%s: could not commit after build\n" "$sdk/$path"
+		;;
+	MSYS)
+		require msys2-devel binutils
+		test msys2-runtime != "$package" ||
+		require mingw-w64-cross-gcc mingw-w64-cross-gcc
+
+		"$sdk/git-cmd" --command=usr\\bin\\sh.exe -l -c \
+			'export MSYSTEM=MSYS &&
+			 export PATH=/usr/bin:/opt/bin:$PATH &&
+			 MAKEFLAGS=-j5 makepkg -s --noconfirm &&
+			 makepkg --allsource' ||
+		die "%s: could not build\n" "$sdk/$path"
+
+		if test "a$sdk32" = "a$sdk"
+		then
+			git diff-files --quiet --ignore-submodules PKGBUILD ||
+			git commit -s -m "$package: new version" PKGBUILD ||
+			die "%s: could not commit after build\n" "$sdk/$path"
+		else
+			git add PKGBUILD &&
+			git pull "$sdk32/${path%/*}/.git" \
+				"$(git rev-parse --symbolic-full-name HEAD)" &&
+			require_clean_worktree ||
+			die "%s: unexpected difference between 32/64-bit\n" \
+				"$path"
+		fi
+		;;
+	esac
+}
+
+# up_to_date <path>
+up_to_date () {
+	# test that repos at <path> are up-to-date in both 64-bit and 32-bit
+	path="$1"
+
+	commit32="$(cd "$sdk32/$path" && git rev-parse --verify HEAD)" &&
+	commit64="$(cd "$sdk64/$path" && git rev-parse --verify HEAD)" ||
+	die "Could not determine HEAD commit in %s\n" "$path"
+
+	test "a$commit32" = "a$commit64" ||
+	die "%s: commit %s (32-bit) != %s (64-bit)\n" \
+		"$path" "$commit32" "$commit64"
+
+	foreach_sdk require_clean_worktree
+}
+
+build () { # <package>
+	set_package "$1"
+
+	test MINGW = "$type" ||
+	up_to_date "$path" ||
+	die "%s: not up-to-date\n" "$path"
+
+	foreach_sdk pkg_build
+}
+
 test $# -gt 0 &&
 test help != "$*" ||
 die "Usage: $0 <command>\n\nCommands:\n%s" \
