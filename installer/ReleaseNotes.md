@@ -1,5 +1,5 @@
-# Git for Windows v2.6.3 Release Notes
-Latest update: 10 November 2015
+# Git for Windows v2.6.4 Release Notes
+Latest update: December 11th 2015
 
 ## Introduction
 
@@ -31,6 +31,18 @@ Git is licensed under the GNU Public License version 2.
 Git for Windows also contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
 This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
+
+## Changes since Git for Windows v2.6.3 (November 10th 2015)
+
+### New Features
+
+* Comes with [Git v2.6.4](http://article.gmane.org/gmane.linux.kernel/2103498).
+
+## Bug Fixes
+
+* Git for Windows v2.6.3's installer [failed](https://github.com/git-for-windows/git/issues/523) to [elevate privileges automatically](https://github.com/git-for-windows/git/issues/526) (reported [three times](https://github.com/git-for-windows/git/issues/528), making it a charm), and as a consequence Git for Windows 2.6.3 was frequently [installed per-user by mistake](https://github.com/git-for-windows/build-extra/commit/23672af723da18e5bc3c679e52106de3c2dec55a)
+* The bug where [`SHELL_PATH` had spaces](https://github.com/git-for-windows/git/issues/542) and that was [reported](https://github.com/git-for-windows/git/issues/498) multiple [times](https://github.com/git-for-windows/git/issues/468) has been [fixed](https://github.com/git-for-windows/msys2-runtime/commit/7f4284d245f9c736dc8ec52e12c5d67cea7e4ba9).
+* An additional work-around from upstream Git for `SHELL_PATH` containing spaces (fixing [problems with interactive rebase's `exec` command](https://github.com/git-for-windows/git/issues/542) has been applied.
 
 ## Changes since Git for Windows v2.6.2 (October 19th 2015)
 
