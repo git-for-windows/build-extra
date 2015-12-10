@@ -90,6 +90,77 @@ sync () { #
 	done
 }
 
+# set_package <package>
+set_package () {
+	package="$1"
+	extra_packages=
+	case "$package" in
+	git-extra)
+		type=MINGW
+		path=/usr/src/build-extra/git-extra
+		;;
+	git)
+		package=mingw-w64-git
+		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man"
+		type=MINGW
+		path=/usr/src/MINGW-packages/$package
+		;;
+	mingw-w64-git)
+		type=MINGW
+		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man"
+		path=/usr/src/MINGW-packages/$package
+		;;
+	msys2-runtime)
+		type=MSYS
+		extra_packages="msys2-runtime-devel"
+		path=/usr/src/MSYS2-packages/$package
+		;;
+	*)
+		die "Unknown package: %s\n" "$package"
+		;;
+	esac
+}
+
+# foreach_sdk <function> [<args>]
+foreach_sdk () {
+	# No uncommitted changes?
+	for sdk in "$sdk32" "$sdk64"
+	do
+		# MINGW packages are compiled in the 64-bit SDK only
+		test "a$sdk64" = "a$sdk" ||
+		test MINGW != "$type" ||
+		continue
+
+		(cd "$sdk/$path" ||
+		 die "%s does not exist\n" "$sdk/$path"
+
+		 "$@") || exit
+	done
+}
+
+require_clean_worktree () {
+	git update-index -q --ignore-submodules --refresh &&
+	git diff-files --quiet --ignore-submodules &&
+	git diff-index --cached --quiet --ignore-submodules HEAD ||
+	die "%s not up-to-date" "$sdk/$path"
+}
+
+ff_master () {
+	test refs/heads/master = "$(git rev-parse --symbolic-full-name HEAD)" ||
+	die "%s: Not on 'master'\n" "$sdk/$path"
+
+	require_clean_worktree
+
+	git pull --ff-only origin master ||
+	die "%s: cannot fast-forward 'master'\n" "$sdk/$path"
+}
+
+update () { # <package>
+	set_package "$1"
+
+	foreach_sdk ff_master
+}
+
 test $# -gt 0 &&
 test help != "$*" ||
 die "Usage: $0 <command>\n\nCommands:\n%s" \
