@@ -520,6 +520,53 @@ upload () { # <package>
 	die "Could not push commits in %s/%s\n" "$sdk64" "$path"
 }
 
+release () { #
+	up_to_date usr/src/build-extra ||
+	die "build-extra is not up-to-date\n"
+
+	version="$("$sdk64/cmd/git.exe" version)"
+	version32="$("$sdk32/cmd/git.exe" version)"
+	test -n "$version" &&
+	test "a$version" = "a$version32" ||
+	die "Version mismatch in 32/64-bit: %s vs %s\n" "$version32" "$version"
+
+	version="${version#git version }"
+	ver="$(echo "$version" | sed -n \
+	 's/^\([0-9]*\.[0-9]*\.[0-9]*\)\.windows\(\.1\|\(\.[0-9]*\)\)$/\1\3/p')"
+	test -n "$ver" ||
+	die "Unexpected version format: %s\n" "$version"
+
+	displayver="$ver"
+	case "$displayver" in
+	*.*.*.*)
+		displayver="${displayver%.*}(${displayver##*.})"
+		;;
+	esac
+
+	echo "Releasing Git for Windows $displayver" >&2
+
+	test "# Git for Windows v$displayver Release Notes" = "$(head -n 1 \
+		"$sdk64/usr/src/build-extra/installer/ReleaseNotes.md")" ||
+	die "Incorrect version in the release notes\n"
+
+	today="$(LC_ALL=C date +"%B %-d %Y" | sed \
+		-e 's/\( [2-9]\?[4-90]\| 1[0-9]\) /\1th /' \
+		-e 's/1 /1st /' -e 's/2 /2nd /' -e 's/3 /3rd /')"
+	test "Latest update: $today" = "$(sed -n 2p \
+		<"$sdk64/usr/src/build-extra/installer/ReleaseNotes.md")" ||
+	die "Incorrect release date in the release notes\n"
+
+	for sdk in "$sdk32" "$sdk64"
+	do
+		for dir in installer portable archive
+		do
+			"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+				"/usr/src/build-extra/$dir/release.sh '$ver'" ||
+			die "Could not make %s in %s\n" "$dir" "$sdk"
+		done
+	done
+}
+
 test $# -gt 0 &&
 test help != "$*" ||
 die "Usage: $0 <command>\n\nCommands:\n%s" \
