@@ -358,7 +358,10 @@ tag_git () { #
 }
 
 pkg_files () {
-	pkgver="$(git show HEAD | sed -n '/^+pkgver=/{N;s/^.*=\(.*\)\n[ +]pkgrel=\(.*\)/\1-\2/p}')"
+	pkgver="$(sed -ne \
+		'/^_basever=/{N;N;s/.*=\([0-9].*\)\n.*\npkgrel=\(.*\)/\1-\2/p}' \
+		-e '/^pkgver=/{N;s/.*=\([0-9].*\)\npkgrel=\(.*\)/\1-\2/p}' \
+		<PKGBUILD)"
 	test -n "$pkgver" ||
 	die "%s: could not determine pkgver\n" "$sdk/$path"
 
