@@ -201,6 +201,13 @@ pkg_build () {
 			 else
 				git remote add -f upstream \
 					https://github.com/Alexpux/Cygwin
+			 fi &&
+			 if test -n "$(git config remote.cygwin.url)"
+			 then
+				git fetch --tags cygwin
+			 else
+				git remote add -f cygwin \
+				    git://sourceware.org/git/newlib-cygwin.git
 			 fi) ||
 			die "Could not update msys2-runtime's upstream\n"
 		fi
