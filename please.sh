@@ -190,8 +190,20 @@ pkg_build () {
 		;;
 	MSYS)
 		require msys2-devel binutils
-		test msys2-runtime != "$package" ||
-		require mingw-w64-cross-gcc mingw-w64-cross-gcc
+		if test msys2-runtime = "$package"
+		then
+			require mingw-w64-cross-gcc mingw-w64-cross-gcc
+			test ! -d src/msys2-runtime/.git ||
+			(cd src/msys2-runtime &&
+			 if test -n "$(git config remote.upstream.url)"
+			 then
+				git fetch --tags upstream
+			 else
+				git remote add -f upstream \
+					https://github.com/Alexpux/Cygwin
+			 fi) ||
+			die "Could not update msys2-runtime's upstream\n"
+		fi
 
 		"$sdk/git-cmd" --command=usr\\bin\\sh.exe -l -c \
 			'export MSYSTEM=MSYS &&
