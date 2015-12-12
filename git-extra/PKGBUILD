@@ -68,7 +68,7 @@ build() {
   export SRCDIR=$srcdir
   export BUILDDIR=build-${MINGW_CHOST}
   mkdir -p ${BUILDDIR}
-  make Makefile
+  make -f Makefile
 }
 
 package() {
