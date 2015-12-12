@@ -12,7 +12,9 @@ groups=('VCS')
 optdepends=('vim' 'filesystem')
 install='git-extra.install'
 pkgver() {
-  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD -- "$startdir")" "$(git rev-parse --short HEAD)"
+  cd "$startdir"
+  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD -- .)" \
+    "$(git rev-parse --short HEAD)"
 }
 source=('inputrc'
         'vimrc'
