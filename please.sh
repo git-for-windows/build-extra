@@ -90,6 +90,16 @@ sync () { #
 	done
 }
 
+killall () { # <bitness>
+	sdk="$(eval "echo \$sdk$1")"
+
+	pids="$("$sdk/git-cmd.exe" --command=usr\\bin\\ps.exe -s |
+		grep -v ' /usr/bin/ps$' |
+		sed -n "s/^ *\([0-9][0-9]*\).*/\1/p")"
+	test -z "$pids" ||
+	"$sdk/git-cmd.exe" --command=usr\\bin\\kill.exe $pids
+}
+
 # set_package <package>
 set_package () {
 	package="$1"
