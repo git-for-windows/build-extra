@@ -100,5 +100,5 @@ pacman -Sy --noconfirm tar ||
 die "Could not install tar"
 
 echo "Creating .tar.bz2 archive" &&
-tar -c -j -f $TARGET --directory=/ --exclude=etc/post-install/* $LIST --directory=$SCRIPT_PATH/root bin dev etc tmp mingw$BITNESS &&
+tar -c -j -f "$TARGET" --directory=/ --exclude=etc/post-install/* $LIST --directory=$SCRIPT_PATH/root bin dev etc tmp mingw$BITNESS &&
 echo "Success! You will find the new archive at \"$TARGET\"."
