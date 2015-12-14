@@ -1,5 +1,5 @@
 # Git for Windows v2.6.4 Release Notes
-Latest update: December 11th 2015
+Latest update: December 14th 2015
 
 ## Introduction
 
