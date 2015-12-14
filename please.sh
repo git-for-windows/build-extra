@@ -7,6 +7,29 @@
 # packages. This is particularly problematic when trying to update files that
 # are in use, such as msys-2.0.dll or bash.exe. To that end, this script is
 # intended to run from a *separate* Bash, such as Git Bash.
+#
+# Common workflows:
+#
+# 1) release a new Git version
+#
+#	<make sure that Git for Windows' 'master' reflects the new version>
+#	./please.sh sync
+#	./please.sh tag_git
+#	./please.sh build git
+#	./please.sh install git
+#	./please.sh test_git 64
+#	./please.sh upload git
+#	./please.sh release
+#	./please.sh publish
+#
+# 2) release a new Pacman package, e.g. git-extra or msys2-runtime
+#
+#	./please.sh sync
+#	<make sure that the 'master' branch reflects the new version>
+#	./please.sh build git-extra
+#	./please.sh install git-extra
+#	<verify that everything's alright>
+#	./please.sh upload git-extra
 
 # Note: functions whose arguments are documented on the function name's own
 # line are actually subcommands, and running this script without any argument
