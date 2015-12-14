@@ -18,4 +18,7 @@
 /portable/root/post-install.bat
 /sdk-installer/root/
 /archive/root/*
-!/archive/root/etc
+!/archive/root/etc/hosts
+!/archive/root/etc/networks
+!/archive/root/etc/protocols
+!/archive/root/etc/services
