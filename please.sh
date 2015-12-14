@@ -565,6 +565,28 @@ release () { #
 			die "Could not make %s in %s\n" "$dir" "$sdk"
 		done
 	done
+
+	if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
+		config alias.signtool)"
+	then
+		printf "\n%s\n\n%s\n\n\t%s %s\n\n%s\n\n\t%s\n" \
+			"WARNING: No signing performed!" \
+			"To fix this, set alias.signtool to something like" \
+			"!'c:/PROGRA~1/MICROS~1/Windows/v7.1/Bin/signtool.exe" \
+			"sign //v //f mycert.p12 //p mypassword'" \
+			"The Windows Platform SDK contains the signtool.exe:" \
+			http://go.microsoft.com/fwlink/p/?linkid=84091 >&2
+	else
+		for file in \
+			"$HOME"/Git-"$ver"-64-bit.exe \
+			"$HOME"/Git-"$ver"-32-bit.exe \
+			"$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
+			"$HOME"/PortableGit-"$ver"-32-bit.7z.exe
+		do
+			git --git-dir="$sdk64/usr/src/build-extra/.git" \
+				signtool "$file"
+		done
+	fi
 }
 
 test $# -gt 0 &&
