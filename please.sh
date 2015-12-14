@@ -181,7 +181,7 @@ update () { # <package>
 
 # require <metapackage> <telltale>
 require () {
-	test -d "$sdk"/var/lib/pacman/local/"$2"-[0-9]* ||
+	test -d "$sdk"/var/lib/pacman/local/"${2:-$1}"-[0-9]* ||
 	"$sdk"/git-cmd.exe --command=usr\\bin\\pacman.exe \
 		-Sy --needed --noconfirm "$1" ||
 	die "Could not install %s\n" "$1"
@@ -520,10 +520,7 @@ upload () { # <package>
 	die "Could not push commits in %s/%s\n" "$sdk64" "$path"
 }
 
-release () { #
-	up_to_date usr/src/build-extra ||
-	die "build-extra is not up-to-date\n"
-
+set_version_from_sdks_git () {
 	version="$("$sdk64/cmd/git.exe" version)"
 	version32="$("$sdk32/cmd/git.exe" version)"
 	test -n "$version" &&
@@ -542,6 +539,13 @@ release () { #
 		displayver="${displayver%.*}(${displayver##*.})"
 		;;
 	esac
+}
+
+release () { #
+	up_to_date usr/src/build-extra ||
+	die "build-extra is not up-to-date\n"
+
+	set_version_from_sdks_git
 
 	echo "Releasing Git for Windows $displayver" >&2
 
@@ -604,6 +608,114 @@ virus_check () { #
 		"$sdk64/usr/src/build-extra/send-to-virus-total.sh" \
 			"$file" || exit
 	done
+}
+
+publish () { #
+	set_version_from_sdks_git
+
+	grep -q '^machine api\.github\.com$' "$HOME"/_netrc &&
+	grep -q '^machine uploads\.github\.com$' "$HOME"/_netrc ||
+	die "Missing GitHub entries in ~/_netrc\n"
+
+	test -d "$sdk64/usr/src/git/3rdparty" || {
+		mkdir "$sdk64/usr/src/git/3rdparty" &&
+		echo "/3rdparty/" >> "$sdk64/usr/src/git/.git/info/exclude"
+	} ||
+	die "Could not make /usr/src/3rdparty in SDK-64\n"
+
+	wwwdir="$sdk64/usr/src/git/3rdparty/git-for-windows.github.io"
+	if test ! -d "$wwwdir"
+	then
+		git clone https://github.com/git-for-windows/${wwwdir##*/} \
+			"$wwwdir"
+	fi &&
+	(cd "$wwwdir" &&
+	 sdk= path=$PWD ff_master &&
+	 require_push_url &&
+	 sdk="$sdk64" require mingw-w64-x86_64-nodejs) ||
+	die "Could not prepare website clone for update\n"
+
+	(cd "$sdk64/usr/src/build-extra" &&
+	 require_push_url &&
+	 sdk= path=$PWD ff_master) ||
+	die "Could not prepare build-extra for download-stats update\n"
+
+	echo "Preparing release message"
+	name="Git for Windows $displayver"
+	text="$(sed -n \
+		"/^## Changes since/,\${s/## //;:1;p;n;/^## Changes/q;b1}" \
+		<"$sdk64"/usr/src/build-extra/installer/ReleaseNotes.md)"
+	checksums="$(printf 'Filename | SHA-256\n-------- | -------\n'
+		(cd "$HOME" && sha256sum.exe \
+			Git-"$ver"-64-bit.exe \
+			Git-"$ver"-32-bit.exe \
+			PortableGit-"$ver"-64-bit.7z.exe \
+			PortableGit-"$ver"-32-bit.7z.exe \
+			Git-"$ver"-64-bit.tar.bz2 \
+			Git-"$ver"-32-bit.tar.bz2) |
+		sed -n 's/\([^ ]*\) \*\(.*\)/\2 | \1/p')"
+	body="$(printf "%s\n\n%s" "$text" "$checksums")"
+	quoted="$(echo "$body" |
+		sed -e ':1;${s/[\\"]/\\&/g;s/\n/\\n/g};N;b1')"
+
+	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
+		--repo=git "v$version" \
+		"$HOME"/Git-"$ver"-64-bit.exe \
+		"$HOME"/Git-"$ver"-32-bit.exe \
+		"$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
+		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe \
+		"$HOME"/Git-"$ver"-64-bit.tar.bz2 \
+		"$HOME"/Git-"$ver"-32-bit.tar.bz2 ||
+	die "Could not upload files\n"
+
+	url=https://api.github.com/repos/git-for-windows/git/releases
+	id="$(curl --netrc -s $url |
+		sed -n '/"id":/{N;/"tag_name": *"v'"$version"'"/{
+			s/.*"id": *\([0-9]*\).*/\1/p;q}}')"
+	test -n "$id" ||
+	die "Could not determine ID of release for %s\n" "$version"
+
+	out="$(curl --netrc --show-error -s -XPATCH -d \
+		'{"name":"'"$name"'","body":"'"$quoted"'",
+		 "draft":false,"prerelease":false}' \
+		$url/$id)" ||
+	die "Could not edit release for %s:\n%s\n" "$version" "$out"
+
+	echo "Updating website..." >&2
+	(cd "$wwwdir" &&
+	 "$sdk64/mingw64/bin/node.exe" bump-version.js --auto &&
+	 git commit -a -s -m "New Git for Windows version" &&
+	 git push origin HEAD) ||
+	die "Could not update website\n"
+
+	echo "Updating download-stats.sh..." >&2
+	(cd "$sdk64/usr/src/build-extra" &&
+	 ./download-stats.sh --update &&
+	 git commit -a -s -m "download-stats: new Git for Windows version" &&
+	 git push origin HEAD) ||
+	die "Could not update download-stats.sh\n"
+
+	prefix="$(printf "%s\n\n%s%s\n\n\t%s\n" \
+		"Dear Git users," \
+		"It is my pleasure to announce that Git for Windows " \
+		"$displayver is available from:" \
+		"https://git-for-windows.github.io/")"
+	rendered="$(echo "$text" |
+		"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			'markdown | w3m -dump -cols 72 -T text/html')"
+	printf "%s\n%s\n%s\n%s\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n%s\n" \
+		"From $version Mon Sep 17 00:00:00 2001" \
+		"From: $(git var GIT_COMMITTER_IDENT | sed -e 's/>.*/>/')" \
+		"Date: $(date -R)" \
+		"To: git-for-windows@googlegroups.com, git@vger.kernel.org" \
+		"Subject: Announcing Git for Windows $displayver" \
+		"$prefix" \
+		"$rendered" \
+		"$checksums" \
+		"Ciao," \
+		"$(git var GIT_COMMITTER_IDENT | sed -e 's/ .*//')" \
+		> "$HOME/announce-$ver"
+	echo "Announcement saved as ~/announcement-$ver" >&2
 }
 
 test $# -gt 0 &&
