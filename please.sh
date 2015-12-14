@@ -589,6 +589,23 @@ release () { #
 	fi
 }
 
+virus_check () { #
+	set_version_from_sdks_git
+
+	grep -q '^machine api\.virustotal\.com$' "$HOME"/_netrc ||
+	die "Missing VirusTotal entries in ~/_netrc\n"
+
+	for file in \
+		"$HOME"/Git-"$ver"-64-bit.exe \
+		"$HOME"/Git-"$ver"-32-bit.exe \
+		"$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
+		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe
+	do
+		"$sdk64/usr/src/build-extra/send-to-virus-total.sh" \
+			"$file" || exit
+	done
+}
+
 test $# -gt 0 &&
 test help != "$*" ||
 die "Usage: $0 <command>\n\nCommands:\n%s" \
