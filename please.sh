@@ -753,7 +753,7 @@ publish () { #
 		"From: $(git var GIT_COMMITTER_IDENT | sed -e 's/>.*/>/')" \
 		"Date: $(date -R)" \
 		"To: git-for-windows@googlegroups.com, git@vger.kernel.org" \
-		"Subject: Announcing Git for Windows $displayver" \
+		"Subject: [ANNOUNCE] Git for Windows $displayver" \
 		"$prefix" \
 		"$rendered" \
 		"$checksums" \
