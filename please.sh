@@ -234,7 +234,8 @@ pkg_build () {
 		fi
 
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'MAKEFLAGS=-j5 makepkg-mingw -s --noconfirm &&
+			'MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
+				makepkg-mingw -s --noconfirm &&
 			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource' ||
 		die "%s: could not build\n" "$sdk/$path"
 
