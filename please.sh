@@ -217,6 +217,27 @@ pkg_build () {
 	arch=i686 ||
 	arch=x86_64
 
+	# Git for Windows' packages are only visible to the SDK of the
+	# matching architecture. However, we want to build Git for both
+	# 32-bit and 64-bit in the 64-bit SDK at the same time, therefore
+	# we need even the prerequisite asciidoctor-extensions for 32-bit.
+	# Let's just steal it from the 32-bit SDK
+	test mingw-w64-git != $package ||
+	test x86_64 != $arch ||
+	for prereq in mingw-w64-i686-asciidoctor-extensions
+	do
+		test ! -d "$sdk64"/var/lib/pacman/local/$prereq-[0-9]* ||
+		continue
+
+		sdk="$sdk32" require $prereq &&
+		pkg="$sdk32/var/cache/pacman/pkg/$("$sdk32/git-cmd.exe" \
+			--command=usr\\bin\\pacman.exe -Q "$prereq" |
+			sed -e 's/ /-/' -e 's/$/-any.pkg.tar.xz/')" &&
+		"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+			'pacman -U --noconfirm "'"$pkg"'"' ||
+		die "Could not install %s into SDK-64\n" "$prereq"
+	done
+
 	case "$type" in
 	MINGW)
 		require mingw-w64-toolchain mingw-w64-$arch-make
