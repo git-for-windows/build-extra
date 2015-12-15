@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Git v2.6.4](http://article.gmane.org/gmane.linux.kernel/2103498).
+* Also available as `.tar.bz2` packages (you need an MSys2/Cygwin-compatible unpacker to recreate the symbolic links correctly).
 
 ## Bug Fixes
 
