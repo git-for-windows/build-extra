@@ -539,7 +539,11 @@ begin
     NoSpaces:=Key;
     StringChangeEx(NoSpaces,' ','',True);
 
-    if ShouldLoadInf then
+    // Interpret /o:PathOption=Cmd and friends
+    Result:=ExpandConstant('{param:o:'+NoSpaces+'| }');
+    if Result<>' ' then
+        Log('Parameter '+Key+'='+Result+' set via command-line')
+    else if ShouldLoadInf then
         // Use settings from the user provided INF.
         // .inf files do not like keys with spaces.
         Result:=LoadInfString('Setup',NoSpaces,Default)
