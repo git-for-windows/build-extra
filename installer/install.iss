@@ -533,17 +533,23 @@ begin
 end;
 
 function ReplayChoice(Key,Default:String):String;
+var
+    NoSpaces:String;
 begin
-    // Restore the settings chosen during a previous install.
-    Result:=GetPreviousData(Key,Default);
+    NoSpaces:=Key;
+    StringChangeEx(NoSpaces,' ','',True);
 
-    // Use settings from the user provided INF.
-    if ShouldLoadInf then begin
+    // Interpret /o:PathOption=Cmd and friends
+    Result:=ExpandConstant('{param:o:'+NoSpaces+'| }');
+    if Result<>' ' then
+        Log('Parameter '+Key+'='+Result+' set via command-line')
+    else if ShouldLoadInf then
+        // Use settings from the user provided INF.
         // .inf files do not like keys with spaces.
-        StringChangeEx(Key,' ','',True);
-        Result:=LoadInfString('Setup',Key,Default);
-    end;
-
+        Result:=LoadInfString('Setup',NoSpaces,Default)
+    else
+        // Restore the settings chosen during a previous install.
+        Result:=GetPreviousData(Key,Default);
 end;
 
 procedure InitializeWizard;
