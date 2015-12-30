@@ -54,7 +54,7 @@ int edit_git_bash(LPWSTR git_bash_path, LPWSTR new_command_line)
 	buffer[0] = (WCHAR) len;
 	memcpy(buffer + 1, new_command_line, 2 * len);
 
-	if (!(handle = BeginUpdateResource(git_bash_path,TRUE)))
+	if (!(handle = BeginUpdateResource(git_bash_path, FALSE)))
 		return 2;
 
         if (!UpdateResource(handle, RT_STRING, MAKEINTRESOURCE(1),
