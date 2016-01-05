@@ -777,7 +777,7 @@ publish () { #
 test $# -gt 0 &&
 test help != "$*" ||
 die "Usage: $0 <command>\n\nCommands:\n%s" \
-	"$(sed -n 's/^\([a-z]*\) () { #\(.*\)/\t\1\2/p' <"$0")"
+	"$(sed -n 's/^\([a-z_]*\) () { #\(.*\)/\t\1\2/p' <"$0")"
 
 command="$1"
 shift
