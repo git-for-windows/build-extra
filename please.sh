@@ -111,6 +111,13 @@ sync () { #
 		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\sh.exe -l \
 			-c 'pacman -Su --noconfirm' ||
 		die "Cannot update packages in %s\n" "$sdk"
+
+		# git-extra rewrites some files owned by other packages,
+		# therefore it has to be (re-)installed now
+		PATH="$sdk/bin:$PATH" \
+		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			'pacman -S --noconfirm git-extra' ||
+		die "Cannot update git-extra in %s\n" "$sdk"
 	done
 }
 
