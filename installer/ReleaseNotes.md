@@ -1,5 +1,5 @@
-# Git for Windows v2.6.4 Release Notes
-Latest update: December 14th 2015
+# Git for Windows v2.7.0 Release Notes
+Latest update: January 5th 2016
 
 ## Introduction
 
@@ -31,6 +31,16 @@ Git is licensed under the GNU Public License version 2.
 Git for Windows also contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
 This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
+
+## Changes since Git for Windows v2.6.4 (December 14th 2015)
+
+### New Features
+
+* Comes with [Git v2.7.0](http://article.gmane.org/gmane.linux.kernel/2118402).
+
+## Bug Fixes
+
+* Non-ASCII command-lines are now [passed properly](https://github.com/git-for-windows/msys2-runtime/commit/4c362726c41102173613658) to shell scripts.
 
 ## Changes since Git for Windows v2.6.3 (November 10th 2015)
 
