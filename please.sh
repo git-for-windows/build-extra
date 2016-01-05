@@ -276,6 +276,9 @@ pkg_build () {
 		if test msys2-runtime = "$package"
 		then
 			require mingw-w64-cross-gcc mingw-w64-cross-gcc
+			test ! -d msys2-runtime ||
+			(cd msys2-runtime && git fetch) ||
+			die "Could not fetch from origin"
 			test ! -d src/msys2-runtime/.git ||
 			(cd src/msys2-runtime &&
 			 if test -n "$(git config remote.upstream.url)"
