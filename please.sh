@@ -107,8 +107,9 @@ sync () { #
 			die "Could not update %s in %s\n" "$p" "$sdk"
 		done
 
-		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe \
-			-Su --noconfirm ||
+		PATH="$sdk/bin:$PATH" \
+		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\sh.exe -l \
+			-c 'pacman -Su --noconfirm' ||
 		die "Cannot update packages in %s\n" "$sdk"
 	done
 }
