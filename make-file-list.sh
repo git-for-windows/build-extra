@@ -108,10 +108,5 @@ usr/bin/getopt.exe
 mingw$BITNESS/etc/gitattributes
 mingw$BITNESS/bin/pdftotext.exe
 mingw$BITNESS/bin/libstdc++-6.dll
+usr/bin/column.exe
 EOF
-
-# extras
-# https://github.com/git-for-windows/git/issues/586
-# for https://github.com/tj/git-extras -> used in git line-summary, git summary and git ignore-io
-# from util-linux, 25kb, deps on msys-intl-8.dll, msys-iconv-2.dll, msys-2.0.dll (all included already)
-echo "usr/bin/column.exe"
