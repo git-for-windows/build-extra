@@ -83,7 +83,7 @@ Name: default; Description: Default installation; Flags: iscustom
 
 [Components]
 Name: icons; Description: Additional icons
-Name: icons\quicklaunch; Description: In the Quick Launch
+Name: icons\quicklaunch; Description: In the Quick Launch; Check: not IsAdminLoggedOn
 Name: icons\desktop; Description: On the Desktop
 Name: ext; Description: Windows Explorer integration; Types: default
 Name: ext\shellhere; Description: Git Bash Here; Types: default
