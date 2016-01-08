@@ -283,7 +283,7 @@ pkg_build () {
 			(cd src/msys2-runtime &&
 			 if test -n "$(git config remote.upstream.url)"
 			 then
-				git fetch --tags upstream
+				git fetch upstream
 			 else
 				git remote add -f upstream \
 					https://github.com/Alexpux/Cygwin
