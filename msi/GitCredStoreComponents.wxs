@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
+    <Fragment>
+        <ComponentGroup Id='GitCredStoreComponents' Directory='INSTALLFOLDER:\GitCredStore\'>
+            <Component>
+                <File Id='GitCredStoreExe' Source='git-credential-winstore\git-credential-winstore.exe' />
+            </Component>
+        </ComponentGroup>
+
+        <CustomActionRef Id='InstallGitCredentials' />
+    </Fragment>
+
+    <Fragment>
+        <SetProperty Id='InstallGitCredentials' Value='"[#GitCredStoreExe]" -s "[#GitExe]"'
+                     Before='InstallGitCredentials' Sequence='execute' />
+        <CustomAction Id='InstallGitCredentials' BinaryKey='WixCA' DllEntry='CAQuietExec'
+                      Execute='deferred' Return='ignore' Impersonate='yes'/>
+
+        <InstallExecuteSequence>
+            <Custom Action='InstallGitCredentials' Before='InstallFinalize'>NOT Installed</Custom>
+        </InstallExecuteSequence>
+    </Fragment>
+</Wix>
