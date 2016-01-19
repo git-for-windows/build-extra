@@ -1,0 +1,20 @@
+<?xml version='1.0'?>
+<Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'
+     xmlns:bal='http://wixtoolset.org/schemas/v4/wxs/bal'>
+<Bundle Name='!(bind.packageName.git.msi)' Manufacturer='!(bind.packageManufacturer.git.msi)'
+        Version='2.6.4.32' UpgradeCode='4adb169f-377b-4a52-b817-4ecee51fe64d'
+        IconSourceFile='git.ico'>
+
+  <BootstrapperApplicationRef Id='WixStandardBootstrapperApplication.HyperlinkLicense'>
+    <bal:WixStandardBootstrapperApplication LicenseUrl='http://www.opensource.org/licenses/gpl-2.0' LogoFile='git.png' />
+  </BootstrapperApplicationRef>
+
+  <Variable Name='InstallFolder' Value='[ProgramFilesFolder]Git' />
+
+  <Chain>
+    <MsiPackage SourceFile='git.msi'>
+      <MsiProperty Name='INSTALLFOLDER' Value='[InstallFolder]' />
+    </MsiPackage>
+  </Chain>
+</Bundle>
+</Wix>

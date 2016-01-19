@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+    <Fragment>
+        <Directory Id='GitPowershellModulesFolder' Name='INSTALLFOLDER:\Powershell\Modules\' />
+
+        <ComponentGroup Id="GitPoshComponents" Directory="GitPowershellModulesFolder:\posh-git\">
+            <Component>
+                <File Source="posh-git\CheckVersion.ps1" />
+            </Component>
+            <Component>
+                <File Source="posh-git\GitPrompt.ps1" />
+            </Component>
+            <Component>
+                <File Source="posh-git\GitTabExpansion.ps1" />
+            </Component>
+            <Component>
+                <File Source="posh-git\GitUtils.ps1" />
+            </Component>
+            <Component>
+                <File Source="posh-git\install.ps1" />
+            </Component>
+            <Component>
+                <File Source="posh-git\LICENSE.txt" />
+            </Component>
+            <Component>
+                <File Source="posh-git\posh-git.psm1" />
+                <Environment Name='PSModulePath' Value='[GitPowershellModulesFolder]' Action='set' Part='last' System='yes' />
+            </Component>
+            <Component>
+                <File Source="posh-git\profile.example.ps1" />
+            </Component>
+            <Component>
+                <File Source="posh-git\readme.md" />
+            </Component>
+            <Component>
+                <File Source="posh-git\TortoiseGit.ps1" />
+            </Component>
+            <Component>
+                <File Source="posh-git\Utils.ps1" />
+            </Component>
+        </ComponentGroup>
+    </Fragment>
+</Wix>

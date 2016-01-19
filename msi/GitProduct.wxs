@@ -1,0 +1,40 @@
+<?xml version='1.0'?>
+<Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
+  <Product Id='*' Name='Git' Language='1033' Manufacturer='The Git Development Community'
+                  Version='2.6.4.32'
+                  UpgradeCode='abbb3e1d-fea0-4b84-9585-b4dc13cbc1b4'>
+    <Package InstallScope='perMachine' Compressed='yes' />
+
+    <MajorUpgrade DowngradeErrorMessage='A newer version of [ProductName] is already installed.' />
+    <Media Id='1' Cabinet='git.cab' CompressionLevel='high' />
+
+    <Property Id='ARPCONTACT' Value='https://github.com/git-for-windows/git/wiki/Contact' />
+    <Property Id='ARPURLINFOABOUT' Value='https://git-for-windows.github.io/' />
+
+    <Property Id='ARPPRODUCTICON' Value='git.ico' />
+    <Icon Id='git.ico' SourceFile='git.ico' />
+
+    <SetProperty Id='ARPINSTALLLOCATION' Value='[INSTALLFOLDER]' After='CostFinalize' />
+
+    <Feature Id='Git'>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Root='HKLM' Key='Software\Git' Name='InstallFolder' Value='[INSTALLFOLDER]' Type='string' />
+        <Environment Name='PATH' Value='[BinFolder]' Action='set' Part='last' System='yes' />
+      </Component>
+
+      <ComponentGroupRef Id='GitComponents'/>
+      <ComponentGroupRef Id='GitCredStoreComponents'/>
+      <ComponentGroupRef Id='GitPoshComponents'/>
+    </Feature>
+  </Product>
+
+  <Fragment>
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='ProgramFilesFolder' Name='PFiles'>
+        <Directory Id='INSTALLFOLDER' Name='Git'>
+          <Directory Id='BinFolder' Name='bin' >
+        </Directory>
+      </Directory>
+    </Directory>
+  </Fragment>
+</Wix>
