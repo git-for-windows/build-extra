@@ -12,6 +12,7 @@
 /installer/is-unicode.exe
 /installer/file-list.iss
 /installer/package-versions.txt
+/msi/GitComponents.wxs
 /msi/wix40-binaries.zip
 /portable/root/bin/
 /portable/root/cmd/
