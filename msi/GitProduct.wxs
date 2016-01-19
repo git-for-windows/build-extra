@@ -32,7 +32,7 @@
     <Directory Id='TARGETDIR' Name='SourceDir'>
       <Directory Id='ProgramFilesFolder' Name='PFiles'>
         <Directory Id='INSTALLFOLDER' Name='Git'>
-          <Directory Id='BinFolder' Name='bin' >
+          <Directory Id='BinFolder' Name='bin' />
         </Directory>
       </Directory>
     </Directory>
