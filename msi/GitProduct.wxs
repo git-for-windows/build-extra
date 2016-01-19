@@ -23,8 +23,6 @@
       </Component>
 
       <ComponentGroupRef Id='GitComponents'/>
-      <ComponentGroupRef Id='GitCredStoreComponents'/>
-      <ComponentGroupRef Id='GitPoshComponents'/>
     </Feature>
   </Product>
 
