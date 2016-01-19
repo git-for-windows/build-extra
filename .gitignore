@@ -13,6 +13,8 @@
 /installer/file-list.iss
 /installer/package-versions.txt
 /msi/GitComponents.wxs
+/msi/obj/
+/msi/package-versions.txt
 /msi/wix40-binaries.zip
 /portable/root/bin/
 /portable/root/cmd/
