@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Download the most recent WiX 4.x version.
-url=http://wixtoolset.org/releases/
+feed=http://wixtoolset.org/releases/feeds/wix4-0.feed
 zip=wix40-binaries.zip
 
 die () {
@@ -12,13 +12,11 @@ die () {
 cd "$(dirname "$0")" ||
 die "Could not switch directory"
 
-html="$(curl -s $url)"
-version=${html%%/\">v4.[0-9]*}
-test "a$version" != "a$html" ||
+url="$(curl -s $feed |
+	sed -n '/<id>.*\/v4-[0-9]/{s/.*>\(.*\)<.*/\1/p;q}')"
+test -n "$url" ||
 die "Could not determine the newest version"
-version=${version##*<a href=\"/releases/}
-
-url=$url$version/$zip
+url=$url$zip
 
 curl -#LORz $(test -f $zip && echo $zip || echo 19700101) "$url" ||
 die "Could not download $url"
