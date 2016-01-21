@@ -1,7 +1,7 @@
 <?xml version='1.0'?>
 <Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
   <Product Id='*' Name='Git' Language='1033' Manufacturer='The Git Development Community'
-                  Version='2.6.4.32'
+                  Version='$(var.Version)'
                   UpgradeCode='abbb3e1d-fea0-4b84-9585-b4dc13cbc1b4'>
     <Package InstallScope='perMachine' Compressed='yes' />
 

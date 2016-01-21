@@ -76,7 +76,8 @@ EOF
 
 # Make the .msi file
 mkdir -p obj &&
-wix/candle.exe GitProduct.wxs GitComponents.wxs -o obj\\ \
+wix/candle.exe -dVersion="${VERSION%%-*}" \
+	GitProduct.wxs GitComponents.wxs -o obj\\ \
 	-ext WixUtilExtension &&
 wix/light.exe \
 	obj/GitProduct.wixobj \
