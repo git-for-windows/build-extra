@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 * The environment variable `HOME` can now be used to set the home directory [even when running with accounts that are part of a different domain than the current (non-domain-joined) machine](https://github.com/git-for-windows/msys2-runtime/commit/9660c5ffe82b921dd2193efa18e9721f47a6b22f) (in which case the MSys2 runtime has no way to emulate POSIX-style UIDs).
 * Git [can now fetch and push via HTTPS](https://github.com/Alexpux/MINGW-packages/pull/986) even when the `http.sslCAInfo` config variable was unset.
 * Git for Windows is now [handling the case gracefully where the current user has no permission to list the parent of the current directory](https://github.com/git-for-windows/git/pull/606).
+* More file locking issues ("Unlink of file ... failed. Shoulr I try again?") [were fixed](https://github.com/git-for-windows/git/issues/500).
 
 ## Changes since Git for Windows v2.6.4 (December 14th 2015)
 
