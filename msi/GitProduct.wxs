@@ -21,6 +21,8 @@
     <Property Id='ARPPRODUCTICON' Value='git.ico' />
     <Icon Id='git.ico' SourceFile='git.ico' />
 
+    <Property Id='MSIFASTINSTALL' Value='7' />
+
     <SetProperty Id='ARPINSTALLLOCATION' Value='[INSTALLFOLDER]' After='CostFinalize' />
 
     <Feature Id='Git'>
