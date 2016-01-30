@@ -16,9 +16,11 @@ ARCH="$(uname -m)"
 case "$ARCH" in
 i686)
 	BITNESS=32
+	WIX_ARCH=x86
 	;;
 x86_64)
 	BITNESS=64
+	WIX_ARCH=x64
 	;;
 *)
 	die "Unhandled architecture: $ARCH"
@@ -74,6 +76,7 @@ EOF
 # Make the .msi file
 mkdir -p obj &&
 wix/candle.exe -dVersion="${VERSION%%-*}" \
+	-arch $WIX_ARCH \
 	GitProduct.wxs GitComponents.wxs -o obj\\ \
 	-ext WixUtilExtension &&
 wix/light.exe \
