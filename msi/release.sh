@@ -46,20 +46,17 @@ BUILD_EXTRA_WINPATH="$(cd "$SCRIPT_PATH"/.. && pwd -W | tr / \\\\)"
     <Fragment>
         <ComponentGroup Id="GitComponents">
             <Component Directory="BinFolder">
-                <File Id="GitExe" Source="cmd\\git.exe"
-		    Name="git.exe" />
+                <File Id="GitExe" Source="cmd\\git.exe" />
             </Component>
             <Component Directory="BinFolder">
                 <File Source="mingw64\\share\\git\\compat-bash.exe"
-		    Name="sh.exe" />
+                      Name="sh.exe" />
             </Component>
             <Component Directory="INSTALLFOLDER:\\etc\\">
-                <File Source="$SCRIPT_WINPATH\\package-versions.txt"
-		    Name="package-versions.txt" />
+                <File Source="$SCRIPT_WINPATH\\package-versions.txt" />
             </Component>
-            <Component Directory="INSTALLFOLDER">
-                <File Source="$BUILD_EXTRA_WINPATH\\post-install.bat"
-		    Name="post-install.bat" />
+            <Component Directory="INSTALLFOLDER" Guid="">
+                <File Id="PostInstallBat" Source="$BUILD_EXTRA_WINPATH\\post-install.bat" KeyPath="yes" />
             </Component>
 EOF
 echo "$LIST" |
