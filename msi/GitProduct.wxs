@@ -1,18 +1,28 @@
 <?xml version='1.0'?>
+
+<?if $(sys.BUILDARCH)=x64 ?>
+  <?define SixtyFourBit=64 ?>
+<?else?>
+  <?define SixtyFourBit ?>
+<?endif?>
+
 <Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
   <Product Id='*' Name='Git' Language='1033' Manufacturer='The Git Development Community'
-                  Version='2.6.4.32'
-                  UpgradeCode='abbb3e1d-fea0-4b84-9585-b4dc13cbc1b4'>
+           Version='$(var.Version)'
+           UpgradeCode='abbb3e1d-fea0-4b84-9585-b4dc13cbc1b4'>
     <Package InstallScope='perMachine' Compressed='yes' />
 
     <MajorUpgrade DowngradeErrorMessage='A newer version of [ProductName] is already installed.' />
-    <Media Id='1' Cabinet='git.cab' CompressionLevel='high' />
+    <MediaTemplate CabinetTemplate='git{0}.cab' CompressionLevel='high' EmbedCab='yes' />
 
     <Property Id='ARPCONTACT' Value='https://github.com/git-for-windows/git/wiki/Contact' />
     <Property Id='ARPURLINFOABOUT' Value='https://git-for-windows.github.io/' />
+    <Property Id='ARPNOMODIFY' Value='1' />
 
     <Property Id='ARPPRODUCTICON' Value='git.ico' />
     <Icon Id='git.ico' SourceFile='git.ico' />
+
+    <Property Id='MSIFASTINSTALL' Value='7' />
 
     <SetProperty Id='ARPINSTALLLOCATION' Value='[INSTALLFOLDER]' After='CostFinalize' />
 
@@ -23,18 +33,38 @@
       </Component>
 
       <ComponentGroupRef Id='GitComponents'/>
-      <ComponentGroupRef Id='GitCredStoreComponents'/>
-      <ComponentGroupRef Id='GitPoshComponents'/>
     </Feature>
+
+    <CustomActionRef Id="ExecPostInstallBat" />
+    <CustomActionRef Id="WixBroadcastEnvironmentChange" />
   </Product>
 
   <Fragment>
     <Directory Id='TARGETDIR' Name='SourceDir'>
-      <Directory Id='ProgramFilesFolder' Name='PFiles'>
+      <Directory Id='ProgramFiles$(var.SixtyFourBit)Folder' Name='PFiles'>
         <Directory Id='INSTALLFOLDER' Name='Git'>
-          <Directory Id='BinFolder' Name='bin' >
+          <Directory Id='BinFolder' Name='bin' />
         </Directory>
       </Directory>
     </Directory>
+  </Fragment>
+
+  <Fragment>
+    <!-- Schedule two "best effort" actions:
+          1. Write the command to run the post-install.bat to the transaction log
+          2. Execute the command during the installation transaction
+    -->
+    <SetProperty Id="ExecPostInstallBat" Value='"[System$(var.SixtyFourBit)Folder]cmd.exe" /c "[#PostInstallBat]"'
+                 Sequence="execute" Before="ExecPostInstallBat" />
+    <CustomAction Id="ExecPostInstallBat" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)"
+                  Execute="deferred" Return="ignore" Impersonate="no" />
+
+    <InstallExecuteSequence>
+      <!-- Execute the post-install.bat at the end of the installation
+           transaction on install and repair but not removal. -->
+      <Custom Action="ExecPostInstallBat" Before="InstallFinalize">
+        REMOVE &lt;&gt; "ALL"
+      </Custom>
+    </InstallExecuteSequence>
   </Fragment>
 </Wix>
