@@ -35,6 +35,7 @@
     </Feature>
 
     <CustomActionRef Id="ExecPostInstallBat" />
+    <CustomActionRef Id="WixBroadcastEnvironmentChange" />
   </Product>
 
   <Fragment>
