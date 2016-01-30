@@ -17,6 +17,7 @@
 
     <Property Id='ARPCONTACT' Value='https://github.com/git-for-windows/git/wiki/Contact' />
     <Property Id='ARPURLINFOABOUT' Value='https://git-for-windows.github.io/' />
+    <Property Id='ARPNOMODIFY' Value='1' />
 
     <Property Id='ARPPRODUCTICON' Value='git.ico' />
     <Icon Id='git.ico' SourceFile='git.ico' />
