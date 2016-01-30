@@ -1,8 +1,15 @@
 <?xml version='1.0'?>
+
+<?if $(sys.BUILDARCH)=x64 ?>
+  <?define SixtyFourBit=64 ?>
+<?else?>
+  <?define SixtyFourBit ?>
+<?endif?>
+
 <Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
   <Product Id='*' Name='Git' Language='1033' Manufacturer='The Git Development Community'
-                  Version='$(var.Version)'
-                  UpgradeCode='abbb3e1d-fea0-4b84-9585-b4dc13cbc1b4'>
+           Version='$(var.Version)'
+           UpgradeCode='abbb3e1d-fea0-4b84-9585-b4dc13cbc1b4'>
     <Package InstallScope='perMachine' Compressed='yes' />
 
     <MajorUpgrade DowngradeErrorMessage='A newer version of [ProductName] is already installed.' />
@@ -28,7 +35,7 @@
 
   <Fragment>
     <Directory Id='TARGETDIR' Name='SourceDir'>
-      <Directory Id='ProgramFilesFolder' Name='PFiles'>
+      <Directory Id='ProgramFiles$(var.SixtyFourBit)Folder' Name='PFiles'>
         <Directory Id='INSTALLFOLDER' Name='Git'>
           <Directory Id='BinFolder' Name='bin' />
         </Directory>
