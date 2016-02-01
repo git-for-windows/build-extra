@@ -38,6 +38,9 @@ SourceDir={#SourcePath}\..\..\..\..
 #if BITNESS=='64'
 ArchitecturesInstallIn64BitMode=x64
 #endif
+#ifdef SIGNTOOL
+SignTool=signtool
+#endif
 
 ; Installer-related
 AllowNoIcons=yes
