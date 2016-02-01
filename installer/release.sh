@@ -127,8 +127,12 @@ printf "%s\n%s%s" \
 	"$inno_defines" \
 	>config.iss
 
+signtool=
+test -z "$(git config alias.signtool)" ||
+signtool="//Ssigntool=\"git signtool \\\$f\" //DSIGNTOOL"
+
 echo "Launching Inno Setup compiler ..." &&
-./InnoSetup/ISCC.exe install.iss >install.log ||
+eval ./InnoSetup/ISCC.exe "$signtool" install.iss >install.log ||
 die "Could not make installer"
 
 if test -n "$test_installer"
