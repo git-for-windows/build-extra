@@ -38,6 +38,9 @@ SourceDir={#SourcePath}\..\..\..\..
 #if BITNESS=='64'
 ArchitecturesInstallIn64BitMode=x64
 #endif
+#ifdef SIGNTOOL
+SignTool=signtool
+#endif
 
 ; Installer-related
 AllowNoIcons=yes
@@ -1262,12 +1265,9 @@ end;
 procedure CurStepChanged(CurStep:TSetupStep);
 var
     AppDir,ProgramData,DllPath,FileName,Cmd,Msg:String;
-    BuiltIns,ImageNames,EnvPath,EnvHome:TArrayOfString;
+    BuiltIns,ImageNames,EnvPath:TArrayOfString;
     Count,i:Longint;
-    LinkCreated:Boolean;
-    FindRec:TFindRec;
     RootKey:Integer;
-    Version:TWindowsVersion;
 begin
     if CurStep=ssInstall then begin
 #ifdef DEBUG_WIZARD_PAGE

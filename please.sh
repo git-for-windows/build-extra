@@ -638,8 +638,6 @@ release () { #
 			http://go.microsoft.com/fwlink/p/?linkid=84091 >&2
 	else
 		for file in \
-			"$HOME"/Git-"$ver"-64-bit.exe \
-			"$HOME"/Git-"$ver"-32-bit.exe \
 			"$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
 			"$HOME"/PortableGit-"$ver"-32-bit.7z.exe
 		do
