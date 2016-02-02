@@ -205,7 +205,12 @@ ff_master () {
 }
 
 update () { # <package>
-	set_package "$1"
+	if test git != "$1" && test -d "$sdk64"/usr/src/"$1"
+	then
+		path=/usr/src/"$1"
+	else
+		set_package "$1"
+	fi
 
 	foreach_sdk ff_master
 }
