@@ -602,6 +602,17 @@ set_version_from_sdks_git () {
 	esac
 }
 
+version_from_release_notes () {
+	sed -e '1s/^# Git for Windows v\(.*\) Release Notes$/\1/' -e 1q \
+		"$sdk64/usr/src/build-extra/installer/ReleaseNotes.md"
+}
+
+today () {
+	LC_ALL=C date +"%B %-d %Y" |
+	sed -e 's/\( [2-9]\?[4-90]\| 1[0-9]\) /\1th /' \
+		-e 's/1 /1st /' -e 's/2 /2nd /' -e 's/3 /3rd /'
+}
+
 release () { #
 	up_to_date usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
@@ -610,14 +621,10 @@ release () { #
 
 	echo "Releasing Git for Windows $displayver" >&2
 
-	test "# Git for Windows v$displayver Release Notes" = "$(head -n 1 \
-		"$sdk64/usr/src/build-extra/installer/ReleaseNotes.md")" ||
+	test "$displayver" = "$(version_from_release_notes)" ||
 	die "Incorrect version in the release notes\n"
 
-	today="$(LC_ALL=C date +"%B %-d %Y" | sed \
-		-e 's/\( [2-9]\?[4-90]\| 1[0-9]\) /\1th /' \
-		-e 's/1 /1st /' -e 's/2 /2nd /' -e 's/3 /3rd /')"
-	test "Latest update: $today" = "$(sed -n 2p \
+	test "Latest update: $(today)" = "$(sed -n 2p \
 		<"$sdk64/usr/src/build-extra/installer/ReleaseNotes.md")" ||
 	die "Incorrect release date in the release notes\n"
 
