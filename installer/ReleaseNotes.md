@@ -34,14 +34,14 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.7.0 (January 5th 2016)
 
-## New Features
+### New Features
 
 * To stave off exploits, Git for Windows [now uses Address Space Layout Randomization (ASLR) and Data Execution Prevention (DEP)](https://github.com/git-for-windows/git/pull/612).
 * Git for Windows' support for `git pull --rebase=interactive` that was dropped when the `pull` command was rewritten in C, [was resurrected](https://github.com/git/git/commit/f9219c0b3).
 * The installers are now [dual signed](https://github.com/git-for-windows/git/issues/592) with SHA-2 and SHA-1 certificates.
 * The uninstaller [is signed now, too](https://github.com/git-for-windows/git/issues/540).
 
-## Bug Fixes
+### Bug Fixes
 
 * When installing as administrator, we [no longer offer the option to install quiicklaunch icons](https://github.com/git-for-windows/build-extra/commit/a13ffd7c3fa24e2ac1ef3561d7a7f09a0b924338) because quicklaunch icons can only be installed per-user.
 * If a `~/.bashrc` is detected without a `~/.bash_profile`, the generated file will now [also source `~/.profile` if that exists](https://github.com/git-for-windows/build-extra/pull/91).
@@ -153,7 +153,7 @@ This package contains software from a number of other projects including Bash, z
 * The mechanism to diff `.pdf`, `.doc` and `.docx` files known from Git for Windows 1.x [has been ported to Git for Windows 2.x](https://github.com/git-for-windows/git/issues/355).
 * Git can now [access IPv6-only hosts via HTTP/HTTPS](https://github.com/git-for-windows/git/issues/370).
 
-### Bug fixes
+### Bug Fixes
 
 * The `.vimrc` in the home directory [is now allowed to have DOS line endings](https://github.com/git-for-windows/git/issues/364).
 * The `README.portable` file of the portable Git [mentions the need to run `post-install.bat`](https://github.com/git-for-windows/git/issues/394) when the archive was extracted manually.
@@ -164,7 +164,7 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git-2.5.2 (September 10th 2015)
 
-### Bug fixes
+### Bug Fixes
 
 * The Git GUI [can be launched from the Start menu again](https://github.com/git-for-windows/git/issues/376).
 * It [now works](https://github.com/git-for-windows/git/pull/305) to call `git add -p -- .` when there is a large number of files.
@@ -178,7 +178,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with Git 2.5.2
 * Alternates [can now point to UNC paths](https://github.com/git-for-windows/git/pull/286), i.e. network drives.
 
-### Bug fixes
+### Bug Fixes
 
 * The MSys2 runtime was taught [not to look hard for groups](https://github.com/git-for-windows/git/issues/193), speeding up *Git Bash*'s startup time.
 * A [work around](https://github.com/git-for-windows/git/issues/361) was added for [issues](https://github.com/git-for-windows/git/wiki/32-bit-issues) when installing 32-bit Git for Windows on 64-bit Windows 10.
@@ -194,7 +194,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with Git 2.5.1
 
-### Bug fixes
+### Bug Fixes
 
 * Backspace [works now](https://github.com/git-for-windows/git/issues/282) with ConHost-based (`cmd.exe`) terminal.
 * When there is a `~/.bashrc` but no `~/.bash_profile`, [the latter will be created automatically](https://github.com/git-for-windows/build-extra/pull/71).
@@ -214,7 +214,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with Git 2.5.0
 * On Windows 7 and later, [the *Git Bash* can now correctly be pinned to the task bar](https://github.com/git-for-windows/git/issues/263).
 
-### Bug fixes
+### Bug Fixes
 
 * The size of the installers [was reduced again](https://github.com/git-for-windows/git/issues/262), almost to the levels of Git for Windows 1.x.
 * Under certain circumstances, when the Windows machine is part of a Windows domain with lots of users, the startup of the *Git Bash* [is now faster](https://github.com/git-for-windows/git/issues/193).
@@ -226,7 +226,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with Git 2.4.6
 
-### Bug fixes
+### Bug Fixes
 
 * Git for Windows handles symlinks now, [even if core.symlinks does not tell Git to generate symlinks itself](https://github.com/git-for-windows/git/pull/220).
 * `git svn` learned [*not* to reuse incompatible on-disk caches left over from previous Git for Windows versions](https://github.com/git-for-windows/git/pull/246).
@@ -237,7 +237,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with Git 2.4.5
 
-### Bug fixes
+### Bug Fixes
 
 * Git Bash [no longer crashes when called with `TERM=msys`](https://github.com/git-for-windows/git/issues/222). This reinstates compatibility with GitHub for Windows.
 
@@ -248,7 +248,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with Git 2.4.4
 * The POSIX-to-Windows path mangling [can now be turned off](https://github.com/git-for-windows/msys2-runtime/pull/11) by setting the `MSYS_NO_PATHCONV` environment variable. This even works for individual command lines: `MSYS_NO_PATHCONV=1 cmd /c dir /x` will list the files in the current directory along with their 8.3 versions.
 
-### Bug fixes
+### Bug Fixes
 
 * `git-bash.exe` [no longer changes the working directory to the user's home directory](https://github.com/git-for-windows/git/issues/130).
 * Git [can now clone into a drive root](https://github.com/msysgit/git/issues/359), e.g. `C:\`.
@@ -261,7 +261,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with Git 2.4.3
 
-### Bug fixes
+### Bug Fixes
 
 * [We include `diff.exe`](https://github.com/git-for-windows/git/issues/163) just as it was the case in Git for Windows 1.x
 * The certificates for accessing remote repositories via HTTPS [are found on XP again](https://github.com/git-for-windows/git/issues/168).
@@ -276,7 +276,7 @@ This package contains software from a number of other projects including Bash, z
 * On Windows Vista and later, [NTFS junctions can be used to emulate symlinks now](https://github.com/git-for-windows/git/pull/156); To enable this emulation, the `MSYS` environment variable needs to be set to `winsymlinks:nativestrict`.
 * The *Git Bash* learned to support [several options to support running the Bash in arbitrary terminal emulators](https://github.com/git-for-windows/git/commit/ac6b03cb4).
 
-### Bug fixes
+### Bug Fixes
 
 * Just like Git for Windows 1.x, [pressing Shift+Tab in the Git Bash triggers tab completion](https://github.com/git-for-windows/build-extra/pull/59).
 * [Auto-mount the temporary directory of the current user to `/tmp/` again](https://github.com/git-for-windows/msys2-runtime/pull/9), just like Git for Windows 1.x did (thanks to MSys1's hard-coded mount point).
@@ -287,14 +287,14 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with Git 2.4.1
 
-### Bug fixes
+### Bug Fixes
 
 * When selecting the standard Windows console window for `Git Bash`, a regression was fixed that triggered [an extra console window](https://github.com/git-for-windows/git/issues/148) to be opened.
 * The password [can be entered interactively again](https://github.com/git-for-windows/git/issues/124) when `git push`ing to a HTTPS remote.
 
 ## Changes since Git-2.4.0 (May 5th 2015)
 
-### Bug fixes
+### Bug Fixes
 
 * The `.sh` file association was fixed
 * The installer will now remove files from a previous Git for Windows versions, particularly important for 32-bit -> 64-bit upgrades
@@ -309,7 +309,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with Git 2.4.0
 * Git for Windows now installs its configuration into a Windows-wide location: `%PROGRAMDATA%\Git\config` (which will be shared by libgit2-based applications with the next libgit2 version)
 
-### Bug fixes
+### Bug Fixes
 * Fixed a regression where *Git Bash* would not start properly on Windows XP
 * Tab completion works like on Linux and MacOSX (double-Tab required to show ambiguous completions)
 * In 32-bit setups, all the MSys2 `.dll`'s address ranges are adjusted ("auto-rebased") as part of the installation process
@@ -321,7 +321,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 * Comes with Git 2.3.7
 
-### Bug fix
+### Bug Fix
 * A flawed "fix" that ignores submodules during rebases was dropped
 * The home directory can be overridden using the `$HOME` environment variable again
 
@@ -330,7 +330,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 * Comes with Git 2.3.6
 
-### Bug fixes
+### Bug Fixes
 * Fixed encoding issues in Git Bash and keept the TMP environment variable intact.
 * Downgraded the `nettle` packages due to an [*MSYS2* issue](https://github.com/Alexpux/MINGW-packages/issues/549)
 * A couple of fixes to the Windows-specific Git wrapper

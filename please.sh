@@ -14,6 +14,7 @@
 #
 #	<make sure that Git for Windows' 'master' reflects the new version>
 #	./please.sh sync
+#	./please.sh finalize release-notes
 #	./please.sh tag_git
 #	./please.sh build git
 #	./please.sh install git
@@ -205,7 +206,12 @@ ff_master () {
 }
 
 update () { # <package>
-	set_package "$1"
+	if test git != "$1" && test -d "$sdk64"/usr/src/"$1"
+	then
+		path=/usr/src/"$1"
+	else
+		set_package "$1"
+	fi
 
 	foreach_sdk ff_master
 }
@@ -597,6 +603,132 @@ set_version_from_sdks_git () {
 	esac
 }
 
+version_from_release_notes () {
+	sed -e '1s/^# Git for Windows v\(.*\) Release Notes$/\1/' -e 1q \
+		"$sdk64/usr/src/build-extra/installer/ReleaseNotes.md"
+}
+
+previous_version_from_release_notes () {
+	sed -n "/^## Changes since/{s/## .* v\([^ ]*\) (.*/\1/p;q}" \
+		<"$sdk64"/usr/src/build-extra/installer/ReleaseNotes.md
+}
+
+today () {
+	LC_ALL=C date +"%B %-d %Y" |
+	sed -e 's/\( [2-9]\?[4-90]\| 1[0-9]\) /\1th /' \
+		-e 's/1 /1st /' -e 's/2 /2nd /' -e 's/3 /3rd /'
+}
+
+mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
+	case "$1" in
+	bug|bugfix|bug-fix) what="Bug Fixes";;
+	new|feature|newfeature|new-feature) what="New Features";;
+	*) die "Don't know how to mention %s\n" "$1";;
+	esac
+	shift
+
+	quoted="* $(echo "$*" | sed "s/[\\\/\"'&]/\\\\&/g")"
+
+	up_to_date usr/src/build-extra ||
+	die "build-extra is not up-to-date\n"
+
+	relnotes="$sdk64"/usr/src/build-extra/installer/ReleaseNotes.md
+	latest="$(version_from_release_notes)"
+	if test "$latest" != "$(previous_version_from_release_notes)"
+	then
+		# insert whole "Changes since" section
+		date="$(sed -n -e '2s/Latest update: //p' -e 2q \
+			<"$relnotes")"
+		quoted="v$latest ($date)\\n\\n### $what\\n\\n$quoted"
+		quoted="## Changes since Git for Windows $quoted"
+		sed -i -e "/^## Changes since/{s/^/$quoted\n\n/;:1;n;b1}" \
+			"$relnotes"
+	else
+		sed -i -e '/^## Changes since/{
+			:1;n;
+			/^### '"$what"'/b3;
+			/^### Bug Fixes/b2;
+			/^## Changes since/b2;
+			b1;
+
+			:2;s/^/### '"$what"'\n\n'"$quoted"'\n\n/;b5;
+
+			:3;/^\*/b4;n;b3;:4;n;/^\*/b4;
+			s/^/'"$quoted"'\n/;b5;
+
+			:5;n;b5}' "$relnotes"
+	fi ||
+	die "Could not edit release notes\n"
+
+	(cd "$sdk64"/usr/src/build-extra &&
+	 what_singular="$(echo "$what" |
+		 sed -e 's/Fixes/Fix/' -e 's/Features/Feature/')" &&
+	 git commit -s -m "Mention $what_singular in release notes" \
+		-m "$(echo "$*" | fmt -72)" installer/ReleaseNotes.md) ||
+	die "Could not commit release note edits\n"
+
+	(cd "$sdk32"/usr/src/build-extra &&
+	 git pull --ff-only "$sdk64"/usr/src/build-extra master) ||
+	die "Could not synchronize release note edits to 32-bit SDK\n"
+}
+
+finalize () { # <what, e.g. release-notes>
+	case "$1" in
+	relnotes|rel-notes|release-notes) ;;
+	*) die "I don't know how to finalize %s\n" "$1";;
+	esac
+
+	up_to_date usr/src/build-extra ||
+	die "build-extra is not up-to-date\n"
+
+	update git
+	dir_option="--git-dir=$sdk64/$path"/src/git/.git
+	ver="$(git "$dir_option" \
+		describe --first-parent --match 'v[0-9]*[0-9]' \
+		git-for-windows/master)" ||
+	die "Cannot describe current revision of Git\n"
+	ver=${ver%%-*}
+	case "$ver" in
+	*.windows.*)
+		test 0 -lt $(git "$dir_option" rev-list --count \
+			"$ver"..git-for-windows/master) ||
+		die "Already tagged: %s\n" "$ver"
+
+		nextver=${ver%.windows.*}.windows.$((${ver##*.windows.}+1))
+		displayver="${ver%.windows.*}(${nextver##*.windows.})"
+		;;
+	*)
+		i=1
+		displayver="$ver"
+		while git "$dir_option" \
+			rev-parse --verify $ver.windows.$i >/dev/null 2>&1
+		do
+			i=$(($i+1))
+			displayver="$ver($i)"
+		done
+		nextver=$ver.windows.$i
+		;;
+	esac
+	displayver=${displayver#v}
+
+	test "$displayver" != "$(version_from_release_notes)" ||
+	die "Version %s already in the release notes\n" "$displayver"
+
+	sed -i -e "1s/.*/# Git for Windows v$displayver Release Notes/" \
+		-e "2s/.*/Latest update: $(today)/" \
+		"$sdk64"/usr/src/build-extra/installer/ReleaseNotes.md ||
+	die "Could not edit release notes\n"
+
+	(cd "$sdk64"/usr/src/build-extra &&
+	 git commit -s -m "Prepare release notes for v$displayver" \
+		installer/ReleaseNotes.md) ||
+	die "Could not commit finalized release notes\n"
+
+	(cd "$sdk32"/usr/src/build-extra &&
+	 git pull --ff-only "$sdk64"/usr/src/build-extra master) ||
+	die "Could not update 32-bit SDK's release notes\n"
+}
+
 release () { #
 	up_to_date usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
@@ -605,14 +737,10 @@ release () { #
 
 	echo "Releasing Git for Windows $displayver" >&2
 
-	test "# Git for Windows v$displayver Release Notes" = "$(head -n 1 \
-		"$sdk64/usr/src/build-extra/installer/ReleaseNotes.md")" ||
+	test "$displayver" = "$(version_from_release_notes)" ||
 	die "Incorrect version in the release notes\n"
 
-	today="$(LC_ALL=C date +"%B %-d %Y" | sed \
-		-e 's/\( [2-9]\?[4-90]\| 1[0-9]\) /\1th /' \
-		-e 's/1 /1st /' -e 's/2 /2nd /' -e 's/3 /3rd /')"
-	test "Latest update: $today" = "$(sed -n 2p \
+	test "Latest update: $(today)" = "$(sed -n 2p \
 		<"$sdk64/usr/src/build-extra/installer/ReleaseNotes.md")" ||
 	die "Incorrect release date in the release notes\n"
 
