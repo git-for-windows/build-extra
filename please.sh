@@ -14,6 +14,7 @@
 #
 #	<make sure that Git for Windows' 'master' reflects the new version>
 #	./please.sh sync
+#	./please.sh finalize release-notes
 #	./please.sh tag_git
 #	./please.sh build git
 #	./please.sh install git
@@ -611,6 +612,63 @@ today () {
 	LC_ALL=C date +"%B %-d %Y" |
 	sed -e 's/\( [2-9]\?[4-90]\| 1[0-9]\) /\1th /' \
 		-e 's/1 /1st /' -e 's/2 /2nd /' -e 's/3 /3rd /'
+}
+
+finalize () { # <what, e.g. release-notes>
+	case "$1" in
+	relnotes|rel-notes|release-notes) ;;
+	*) die "I don't know how to finalize %s\n" "$1";;
+	esac
+
+	up_to_date usr/src/build-extra ||
+	die "build-extra is not up-to-date\n"
+
+	update git
+	dir_option="--git-dir=$sdk64/$path"/src/git/.git
+	ver="$(git "$dir_option" \
+		describe --first-parent --match 'v[0-9]*[0-9]' \
+		git-for-windows/master)" ||
+	die "Cannot describe current revision of Git\n"
+	ver=${ver%%-*}
+	case "$ver" in
+	*.windows.*)
+		test 0 -lt $(git "$dir_option" rev-list --count \
+			"$ver"..git-for-windows/master) ||
+		die "Already tagged: %s\n" "$ver"
+
+		nextver=${ver%.windows.*}.windows.$((${ver##*.windows.}+1))
+		displayver="${ver%.windows.*}(${nextver##*.windows.})"
+		;;
+	*)
+		i=1
+		displayver="$ver"
+		while git "$dir_option" \
+			rev-parse --verify $ver.windows.$i >/dev/null 2>&1
+		do
+			i=$(($i+1))
+			displayver="$ver($i)"
+		done
+		nextver=$ver.windows.$i
+		;;
+	esac
+	displayver=${displayver#v}
+
+	test "$displayver" != "$(version_from_release_notes)" ||
+	die "Version %s already in the release notes\n" "$displayver"
+
+	sed -i -e "1s/.*/# Git for Windows v$displayver Release Notes/" \
+		-e "2s/.*/Latest update: $(today)/" \
+		"$sdk64"/usr/src/build-extra/installer/ReleaseNotes.md ||
+	die "Could not edit release notes\n"
+
+	(cd "$sdk64"/usr/src/build-extra &&
+	 git commit -s -m "Prepare release notes for v$displayver" \
+		installer/ReleaseNotes.md) ||
+	die "Could not commit finalized release notes\n"
+
+	(cd "$sdk32"/usr/src/build-extra &&
+	 git pull --ff-only "$sdk64"/usr/src/build-extra master) ||
+	die "Could not update 32-bit SDK's release notes\n"
 }
 
 release () { #
