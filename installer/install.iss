@@ -1264,7 +1264,7 @@ end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
 var
-    AppDir,ProgramData,DllPath,FileName,Cmd,Msg:String;
+    AppDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
     BuiltIns,ImageNames,EnvPath:TArrayOfString;
     Count,i:Longint;
     RootKey:Integer;
@@ -1524,22 +1524,28 @@ begin
     if IsComponentSelected('ext\shellhere') then begin
         Msg:='Git Ba&sh Here';
         Cmd:='"'+AppDir+'\git-bash.exe" "--cd=%1"';
+        Ico:='"'+AppDir+'\{#MINGW_BITNESS}\share\git\git-for-windows.ico"';
         if (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_shell','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_shell\command','',Cmd)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_shell\Icon','',Ico)) or
            (StringChangeEx(Cmd,'%1','%v.',false)<>1) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell\command','',Cmd)) then
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell\Icon','',Ico)) or
             LogError('Line {#__LINE__}: Unable to create "Git Bash Here" shell extension.');
     end;
 
     if IsComponentSelected('ext\guihere') then begin
         Msg:='Git &GUI Here';
         Cmd:='"'+AppDir+'\cmd\git-gui.exe" "--working-dir" "%1"';
+        Ico:='"'+AppDir+'\{#MINGW_BITNESS}\share\git\git-for-windows.ico"';
         if (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_gui','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_gui\command','',Cmd)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_gui\Icon','',Ico)) or
            (StringChangeEx(Cmd,'%1','%v.',false)<>1) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui\command','',Cmd))
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui\Icon','',Ico)) or
         then
             LogError('Line {#__LINE__}: Unable to create "Git GUI Here" shell extension.');
     end;
