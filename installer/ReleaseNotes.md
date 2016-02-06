@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.7.0(2) (February 2nd 2016)
 
+### New Features
+
+* Comes with [Git 2.7.1](http://article.gmane.org/gmane.comp.version-control.git/285657).
+
 ### Bug Fixes
 
 * Git GUI now [starts properly even when the working directory contains non-ASCII characters](https://github.com/git-for-windows/git/issues/410).
