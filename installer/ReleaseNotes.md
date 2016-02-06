@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Git GUI now [starts properly even when the working directory contains non-ASCII characters](https://github.com/git-for-windows/git/issues/410).
 * We forgot to enable Address Space Layout Randomization and Data Execution Prevention on our Git wrapper, and this is [now fixed](//github.com/git-for-windows/git/issues/644).
+* A bug in one of the DLLs used by Git for Windows [was fixed](https://github.com/Alexpux/MINGW-packages/pull/1051) that prevented Git from working properly in 64-bit setups where [the `FLG_LDR_TOP_DOWN` global flag](https://technet.microsoft.com/en-us/library/cc779664%28v=ws.10%29.aspx) is set.
 
 ## Changes since Git for Windows v2.7.0 (January 5th 2016)
 
