@@ -681,8 +681,12 @@ finalize () { # <what, e.g. release-notes>
 	up_to_date usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
-	update git
-	dir_option="--git-dir=$sdk64/$path"/src/git/.git
+	update git &&
+	dir_option="--git-dir=$sdk64/$path"/src/git/.git &&
+	git "$dir_option" fetch --tags git-for-windows &&
+	git "$dir_option" fetch --tags junio ||
+	die "Could not update Git\n"
+
 	ver="$(git "$dir_option" \
 		describe --first-parent --match 'v[0-9]*[0-9]' \
 		git-for-windows/master)" ||
