@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.7.1 (February 6th 2016)
 
+### New Features
+
+* The context menu items in the explorer [now show icons](https://github.com/git-for-windows/build-extra/pull/97).
+
 ### Bug Fixes
 
 * A bug [was fixed](https://github.com/git-for-windows/git/commit/4abc31070f683e555de95331da0990052f55caa5) where worktrees would forget their location e.g. after an interactive rebase.
