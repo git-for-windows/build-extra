@@ -77,5 +77,22 @@ test "--update" != "$1" || {
 # v2.7.1.windows.2
 id=${1:-2602217}
 
+case "$id" in
+*.*)
+	case "$id" in
+	v*.windows.*) id="$(echo "$id" | sed 's/\./\\./g')";;
+	*\(*\)) id="$(echo "$id" |
+		sed -e 's/(\(.*\))$/.windows.\1/' -e 's/\./\\./g')";;
+	*)
+		id="$(echo "$id" | sed 's/\./\\./g').windows.1";;
+	esac
+	id="$(sed -n "/$id/{N;s/.*:-\([0-9]*\).*/\1/p}" <"$0")"
+	test -n "$id" || {
+		echo "Version $1 not found" >&2
+		exit 1
+	}
+	;;
+esac
+
 curl -s https://api.github.com/repos/git-for-windows/git/releases/$id/assets |
 grep -e '"name":' -e '"download_count":'
