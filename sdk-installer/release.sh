@@ -49,8 +49,8 @@ sed -e 's/^#\(XferCommand.*curl\).*/\1 --anyauth -C - -L -f %u >%o/' \
 	</etc/pacman.conf >"$FAKEROOTDIR/etc/pacman.conf.proxy" ||
 die "Could not copy extra files into fake root"
 
-fileList="$(cd / && echo \
-	etc/pacman.* \
+fileList="etc/pacman.conf \
+	etc/pacman.d \
 	usr/bin/pacman.exe \
 	usr/bin/curl.exe \
 	usr/bin/gpg.exe \
@@ -59,7 +59,7 @@ fileList="$(cd / && echo \
 	  sort |
 	  uniq) \
 	usr/ssl/certs/ca-bundle.crt \
-	var/lib/pacman)
+	var/lib/pacman
 	$FAKEROOTDIR/setup-git-sdk.bat $FAKEROOTDIR/etc $FAKEROOTDIR/usr"
 
 type 7za ||
