@@ -903,7 +903,7 @@ begin
     RdbBashTerminal[GB_MinTTY]:=TRadioButton.Create(BashTerminalPage);
     with RdbBashTerminal[GB_MinTTY] do begin
         Parent:=BashTerminalPage.Surface;
-        Caption:='Use MinTTY (the default terminal of MSys2)';
+        Caption:='Use MinTTY (the default terminal of MSYS2)';
         Left:=ScaleX(4);
         Top:=ScaleY(8);
         Width:=ScaleX(405);

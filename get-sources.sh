@@ -62,7 +62,7 @@ do
 		;;
 	esac
 
-	# Work around mismatched version uploaded in MSys2
+	# Work around mismatched version uploaded in MSYS2
 	case $name-$version in
 	dash-0.5.8-1) version=0.5.8-2;;
 	mingw-w64-*-antiword-0.37-2) version=0.37-1;;
