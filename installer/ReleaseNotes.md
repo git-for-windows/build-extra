@@ -30,7 +30,7 @@ Git is licensed under the GNU Public License version 2.
 
 Git for Windows also contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
-This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSys2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
+This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
 
 ## Changes since Git for Windows v2.7.1(2) (February 12th 2016)
 
@@ -74,7 +74,7 @@ This package contains software from a number of other projects including Bash, z
 
 * When installing as administrator, we [no longer offer the option to install quiicklaunch icons](https://github.com/git-for-windows/build-extra/commit/a13ffd7c3fa24e2ac1ef3561d7a7f09a0b924338) because quicklaunch icons can only be installed per-user.
 * If a `~/.bashrc` is detected without a `~/.bash_profile`, the generated file will now [also source `~/.profile` if that exists](https://github.com/git-for-windows/build-extra/pull/91).
-* The environment variable `HOME` can now be used to set the home directory [even when running with accounts that are part of a different domain than the current (non-domain-joined) machine](https://github.com/git-for-windows/msys2-runtime/commit/9660c5ffe82b921dd2193efa18e9721f47a6b22f) (in which case the MSys2 runtime has no way to emulate POSIX-style UIDs).
+* The environment variable `HOME` can now be used to set the home directory [even when running with accounts that are part of a different domain than the current (non-domain-joined) machine](https://github.com/git-for-windows/msys2-runtime/commit/9660c5ffe82b921dd2193efa18e9721f47a6b22f) (in which case the MSYS2 runtime has no way to emulate POSIX-style UIDs).
 * Git [can now fetch and push via HTTPS](https://github.com/Alexpux/MINGW-packages/pull/986) even when the `http.sslCAInfo` config variable was unset.
 * Git for Windows is now [handling the case gracefully where the current user has no permission to list the parent of the current directory](https://github.com/git-for-windows/git/pull/606).
 * More file locking issues ("Unlink of file ... failed. Should I try again?") [were fixed](https://github.com/git-for-windows/git/issues/500).
@@ -94,7 +94,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Git v2.6.4](http://article.gmane.org/gmane.linux.kernel/2103498).
-* Also available as `.tar.bz2` packages (you need an MSys2/Cygwin-compatible unpacker to recreate the symbolic links correctly).
+* Also available as `.tar.bz2` packages (you need an MSYS2/Cygwin-compatible unpacker to recreate the symbolic links correctly).
 
 ## Bug Fixes
 
@@ -209,7 +209,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### Bug Fixes
 
-* The MSys2 runtime was taught [not to look hard for groups](https://github.com/git-for-windows/git/issues/193), speeding up *Git Bash*'s startup time.
+* The MSYS2 runtime was taught [not to look hard for groups](https://github.com/git-for-windows/git/issues/193), speeding up *Git Bash*'s startup time.
 * A [work around](https://github.com/git-for-windows/git/issues/361) was added for [issues](https://github.com/git-for-windows/git/wiki/32-bit-issues) when installing 32-bit Git for Windows on 64-bit Windows 10.
 * The installer [no longer freezes](https://github.com/git-for-windows/git/issues/351) when there are interactive commands in the user's `.profile`.
 * `git rebase --skip` [was speeded up again](https://github.com/git-for-windows/git/issues/365).
@@ -341,8 +341,8 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 * Fixed a regression where *Git Bash* would not start properly on Windows XP
 * Tab completion works like on Linux and MacOSX (double-Tab required to show ambiguous completions)
-* In 32-bit setups, all the MSys2 `.dll`'s address ranges are adjusted ("auto-rebased") as part of the installation process
-* The post-install scripts of MSys2 are now executed as part of the installation process, too
+* In 32-bit setups, all the MSYS2 `.dll`'s address ranges are adjusted ("auto-rebased") as part of the installation process
+* The post-install scripts of MSYS2 are now executed as part of the installation process, too
 * All files that are part of the installation will now be registered so they are deleted upon uninstall
 
 ## Changes since Git-2.3.6-preview20150425
@@ -371,7 +371,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 * Comes with Git 2.3.5 plus Windows-specific patches.
-* First release based on [MSys2](https://msys2.github.io/).
+* First release based on [MSYS2](https://msys2.github.io/).
 * Support for 64-bit!
 
 ### Backwards-incompatible changes

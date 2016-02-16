@@ -31,7 +31,7 @@ die () {
 fifo_find="/var/tmp/disowned.find"
 fifo_pacman="/var/tmp/disowned.pacman"
 
-# MSys2's mingw-w64-$arch-ca-certificates seem to lag behind ca-certificates
+# MSYS2's mingw-w64-$arch-ca-certificates seem to lag behind ca-certificates
 CURL_CA_BUNDLE=/usr/ssl/certs/ca-bundle.crt
 export CURL_CA_BUNDLE
 

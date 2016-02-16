@@ -10,7 +10,7 @@
 @REM set PATH
 @set PATH=%cwd%\usr\bin;%PATH%
 
-@REM set MSYSTEM so that MSys2 starts up in the correct mode
+@REM set MSYSTEM so that MSYS2 starts up in the correct mode
 @set MSYSTEM=MINGW@@BITNESS@@
 
 @REM need to rebase just to make sure that it still works even with Windows 10
@@ -44,7 +44,7 @@
 @REM Maybe we need a proxy?
 @IF %counter% GEQ 2 @(
 	@ECHO.
-	@ECHO There was a problem accessing the MSys2 repositories
+	@ECHO There was a problem accessing the MSYS2 repositories
 	@ECHO If your setup requires an HTTP proxy to access the web,
 	@ECHO please specify it here, otherwise leave it empty.
 	@ECHO.
@@ -126,7 +126,7 @@
 )
 
 @REM Before running a shell, let's prevent complaints about "permission denied"
-@REM from MSys2's /etc/post-install/01-devices.post
+@REM from MSYS2's /etc/post-install/01-devices.post
 @MKDIR "%cwd%"\dev\shm 2> NUL
 @MKDIR "%cwd%"\dev\mqueue 2> NUL
 
