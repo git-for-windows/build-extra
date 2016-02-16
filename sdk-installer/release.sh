@@ -49,15 +49,33 @@ sed -e 's/^#\(XferCommand.*curl\).*/\1 --anyauth -C - -L -f %u >%o/' \
 	</etc/pacman.conf >"$FAKEROOTDIR/etc/pacman.conf.proxy" ||
 die "Could not copy extra files into fake root"
 
+dlls_for_exes () {
+	# Add DLLs' transitive dependencies
+	dlls=
+	todo="$* "
+	while test -n "$todo"
+	do
+		path=${todo%% *}
+		todo=${todo#* }
+		case "$path" in ''|' ') continue;; esac
+		for dll in $(objdump -p "$path" |
+			sed -n 's/^\tDLL Name: msys-/usr\/bin\/msys-/p')
+		do
+			case "$dlls" in
+			*"$dll"*) ;; # already found
+			*) dlls="$dlls $dll"; todo="$todo /$dll ";;
+			esac
+		done
+	done
+	echo "$dlls"
+}
+
 fileList="etc/pacman.conf \
 	etc/pacman.d \
 	usr/bin/pacman.exe \
 	usr/bin/curl.exe \
 	usr/bin/gpg.exe \
-	$(ldd /usr/bin/gpg.exe /usr/bin/curl.exe |
-	  sed -n 's/.* \/\(usr\/bin\/.*\.dll\) .*/\1/p' |
-	  sort |
-	  uniq) \
+	$(dlls_for_exes /usr/bin/gpg.exe /usr/bin/curl.exe)
 	usr/ssl/certs/ca-bundle.crt \
 	var/lib/pacman
 	$FAKEROOTDIR/setup-git-sdk.bat $FAKEROOTDIR/etc $FAKEROOTDIR/usr"
