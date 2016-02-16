@@ -8,7 +8,7 @@ test -z "$1" && {
 }
 
 die () {
-	echo "$*" >&1
+	echo "$*" >&2
 	exit 1
 }
 
