@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 * The arrow keys [are respected again in gitk](https://github.com/git-for-windows/git/issues/495).
 * When a too-long path is encountered, `git clean -dfx` [no longer aborts quietly](https://github.com/git-for-windows/git/issues/521).
 * Git GUI learned to [stage lines appended to a single-line file](https://github.com/git-for-windows/git/issues/515).
+* When launching `C:\Program Files\Git\bin\bash -l -i` in a cmd window and pressing Ctrl+C, [the console is no longer corrupted](https://github.com/git-for-windows/git/pull/205) (previously, the `bash.exe` redirector would terminate and both cmd & Bash would compete for user input).
 
 ## Changes since Git for Windows v2.7.1 (February 6th 2016)
 
