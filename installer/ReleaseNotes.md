@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 * The user is [now presented with a nice error message](https://github.com/git-for-windows/git/issues/527) when calling `node` while `node.exe` is not in the `PATH` (this bug also affected other interactive console programs such as `python` and `php`).
 * The arrow keys [are respected again in gitk](https://github.com/git-for-windows/git/issues/495).
 * When a too-long path is encountered, `git clean -dfx` [no longer aborts quietly](https://github.com/git-for-windows/git/issues/521).
+* Git GUI learned to [stage lines appended to a single-line file](https://github.com/git-for-windows/git/issues/515).
 
 ## Changes since Git for Windows v2.7.1 (February 6th 2016)
 
