@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Git for Windows' SDK version 1.0.2 [has been released](https://github.com/git-for-windows/build-extra/releases/tag/git-sdk-1.0.2).
 * The "list references" window of `gitk` [is now wider by default](https://github.com/git-for-windows/git/pull/620).
+* Comes with [Git 2.7.2](http://article.gmane.org/gmane.linux.kernel/2158401).
 
 ### Bug Fixes
 
