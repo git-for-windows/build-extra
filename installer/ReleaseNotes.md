@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Git for Windows' SDK version 1.0.2 [has been released](https://github.com/git-for-windows/build-extra/releases/tag/git-sdk-1.0.2).
+* The "list references" window of `gitk` [is now wider by default](https://github.com/git-for-windows/git/pull/620).
 
 ### Bug Fixes
 
