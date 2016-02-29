@@ -72,6 +72,32 @@
 @IF ERRORLEVEL 1 GOTO INSTALL_RUNTIME
 
 @SET /A counter=0
+:INSTALL_BASH
+@SET /A counter+=1
+@IF %counter% GEQ 5 @(
+	@ECHO Could not install bash
+	@PAUSE
+	@EXIT 1
+)
+
+@REM next, force update bash
+@"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm bash
+
+@SET /A counter=0
+:INSTALL_INFO
+@SET /A counter+=1
+@IF %counter% GEQ 5 @(
+	@ECHO Could not install info
+	@PAUSE
+	@EXIT 1
+)
+
+@REM next, force update info
+@"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm info
+
+@IF ERRORLEVEL 1 GOTO INSTALL_INFO
+
+@SET /A counter=0
 :INSTALL_PACMAN
 @SET /A counter+=1
 @IF %counter% GEQ 5 @(
@@ -80,8 +106,9 @@
 	@EXIT 1
 )
 
-@REM next, force update pacman, but first we need bash and info for that.
-@"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm bash info pacman
+
+@REM next, force update pacman
+@"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm pacman
 
 @IF ERRORLEVEL 1 GOTO INSTALL_PACMAN
 
