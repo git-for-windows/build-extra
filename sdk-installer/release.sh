@@ -73,6 +73,8 @@ dlls_for_exes () {
 fileList="etc/nsswitch.conf \
 	etc/pacman.conf \
 	etc/pacman.d \
+	usr/bin/pacman-key \
+	usr/bin/tput.exe \
 	usr/bin/pacman.exe \
 	usr/bin/curl.exe \
 	usr/bin/gpg.exe \

@@ -92,6 +92,13 @@
 	@EXIT 1
 )
 
+@REM we need a /tmp directory, just for the time being
+@MKDIR "%cwd%"\tmp
+
+@REM next, initialize pacman's keyring
+@"%cwd%"\usr\bin\bash.exe -l -c '/usr/bin/bash /usr/bin/pacman-key --init'
+@IF ERRORLEVEL 1 PAUSE
+
 @REM next, force update info
 @"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm info
 
@@ -105,7 +112,6 @@
 	@PAUSE
 	@EXIT 1
 )
-
 
 @REM next, force update pacman
 @"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm pacman
