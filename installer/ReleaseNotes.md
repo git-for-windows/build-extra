@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 
 * We [now handle UTF-8 merge and squash messages correctly in Git GUI](https://github.com/git-for-windows/git/issues/665).
 * When trying to modify a repository config outside of any Git worktree, [`git config` no longer creates a `.git/` directory](https://github.com/git-for-windows/git/commit/64acc338c) but prints an appropriate error message instead.
+* A new version of Git for Windows' SDK [was released](https://github.com/git-for-windows/build-extra/releases/git-sdk-1.0.3] that [works around pacman-key issues](https://github.com/git-for-windows/git/issues/670).
 
 ## Changes since Git for Windows v2.7.1(2) (February 12th 2016)
 
