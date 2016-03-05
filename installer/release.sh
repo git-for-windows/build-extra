@@ -31,6 +31,10 @@ render_release_notes () {
 	}
 }
 
+# change directory to the script's directory
+cd "$(dirname "$0")" ||
+die "Could not switch directory"
+
 force=
 inno_defines=
 skip_files=
@@ -47,6 +51,11 @@ do
 			"#define DEBUG_WIZARD_PAGE '${1#*=}'" \
 			"#define OUTPUT_TO_TEMP ''")"
 		skip_files=t
+		;;
+	-r|--render-release-notes)
+		render_release_notes &&
+		start ReleaseNotes.html
+		exit
 		;;
 	*)
 		break
@@ -69,10 +78,6 @@ case "$version" in
 [0-9]*) ;; # okay
 *) die "InnoSetup requires a version that begins with a digit";;
 esac
-
-# change directory to the script's directory
-cd "$(dirname "$0")" ||
-die "Could not switch directory"
 
 render_release_notes
 
