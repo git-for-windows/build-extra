@@ -9,6 +9,9 @@ render_release_notes () {
 	# Generate the ReleaseNotes.html file
 	test -f ReleaseNotes.html &&
 	test ReleaseNotes.html -nt ReleaseNotes.md || {
+		test -x /usr/bin/markdown ||
+		export PATH="$PATH:$(readlink -f "$PWD"/..)/../../bin"
+
 		# Install markdown
 		type markdown ||
 		pacman -Sy --noconfirm markdown ||
