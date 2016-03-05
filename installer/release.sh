@@ -5,6 +5,32 @@ die () {
 	exit 1
 }
 
+render_release_notes () {
+	# Generate the ReleaseNotes.html file
+	test -f ReleaseNotes.html &&
+	test ReleaseNotes.html -nt ReleaseNotes.md || {
+		# Install markdown
+		type markdown ||
+		pacman -Sy --noconfirm markdown ||
+		die "Could not install markdown"
+
+		(printf '%s\n%s\n%s\n%s %s\n%s %s\n%s\n%s\n%s\n' \
+			'<!DOCTYPE html>' \
+			'<html>' \
+			'<head>' \
+			'<meta http-equiv="Content-Type" content="text/html;' \
+			'charset=UTF-8">' \
+			'<link rel="stylesheet"' \
+			' href="usr/share/git/ReleaseNotes.css">' \
+			'</head>' \
+			'<body class="details">' \
+			'<div class="content">'
+		 markdown ReleaseNotes.md ||
+		 die "Could not generate ReleaseNotes.html"
+		 printf '</div>\n</body>\n</html>\n') >ReleaseNotes.html
+	}
+}
+
 force=
 inno_defines=
 skip_files=
@@ -48,29 +74,7 @@ esac
 cd "$(dirname "$0")" ||
 die "Could not switch directory"
 
-# Generate the ReleaseNotes.html file
-test -f ReleaseNotes.html &&
-test ReleaseNotes.html -nt ReleaseNotes.md || {
-	# Install markdown
-	type markdown ||
-	pacman -Sy --noconfirm markdown ||
-	die "Could not install markdown"
-
-	(printf '%s\n%s\n%s\n%s %s\n%s %s\n%s\n%s\n%s\n' \
-		'<!DOCTYPE html>' \
-		'<html>' \
-		'<head>' \
-		'<meta http-equiv="Content-Type" content="text/html;' \
-		'charset=UTF-8">' \
-		'<link rel="stylesheet"' \
-		' href="usr/share/git/ReleaseNotes.css">' \
-		'</head>' \
-		'<body class="details">' \
-		'<div class="content">'
-	 markdown ReleaseNotes.md ||
-	 die "Could not generate ReleaseNotes.html"
-	 printf '</div>\n</body>\n</html>\n') >ReleaseNotes.html
-}
+render_release_notes
 
 # Evaluate architecture
 ARCH="$(uname -m)"
