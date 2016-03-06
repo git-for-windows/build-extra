@@ -18,7 +18,22 @@ render_release_notes () {
 		pacman -Sy --noconfirm markdown ||
 		die "Could not install markdown"
 
-		(printf '%s\n%s\n%s\n%s %s\n%s %s\n%s\n%s\n%s\n' \
+		(homepage=https://git-for-windows.github.io/ &&
+		 contribute=$homepage#contribute &&
+		 wiki=https://github.com/git-for-windows/git/wiki &&
+		 faq=$wiki/FAQ &&
+		 mailinglist=mailto:git@vger.kernel.org &&
+		 links="$(printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" \
+			'<div class="links">' \
+			'<ul>' \
+			'<li><a href="'$homepage'">homepage</a></li>' \
+			'<li><a href="'$faq'">faq</a></li>' \
+			'<li><a href="'$contribute'">contribute</a></li>' \
+			'<li><a href="'$contribute'">bugs</a></li>' \
+			'<li><a href="'$mailinglist'">questions</a></li>' \
+			'</ul>' \
+			'</div>')" &&
+		 printf '%s\n%s\n%s\n%s %s\n%s %s\n%s\n%s\n%s\n%s\n' \
 			'<!DOCTYPE html>' \
 			'<html>' \
 			'<head>' \
@@ -28,6 +43,7 @@ render_release_notes () {
 			' href="usr/share/git/ReleaseNotes.css">' \
 			'</head>' \
 			'<body class="details">' \
+			"$links" \
 			'<div class="content">'
 		 markdown ReleaseNotes.md ||
 		 die "Could not generate ReleaseNotes.html"
