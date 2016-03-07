@@ -297,7 +297,7 @@ const
     GB_MinTTY         = 1;
     GB_ConHost        = 2;
 
-    // Git performance tweaks options
+    // Extra options
     GP_FSCache        = 1;
 
     // BindImageEx API constants.
@@ -327,9 +327,9 @@ var
     BashTerminalPage:TWizardPage;
     RdbBashTerminal:array[GB_MinTTY..GB_ConHost] of TRadioButton;
 
-    // Wizard page and variables for the performance tweaks options.
-    PerfTweaksPage:TWizardPage;
-    RdbPerfTweaks:array[GP_FSCache..GP_FSCache] of TCheckBox;
+    // Wizard page and variables for the extra options.
+    ExtraOptionsPage:TWizardPage;
+    RdbExtraOptions:array[GP_FSCache..GP_FSCache] of TCheckBox;
 
     // Wizard page and variables for the processes page.
     SessionHandle:DWORD;
@@ -963,20 +963,20 @@ begin
     end;
 
     (*
-     * Create a custom page for experimental performance tweaks.
+     * Create a custom page for extra options.
      *)
 
-    PerfTweaksPage:=CreateCustomPage(
+    ExtraOptionsPage:=CreateCustomPage(
         PrevPageID
-    ,   'Configuring experimental performance tweaks'
-    ,   'Which experimental performance tweaks would you like to enable?'
+    ,   'Configuring extra options'
+    ,   'Which features would you like to enable?'
     );
-    PrevPageID:=PerfTweaksPage.ID;
+    PrevPageID:=ExtraOptionsPage.ID;
 
     // 1st option
-    RdbPerfTweaks[GP_FSCache]:=TCheckBox.Create(PerfTweaksPage);
-    with RdbPerfTweaks[GP_FSCache] do begin
-        Parent:=PerfTweaksPage.Surface;
+    RdbExtraOptions[GP_FSCache]:=TCheckBox.Create(ExtraOptionsPage);
+    with RdbExtraOptions[GP_FSCache] do begin
+        Parent:=ExtraOptionsPage.Surface;
         Caption:='Enable file system caching';
         Left:=ScaleX(4);
         Top:=ScaleY(8);
@@ -986,9 +986,9 @@ begin
         TabOrder:=0;
         Checked:=False;
     end;
-    LblFSCache:=TLabel.Create(PerfTweaksPage);
+    LblFSCache:=TLabel.Create(ExtraOptionsPage);
     with LblFSCache do begin
-        Parent:=PerfTweaksPage.Surface;
+        Parent:=ExtraOptionsPage.Surface;
         Caption:=
             'File system data will be read in bulk and cached in memory for certain' + #13 +
             'operations ("core.fscache" is set to "true"). This provides a significant' + #13 +
@@ -1003,7 +1003,7 @@ begin
     Data:=ReplayChoice('Performance Tweaks FSCache','Disabled');
 
     if Data='Enabled' then begin
-        RdbPerfTweaks[GP_FSCache].Checked:=True;
+        RdbExtraOptions[GP_FSCache].Checked:=True;
     end;
 
 
@@ -1421,15 +1421,15 @@ begin
     end;
 
     {
-        Configure performance tweaks
+        Configure extra options
     }
 
-    if RdbPerfTweaks[GP_FSCache].checked then begin
+    if RdbExtraOptions[GP_FSCache].checked then begin
         Cmd:='core.fscache true';
 
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config -f config ' + Cmd,
                     ProgramData + '\Git', SW_HIDE, ewWaitUntilTerminated, i) then
-            LogError('Unable to enable the experimental performance tweak: ' + Cmd);
+            LogError('Unable to enable the extra option: ' + Cmd);
     end;
 
     {
@@ -1613,9 +1613,9 @@ begin
     end;
     RecordChoice(PreviousDataKey,'Bash Terminal Option',Data);
 
-    // Performance tweaks options.
+    // Extra options.
     Data:='Disabled';
-    if RdbPerfTweaks[GP_FSCache].Checked then begin
+    if RdbExtraOptions[GP_FSCache].Checked then begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Performance Tweaks FSCache',Data);
