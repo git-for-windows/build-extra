@@ -40,6 +40,7 @@ pacman -S --noconfirm $required >&2 ||
 die "Could not install required packages: $required"
 
 pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
+	mingw-w64-$ARCH-git-credential-manager \
 	git-extra ncurses mintty vim openssh winpty \
 	sed awk less grep gnupg tar findutils coreutils diffutils patch \
 	dos2unix which subversion mingw-w64-$ARCH-tk \

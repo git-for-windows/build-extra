@@ -1,0 +1,27 @@
+# Maintainer: Johannes Schindelin/J Wyman
+
+_realname="git-credential-manager"
+pkgbase="mingw-w64-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=1.2.0
+pkgrel=1
+pkgdesc="Credential Manager for Git for Windows"
+arch=('any')
+project_url="https://github.com/Microsoft/Git-Credential-Manager-for-Windows"
+zip_url="${project_url}/releases/download/v${pkgver}/gcmw-v${pkgver}.zip"
+license=('MIT')
+groups=('VCS')
+
+source=("${zip_url}")
+
+sha256sums=('6350da5a701a82e444af9f6a3db761c11d4d8656680fc7962899a831a1ed8c52')
+
+package() {
+  builddir=build-${MINGW_CHOST}
+  prefix="$pkgdir/${MINGW_PREFIX}"
+  install -d -m755 "${prefix}"/libexec/git-core
+  install -m755 $srcdir/*.{dll,exe} "${prefix}"/libexec/git-core
+  install -d -m755 "${prefix}"/doc/git-credential-manager
+  install -m644 $srcdir/{README.md,LICENSE.txt} \
+    "${prefix}"/doc/git-credential-manager
+}
