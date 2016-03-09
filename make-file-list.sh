@@ -30,7 +30,8 @@ pacman_list () {
 # Packages that have been added after Git SDK 1.0.0 was released...
 required=
 for req in mingw-w64-$ARCH-connect git-flow unzip docx2txt \
-	mingw-w64-$ARCH-antiword mingw-w64-$ARCH-xpdf
+	mingw-w64-$ARCH-antiword mingw-w64-$ARCH-xpdf \
+	mingw-w64-$ARCH-git-credential-manager
 do
 	test -d /var/lib/pacman/local/$req-[0-9]* ||
 	required="$required $req"
