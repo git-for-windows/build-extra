@@ -152,6 +152,15 @@ set_package () {
 		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man"
 		path=/usr/src/MINGW-packages/$package
 		;;
+	mingw-w64-git-credential-manager)
+		type=MINGW
+		path=/usr/src/build-extra/mingw-w64-git-credential-manager
+		;;
+	gcm|credential-manager|git-credential-manager)
+		package=mingw-w64-git-credential-manager
+		type=MINGW
+		path=/usr/src/build-extra/mingw-w64-git-credential-manager
+		;;
 	msys2-runtime)
 		type=MSYS
 		extra_packages="msys2-runtime-devel"
