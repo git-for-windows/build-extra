@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Git for Windows [now ships with](https://github.com/git-for-windows/git/issues/466) the [Git Credential Manager for Windows](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/).
+* Comes with [Git v2.7.3](http://article.gmane.org/gmane.linux.kernel/2174435).
 
 ### Bug Fixes
 
