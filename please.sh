@@ -430,10 +430,6 @@ tag_git () { #
 	(cd "$git_src_dir" &&
 	 git tag -m "$tag_message" -a "$nextver" git-for-windows/master) ||
 	die "Could not tag %s in %s\n" "$nextver" "$git_src_dir"
-
-	(cd "$git_src_dir" &&
-	 git push git-for-windows "$nextver") ||
-	die "Could not push tag %s in %s\n" "$nextver" "$git_src_dir"
 }
 
 test_git () { # <bitness>
@@ -862,6 +858,12 @@ publish () { #
 		"$HOME"/Git-"$ver"-64-bit.tar.bz2 \
 		"$HOME"/Git-"$ver"-32-bit.tar.bz2 ||
 	die "Could not upload files\n"
+
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git" &&
+	nextver=v"$version" &&
+	(cd "$git_src_dir" &&
+	 git push git-for-windows "$nextver") ||
+	die "Could not push tag %s in %s\n" "$nextver" "$git_src_dir"
 
 	url=https://api.github.com/repos/git-for-windows/git/releases
 	id="$(curl --netrc -s $url |
