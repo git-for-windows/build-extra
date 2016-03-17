@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.7.3 (March 15th 2016)
 
+### New Features
+
+* Comes with [Git 2.7.4](http://article.gmane.org/gmane.linux.kernel/2179363).
+
 ### Bug Fixes
 
 * The Git Credential Manager hyperlink in the installer [is no longer blurred](https://github.com/git-for-windows/build-extra/commit/28bb2a330323ba1c69f278cafa81e3e4fd3bf71c).
