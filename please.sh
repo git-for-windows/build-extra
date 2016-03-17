@@ -201,7 +201,7 @@ require_clean_worktree () {
 	git update-index -q --ignore-submodules --refresh &&
 	git diff-files --quiet --ignore-submodules &&
 	git diff-index --cached --quiet --ignore-submodules HEAD ||
-	die "%s not up-to-date" "$sdk/$path"
+	die "%s not up-to-date\n" "$sdk/$path"
 }
 
 ff_master () {
