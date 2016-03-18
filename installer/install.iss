@@ -572,6 +572,16 @@ begin
   ShellExec('','https://github.com/Microsoft/Git-Credential-Manager-for-Windows','','',SW_SHOW,ewNoWait,ExitStatus);
 end;
 
+function GetTextWidth(Text:String;Font:TFont):Integer;
+var
+    DummyBitmap:TBitmap;
+begin
+    DummyBitmap:=TBitmap.Create();
+    DummyBitmap.Canvas.Font.Assign(Font);
+    Result:=DummyBitmap.Canvas.TextWidth(Text);
+    DummyBitmap.Free();
+end;
+
 procedure InitializeWizard;
 var
     PrevPageID:Integer;
@@ -1039,7 +1049,7 @@ begin
     with LblGCM do begin
         Parent:=ExtraOptionsPage.Surface;
         Caption:=
-            'The                                  for Windows provides secure Git credential storage'+#13+'for Windows, most notably multi-factor authentication support for Visual Studio'+#13+'Team Services and GitHub. (requires .NET framework v4.5.1 or or later)';
+            'The Git Credential Manager for Windows provides secure Git credential storage'+#13+'for Windows, most notably multi-factor authentication support for Visual Studio'+#13+'Team Services and GitHub. (requires .NET framework v4.5.1 or or later)';
         Left:=ScaleX(28);
         Top:=ScaleY(104);
         Width:=ScaleX(405);
@@ -1049,7 +1059,7 @@ begin
     with LblGCMLink do begin
         Parent:=ExtraOptionsPage.Surface;
         Caption:='Git Credential Manager';
-        Left:=ScaleX(50);
+        Left:=GetTextWidth('The ',LblGCM.Font)+ScaleX(28);
         Top:=ScaleY(104);
         Width:=ScaleX(405);
         Height:=ScaleY(13);
