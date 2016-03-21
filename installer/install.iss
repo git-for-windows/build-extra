@@ -95,6 +95,9 @@ Name: assoc; Description: Associate .git* configuration files with the default t
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows
 
+[Run]
+Filename: {app}\git-bash.exe; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent
+
 [Files]
 ; Install files that might be in use during setup under a different name.
 #include "file-list.iss"
