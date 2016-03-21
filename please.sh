@@ -738,6 +738,27 @@ finalize () { # <what, e.g. release-notes>
 	die "Could not update 32-bit SDK's release notes\n"
 }
 
+sign_files () {
+	if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
+		config alias.signtool)"
+	then
+		printf "\n%s\n\n%s\n\n\t%s %s\n\n%s\n\n\t%s\n" \
+			"WARNING: No signing performed!" \
+			"To fix this, set alias.signtool to something like" \
+			"!'c:/PROGRA~1/MICROS~1/Windows/v7.1/Bin/signtool.exe" \
+			"sign //v //f mycert.p12 //p mypassword'" \
+			"The Windows Platform SDK contains the signtool.exe:" \
+			http://go.microsoft.com/fwlink/p/?linkid=84091 >&2
+	else
+		for file in "$@"
+		do
+			git --git-dir="$sdk64/usr/src/build-extra/.git" \
+				signtool "$file" ||
+			die "Could not sign %s\n" "$file"
+		done
+	fi
+}
+
 release () { #
 	up_to_date usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
@@ -763,25 +784,8 @@ release () { #
 		done
 	done
 
-	if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
-		config alias.signtool)"
-	then
-		printf "\n%s\n\n%s\n\n\t%s %s\n\n%s\n\n\t%s\n" \
-			"WARNING: No signing performed!" \
-			"To fix this, set alias.signtool to something like" \
-			"!'c:/PROGRA~1/MICROS~1/Windows/v7.1/Bin/signtool.exe" \
-			"sign //v //f mycert.p12 //p mypassword'" \
-			"The Windows Platform SDK contains the signtool.exe:" \
-			http://go.microsoft.com/fwlink/p/?linkid=84091 >&2
-	else
-		for file in \
-			"$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
-			"$HOME"/PortableGit-"$ver"-32-bit.7z.exe
-		do
-			git --git-dir="$sdk64/usr/src/build-extra/.git" \
-				signtool "$file"
-		done
-	fi
+	sign_files "$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
+		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe
 }
 
 virus_check () { #
@@ -913,6 +917,58 @@ publish () { #
 		"$(git var GIT_COMMITTER_IDENT | sed -e 's/ .*//')" \
 		> "$HOME/announce-$ver"
 	echo "Announcement saved as ~/announcement-$ver" >&2
+}
+
+release_sdk () { # <version>
+	version="$1"
+	tag=git-sdk-"$version"
+
+	up_to_date usr/src/build-extra ||
+	die "build-extra is not up-to-date\n"
+
+	! git rev-parse --git-dir="$sdk64"/usr/src/build-extra \
+		--verify "$tag" >/dev/null 2>&1 ||
+	die "Tag %s already exists\n" "$tag"
+
+	for sdk in "$sdk32" "$sdk64"
+	do
+		"$sdk"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+			'cd /usr/src/build-extra/sdk-installer &&
+			 ./release.sh '"$version" ||
+		die "%s: could not build\n" "$sdk/$path"
+	done
+
+	sign_files "$HOME"/git-sdk-installer-"$version"-64.7z.exe \
+		"$HOME"/git-sdk-installer-"$version"-32.7z.exe
+
+	git  --git-dir="$sdk64"/usr/src/build-extra/.git \
+		tag -a -m "Git for Windows SDK $version" "$tag" ||
+	die "Could not tag %s\n" "$tag"
+}
+
+publish_sdk () { #
+	up_to_date usr/src/build-extra ||
+	die "build-extra is not up-to-date\n"
+
+	tag="$(git --git-dir="$sdk64"/usr/src/build-extra/.git for-each-ref \
+		--format='%(refname:short)' --sort=-taggerdate \
+		--count=1 'refs/tags/git-sdk-*'	)"
+	version="${tag#git-sdk-}"
+
+	url=https://api.github.com/repos/git-for-windows/build-extra/releases
+	id="$(curl --netrc -s $url |
+		sed -n '/"id":/{N;/"tag_name": *"'"$tag"'"/{
+			s/.*"id": *\([0-9]*\).*/\1/p;q}}')"
+	test -z "$id" ||
+	die "Release %s exists already as ID %s\n" "$tag" "$id"
+
+	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
+		--repo=build-extra "$tag" \
+		"$HOME"/git-sdk-installer-"$version"-64.7z.exe \
+		"$HOME"/git-sdk-installer-"$version"-32.7z.exe ||
+	die "Could not upload files\n"
+
+	git --git-dir="$sdk64"/usr/src/build-extra/.git push origin "$tag"
 }
 
 test $# -gt 0 &&
