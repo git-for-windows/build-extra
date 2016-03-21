@@ -738,6 +738,27 @@ finalize () { # <what, e.g. release-notes>
 	die "Could not update 32-bit SDK's release notes\n"
 }
 
+sign_files () {
+	if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
+		config alias.signtool)"
+	then
+		printf "\n%s\n\n%s\n\n\t%s %s\n\n%s\n\n\t%s\n" \
+			"WARNING: No signing performed!" \
+			"To fix this, set alias.signtool to something like" \
+			"!'c:/PROGRA~1/MICROS~1/Windows/v7.1/Bin/signtool.exe" \
+			"sign //v //f mycert.p12 //p mypassword'" \
+			"The Windows Platform SDK contains the signtool.exe:" \
+			http://go.microsoft.com/fwlink/p/?linkid=84091 >&2
+	else
+		for file in "$@"
+		do
+			git --git-dir="$sdk64/usr/src/build-extra/.git" \
+				signtool "$file" ||
+			die "Could not sign %s\n" "$file"
+		done
+	fi
+}
+
 release () { #
 	up_to_date usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
@@ -763,25 +784,8 @@ release () { #
 		done
 	done
 
-	if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
-		config alias.signtool)"
-	then
-		printf "\n%s\n\n%s\n\n\t%s %s\n\n%s\n\n\t%s\n" \
-			"WARNING: No signing performed!" \
-			"To fix this, set alias.signtool to something like" \
-			"!'c:/PROGRA~1/MICROS~1/Windows/v7.1/Bin/signtool.exe" \
-			"sign //v //f mycert.p12 //p mypassword'" \
-			"The Windows Platform SDK contains the signtool.exe:" \
-			http://go.microsoft.com/fwlink/p/?linkid=84091 >&2
-	else
-		for file in \
-			"$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
-			"$HOME"/PortableGit-"$ver"-32-bit.7z.exe
-		do
-			git --git-dir="$sdk64/usr/src/build-extra/.git" \
-				signtool "$file"
-		done
-	fi
+	sign_files "$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
+		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe
 }
 
 virus_check () { #
