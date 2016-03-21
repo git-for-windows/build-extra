@@ -65,6 +65,9 @@ do
 	-f|--force)
 		force=t
 		;;
+	--skip-files)
+		skip_files=t
+		;;
 	--debug-wizard-page=*)
 		test_installer=t
 		inno_defines="$(printf "%s\n%s\n%s" "$inno_defines" \

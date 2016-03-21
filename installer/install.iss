@@ -1407,6 +1407,8 @@ begin
 
     // Load the built-ins from a text file.
     FileName:=AppDir+'\{#MINGW_BITNESS}\{#APP_BUILTINS}';
+    if not FileExists(FileName) then
+        Exit; // testing...
     if LoadStringsFromFile(FileName,BuiltIns) then begin
         Count:=GetArrayLength(BuiltIns)-1;
 
