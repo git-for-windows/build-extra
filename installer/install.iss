@@ -338,6 +338,7 @@ var
     ProcessesPage:TWizardPage;
     ProcessesListBox:TListBox;
     ProcessesRefresh,ContinueButton:TButton;
+    PageIDBeforeInstall:Integer;
 #ifdef DEBUG_WIZARD_PAGE
     DebugWizardPage:Integer;
 #endif
@@ -1112,6 +1113,8 @@ begin
     // This button is only used by the uninstaller.
     ContinueButton:=NIL;
 
+    PageIDBeforeInstall:=ExtraOptionsPage.ID;
+
 #ifdef DEBUG_WIZARD_PAGE
     DebugWizardPage:={#DEBUG_WIZARD_PAGE}.ID;
 #endif
@@ -1147,9 +1150,14 @@ begin
             // This will be checked later again when the user clicks "Next".
             WizardForm.DirEdit.Text:=ExpandConstant('{userpf}\{#APP_NAME}');
         end;
+    end else if CurPageID=PageIDBeforeInstall then begin
+        RefreshProcessList(NIL);
+        if GetArrayLength(Processes)=0 then
+            WizardForm.NextButton.Caption:=SetupMessage(msgButtonInstall);
     end else if (ProcessesPage<>NIL) and (CurPageID=ProcessesPage.ID) then begin
         // Show the "Refresh" button only on the processes page.
         ProcessesRefresh.Show;
+        WizardForm.NextButton.Caption:=SetupMessage(msgButtonInstall);
     end else begin
         ProcessesRefresh.Hide;
     end;
