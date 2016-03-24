@@ -132,6 +132,11 @@ killall () { # <bitness>
 	"$sdk/git-cmd.exe" --command=usr\\bin\\kill.exe $pids
 }
 
+mount_sdks () { #
+	test -d /sdk32 || mount "$sdk32" /sdk32
+	test -d /sdk64 || mount "$sdk64" /sdk64
+}
+
 # set_package <package>
 set_package () {
 	package="$1"
