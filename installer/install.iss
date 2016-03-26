@@ -73,7 +73,7 @@ VersionInfoVersion={#APP_VERSION}
 #endif
 
 ; Cosmetic
-SetupIconFile={#SourcePath}\git.ico
+SetupIconFile={#SourcePath}\..\git.ico
 WizardImageBackColor=clWhite
 WizardImageStretch=no
 WizardImageFile={#SourcePath}\git.bmp

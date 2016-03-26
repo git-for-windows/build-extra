@@ -184,6 +184,6 @@ wix/light.exe \
 	obj/GitProduct.wixobj \
 	obj/GitComponents.wixobj \
 	-o $TARGET -ext WixUtilExtension \
-	-b / -b ../installer &&
+	-b / -b ../ &&
 echo "Success! You will find the new .msi at \"$TARGET\"." ||
 die "Could not generate $TARGET"
