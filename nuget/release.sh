@@ -51,7 +51,7 @@ esac
 
 # Generate release notes for NuGet
 RELNOTES="$BUILDEXTRA"/nuget/ReleaseNotes.html
-RELNOTESMD="$BUILDEXTRA"/installer/ReleaseNotes.md
+RELNOTESMD="$BUILDEXTRA"/ReleaseNotes.md
 test -f "$RELNOTES" &&
 test "$RELNOTES" -nt "$RELNOTESMD" || {
 	# Install markdown

@@ -16,7 +16,7 @@
   </metadata>
   <files>
     <file src="$buildextra$\nuget\ReleaseNotes.html" />
-    <file src="$buildextra$\installer\usr\share\git\ReleaseNotes.css" target="content" />
+    <file src="$buildextra$\ReleaseNotes.css" target="content" />
     <file src="$buildextra$\nuget\Install.ps1" target="tools" />
     <file src="$buildextra$\post-install.bat" target="tools" />
     <file src="$buildextra$\nuget\package-versions.txt" target="tools\etc" />

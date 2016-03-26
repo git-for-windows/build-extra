@@ -8,7 +8,7 @@ die () {
 render_release_notes () {
 	# Generate the ReleaseNotes.html file
 	test -f ReleaseNotes.html &&
-	test ReleaseNotes.html -nt ReleaseNotes.md &&
+	test ReleaseNotes.html -nt ../ReleaseNotes.md &&
 	test ReleaseNotes.html -nt release.sh || {
 		test -x /usr/bin/markdown ||
 		export PATH="$PATH:$(readlink -f "$PWD"/..)/../../bin"
@@ -45,7 +45,7 @@ render_release_notes () {
 			'<body class="details">' \
 			"$links" \
 			'<div class="content">'
-		 markdown ReleaseNotes.md ||
+		 markdown ../ReleaseNotes.md ||
 		 die "Could not generate ReleaseNotes.html"
 		 printf '</div>\n</body>\n</html>\n') >ReleaseNotes.html
 	}
@@ -132,7 +132,7 @@ fi
 
 printf "; List of files\n%s\n%s\n%s\n%s\n%s\n" \
 	"Source: \"{#SourcePath}\\package-versions.txt\"; DestDir: {app}\\etc; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
-	"Source: \"{#SourcePath}\\usr\\share\\git\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"{#SourcePath}\\..\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"cmd\\git.exe\"; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: bash.exe; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: sh.exe; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
