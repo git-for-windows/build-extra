@@ -697,7 +697,7 @@ begin
     end;
 
     // Restore the setting chosen during a previous install.
-    Data:=ReplayChoice('Path Option','BashOnly');
+    Data:=ReplayChoice('Path Option','Cmd');
 
     if Data='BashOnly' then begin
         RdbPath[GP_BashOnly].Checked:=True;
