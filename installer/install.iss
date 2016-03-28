@@ -1028,7 +1028,7 @@ begin
     end;
 
     // Restore the settings chosen during a previous install.
-    Data:=ReplayChoice('Performance Tweaks FSCache','Disabled');
+    Data:=ReplayChoice('Performance Tweaks FSCache','Enabled');
 
     if Data='Enabled' then begin
         RdbExtraOptions[GP_FSCache].Checked:=True;
