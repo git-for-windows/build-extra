@@ -96,7 +96,7 @@ Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: def
 Name: consolefont; Description: Use a TrueType font in all console windows
 
 [Run]
-Filename: {app}\git-bash.exe; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent
+Filename: {app}\git-bash.exe; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent runasoriginaluser
 Filename: {app}\ReleaseNotes.html; Description: View Release Notes; Flags: shellexec skipifdoesntexist postinstall skipifsilent
 
 [Files]
