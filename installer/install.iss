@@ -95,10 +95,14 @@ Name: assoc; Description: Associate .git* configuration files with the default t
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows
 
+[Run]
+Filename: {app}\git-bash.exe; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked
+Filename: {app}\ReleaseNotes.html; Description: View Release Notes; Flags: shellexec skipifdoesntexist postinstall skipifsilent
+
 [Files]
 ; Install files that might be in use during setup under a different name.
 #include "file-list.iss"
-Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
+Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore; Check: ParamIsSet('VSNOTICE')
 Source: {#SourcePath}\edit-git-bash.dll; Flags: dontcopy
