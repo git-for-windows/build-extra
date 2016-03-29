@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The previous workaround for the blurred link to the Git Credential Manager [was fixed](https://github.com/git-for-windows/build-extra/commit/58d978cb84096bcc887170cbfcf44af022848ae3) so that the link is neither blurry nor overlapping.
+* The installer [now changes the label of the `Next` button to `Install`](https://github.com/git-for-windows/build-extra/pull/104) on the last wizard page before installing.
 
 ## Changes since Git for Windows v2.7.3 (March 15th 2016)
 
