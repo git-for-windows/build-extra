@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 
 * The FSCache feature (which was labeled experimental for quite some time) [is now enabled by default](https://github.com/git-for-windows/build-extra/pull/101).
 * Git is now [added to the `PATH` by default](https://github.com/git-for-windows/build-extra/pull/102) (previously, the default was for Git to be available only from Git Bash/CMD).
+* Comes with [Git v2.8.0](http://article.gmane.org/gmane.linux.kernel/2185094).
 
 ### Bug Fixes
 
