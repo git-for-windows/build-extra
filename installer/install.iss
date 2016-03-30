@@ -1024,7 +1024,7 @@ begin
         Caption:=
             'File system data will be read in bulk and cached in memory for certain' + #13 +
             'operations ("core.fscache" is set to "true"). This provides a significant' + #13 +
-            'performance boost (experimental).';
+            'performance boost.';
         Left:=ScaleX(28);
         Top:=ScaleY(32);
         Width:=ScaleX(405);
