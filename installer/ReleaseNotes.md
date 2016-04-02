@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Git's default editor (`vim`) is [no longer freezing](https://github.com/git-for-windows/msys2-runtime/commit/1ca92fa2ef89bf9d61d3911a499d8187db18427a) in CMD windows.
+* GIT_SSH (and other executable paths that Git wants to spawn) [can now contain spaces](https://github.com/git-for-windows/git/issues/692).
 
 ## Changes since Git for Windows v2.7.4 (March 18th 2016)
 
