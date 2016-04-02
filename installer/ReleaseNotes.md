@@ -32,6 +32,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
 
+## Changes since Git for Windows v2.8.0 (March 29th 2016)
+
+### Bug Fixes
+
+* Git's default editor (`vim`) is [no longer freezing](https://github.com/git-for-windows/msys2-runtime/commit/1ca92fa2ef89bf9d61d3911a499d8187db18427a) in CMD windows.
+
 ## Changes since Git for Windows v2.7.4 (March 18th 2016)
 
 ### New Features
