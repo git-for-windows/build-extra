@@ -626,7 +626,6 @@ begin
         Height:=ScaleY(17);
         Font.Style:=[fsBold];
         TabOrder:=0;
-        Checked:=True;
     end;
     LblGitBash:=TLabel.Create(PathPage);
     with LblGitBash do begin
@@ -651,6 +650,7 @@ begin
         Height:=ScaleY(17);
         Font.Style:=[fsBold];
         TabOrder:=1;
+        Checked:=True;
     end;
     LblGitCmd:=TLabel.Create(PathPage);
     with LblGitCmd do begin
@@ -698,17 +698,6 @@ begin
         Height:=ScaleY(26);
         Font.Color:=255;
         Font.Style:=[fsBold];
-    end;
-
-    // Restore the setting chosen during a previous install.
-    Data:=ReplayChoice('Path Option','Cmd');
-
-    if Data='BashOnly' then begin
-        RdbPath[GP_BashOnly].Checked:=True;
-    end else if Data='Cmd' then begin
-        RdbPath[GP_Cmd].Checked:=True;
-    end else if Data='CmdTools' then begin
-        RdbPath[GP_CmdTools].Checked:=True;
     end;
 
     (*
