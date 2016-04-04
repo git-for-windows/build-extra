@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_workspace_file>
+	<Workspace title="InnoDownloadPlugin">
+		<Project filename="idp/idp.cbp" />
+		<Project filename="tests/dlltest/dlltest.cbp" />
+	</Workspace>
+</CodeBlocks_workspace_file>

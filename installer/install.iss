@@ -80,6 +80,8 @@ WizardImageFile={#SourcePath}\git.bmp
 WizardSmallImageFile={#SourcePath}\gitsmall.bmp
 MinVersion=0,5.01sp3
 
+#include <Inno Download Plugin/idp.iss>
+
 [Types]
 ; Define a custom type to avoid getting the three default types.
 Name: default; Description: Default installation; Flags: iscustom
@@ -94,10 +96,12 @@ Name: ext\guihere; Description: Git GUI Here; Types: default
 Name: assoc; Description: Associate .git* configuration files with the default text editor; Types: default
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows
+Name: src; Description: Download arcanist; Types: default
 
 [Run]
 Filename: {app}\git-bash.exe; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked
 Filename: {app}\ReleaseNotes.html; Description: View Release Notes; Flags: shellexec skipifdoesntexist postinstall skipifsilent
+Filename: {tmp}\Arcanist\setup.exe; Description: Install Arcanist for phabricator; Parameters: /q /norestart; Check: FrameworkIsNotInstalled
 
 [Files]
 ; Install files that might be in use during setup under a different name.
@@ -106,6 +110,7 @@ Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: replacesameversi
 Source: {#SourcePath}\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore; Check: ParamIsSet('VSNOTICE')
 Source: {#SourcePath}\edit-git-bash.dll; Flags: dontcopy
+Source: "{tmp}\Arcanist\setup.exe"; DestDir: "{app}\arcanist"; Components: src; Flags: external; Flags: deleteafterinstall; AfterInstall: InstallFramework
 
 [Dirs]
 Name: "{app}\tmp"
@@ -189,6 +194,7 @@ Root: HKCU; Subkey: Software\Classes\sh_auto_file\DefaultIcon; ValueType: string
 Root: HKCU; Subkey: Software\Classes\sh_auto_file\ShellEx\DropHandler; ValueType: string; ValueData: {#DROP_HANDLER_GUID}; Flags: uninsdeletekeyifempty uninsdeletevalue; Check: not IsAdminLoggedOn; Components: assoc_sh
 
 [UninstallDelete]
+Type: files; Name: {app}\arcanist
 ; Delete the built-ins.
 Type: files; Name: {app}\{#MINGW_BITNESS}\bin\git-*.exe
 Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\git-*.exe
@@ -238,6 +244,51 @@ Type: dirifempty; Name: {app}\etc
 #include "environment.inc.iss"
 #include "putty.inc.iss"
 #include "modules.inc.iss"
+
+procedure InstallFramework;
+var
+  StatusText: string;
+var
+  ResultCode: Integer;
+begin
+  if IsComponentSelected('src') then
+    begin
+      StatusText := WizardForm.StatusLabel.Caption;
+      WizardForm.StatusLabel.Caption := 'Installing Arcanist...';
+      WizardForm.ProgressGauge.Style := npbstMarquee;
+      try
+        begin;
+          if not Exec(ExpandConstant('{tmp}\Arcanist\setup.exe'), '/q /norestart', '', SW_SHOW, ewWaitUntilTerminated, ResultCode) then
+          begin
+            // you can interact with the user that the installation failed
+            MsgBox('Arcanist installation failed with code: ' + IntToStr(ResultCode) + '.',
+              mbError, MB_OK);
+          end;
+        end;
+      finally
+        WizardForm.StatusLabel.Caption := StatusText;
+        WizardForm.ProgressGauge.Style := npbstNormal;
+      end;
+    end;
+end;
+
+procedure InitializeWizard;
+begin
+    idpDownloadAfter(wpReady);
+end;
+
+procedure CurPageChanged(CurPageID: Integer);
+begin
+    if CurPageID = wpReady then
+    begin
+        // User can navigate to 'Ready to install' page several times, so we 
+        // need to clear file list to ensure that only needed files are added.
+        idpClearFiles;
+
+        if IsComponentSelected('src') then
+            idpAddFile('https://github.com/paladox/Arcanist-installer-for-windows/releases/download/1.1.0/setup.exe', ExpandConstant('{tmp}\Arcanist\setup.exe'));
+  end;
+end;
 
 procedure LogError(Msg:String);
 begin

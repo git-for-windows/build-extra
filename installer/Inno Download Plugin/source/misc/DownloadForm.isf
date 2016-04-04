@@ -1,0 +1,159 @@
+object WizardForm: TISCustomForm
+  Left = 0
+  Top = 0
+  Width = 413
+  Height = 237
+  DesignPanel = frmISWizardPage.elDesignPanel
+  CodeEditorIndent = 0
+  CodeEditorCopyMode = 0
+  object TotalProgressBar: TNewProgressBar
+    Left = 0
+    Top = 16
+    Width = 410
+    Height = 20
+    Min = 0
+    Max = 100
+  end
+  object TotalProgressLabel: TNewStaticText
+    Left = 0
+    Top = 0
+    Width = 200
+    Height = 14
+    AutoSize = False
+    Caption = 'Total progress'
+    TabOrder = 1
+  end
+  object CurrentFileLabel: TNewStaticText
+    Left = 0
+    Top = 48
+    Width = 200
+    Height = 14
+    AutoSize = False
+    Caption = 'Current file'
+    TabOrder = 2
+  end
+  object FileProgressBar: TNewProgressBar
+    Left = 0
+    Top = 64
+    Width = 410
+    Height = 20
+    Min = 0
+    Max = 100
+  end
+  object TotalDownloaded: TNewStaticText
+    Left = 290
+    Top = 0
+    Width = 120
+    Height = 14
+    AutoSize = False
+    Caption = '1000 of 1000 KB'
+    TabOrder = 4
+  end
+  object FileDownloaded: TNewStaticText
+    Left = 290
+    Top = 48
+    Width = 120
+    Height = 14
+    AutoSize = False
+    Caption = '1000 of 1000 KB'
+    TabOrder = 5
+  end
+  object FileNameLabel: TNewStaticText
+    Left = 0
+    Top = 100
+    Width = 116
+    Height = 14
+    AutoSize = False
+    Caption = 'File:'
+    TabOrder = 6
+  end
+  object SpeedLabel: TNewStaticText
+    Left = 0
+    Top = 116
+    Width = 116
+    Height = 14
+    AutoSize = False
+    Caption = 'Speed:'
+    TabOrder = 7
+  end
+  object StatusLabel: TNewStaticText
+    Left = 0
+    Top = 132
+    Width = 116
+    Height = 14
+    AutoSize = False
+    Caption = 'Status:'
+    TabOrder = 8
+  end
+  object ElapsedTimeLabel: TNewStaticText
+    Left = 0
+    Top = 148
+    Width = 116
+    Height = 14
+    AutoSize = False
+    Caption = 'Elapsed time:'
+    TabOrder = 9
+  end
+  object RemainingTimeLabel: TNewStaticText
+    Left = 0
+    Top = 164
+    Width = 116
+    Height = 14
+    AutoSize = False
+    Caption = 'Remaining time:'
+    TabOrder = 10
+  end
+  object FileName: TNewStaticText
+    Left = 120
+    Top = 100
+    Width = 280
+    Height = 14
+    AutoSize = False
+    Caption = 'FileName'
+    TabOrder = 11
+  end
+  object Speed: TNewStaticText
+    Left = 120
+    Top = 116
+    Width = 280
+    Height = 14
+    AutoSize = False
+    Caption = 'Speed'
+    TabOrder = 12
+  end
+  object Status: TNewStaticText
+    Left = 120
+    Top = 132
+    Width = 280
+    Height = 14
+    AutoSize = False
+    Caption = 'Status'
+    TabOrder = 13
+  end
+  object ElapsedTime: TNewStaticText
+    Left = 120
+    Top = 148
+    Width = 280
+    Height = 14
+    AutoSize = False
+    Caption = 'ElapsedTime'
+    TabOrder = 14
+  end
+  object RemainingTime: TNewStaticText
+    Left = 120
+    Top = 164
+    Width = 280
+    Height = 14
+    AutoSize = False
+    Caption = 'RemainingTime'
+    TabOrder = 15
+  end
+  object DetailsButton: TButton
+    Left = 336
+    Top = 184
+    Width = 75
+    Height = 23
+    Caption = 'Hide'
+    TabOrder = 16
+  end
+end
