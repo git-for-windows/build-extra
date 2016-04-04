@@ -36,6 +36,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.8.1](http://article.gmane.org/gmane.linux.kernel/2189878).
 * The Git for Windows project updated its contributor guidelines to the [Contributor Covenant 1.4](https://github.com/git-for-windows/git/pull/661).
 
 ### Bug Fixes
