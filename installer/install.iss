@@ -1016,7 +1016,7 @@ begin
         Height:=ScaleY(17);
         Font.Style:=[fsBold];
         TabOrder:=0;
-        Checked:=False;
+        Checked:=True;
     end;
     LblFSCache:=TLabel.Create(ExtraOptionsPage);
     with LblFSCache do begin
@@ -1029,13 +1029,6 @@ begin
         Top:=ScaleY(32);
         Width:=ScaleX(405);
         Height:=ScaleY(39);
-    end;
-
-    // Restore the settings chosen during a previous install.
-    Data:=ReplayChoice('Performance Tweaks FSCache','Enabled');
-
-    if Data='Enabled' then begin
-        RdbExtraOptions[GP_FSCache].Checked:=True;
     end;
 
     // 2nd option
