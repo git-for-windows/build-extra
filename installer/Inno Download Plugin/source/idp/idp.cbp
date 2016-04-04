@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" standalone="yes" ?>
+<CodeBlocks_project_file>
+	<FileVersion major="1" minor="6" />
+	<Project>
+		<Option title="idp" />
+		<Option pch_mode="2" />
+		<Option compiler="gcc" />
+		<Build>
+			<Target title="Debug">
+				<Option output="../unicode debug/idp" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-D_DEBUG" />
+					<Add option="-D_UNICODE" />
+					<Add option="-DUNICODE" />
+				</Compiler>
+			</Target>
+			<Target title="Release">
+				<Option output="../unicode/idp" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-O2" />
+					<Add option="-D_UNICODE" />
+					<Add option="-DUNICODE" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+			</Target>
+			<Target title="Debug ANSI">
+				<Option output="../ansi debug/idp" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Debug ANSI/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-g" />
+					<Add option="-D_DEBUG" />
+				</Compiler>
+				<ExtraCommands>
+					<Add after='cmd /c copy &quot;..\ansi debug\idp.dll&quot; &quot;..\tests\dlltest\bin\Debug&quot;' />
+				</ExtraCommands>
+			</Target>
+			<Target title="Release ANSI">
+				<Option output="../ansi/idp" prefix_auto="1" extension_auto="1" />
+				<Option object_output="obj/Release ANSI/" />
+				<Option type="3" />
+				<Option compiler="gcc" />
+				<Option createStaticLib="1" />
+				<Compiler>
+					<Add option="-O2" />
+				</Compiler>
+				<Linker>
+					<Add option="-s" />
+				</Linker>
+				<ExtraCommands>
+					<Add after='cmd /c copy &quot;..\ansi\idp.dll&quot; &quot;..\tests\dlltest\bin\Release&quot;' />
+				</ExtraCommands>
+			</Target>
+		</Build>
+		<VirtualTargets>
+			<Add alias="All configurations" targets="Debug;Release;Debug ANSI;Release ANSI;" />
+		</VirtualTargets>
+		<Compiler>
+			<Add option="-D__USE_MINGW_ANSI_STDIO" />
+		</Compiler>
+		<Linker>
+			<Add option="-static-libgcc" />
+			<Add option="-static-libstdc++" />
+			<Add option="-static" />
+			<Add option="idp.def" />
+			<Add library="wininet" />
+			<Add library="gdi32" />
+		</Linker>
+		<Unit filename="downloader.cpp" />
+		<Unit filename="downloader.h" />
+		<Unit filename="errordialog.cpp" />
+		<Unit filename="errordialog.h" />
+		<Unit filename="file.cpp" />
+		<Unit filename="file.h" />
+		<Unit filename="ftpdir.cpp" />
+		<Unit filename="ftpdir.h" />
+		<Unit filename="idp.cpp" />
+		<Unit filename="idp.def" />
+		<Unit filename="idp.h" />
+		<Unit filename="idp.rc">
+			<Option compilerVar="WINDRES" />
+		</Unit>
+		<Unit filename="internetoptions.cpp" />
+		<Unit filename="internetoptions.h" />
+		<Unit filename="netfile.cpp" />
+		<Unit filename="netfile.h" />
+		<Unit filename="resource.h" />
+		<Unit filename="timer.cpp" />
+		<Unit filename="timer.h" />
+		<Unit filename="trace.cpp" />
+		<Unit filename="trace.h" />
+		<Unit filename="tstring.cpp" />
+		<Unit filename="tstring.h" />
+		<Unit filename="ui.cpp" />
+		<Unit filename="ui.h" />
+		<Unit filename="url.cpp" />
+		<Unit filename="url.h" />
+		<Extensions>
+			<code_completion />
+			<envvars />
+			<debugger />
+			<DoxyBlocks>
+				<comment_style block="0" line="0" />
+				<doxyfile_project />
+				<doxyfile_build />
+				<doxyfile_warnings />
+				<doxyfile_output />
+				<doxyfile_dot />
+				<general />
+			</DoxyBlocks>
+		</Extensions>
+	</Project>
+</CodeBlocks_project_file>
