@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * FSCache [is now enabled by default](https://github.com/git-for-windows/build-extra/commit/a1ae146) even when upgrading from previous Git for Windows versions.
+* We now add `git.exe` to the `PATH` [by default](https://github.com/git-for-windows/build-extra/commit/1e2e00e) even when upgrading from previous Git for Windows versions.
 
 ## Changes since Git for Windows v2.8.0 (March 29th 2016)
 
