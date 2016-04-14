@@ -1,0 +1,34 @@
+# Maintainer: Brendan Forster <brendan@github.com>
+
+_realname="git-lfs"
+pkgbase="mingw-w64-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=1.2.0
+pkgrel=1
+pkgdesc="An open source Git extension for versioning large files"
+install=git-lfs.install
+arch=('any')
+url="https://github.com/github/git-lfs"
+license=('MIT')
+groups=('VCS')
+
+case "$CARCH" in
+i686)
+  folder="git-lfs-windows-386-$pkgver"
+  md5sum=0cea336e4c9d43314ebc692dfbbd1fc3
+  ;;
+x86_64)
+  folder="git-lfs-windows-amd64-$pkgver"
+  md5sum=95296495a70a31dd952de15bf7102ead
+  ;;
+esac
+
+source=("https://github.com/github/git-lfs/releases/download/v$pkgver/$folder.zip")
+
+md5sums=("$md5sum")
+options=('!strip')
+
+package() {
+  install -d -m755 $pkgdir/$MINGW_PREFIX/bin
+  install -m755 $srcdir/$folder/git-lfs.exe $pkgdir/$MINGW_PREFIX/bin/git-lfs.exe
+}
