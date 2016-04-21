@@ -16,6 +16,9 @@
 /msi/obj/
 /msi/package-versions.txt
 /msi/wix40-binaries.zip
+/nuget/GitForWindows.nuspec
+/nuget/nuget.exe
+/nuget/package-versions.txt
 /portable/root/bin/
 /portable/root/cmd/
 /portable/root/etc/
