@@ -68,7 +68,10 @@ sed -e 's/\(.*\)\\\(.*\)/            <Component Directory="INSTALLFOLDER:\\\1\\"
             <\/Component>/' \
 	    -e 's/^\([^\\]*\)$/            <Component Directory="INSTALLFOLDER">\
                 <File Source="&" \/>\
-            <\/Component>/'
+            <\/Component>/' \
+	    -e 's/\(<File Source="git-bash.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git Bash" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="PersonalFolder" Advertise="yes" \/>/' \
+	    -e 's/\(<File Source="git-cmd.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git CMD" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="PersonalFolder" Advertise="yes" \/>/' \
+	    -e 's/\(<File Source="cmd\\git-gui.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git GUI" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="PersonalFolder" Advertise="yes" \/>/'
 
 cat <<EOF
         </ComponentGroup>
@@ -87,6 +90,6 @@ wix/light.exe \
 	obj/GitProduct.wixobj \
 	obj/GitComponents.wixobj \
 	-o $TARGET -ext WixUtilExtension \
-	-b / -b ../installer -sval &&
+	-b / -b ../installer &&
 echo "Success! You will find the new .msi at \"$TARGET\"." ||
 die "Could not generate $TARGET"
