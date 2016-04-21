@@ -63,9 +63,13 @@ BUILD_EXTRA_WINPATH="$(cd "$SCRIPT_PATH"/.. && pwd -W | tr / \\\\)"
 EOF
 echo "$LIST" |
 tr / \\\\ |
-sed 's/\(.*\)\\\(.*\)/            <Component Directory="INSTALLFOLDER:\\\1\\">\
+sed -e 's/\(.*\)\\\(.*\)/            <Component Directory="INSTALLFOLDER:\\\1\\">\
+                <File Source="&" \/>\
+            <\/Component>/' \
+	    -e 's/^\([^\\]*\)$/            <Component Directory="INSTALLFOLDER">\
                 <File Source="&" \/>\
             <\/Component>/'
+
 cat <<EOF
         </ComponentGroup>
     </Fragment>
