@@ -30,11 +30,9 @@ pacman_list () {
 # Packages that have been added after Git SDK 1.0.0 was released...
 required=
 for req in mingw-w64-$ARCH-connect git-flow unzip docx2txt \
-	mingw-w64-$ARCH-antiword mingw-w64-$ARCH-xpdf \
-	mingw-w64-$ARCH-git-credential-manager ssh-pageant
+	mingw-w64-$ARCH-antiword mingw-w64-$ARCH-xpdf
 do
 	test -d /var/lib/pacman/local/$req-[0-9]* ||
-	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
 	required="$required $req"
 done
 test -z "$required" ||
@@ -42,12 +40,10 @@ pacman -S --noconfirm $required >&2 ||
 die "Could not install required packages: $required"
 
 pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
-	mingw-w64-$ARCH-git-credential-manager \
 	git-extra ncurses mintty vim openssh winpty \
 	sed awk less grep gnupg tar findutils coreutils diffutils patch \
 	dos2unix which subversion mingw-w64-$ARCH-tk \
-	mingw-w64-$ARCH-connect git-flow docx2txt mingw-w64-$ARCH-antiword \
-	ssh-pageant "$@" |
+	mingw-w64-$ARCH-connect git-flow docx2txt mingw-w64-$ARCH-antiword "$@" |
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '/man/' -e '/pkgconfig/' -e '/emacs/' \
 	-e '^/usr/lib/python' -e '^/usr/lib/ruby' \

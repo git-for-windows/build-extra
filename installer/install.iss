@@ -95,14 +95,10 @@ Name: assoc; Description: Associate .git* configuration files with the default t
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows
 
-[Run]
-Filename: {app}\git-bash.exe; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked
-Filename: {app}\ReleaseNotes.html; Description: View Release Notes; Flags: shellexec skipifdoesntexist postinstall skipifsilent
-
 [Files]
 ; Install files that might be in use during setup under a different name.
 #include "file-list.iss"
-Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
+Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: isreadme replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore; Check: ParamIsSet('VSNOTICE')
 Source: {#SourcePath}\edit-git-bash.dll; Flags: dontcopy
@@ -301,9 +297,8 @@ const
     GB_MinTTY         = 1;
     GB_ConHost        = 2;
 
-    // Extra options
+    // Git performance tweaks options
     GP_FSCache        = 1;
-    GP_GCM            = 2;
 
     // BindImageEx API constants.
     BIND_NO_BOUND_IMPORTS  = $00000001;
@@ -332,9 +327,9 @@ var
     BashTerminalPage:TWizardPage;
     RdbBashTerminal:array[GB_MinTTY..GB_ConHost] of TRadioButton;
 
-    // Wizard page and variables for the extra options.
-    ExtraOptionsPage:TWizardPage;
-    RdbExtraOptions:array[GP_FSCache..GP_GCM] of TCheckBox;
+    // Wizard page and variables for the performance tweaks options.
+    PerfTweaksPage:TWizardPage;
+    RdbPerfTweaks:array[GP_FSCache..GP_FSCache] of TCheckBox;
 
     // Wizard page and variables for the processes page.
     SessionHandle:DWORD;
@@ -342,7 +337,6 @@ var
     ProcessesPage:TWizardPage;
     ProcessesListBox:TListBox;
     ProcessesRefresh,ContinueButton:TButton;
-    PageIDBeforeInstall:Integer;
 #ifdef DEBUG_WIZARD_PAGE
     DebugWizardPage:Integer;
 #endif
@@ -561,32 +555,6 @@ begin
         Result:=GetPreviousData(Key,Default);
 end;
 
-function DetectNetFxVersion:Cardinal;
-begin
-    // We are only interested in version v4.5.1 or later, therefore it
-    // is enough to only use the 4.5 method described in
-    // https://msdn.microsoft.com/en-us/library/hh925568
-    if not RegQueryDWordValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full','Release',Result) then
-        Result:=0;
-end;
-
-procedure OpenGCMHomepage(Sender:TObject);
-var
-  ExitStatus:Integer;
-begin
-  ShellExec('','https://github.com/Microsoft/Git-Credential-Manager-for-Windows','','',SW_SHOW,ewNoWait,ExitStatus);
-end;
-
-function GetTextWidth(Text:String;Font:TFont):Integer;
-var
-    DummyBitmap:TBitmap;
-begin
-    DummyBitmap:=TBitmap.Create();
-    DummyBitmap.Canvas.Font.Assign(Font);
-    Result:=DummyBitmap.Canvas.TextWidth(Text);
-    DummyBitmap.Free();
-end;
-
 procedure InitializeWizard;
 var
     PrevPageID:Integer;
@@ -595,7 +563,7 @@ var
     PuTTYSessions,EnvSSH:TArrayOfString;
     LblLFOnly,LblCRLFAlways,LblCRLFCommitAsIs:TLabel;
     LblMinTTY,LblConHost:TLabel;
-    LblFSCache,LblGCM,LblGCMLink:TLabel;
+    LblFSCache:TLabel;
     BtnPlink:TButton;
     Data:String;
 begin
@@ -626,6 +594,7 @@ begin
         Height:=ScaleY(17);
         Font.Style:=[fsBold];
         TabOrder:=0;
+        Checked:=True;
     end;
     LblGitBash:=TLabel.Create(PathPage);
     with LblGitBash do begin
@@ -650,7 +619,6 @@ begin
         Height:=ScaleY(17);
         Font.Style:=[fsBold];
         TabOrder:=1;
-        Checked:=True;
     end;
     LblGitCmd:=TLabel.Create(PathPage);
     with LblGitCmd do begin
@@ -698,6 +666,17 @@ begin
         Height:=ScaleY(26);
         Font.Color:=255;
         Font.Style:=[fsBold];
+    end;
+
+    // Restore the setting chosen during a previous install.
+    Data:=ReplayChoice('Path Option','BashOnly');
+
+    if Data='BashOnly' then begin
+        RdbPath[GP_BashOnly].Checked:=True;
+    end else if Data='Cmd' then begin
+        RdbPath[GP_Cmd].Checked:=True;
+    end else if Data='CmdTools' then begin
+        RdbPath[GP_CmdTools].Checked:=True;
     end;
 
     (*
@@ -984,20 +963,20 @@ begin
     end;
 
     (*
-     * Create a custom page for extra options.
+     * Create a custom page for experimental performance tweaks.
      *)
 
-    ExtraOptionsPage:=CreateCustomPage(
+    PerfTweaksPage:=CreateCustomPage(
         PrevPageID
-    ,   'Configuring extra options'
-    ,   'Which features would you like to enable?'
+    ,   'Configuring experimental performance tweaks'
+    ,   'Which experimental performance tweaks would you like to enable?'
     );
-    PrevPageID:=ExtraOptionsPage.ID;
+    PrevPageID:=PerfTweaksPage.ID;
 
     // 1st option
-    RdbExtraOptions[GP_FSCache]:=TCheckBox.Create(ExtraOptionsPage);
-    with RdbExtraOptions[GP_FSCache] do begin
-        Parent:=ExtraOptionsPage.Surface;
+    RdbPerfTweaks[GP_FSCache]:=TCheckBox.Create(PerfTweaksPage);
+    with RdbPerfTweaks[GP_FSCache] do begin
+        Parent:=PerfTweaksPage.Surface;
         Caption:='Enable file system caching';
         Left:=ScaleX(4);
         Top:=ScaleY(8);
@@ -1005,66 +984,26 @@ begin
         Height:=ScaleY(17);
         Font.Style:=[fsBold];
         TabOrder:=0;
-        Checked:=True;
+        Checked:=False;
     end;
-    LblFSCache:=TLabel.Create(ExtraOptionsPage);
+    LblFSCache:=TLabel.Create(PerfTweaksPage);
     with LblFSCache do begin
-        Parent:=ExtraOptionsPage.Surface;
+        Parent:=PerfTweaksPage.Surface;
         Caption:=
             'File system data will be read in bulk and cached in memory for certain' + #13 +
             'operations ("core.fscache" is set to "true"). This provides a significant' + #13 +
-            'performance boost.';
+            'performance boost (experimental).';
         Left:=ScaleX(28);
         Top:=ScaleY(32);
         Width:=ScaleX(405);
         Height:=ScaleY(39);
     end;
 
-    // 2nd option
-    RdbExtraOptions[GP_GCM]:=TCheckBox.Create(ExtraOptionsPage);
-    with RdbExtraOptions[GP_GCM] do begin
-        Parent:=ExtraOptionsPage.Surface;
-        Caption:='Enable Git Credential Manager';
-        Left:=ScaleX(4);
-        Top:=ScaleY(80);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=1;
-    end;
-    LblGCM:=TLabel.Create(ExtraOptionsPage);
-    with LblGCM do begin
-        Parent:=ExtraOptionsPage.Surface;
-        Caption:=
-            'The Git Credential Manager for Windows provides secure Git credential storage'+#13+'for Windows, most notably multi-factor authentication support for Visual Studio'+#13+'Team Services and GitHub. (requires .NET framework v4.5.1 or or later)';
-        Left:=ScaleX(28);
-        Top:=ScaleY(104);
-        Width:=ScaleX(405);
-        Height:=ScaleY(39);
-    end;
-    LblGCMLink:=TLabel.Create(ExtraOptionsPage);
-    with LblGCMLink do begin
-        Parent:=ExtraOptionsPage.Surface;
-        Caption:='Git Credential Manager';
-        Left:=GetTextWidth('The ',LblGCM.Font)+ScaleX(28);
-        Top:=ScaleY(104);
-        Width:=ScaleX(405);
-        Height:=ScaleY(13);
-        Font.Color:=clBlue;
-        Font.Style:=[fsUnderline];
-        Cursor:=crHand;
-        OnClick:=@OpenGCMHomepage;
-    end;
+    // Restore the settings chosen during a previous install.
+    Data:=ReplayChoice('Performance Tweaks FSCache','Disabled');
 
-    // Restore the settings chosen during a previous install, if .NET 4.5.1
-    // or later is available.
-    if DetectNetFxVersion()<378675 then begin
-        RdbExtraOptions[GP_GCM].Checked:=False;
-        RdbExtraOptions[GP_GCM].Enabled:=False;
-    end else begin
-        Data:=ReplayChoice('Use Credential Manager','Enabled');
-
-        RdbExtraOptions[GP_GCM].Checked:=Data='Enabled';
+    if Data='Enabled' then begin
+        RdbPerfTweaks[GP_FSCache].Checked:=True;
     end;
 
 
@@ -1098,8 +1037,6 @@ begin
 
     // This button is only used by the uninstaller.
     ContinueButton:=NIL;
-
-    PageIDBeforeInstall:=ExtraOptionsPage.ID;
 
 #ifdef DEBUG_WIZARD_PAGE
     DebugWizardPage:={#DEBUG_WIZARD_PAGE}.ID;
@@ -1136,14 +1073,9 @@ begin
             // This will be checked later again when the user clicks "Next".
             WizardForm.DirEdit.Text:=ExpandConstant('{userpf}\{#APP_NAME}');
         end;
-    end else if CurPageID=PageIDBeforeInstall then begin
-        RefreshProcessList(NIL);
-        if GetArrayLength(Processes)=0 then
-            WizardForm.NextButton.Caption:=SetupMessage(msgButtonInstall);
     end else if (ProcessesPage<>NIL) and (CurPageID=ProcessesPage.ID) then begin
         // Show the "Refresh" button only on the processes page.
         ProcessesRefresh.Show;
-        WizardForm.NextButton.Caption:=SetupMessage(msgButtonInstall);
     end else begin
         ProcessesRefresh.Hide;
     end;
@@ -1401,8 +1333,6 @@ begin
 
     // Load the built-ins from a text file.
     FileName:=AppDir+'\{#MINGW_BITNESS}\{#APP_BUILTINS}';
-    if not FileExists(FileName) then
-        Exit; // testing...
     if LoadStringsFromFile(FileName,BuiltIns) then begin
         Count:=GetArrayLength(BuiltIns)-1;
 
@@ -1491,22 +1421,15 @@ begin
     end;
 
     {
-        Configure extra options
+        Configure performance tweaks
     }
 
-    if RdbExtraOptions[GP_FSCache].checked then begin
+    if RdbPerfTweaks[GP_FSCache].checked then begin
         Cmd:='core.fscache true';
 
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config -f config ' + Cmd,
                     ProgramData + '\Git', SW_HIDE, ewWaitUntilTerminated, i) then
-            LogError('Unable to enable the extra option: ' + Cmd);
-    end;
-
-    if RdbExtraOptions[GP_GCM].checked then begin
-        Cmd:='credential.helper manager';
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config --system ' + Cmd,
-                    AppDir, SW_HIDE, ewWaitUntilTerminated, i) then
-            LogError('Unable to enable the extra option: ' + Cmd);
+            LogError('Unable to enable the experimental performance tweak: ' + Cmd);
     end;
 
     {
@@ -1690,9 +1613,9 @@ begin
     end;
     RecordChoice(PreviousDataKey,'Bash Terminal Option',Data);
 
-    // Extra options.
+    // Performance tweaks options.
     Data:='Disabled';
-    if RdbExtraOptions[GP_FSCache].Checked then begin
+    if RdbPerfTweaks[GP_FSCache].Checked then begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Performance Tweaks FSCache',Data);
