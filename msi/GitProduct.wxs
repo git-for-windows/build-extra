@@ -30,6 +30,8 @@
       <Component Directory='INSTALLFOLDER'>
         <RegistryValue Root='HKLM' Key='Software\Git' Name='InstallFolder' Value='[INSTALLFOLDER]' Type='string' />
         <Environment Name='PATH' Value='[BinFolder]' Action='set' Part='last' System='yes' />
+
+        <RemoveFolder Directory='GitProgramMenuFolder' On='uninstall' />
       </Component>
 
       <ComponentGroupRef Id='GitComponents'/>
@@ -45,6 +47,12 @@
         <Directory Id='INSTALLFOLDER' Name='Git'>
           <Directory Id='BinFolder' Name='bin' />
         </Directory>
+      </Directory>
+
+      <Directory Id='PersonalFolder' />
+
+      <Directory Id='ProgramMenuFolder'>
+        <Directory Id='GitProgramMenuFolder' Name='Git' />
       </Directory>
     </Directory>
   </Fragment>
