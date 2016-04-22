@@ -12,6 +12,41 @@ a {
 	text-decoration: none;
 }
 
+div.links ul {
+	list-style-type: none;
+	text-transform: uppercase;
+	margin: 0;
+	padding: 0 0 1em 3em;
+	width: 100%;
+}
+
+div.links a {
+	color: #FFFFFF;
+	font-size: .5em;
+}
+
+div.links ul li {
+	line-height: .5em;
+	float: left;
+	padding: 0 1em 1em 0;
+}
+
+@media screen and (min-width:750px) {
+	div.links {
+		position: fixed;
+	}
+
+	div.links ul {
+		width: 80px;
+		padding: 0;
+	}
+
+	div.links ul li {
+		float: inherit;
+		padding: 0;
+	}
+}
+
 .gittext {
 	color: #646464;
 	font-weight: bold;

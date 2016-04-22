@@ -1,5 +1,5 @@
-# Git for Windows v2.7.2 Release Notes
-Latest update: February 23rd 2016
+# Git for Windows v2.8.1 Release Notes
+Latest update: April 4th 2016
 
 ## Introduction
 
@@ -10,7 +10,7 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
 # Known issues
 * Special permissions (and Windows Vista or later) are required when cloning repositories with symbolic links, therefore support for symbolic links is disabled by default. Use `git clone -c core.symlinks=true <URL>` to enable it, see details [here](https://github.com/git-for-windows/git/wiki/Symbolic-Links).
 * If configured to use Plink, you will have to connect with [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/) first and accept the host key.
-* Some console programs interact correctly with MinTTY only when called through `winpty` (e.g. the Python console needs to be started as `winpty python` instead of just `python`).
+* Some console programs, most notably non-MSYS2 Python, PHP, Node and OpenSSL, interact correctly with MinTTY only when called through `winpty` (e.g. the Python console needs to be started as `winpty python` instead of just `python`).
 * [cURL](http://curl.haxx.se) uses `$HOME/_netrc` instead of `$HOME/.netrc`.
 * If you specify command-line options starting with a slash, POSIX-to-Windows path conversion will kick in converting e.g. "`/usr/bin/bash.exe`" to "`C:\Program Files\Git\usr\bin\bash.exe`". When that is not desired -- e.g. "`--upload-pack=/opt/git/bin/git-upload-pack`" or "`-L/regex/`" -- you need to set the environment variable `MSYS_NO_PATHCONV` temporarily, like so:
 
@@ -31,6 +31,65 @@ Git is licensed under the GNU Public License version 2.
 Git for Windows also contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
 This package contains software from a number of other projects including Bash, zlib, curl, msmtp, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU Public License. Likewise, it contains Perl which is dual licensed under the GNU Public License and the Artistic License.
+
+## Changes since Git for Windows v2.8.1 (April 4th 2016)
+
+### Bug Fixes
+
+* FSCache [is now enabled by default](https://github.com/git-for-windows/build-extra/commit/a1ae146) even when upgrading from previous Git for Windows versions.
+* We now add `git.exe` to the `PATH` [by default](https://github.com/git-for-windows/build-extra/commit/1e2e00e) even when upgrading from previous Git for Windows versions.
+* Git GUI [now sets author information correctly when amending](https://github.com/git-for-windows/git/pull/726).
+
+## Changes since Git for Windows v2.8.0 (March 29th 2016)
+
+### New Features
+
+* Comes with [Git v2.8.1](http://article.gmane.org/gmane.linux.kernel/2189878).
+* The Git for Windows project updated its contributor guidelines to the [Contributor Covenant 1.4](https://github.com/git-for-windows/git/pull/661).
+
+### Bug Fixes
+
+* Git's default editor (`vim`) is [no longer freezing](https://github.com/git-for-windows/msys2-runtime/commit/1ca92fa2ef89bf9d61d3911a499d8187db18427a) in CMD windows.
+* GIT_SSH (and other executable paths that Git wants to spawn) [can now contain spaces](https://github.com/git-for-windows/git/issues/692).
+
+## Changes since Git for Windows v2.7.4 (March 18th 2016)
+
+### New Features
+
+* Comes with [Git v2.8.0](http://article.gmane.org/gmane.linux.kernel/2185094).
+* Comes with the [Git Credential Manager v1.2.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.2.2).
+* The FSCache feature (which was labeled experimental for quite some time) [is now enabled by default](https://github.com/git-for-windows/build-extra/pull/101).
+* Git is now [added to the `PATH` by default](https://github.com/git-for-windows/build-extra/pull/102) (previously, the default was for Git to be available only from Git Bash/CMD).
+* The installer [now offers to launch the Git Bash right away](https://github.com/git-for-windows/build-extra/pull/103).
+
+### Bug Fixes
+
+* The previous workaround for the blurred link to the Git Credential Manager [was fixed](https://github.com/git-for-windows/build-extra/commit/58d978cb84096bcc887170cbfcf44af022848ae3) so that the link is neither blurry nor overlapping.
+* The installer [now changes the label of the `Next` button to `Install`](https://github.com/git-for-windows/build-extra/pull/104) on the last wizard page before installing.
+
+## Changes since Git for Windows v2.7.3 (March 15th 2016)
+
+### New Features
+
+* Comes with [Git 2.7.4](http://article.gmane.org/gmane.linux.kernel/2179363).
+
+### Bug Fixes
+
+* The Git Credential Manager hyperlink in the installer [is no longer blurred](https://github.com/git-for-windows/build-extra/commit/28bb2a330323ba1c69f278cafa81e3e4fd3bf71c).
+
+## Changes since Git for Windows v2.7.2 (February 23rd 2016)
+
+### New Features
+
+* Git for Windows [now ships with](https://github.com/git-for-windows/git/issues/466) the [Git Credential Manager for Windows](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/).
+* Comes with [Git v2.7.3](http://article.gmane.org/gmane.linux.kernel/2174435).
+
+### Bug Fixes
+
+* We [now handle UTF-8 merge and squash messages correctly in Git GUI](https://github.com/git-for-windows/git/issues/665).
+* When trying to modify a repository config outside of any Git worktree, [`git config` no longer creates a `.git/` directory](https://github.com/git-for-windows/git/commit/64acc338c) but prints an appropriate error message instead.
+* A new version of Git for Windows' SDK [was released](https://github.com/git-for-windows/build-extra/releases/git-sdk-1.0.3] that [works around pacman-key issues](https://github.com/git-for-windows/git/issues/670).
+* We [no longer show asterisks when reading the username for credentials](https://github.com/git-for-windows/git/pull/677).
 
 ## Changes since Git for Windows v2.7.1(2) (February 12th 2016)
 

@@ -72,6 +72,39 @@
 @IF ERRORLEVEL 1 GOTO INSTALL_RUNTIME
 
 @SET /A counter=0
+:INSTALL_BASH
+@SET /A counter+=1
+@IF %counter% GEQ 5 @(
+	@ECHO Could not install bash
+	@PAUSE
+	@EXIT 1
+)
+
+@REM next, force update bash
+@"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm bash
+
+@SET /A counter=0
+:INSTALL_INFO
+@SET /A counter+=1
+@IF %counter% GEQ 5 @(
+	@ECHO Could not install info
+	@PAUSE
+	@EXIT 1
+)
+
+@REM we need a /tmp directory, just for the time being
+@MKDIR "%cwd%"\tmp
+
+@REM next, initialize pacman's keyring
+@"%cwd%"\usr\bin\bash.exe -l -c '/usr/bin/bash /usr/bin/pacman-key --init'
+@IF ERRORLEVEL 1 PAUSE
+
+@REM next, force update info
+@"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm info
+
+@IF ERRORLEVEL 1 GOTO INSTALL_INFO
+
+@SET /A counter=0
 :INSTALL_PACMAN
 @SET /A counter+=1
 @IF %counter% GEQ 5 @(
@@ -80,8 +113,8 @@
 	@EXIT 1
 )
 
-@REM next, force update pacman, but first we need bash and info for that.
-@"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm bash info pacman
+@REM next, force update pacman
+@"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm pacman
 
 @IF ERRORLEVEL 1 GOTO INSTALL_PACMAN
 
@@ -105,7 +138,7 @@
 	mingw-w64-@@ARCH@@-curl mingw-w64-@@ARCH@@-expat ^
 	mingw-w64-@@ARCH@@-openssl mingw-w64-@@ARCH@@-tcl ^
 	mingw-w64-@@ARCH@@-pcre mingw-w64-@@ARCH@@-connect ^
-	git-flow
+	git-flow ssh-pageant
 
 @IF ERRORLEVEL 1 GOTO INSTALL_REST
 
