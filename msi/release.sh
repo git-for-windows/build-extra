@@ -69,9 +69,9 @@ sed -e 's/\(.*\)\\\(.*\)/            <Component Directory="INSTALLFOLDER:\\\1\\"
 	    -e 's/^\([^\\]*\)$/            <Component Directory="INSTALLFOLDER">\
                 <File Source="&" \/>\
             <\/Component>/' \
-	    -e 's/\(<File Source="git-bash.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git Bash" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="PersonalFolder" Advertise="yes" \/>/' \
-	    -e 's/\(<File Source="git-cmd.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git CMD" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="PersonalFolder" Advertise="yes" \/>/' \
-	    -e 's/\(<File Source="cmd\\git-gui.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git GUI" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="PersonalFolder" Advertise="yes" \/>/'
+	    -e 's/\(<File Source="git-bash.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git Bash" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="INSTALLFOLDER" Arguments="--cd-to-home" Advertise="yes" \/>/' \
+	    -e 's/\(<File Source="git-cmd.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git CMD" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="INSTALLFOLDER" Arguments="--cd-to-home" Advertise="yes" \/>/' \
+	    -e 's/\(<File Source="cmd\\git-gui.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git GUI" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="INSTALLFOLDER" Arguments="--cd-to-home" Advertise="yes" \/>/'
 
 cat <<EOF
         </ComponentGroup>
