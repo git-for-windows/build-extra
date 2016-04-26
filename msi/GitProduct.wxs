@@ -35,6 +35,9 @@
 
         <RemoveFolder Directory='GitProgramMenuFolder' On='uninstall' />
       </Component>
+      <Component Directory="INSTALLFOLDER">
+        <RegistryValue Root="HKLM" Key="Software\GitForWindows" Name="CurrentVersion" Type="string" Value="$(var.Version)" />
+      </Component>
 
       <ComponentGroupRef Id='GitComponents'/>
     </Feature>
