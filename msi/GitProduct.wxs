@@ -49,8 +49,6 @@
         </Directory>
       </Directory>
 
-      <Directory Id='PersonalFolder' />
-
       <Directory Id='ProgramMenuFolder'>
         <Directory Id='GitProgramMenuFolder' Name='Git' />
       </Directory>
