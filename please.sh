@@ -791,6 +791,10 @@ release () { #
 
 	sign_files "$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
 		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe
+
+	"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		"/usr/src/build-extra/nuget/release.sh '$ver'" ||
+	die "Could not make NuGet package\n"
 }
 
 virus_check () { #
@@ -816,6 +820,10 @@ publish () { #
 	grep -q '^machine api\.github\.com$' "$HOME"/_netrc &&
 	grep -q '^machine uploads\.github\.com$' "$HOME"/_netrc ||
 	die "Missing GitHub entries in ~/_netrc\n"
+
+	grep -q '<apikeys>' "$HOME"/AppData/Roaming/NuGet/NuGet.Config ||
+	die "Need to call \`%s setApiKey Your-API-Key\`\n" \
+		"$sdk64/usr/src/build-extra/nuget/nuget.exe"
 
 	test -d "$sdk64/usr/src/git/3rdparty" || {
 		mkdir "$sdk64/usr/src/git/3rdparty" &&
@@ -867,6 +875,10 @@ publish () { #
 		"$HOME"/Git-"$ver"-64-bit.tar.bz2 \
 		"$HOME"/Git-"$ver"-32-bit.tar.bz2 ||
 	die "Could not upload files\n"
+
+	"$sdk64/usr/src/build-extra/nuget/nuget.exe" \
+		push "$HOME"/GitForWindows.$ver.nupkg ||
+	die "Could not upload %s\n" "$HOME"/GitForWindows.$ver.nupkg
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git" &&
 	nextver=v"$version" &&
