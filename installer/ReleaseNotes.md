@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.8.1 (April 4th 2016)
 
+### New Features
+
+* Comes with [Git v2.8.2](https://github.com/git/git/raw/v2.8.2/Documentation/RelNotes/2.8.2.txt).
+
 ### Bug Fixes
 
 * FSCache [is now enabled by default](https://github.com/git-for-windows/build-extra/commit/a1ae146) even when upgrading from previous Git for Windows versions.
