@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Git v2.8.2](https://github.com/git/git/raw/v2.8.2/Documentation/RelNotes/2.8.2.txt).
 * Starting with version 2.8.2, [Git for Windows is also published as a NuGet package](https://www.nuget.org/packages/GitForWindows/).
+* Comes with Git Credential Manager v1.3.0.
 
 ### Bug Fixes
 
