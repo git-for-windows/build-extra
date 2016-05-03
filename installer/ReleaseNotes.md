@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 * FSCache [is now enabled by default](https://github.com/git-for-windows/build-extra/commit/a1ae146) even when upgrading from previous Git for Windows versions.
 * We now add `git.exe` to the `PATH` [by default](https://github.com/git-for-windows/build-extra/commit/1e2e00e) even when upgrading from previous Git for Windows versions.
 * Git GUI [now sets author information correctly when amending](https://github.com/git-for-windows/git/pull/726).
+* OpenSSL received a critical update to [version 1.0.2h](https://www.openssl.org/news/newslog.html).
 
 ## Changes since Git for Windows v2.8.0 (March 29th 2016)
 
