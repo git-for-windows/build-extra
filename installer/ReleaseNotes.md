@@ -1,5 +1,5 @@
-# Git for Windows v2.8.1 Release Notes
-Latest update: April 4th 2016
+# Git for Windows v2.8.2 Release Notes
+Latest update: May 3rd 2016
 
 ## Introduction
 
