@@ -188,7 +188,7 @@ wix/candle.exe -dVersion="${VERSION%%-*}" \
 	GitShellOptionsDlg.wxs \
 	-o obj\\ \
 	-ext WixUtilExtension -ext WixTagExtension \
-	-ext WixUIExtension &&
+	-ext WixUIExtension -ext WixNetFxExtension &&
 wix/light.exe \
 	obj/GitProduct.wixobj \
 	obj/GitComponents.wixobj \
@@ -200,7 +200,8 @@ wix/light.exe \
 	obj/GitAdditionalOptionsDlg.wixobj \
 	obj/GitShellOptionsDlg.wixobj \
 	-o $TARGET -ext WixUtilExtension -ext WixTagExtension \
-	-ext WixUIExtension -loc GitUI_en-us.wxl \
+	-ext WixUIExtension -ext WixNetFxExtension \
+	-loc GitUI_en-us.wxl \
 	-cultures:en-us \
 	-spdb \
 	-b / -b ../ &&
