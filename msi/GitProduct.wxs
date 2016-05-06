@@ -49,7 +49,23 @@
     </SetProperty>
 
     <Property Id="TERMINAL" Value="MinTTY" />
-    <Property Id="ENABLEFSCACHE" Value="true" />
+
+    <SetProperty Id="CMDLINE_ENABLEFSCACHE" Value="false" Before="AppSearch" Sequence="first">
+      ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0
+    </SetProperty>
+    <Property Id="ENABLEFSCACHE" Value="true">
+      <RegistrySearch Id="EnableFsCacheSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="core.fscache" Type="raw" />
+    </Property>
+    <SetProperty Id="ENABLEFSCACHE" Action="SetENABLESCACHEToTrue" Value="true" After="AppSearch" Sequence="first">
+      <![CDATA[ UILevel < 5 AND (ENABLEFSCACHE~="true" OR ENABLEFSCACHE=1) ]]>
+    </SetProperty>
+    <SetProperty Id="ENABLEFSCACHE" Action="SetENABLEFSCACHEToFalse" Value="false" After="AppSearch" Sequence="first">
+      <![CDATA[ UILevel < 5 AND (ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0) ]]>
+    </SetProperty>
+    <SetProperty Id="ENABLEFSCACHE" Action="ClearENABLEFSCACHEForFullUIInstallIfFalse" Value="{}" After="AppSearch" Sequence="ui">
+      UILevel = 5 AND (CMDLINE_ENABLEFSCACHE OR ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0)
+    </SetProperty>
+
     <Property Id="ENABLEGCM" Value="1" />
     <Property Id="GITBASHHERE" Value="1" />
     <Property Id="GITGUIHERE" Value="1" />
@@ -241,6 +257,8 @@
     <CustomAction Id="ExecConfigureSslCAInfo" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
     <SetProperty Id="ExecConfigureCoreAutoCrlf" Value='"[#GitExe]" config --system core.autocrlf [LINEENDINGS]' Sequence="execute" Before="ExecConfigureCoreAutoCrlf"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
     <CustomAction Id="ExecConfigureCoreAutoCrlf" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
+    <SetProperty Id="ExecConfigureFsCache" Value='"[#GitExe]" config --system core.fscache [ENABLEFSCACHE]' Sequence="execute" Before="ExecConfigureFsCache"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
+    <CustomAction Id="ExecConfigureFsCache" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
     <!-- Schedule two "best effort" actions:
           1. Write the command to run the post-install.bat to the transaction log
           2. Execute the command during the installation transaction
@@ -253,7 +271,8 @@
       <Custom Action="ExecConfigurePackSizeLimit" Before="ExecConfigureSslCAInfo"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
     <?endif?>
       <Custom Action="ExecConfigureSslCAInfo" Before="ExecConfigureCoreAutoCrlf"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
-      <Custom Action="ExecConfigureCoreAutoCrlf" Before="ExecPostInstallBat"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
+      <Custom Action="ExecConfigureCoreAutoCrlf" Before="ExecConfigureFsCache"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
+      <Custom Action="ExecConfigureFsCache" Before="ExecPostInstallBat"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
       <!-- Execute the post-install.bat at the end of the installation transaction on install and repair but not removal. -->
       <Custom Action="ExecPostInstallBat" Before="InstallFinalize"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
     </InstallExecuteSequence>
