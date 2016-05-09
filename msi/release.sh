@@ -144,6 +144,8 @@ BUILD_EXTRA_WINPATH="$(cd "$SCRIPT_PATH"/.. && pwd -W | tr / \\\\)"
             </Component>
 EOF
 echo "$LIST" |
+sort |
+uniq |
 tr / \\\\ |
 sed -e 's/\(.*\)\\\(.*\)/            <Component Directory="INSTALLFOLDER:\\\1\\">\
                 <File Source="&" \/>\
