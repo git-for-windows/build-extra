@@ -158,6 +158,38 @@
         <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='GitGuiHereDesktopIcon' Value='[GITGUIHEREDESKTOPICON]' />
       </Component>
 
+      <Feature Id="AssociateGitFiles" Level="3" Title="Windows Explorer Git File Associations" Description="Associate .git* configuration files with the default text editor." Absent="allow" AllowAdvertise="no" TypicalDefault="install">
+        <Condition Level="0"><![CDATA[ASSOCIATEGITFILES <> 1]]></Condition>
+        <Condition Level="1">ASSOCIATEGITFILES = 1</Condition>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitattributes" Value="txtfile" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitattributes" Name="Content Type" Value="text/plain" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitattributes" Name="PerceivedType" Value="text" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitignore" Value="txtfile" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitignore" Name="Content Type" Value="text/plain" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitignore" Name="PerceivedType" Value="text" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitmodules" Value="txtfile" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitmodules" Name="Content Type" Value="text/plain" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitmodules" Name="PerceivedType" Value="text" />
+        </Component>
+      </Feature>
+
       <ComponentGroupRef Id='GitComponents'/>
     </Feature>
 
