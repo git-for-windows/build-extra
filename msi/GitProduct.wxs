@@ -124,6 +124,9 @@
         <RegistryValue Root="HKLM" Key="Software\GitForWindows" Name="CurrentVersion" Type="string" Value="$(var.Version)" />
       </Component>
       <Component Directory="INSTALLFOLDER">
+        <RegistryValue Root="HKLM" Key="SOFTWARE\GitForWindows" Name="LibexecPath" Type="string" Value="[MingwFolder]libexec\git-core" />
+      </Component>
+      <Component Directory="INSTALLFOLDER">
         <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='CliEnvironment' Value='[CLIENVIRONMENT]' KeyPath="yes" />
         <Environment Name="PATH" Value="[CLIENVIRONMENTPATHS]" Action="set" Part="last" System="yes" />
       </Component>
