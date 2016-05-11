@@ -30,6 +30,7 @@ Usage: $0 [-o <dir>] <version> [<optional-package>...]
 
         where <version> is the version of the Git for Windows installer to
         create.
+
 EOF
 	exit 1
 }
@@ -115,6 +116,9 @@ SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 cd "$SCRIPT_PATH" ||
 die "Could not switch directory to $SCRIPT_PATH"
 
+# Generate the ReleaseNotes.html file
+../render-release-notes.sh --css usr/share/git/
+
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/package-versions.txt \
@@ -141,6 +145,13 @@ BUILD_EXTRA_WINPATH="$(cd "$SCRIPT_PATH"/.. && pwd -W | tr / \\\\)"
             </Component>
             <Component Directory="INSTALLFOLDER" Guid="">
                 <File Id="PostInstallBat" Source="$BUILD_EXTRA_WINPATH\\post-install.bat" KeyPath="yes" />
+            </Component>
+            <Component Directory="INSTALLFOLDER">
+                <File Id="ReleaseNotes" Source="$SCRIPT_WINPATH\\ReleaseNotes.html" />
+                <Shortcut Id="ReleaseNotes" Name="Release Notes" Directory="GitProgramMenuFolder" Advertise="yes" />
+            </Component>
+            <Component Directory="INSTALLFOLDER:\\usr\\share\\git\\">
+                <File Id="ReleaseNotes_Css" Source="$BUILD_EXTRA_WINPATH\\ReleaseNotes.css" />
             </Component>
 EOF
 echo "$LIST" |
