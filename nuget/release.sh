@@ -50,30 +50,7 @@ x86_64)
 esac
 
 # Generate release notes for NuGet
-RELNOTES="$BUILDEXTRA"/nuget/ReleaseNotes.html
-RELNOTESMD="$BUILDEXTRA"/ReleaseNotes.md
-test -f "$RELNOTES" &&
-test "$RELNOTES" -nt "$RELNOTESMD" || {
-	# Install markdown
-	type markdown ||
-	pacman -Sy --noconfirm markdown ||
-	die "Could not install markdown"
-
-	(printf '%s\n%s\n%s\n%s %s\n%s %s\n%s\n%s\n%s\n' \
-		'<!DOCTYPE html>' \
-		'<html>' \
-		'<head>' \
-		'<meta http-equiv="Content-Type" content="text/html;' \
-		'charset=UTF-8">' \
-		'<link rel="stylesheet"' \
-		' href="content/ReleaseNotes.css">' \
-		'</head>' \
-		'<body class="details">' \
-		'<div class="content">'
-	 markdown "$RELNOTESMD" ||
-	 die "Could not generate ReleaseNotes.html"
-	 printf '</div>\n</body>\n</html>\n') >"$RELNOTES"
-}
+../render-release-notes.sh --css content/
 
 SPECIN="$BUILDEXTRA"/nuget/GitForWindows.nuspec.in
 SPEC="$BUILDEXTRA/nuget/$ID".nuspec
