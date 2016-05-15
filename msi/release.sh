@@ -137,8 +137,10 @@ BUILD_EXTRA_WINPATH="$(cd "$SCRIPT_PATH"/.. && pwd -W | tr / \\\\)"
                 <File Id="GitExe" Source="cmd\\git.exe" />
             </Component>
             <Component Directory="BinFolder">
-                <File Source="mingw64\\share\\git\\compat-bash.exe"
-                      Name="sh.exe" />
+                <File Source="mingw$BITNESS\\share\\git\\compat-bash.exe" Name="sh.exe" />
+            </Component>
+            <Component Directory="BinFolder">
+                <File Id="BashExe" Source="mingw$BITNESS\\share\\git\\compat-bash.exe" Name="bash.exe" />
             </Component>
             <Component Directory="INSTALLFOLDER:\\etc\\">
                 <File Source="$SCRIPT_WINPATH\\package-versions.txt" />
