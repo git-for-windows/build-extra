@@ -33,7 +33,25 @@
     <PropertyRef Id="WIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED" />
 
     <!-- Git for Windows MSI Properties -->
-    <Property Id="CLIENVIRONMENT" Value="Cmd" />
+    <SetProperty Id="CMDLINE_CLIENVIRONMENT" Value="[CLIENVIRONMENT]" Before="AppSearch" Sequence="first">
+      CLIENVIRONMENT~="Bash" OR CLIENVIRONMENT~="CmdTools"
+    </SetProperty>
+    <Property Id="CLIENVIRONMENT" Value="Cmd">
+      <RegistrySearch Id="CliEnvironmentSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="CliEnvironment" Type="raw" />
+    </Property>
+    <SetProperty Id="CLIENVIRONMENT" Value="[CMDLINE_CLIENVIRONMENT]" After="AppSearch" Sequence="first">CMDLINE_CLIENVIRONMENT</SetProperty>
+    <SetProperty Id="CLIENVIRONMENT" Value="Bash" Action="NomalizeBashCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+      CLIENVIRONMENT~="Bash"
+    </SetProperty>
+    <SetProperty Id="CLIENVIRONMENT" Value="Cmd" Action="NormalizeCmdCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+      CLIENVIRONMENT~="Cmd"
+    </SetProperty>
+    <SetProperty Id="CLIENVIRONMENT" Value="CmdTools" Action="NormalizeCmdToolsCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+      CLIENVIRONMENT~="CmdTools"
+    </SetProperty>
+    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIORNMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Bash"</SetProperty>
+    <SetProperty Action="SetCmdCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Cmd"</SetProperty>
+    <SetProperty Action="SetCmdToolsCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd;[MingwFolder]bin;[INSTALLFOLDER]usr\bin" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "CmdTools"</SetProperty>
 
     <SetProperty Id="CMDLINE_LINEENDINGS" Value="[LINEENDINGS]" Before="AppSearch" Sequence="first">
       <![CDATA[ LINEENDINGS~="input" OR LINEENDINGS~="false" ]]>
@@ -98,15 +116,14 @@
     <Feature Id='Git'>
       <Component Directory='INSTALLFOLDER'>
         <RegistryValue Root='HKLM' Key='SOFTWARE\GitForWindows' Name='InstallFolder' Value='[INSTALLFOLDER]' Type='string' />
-        <Environment Name='PATH' Value='[BinFolder]' Action='set' Part='last' System='yes' />
-
         <RemoveFolder Directory='GitProgramMenuFolder' On='uninstall' />
       </Component>
       <Component Directory="INSTALLFOLDER">
         <RegistryValue Root="HKLM" Key="Software\GitForWindows" Name="CurrentVersion" Type="string" Value="$(var.Version)" />
       </Component>
-      <Component Directory='INSTALLFOLDER'>
-        <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='CliEnvironment' Value='[CLIENVIRONMENT]' />
+      <Component Directory="INSTALLFOLDER">
+        <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='CliEnvironment' Value='[CLIENVIRONMENT]' KeyPath="yes" />
+        <Environment Name="PATH" Value="[CLIENVIRONMENTPATHS]" Action="set" Part="last" System="yes" />
       </Component>
       <Component Directory='INSTALLFOLDER'>
         <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='core.autocrlf' Value='[LINEENDINGS]' />
@@ -152,6 +169,11 @@
       <Directory Id='ProgramFiles$(var.SixtyFourBit)Folder' Name='PFiles'>
         <Directory Id='INSTALLFOLDER' Name='Git'>
           <Directory Id='BinFolder' Name='bin' />
+        <?if $(var.SixtyFourBit)=64 ?>
+          <Directory Id='MingwFolder' Name='mingw64' />
+        <?else?>
+          <Directory Id='MingwFolder' Name='mingw32' />
+        <?endif?>
         </Directory>
       </Directory>
 
