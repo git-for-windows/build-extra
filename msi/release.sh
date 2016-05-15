@@ -178,12 +178,28 @@ EOF
 mkdir -p obj &&
 wix/candle.exe -dVersion="${VERSION%%-*}" \
 	-arch $WIX_ARCH \
-	GitProduct.wxs GitComponents.wxs -o obj\\ \
-	-ext WixUtilExtension -ext WixTagExtension &&
+	GitProduct.wxs GitComponents.wxs \
+	GitChooseEnvironmentDlg.wxs GitChooseTerminalDlg.wxs \
+	GitCustomizeLineEndingsDlg.wxs GitLineEndingsDlg.wxs \
+	GitMaintenanceTypeDlg.wxs GitAdditionalOptionsDlg.wxs \
+	GitShellOptionsDlg.wxs \
+	-o obj\\ \
+	-ext WixUtilExtension -ext WixTagExtension \
+	-ext WixUIExtension &&
 wix/light.exe \
 	obj/GitProduct.wixobj \
 	obj/GitComponents.wixobj \
+	obj/GitChooseEnvironmentDlg.wixobj \
+	obj/GitChooseTerminalDlg.wixobj \
+	obj/GitCustomizeLineEndingsDlg.wixobj \
+	obj/GitLineEndingsDlg.wixobj \
+	obj/GitMaintenanceTypeDlg.wixobj \
+	obj/GitAdditionalOptionsDlg.wixobj \
+	obj/GitShellOptionsDlg.wixobj \
 	-o $TARGET -ext WixUtilExtension -ext WixTagExtension \
+	-ext WixUIExtension -loc GitUI_en-us.wxl \
+	-cultures:en-us \
+	-spdb \
 	-b / -b ../ &&
 echo "Success! You will find the new .msi at \"$TARGET\"." ||
 die "Could not generate $TARGET"

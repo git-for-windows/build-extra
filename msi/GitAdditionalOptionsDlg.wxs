@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <UI>
+      <Dialog Id="GitAdditionalOptionsDlg" Width="370" Height="270" Title="[ProductName] [Setup]" X="50" Y="50">
+        <Control Type="Text" Id="EnableFsCacheText" Width="275" Height="30" X="38" Y="72" TabSkip="no" Text="File system data will be read in bulk and cached in memory for certain operations. This provides a significant performance boost. Enabling this option is analogous to setting core.fscache to true." />
+        <Control Type="CheckBox" Id="EnableFsCache" Width="324" Height="15" X="20" Y="53" CheckBoxValue="1" Integer="yes" Property="ENABLEFSCACHE" Text="Enable file-system caching" />
+        <Control Type="Text" Id="EnableGcmText" Width="275" Height="40" X="38" Y="135" TabSkip="no" Text="The Git Credential Manager for Windows provides secure Git credential storage for Windows, most notably multi-factor authentication support for Visual Studio Team Services and GitHub. (Requires the .NET framework v4.5.1 or later.)" />
+        <Control Type="CheckBox" Id="EnableGCM" Width="324" Height="15" X="20" Y="116" CheckBoxValue="1" Integer="yes" Property="ENABLEGCM" Text="Enable Git Credential Manager for Windows" />
+        <Control Type="PushButton" Id="Back" Width="56" Height="17" X="180" Y="243" Text="!(loc.WixUIBack)" />
+        <Control Type="PushButton" Id="Next" Width="56" Height="17" X="236" Y="243" Default="yes" Text="!(loc.WixUINext)" />
+        <Control Type="PushButton" Id="Cancel" Width="56" Height="17" X="304" Y="243" Text="!(loc.WixUICancel)" Cancel="yes">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Type="Bitmap" Id="BannerBitmap" Width="370" Height="44" X="0" Y="0" Text="!(loc.GitAdditionalOptionsDlgBannerBitmap)" TabSkip="no" />
+        <Control Type="Line" Id="BannerLine" Width="370" Height="0" X="0" Y="44" />
+        <Control Type="Line" Id="BottomLine" Width="370" Height="0" X="0" Y="234" />
+        <Control Type="Text" Id="Title" Width="200" Height="17" X="15" Y="6" Text="[DlgTitleFont]Enable Additional Options" Transparent="yes" NoPrefix="yes" />
+        <Control Type="Text" Id="Description" Width="280" Height="20" X="25" Y="23" Text="Choose additional options to configure [ProductName] on your computer" Transparent="yes" NoPrefix="yes" />
+      </Dialog>
+    </UI>
+  </Fragment>
+</Wix>

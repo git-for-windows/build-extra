@@ -28,6 +28,18 @@
     <!-- Other MSI specific properties -->
     <Property Id='MSIFASTINSTALL' Value='7' />
 
+    <!-- Git for Windows MSI Properties -->
+    <Property Id="CLIENVIRONMENT" Value="Cmd" />
+    <Property Id="LINEENDINGS" Value="true" />
+    <Property Id="TERMINAL" Value="MinTTY" />
+    <Property Id="ENABLEFSCACHE" Value="true" />
+    <Property Id="ENABLEGCM" Value="1" />
+    <Property Id="GITBASHHERE" Value="1" />
+    <Property Id="GITGUIHERE" Value="1" />
+    <Property Id="ASSOCIATEGITFILES" Value="1" />
+    <Property Id="GITBASHHEREDESKTOPICON" Value="0" />
+    <Property Id="GITGUIHEREDESKTOPICON" Value="0" />
+
     <Feature Id='Git'>
       <Component Directory='INSTALLFOLDER'>
         <RegistryValue Root='HKLM' Key='SOFTWARE\GitForWindows' Name='InstallFolder' Value='[INSTALLFOLDER]' Type='string' />
@@ -38,12 +50,46 @@
       <Component Directory="INSTALLFOLDER">
         <RegistryValue Root="HKLM" Key="Software\GitForWindows" Name="CurrentVersion" Type="string" Value="$(var.Version)" />
       </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='CliEnvironment' Value='[CLIENVIRONMENT]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='core.autocrlf' Value='[LINEENDINGS]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='Terminal' Value='[TERMINAL]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='core.fscache' Value='[ENABLEFSCACHE]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='EnableGcm' Value='[ENABLEGCM]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='GitBashHere' Value='[GITBASHHERE]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='GitGuiHere' Value='[GITGUIHERE]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='AssociateGitFiles' Value='[ASSOCIATEGITFILES]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='GitBashHereDesktopIcon' Value='[GITBASHHEREDESKTOPICON]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='GitGuiHereDesktopIcon' Value='[GITGUIHEREDESKTOPICON]' />
+      </Component>
 
       <ComponentGroupRef Id='GitComponents'/>
     </Feature>
 
     <CustomActionRef Id="ExecPostInstallBat" />
     <CustomActionRef Id="WixBroadcastEnvironmentChange" />
+
+    <UIRef Id="WixUI_Common" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <UIRef Id="GitUI" />
   </Product>
 
   <Fragment>
@@ -58,6 +104,121 @@
         <Directory Id='GitProgramMenuFolder' Name='Git' />
       </Directory>
     </Directory>
+  </Fragment>
+
+  <Fragment>
+    <!-- WiX Variable Overrides (or new variable definitions
+
+         These can be used to override the default UI graphics, for example.
+    -->
+    <WixVariable Id='WixUIBannerBmp' Value='assets/bannerbmp.bmp' />
+    <WixVariable Id='WixUIDialogBmp' Value='assets/dlgbmp.bmp' />
+    <WixVariable Id='WixUIExclamationIco' Value='assets/exclamic.ico' />
+    <WixVariable Id='WixUIInfoIco' Value='assets/Info.ico' />
+    <WixVariable Id='WixUINewIco' Value='assets/NewFolder.ico' />
+    <WixVariable Id='WixUIUpIco' Value='assets/OneLevelUp.ico' />
+
+    <!-- Set the License file for the License Agreement Dialog -->
+    <WixVariable Id='WixUILicenseRtf' Value='gpl-2.0.rtf'/>
+
+    <UI Id='GitUI'>
+      <!-- Custom Icon and Bitmap UI resources -->
+      <Binary Id="completi" SourceFile="assets/completi.ico" />
+      <Binary Id="custicon" SourceFile="assets/custicon.ico" />
+      <Binary Id="exclamic" SourceFile="assets/exclamic.ico" />
+      <Binary Id="insticon" SourceFile="assets/insticon.ico" />
+      <Binary Id="removico" SourceFile="assets/removico.ico" />
+      <Binary Id="repairic" SourceFile="assets/repairic.ico" />
+
+      <!-- UI Text Font Sstyles -->
+      <TextStyle Id='DlgFont8' FaceName='Tahoma' Size='8' />
+      <TextStyle Id='WixUI_Font_Normal' FaceName='Tahoma' Size='8' />
+      <TextStyle Id='DlgFontBold8' FaceName='Tahoma' Size='8' Bold='yes' />
+      <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="8" Bold="yes" />
+      <TextStyle Id='VerdanaBold13' FaceName='Verdana' Size='13' Bold='yes' />
+      <TextStyle Id="WixUI_Font_Bigger" FaceName="Verdana" Size="13" Bold="yes" />
+
+      <!-- Additional Properties for UI -->
+      <Property Id="CompleteSetupIcon" Value="!(loc.GfwUI_CompleteSetup_Icon)" />
+      <Property Id="CustomSetupIcon" Value="!(loc.GfwUI_CustomSetup_Icon)" />
+      <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
+      <Property Id='DlgTitleFont' Value='{\DlgFontBold8}' />
+      <Property Id="InstallerIcon" Value="!(loc.GfwUI_Installer_Icon)" />
+      <Property Id="Progress1" Value="!(loc.GfwUI_Progress1)" />
+      <Property Id="Progress2" Value="!(loc.GfwUI_Progress2)" />
+      <Property Id="RemoveIcon" Value="!(loc.GfwUI_Remove_Icon)" />
+      <Property Id="RepairIcon" Value="!(loc.GfwUI_Repair_Icon)" />
+      <Property Id="Setup" Value="!(loc.GfwUI_Setup)" />
+      <Property Id="Wizard" Value="!(loc.GfwUI_Wizard)" />
+
+      <!-- These dialogs are required, but are not referenced directly by other dilaogs. -->
+      <DialogRef Id="ErrorDlg" />
+      <DialogRef Id="FatalError" />
+      <DialogRef Id="CancelDlg" />
+      <DialogRef Id="FilesInUse" />
+      <DialogRef Id="MsiRMFilesInUse" />
+      <DialogRef Id="PrepareDlg" />
+      <DialogRef Id="ProgressDlg" />
+      <DialogRef Id="ResumeDlg" />
+      <DialogRef Id="UserExit" />
+      <DialogRef Id="GitMaintenanceTypeDlg"/>
+
+      <!-- WiX's UI extensibility allows you to orchestrate the flow of your installer dialogs. -->
+      <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999">1</Publish>
+
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="LicenseAgreementDlg">NOT Installed AND NOT PATCH</Publish>
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg">Installed AND PATCH</Publish>
+
+      <Publish Dialog="LicenseAgreementDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg">1</Publish>
+      <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Order="2">LicenseAccepted = "1"</Publish>
+
+      <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
+
+      <!-- TODO: Update event conditions to respond appropriately for various installation scenarios. -->
+      <Publish Dialog="InstallDirDlg" Control="Next" Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
+      <Publish Dialog="InstallDirDlg" Control="Next" Event="DoAction" Value="WixUIValidatePath" Order="2">NOT WIXUI_DONTVALIDATEPATH</Publish>
+      <Publish Dialog="InstallDirDlg" Control="Next" Event="SpawnDialog" Value="InvalidDirDlg" Order="3"><![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
+      <Publish Dialog="InstallDirDlg" Control="Next" Event="NewDialog" Value="GitChooseEnvironmentDlg" Order="99">WIXUI_DONTVALIDATEPATH OR WIXUI_INSTALLDIR_VALID="1"</Publish>
+      <Publish Dialog="InstallDirDlg" Control="ChangeFolder" Property="_BrowseProperty" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
+      <Publish Dialog="InstallDirDlg" Control="ChangeFolder" Event="SpawnDialog" Value="BrowseDlg" Order="2">1</Publish>
+      <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+      <Publish Dialog="GitChooseEnvironmentDlg" Control="Back" Event="NewDialog" Value="InstallDirDlg">1</Publish>
+      <Publish Dialog="GitChooseEnvironmentDlg" Control="Next" Event="NewDialog" Value="GitLineEndingsDlg">1</Publish>
+
+      <Publish Dialog="GitLineEndingsDlg" Control="Back" Event="NewDialog" Value="GitChooseEnvironmentDlg">1</Publish>
+      <Publish Dialog="GitLineEndingsDlg" Control="Next" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">CustomizeLineEndings = "Yes"</Publish>
+      <Publish Dialog="GitLineEndingsDlg" Control="Next" Event="NewDialog" Value="GitChooseTerminalDlg">CustomizeLineEndings = "No"</Publish>
+
+      <Publish Dialog="GitCustomizeLineEndingsDlg" Control="Back" Event="NewDialog" Value="GitLineEndingsDlg">1</Publish>
+      <Publish Dialog="GitCustomizeLineEndingsDlg" Control="Next" Event="NewDialog" Value="GitChooseTerminalDlg">1</Publish>
+
+      <Publish Dialog="GitChooseTerminalDlg" Control="Back" Event="NewDialog" Value="GitLineEndingsDlg">CustomizeLineEndings = "No"</Publish>
+      <Publish Dialog="GitChooseTerminalDlg" Control="Back" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">CustomizeLineEndings = "Yes"</Publish>
+      <Publish Dialog="GitChooseTerminalDlg" Control="Next" Event="NewDialog" Value="GitAdditionalOptionsDlg">1</Publish>
+
+      <Publish Dialog="GitAdditionalOptionsDlg" Control="Back" Event="NewDialog" Value="GitChooseTerminalDlg">1</Publish>
+      <Publish Dialog="GitAdditionalOptionsDlg" Control="Next" Event="NewDialog" Value="GitShellOptionsDlg">1</Publish>
+
+      <Publish Dialog="GitShellOptionsDlg" Control="Back" Event="NewDialog" Value="GitAdditionalOptionsDlg">1</Publish>
+      <Publish Dialog="GitShellOptionsDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+
+      <!--TODO: Fix VerifyReadyDlg back button :: it doesn't work; obviously, the condition is not evaluating to True and I did something wrong...-->
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="GitShellOptionsDlg" Order="1">NOT Installed</Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="1">Installed AND PATCH</Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="GitMaintenanceTypeDlg" Order="2">Installed AND NOT PATCH</Publish>
+
+      <Publish Dialog="MaintenanceWelcomeDlg" Control="Next" Event="NewDialog" Value="GitMaintenanceTypeDlg">1</Publish>
+
+      <Publish Dialog="GitMaintenanceTypeDlg" Control="RepairButton" Event="NewDialog" Value="VerifyReadyDlg" Order="4">1</Publish>
+      <Publish Dialog="GitMaintenanceTypeDlg" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlg" Order="4">1</Publish>
+      <Publish Dialog="GitMaintenanceTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlg">1</Publish>
+
+      <InstallUISequence>
+        <Show Dialog="WelcomeDlg" After="CostFinalize" />
+      </InstallUISequence>
+
+    </UI>
   </Fragment>
 
   <Fragment>

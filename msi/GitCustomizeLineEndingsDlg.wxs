@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <UI>
+      <Dialog Id="GitCustomizeLineEndingsDlg" Width="370" Height="270" Title="[ProductName] [Setup]" X="50" Y="50">
+        <Control Type="RadioButtonGroup" Property="LINEENDINGS" Id="RadioButtonGroup" Width="310" Height="55" X="30" Y="74">
+          <RadioButtonGroup Property="LINEENDINGS">
+            <RadioButton Text="Checkout text files with Windows-style CRLF line-endings" Height="15" Value="true" Width="310" X="0" Y="0" />
+            <RadioButton Text="Commit text files with Unix-style LF (or NL) line-endings" Height="15" Value="input" Width="310" X="0" Y="20" />
+            <RadioButton Text="Perform no line-ending conversion on checkout or commit" Height="15" Value="false" Width="310" X="0" Y="40" />
+          </RadioButtonGroup>
+        </Control>
+        <Control Type="PushButton" Id="Back" Width="56" Height="17" X="180" Y="243" Text="!(loc.WixUIBack)" />
+        <Control Type="PushButton" Id="Next" Width="56" Height="17" X="236" Y="243" Default="yes" Text="!(loc.WixUINext)" />
+        <Control Type="PushButton" Id="Cancel" Width="56" Height="17" X="304" Y="243" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Type="Bitmap" Id="BannerBitmap" Width="370" Height="44" X="0" Y="0" Text="!(loc.GitCustomizeLineEndingsDlgBannerBitmap)" TabSkip="no" />
+        <Control Type="Line" Id="BannerLine" Width="370" Height="0" X="0" Y="44" />
+        <Control Type="Line" Id="BottomLine" Width="370" Height="0" X="0" Y="234" />
+        <Control Type="Text" Id="Description" Width="280" Height="20" X="25" Y="23" Text="Choose how text file line-endingss are converted on checkout and commit" Transparent="yes" NoPrefix="yes" />
+        <Control Type="Text" Id="Title" Width="200" Height="15" X="15" Y="6" Text="[DlgTitleFont]Choose Line-Ending Conversion Option" Transparent="yes" NoPrefix="yes" />
+        <Control Type="Text" Id="Text" Width="340" Height="10" X="15" Y="53" Text="Choose how [ProductName] should convert line endings for text files on checkout or commit:" />
+        <Control Type="Text" Id="OptionDescriptionText" Width="340" Height="10" X="15" Y="154" Text="Option Description:" />
+        <Control Type="Text" Id="ConvertOnCheckoutText" Hidden="yes" Width="324" Height="50" X="23" Y="170" Text="When checking out text files, Git will convert them so that they have Windows-style, CRLF line endings. When committing text files, they will be committed using Unix-style LF (or NL) line endings. For cross-platfrom development, this is the recommended setting on Windows development workstations. This is analogous to setting core.autocrlf to true.">
+          <Condition Action="show">LINEENDINGS = "true"</Condition>
+          <Condition Action="hide"><![CDATA[LINEENDINGS <> "true"]]></Condition>
+        </Control>
+        <Control Type="Text" Id="ConvertOnCommitText" Hidden="yes" Width="324" Height="50" X="23" Y="170" Text="When checking out text files, no line-ending conversion will occur. When committing text files, they will be converted to use Unix-style LF (or NL) line-endings. For cross-platfrom development, this is the recommended setting on Unix development workstations. This is analogous to setting core.autocrlf to input.">
+          <Condition Action="show">LINEENDINGS = "input"</Condition>
+          <Condition Action="hide"><![CDATA[LINEENDINGS <> "input"]]></Condition>
+        </Control>
+        <Control Type="Text" Id="NoConversionText" Hidden="yes" Width="324" Height="50" X="23" Y="170" Text="When checking out text files, no line-ending conversion will occur. Likewise, when committing text files, no line-ending conversion will occur. For cross-platform development, this setting is not recommended. This is analogous to setting core.autocrlf to false.">
+          <Condition Action="show">LINEENDINGS = "false"</Condition>
+          <Condition Action="hide"><![CDATA[LINEENDINGS <> "false"]]></Condition>
+        </Control>
+      </Dialog>
+    </UI>
+  </Fragment>
+</Wix>

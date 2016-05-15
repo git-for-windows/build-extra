@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <!-- Bitmap and Icon Binary Table Reference -->
+  <String Id="GfwUI_CompleteSetup_Icon" Overridable="yes">completi</String>
+  <String Id="GfwUI_CustomSetup_Icon" Overridable="yes">custicon</String>
+  <String Id="GfwUI_Installer_Icon" Overridable="yes">insticon</String>
+  <String Id="GfwUI_Remove_Icon" Overridable="yes">removico</String>
+  <String Id="GfwUI_Repair_Icon" Overridable="yes">repairic</String>
+
+  <!-- Common Text -->
+  <String Id="GfwUI_DialogTitle" Overridable="yes">[ProductName] [Setup]</String>
+  <String Id="GfwUI_Setup" Overridable="yes">Setup</String>
+  <String Id="GfwUI_Wizard" Overridable="yes">Setup Wizard</String>
+  <String Id="GfwUI_Progress1" Overridable="yes">Installing</String>
+  <String Id="GfwUI_Progress2" Overridable="yes">installs</String>
+
+  <!-- Customize some WiX Stock Dialog localizations -->
+  <String Id="InstallDirDlgTitle" Overridable="yes">{\WixUI_Font_Title}Installation Location</String>
+  <String Id="InstallDirDlgDescription" Overridable="yes">Choose the installation location for [ProductName]</String>
+
+  <!-- TODO: Localize the other Git dialogs -->
+  <String Id="GitChooseEnvironmentDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+
+
+  <String Id="GitChooseTerminalDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+
+
+  <String Id="GitCustomizeLineEndingsDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+
+
+  <String Id="GitLineEndingsDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+
+
+  <!-- TODO: Change the ID's to be prefixed with 'Git' instead of 'GfwUI_' -->
+  <!-- Dialogs Text -->
+  <String Id="GitMaintenanceTypeDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+  <String Id="GfwUI_MaintenanceTypeDlg_ChangeButton_Tooltip" Overridable="yes">Modify Installation</String>
+  <String Id="GfwUI_MaintenanceTypeDlg_ChangeLabel" Overridable="yes">[DlgTitleFont]&amp;Modify</String>
+  <String Id="GfwUI_MaintenanceTypeDlg_ChangeText" Overridable="yes">Install additional features or change or remove current installed features.</String>
+  <String Id="GfwUI_MaintenanceTypeDlg_Description" Overridable="yes">Select the operation you wish to perform.</String>
+  <String Id="GfwUI_MaintenanceTypeDlg_RemoveButton_Tooltip" Overridable="yes">Remove Installation</String>
+  <String Id="GfwUI_MaintenanceTypeDlg_RemoveLabel" Overridable="yes">[DlgTitleFont]&amp;Remove</String>
+  <String Id="GfwUI_MaintenanceTypeDlg_RemoveText" Overridable="yes">Removes [ProductName] from your computer.</String>
+  <String Id="GfwUI_MaintenanceTypeDlg_RepairButton_Tooltip" Overridable="yes">Repair Installation</String>
+  <String Id="GfwUI_MaintenanceTypeDlg_RepairLabel" Overridable="yes">[DlgTitleFont]Re&amp;pair"</String>
+  <String Id="GfwUI_MaintenanceTypeDlg_RepairText" Overridable="yes">Repairs errors in the most recent installation state - fixes missing or corrupt files, shortcuts and registry entries.</String>
+  <String Id="GfwUI_MaintenanceTypeDlg_Title" Overridable="yes">[DlgTitleFont]Modify, Repair or Remove installation</String>
+
+  <String Id="GitAdditionalOptionsDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+
+
+  <String Id="GitShellOptionsDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+
+</WixLocalization>
