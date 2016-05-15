@@ -179,11 +179,11 @@ mkdir -p obj &&
 wix/candle.exe -dVersion="${VERSION%%-*}" \
 	-arch $WIX_ARCH \
 	GitProduct.wxs GitComponents.wxs -o obj\\ \
-	-ext WixUtilExtension &&
+	-ext WixUtilExtension -ext WixTagExtension &&
 wix/light.exe \
 	obj/GitProduct.wixobj \
 	obj/GitComponents.wixobj \
-	-o $TARGET -ext WixUtilExtension \
+	-o $TARGET -ext WixUtilExtension -ext WixTagExtension \
 	-b / -b ../ &&
 echo "Success! You will find the new .msi at \"$TARGET\"." ||
 die "Could not generate $TARGET"
