@@ -12,7 +12,7 @@
            UpgradeCode='abbb3e1d-fea0-4b84-9585-b4dc13cbc1b4'>
     <Package InstallScope='perMachine' Compressed='yes' />
 
-    <MajorUpgrade DowngradeErrorMessage='A newer version of [ProductName] is already installed.' />
+    <MajorUpgrade DowngradeErrorMessage='A newer version of [ProductName] is already installed.' Schedule="afterInstallInitialize" />
     <MediaTemplate CabinetTemplate='git{0}.cab' CompressionLevel='high' EmbedCab='yes' />
 
     <Property Id='ARPCONTACT' Value='https://github.com/git-for-windows/git/wiki/Contact' />
