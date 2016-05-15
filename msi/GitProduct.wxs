@@ -117,18 +117,22 @@
     <WixVariable Id='WixUIInfoIco' Value='assets/Info.ico' />
     <WixVariable Id='WixUINewIco' Value='assets/NewFolder.ico' />
     <WixVariable Id='WixUIUpIco' Value='assets/OneLevelUp.ico' />
+    <WixVariable Id='GitUICompleteSetupIco' Value='assets/completi.ico' />
+    <WixVariable Id='GitUICustomSetupIco' Value='assets/custicon.ico' />
+    <WixVariable Id='GitUIInstallIco' Value='assets/insticon.ico' />
+    <WixVariable Id='GitUIRemoveIco' Value='assets/removico.ico' />
+    <WixVariable Id='GitUIRepairIco' Value='assets/repairic.ico' />
 
     <!-- Set the License file for the License Agreement Dialog -->
     <WixVariable Id='WixUILicenseRtf' Value='gpl-2.0.rtf'/>
 
     <UI Id='GitUI'>
       <!-- Custom Icon and Bitmap UI resources -->
-      <Binary Id="completi" SourceFile="assets/completi.ico" />
-      <Binary Id="custicon" SourceFile="assets/custicon.ico" />
-      <Binary Id="exclamic" SourceFile="assets/exclamic.ico" />
-      <Binary Id="insticon" SourceFile="assets/insticon.ico" />
-      <Binary Id="removico" SourceFile="assets/removico.ico" />
-      <Binary Id="repairic" SourceFile="assets/repairic.ico" />
+      <Binary Id="completi" SourceFile="!(wix.GitUICompleteSetupIco)" />
+      <Binary Id="custicon" SourceFile="!(wix.GitUICustomSetupIco)" />
+      <Binary Id="insticon" SourceFile="!(wix.GitUIInstallIco)" />
+      <Binary Id="removico" SourceFile="!(wix.GitUIRemoveIco)" />
+      <Binary Id="repairic" SourceFile="!(wix.GitUIRepairIco)" />
 
       <!-- UI Text Font Sstyles -->
       <TextStyle Id='DlgFont8' FaceName='Tahoma' Size='8' />
@@ -139,17 +143,7 @@
       <TextStyle Id="WixUI_Font_Bigger" FaceName="Verdana" Size="13" Bold="yes" />
 
       <!-- Additional Properties for UI -->
-      <Property Id="CompleteSetupIcon" Value="!(loc.GfwUI_CompleteSetup_Icon)" />
-      <Property Id="CustomSetupIcon" Value="!(loc.GfwUI_CustomSetup_Icon)" />
       <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
-      <Property Id='DlgTitleFont' Value='{\DlgFontBold8}' />
-      <Property Id="InstallerIcon" Value="!(loc.GfwUI_Installer_Icon)" />
-      <Property Id="Progress1" Value="!(loc.GfwUI_Progress1)" />
-      <Property Id="Progress2" Value="!(loc.GfwUI_Progress2)" />
-      <Property Id="RemoveIcon" Value="!(loc.GfwUI_Remove_Icon)" />
-      <Property Id="RepairIcon" Value="!(loc.GfwUI_Repair_Icon)" />
-      <Property Id="Setup" Value="!(loc.GfwUI_Setup)" />
-      <Property Id="Wizard" Value="!(loc.GfwUI_Wizard)" />
 
       <!-- These dialogs are required, but are not referenced directly by other dilaogs. -->
       <DialogRef Id="ErrorDlg" />
