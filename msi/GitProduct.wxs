@@ -220,6 +220,8 @@
     <SetProperty Id="ExecConfigurePackSizeLimit" Value='"[#BashExe]" -c "value=\"$$(git config --system pack.packsizelimit)\" &amp;&amp; if test 2g = \"$value\"; then git config --system --unset pack.packsizelimit; fi"' Sequence="execute" Before="ExecConfigurePackSizeLimit"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
     <CustomAction Id="ExecConfigurePackSizeLimit" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
   <?endif?>
+    <SetProperty Id="ExecConfigureSslCAInfo" Value='"[#BashExe]" -c "git config --system http.sslCAinfo \"/[#ca_bundle.crt]\""' Sequence="execute" Before="ExecConfigureSslCAInfo"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
+    <CustomAction Id="ExecConfigureSslCAInfo" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
     <!-- Schedule two "best effort" actions:
           1. Write the command to run the post-install.bat to the transaction log
           2. Execute the command during the installation transaction
@@ -229,8 +231,9 @@
 
     <InstallExecuteSequence>
     <?if $(sys.BUILDARCH)=x64 ?>
-      <Custom Action="ExecConfigurePackSizeLimit" Before="ExecPostInstallBat"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
+      <Custom Action="ExecConfigurePackSizeLimit" Before="ExecConfigureSslCAInfo"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
     <?endif?>
+      <Custom Action="ExecConfigureSslCAInfo" Before="ExecPostInstallBat"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
       <!-- Execute the post-install.bat at the end of the installation transaction on install and repair but not removal. -->
       <Custom Action="ExecPostInstallBat" Before="InstallFinalize"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
     </InstallExecuteSequence>
