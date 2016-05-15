@@ -7,24 +7,24 @@
 <?endif?>
 
 <Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'>
-  <Product Id='*' Name='Git' Language='1033' Manufacturer='The Git Development Community'
+  <Product Id='*' Name='Git for Windows' Language='1033' Manufacturer='The Git Development Community'
            Version='$(var.Version)'
            UpgradeCode='abbb3e1d-fea0-4b84-9585-b4dc13cbc1b4'>
-    <Package InstallScope='perMachine' Compressed='yes' />
+    <Package InstallScope='perMachine' Compressed='yes' Keywords='Git' />
 
     <MajorUpgrade DowngradeErrorMessage='A newer version of [ProductName] is already installed.' Schedule="afterInstallInitialize" />
     <MediaTemplate CabinetTemplate='git{0}.cab' CompressionLevel='high' EmbedCab='yes' />
-
-    <Property Id='ARPCONTACT' Value='https://github.com/git-for-windows/git/wiki/Contact' />
-    <Property Id='ARPURLINFOABOUT' Value='https://git-for-windows.github.io/' />
-    <Property Id='ARPNOMODIFY' Value='1' />
-
-    <Property Id='ARPPRODUCTICON' Value='git.ico' />
     <Icon Id='git.ico' SourceFile='git.ico' />
 
-    <Property Id='MSIFASTINSTALL' Value='7' />
-
+    <!-- Add/Remove Programs Properties -->
+    <Property Id='ARPNOMODIFY' Value='1' />
+    <Property Id='ARPCONTACT' Value='https://github.com/git-for-windows/git/wiki/Contact' />
+    <Property Id='ARPURLINFOABOUT' Value='https://git-for-windows.github.io/' />
+    <Property Id='ARPPRODUCTICON' Value='git.ico' />
     <SetProperty Id='ARPINSTALLLOCATION' Value='[INSTALLFOLDER]' After='CostFinalize' />
+
+    <!-- Other MSI specific properties -->
+    <Property Id='MSIFASTINSTALL' Value='7' />
 
     <Feature Id='Git'>
       <Component Directory='INSTALLFOLDER'>
