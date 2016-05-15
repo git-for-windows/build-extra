@@ -175,7 +175,7 @@ cat <<EOF
     </Fragment>
 </Wix>
 EOF
-)>GitComponents.wxs
+) | sed -e "s/\(<File .*Source=\"\)\(.*\(compat-\)?\(ba\)?sh.exe\|.*git.*\.exe\)\([^>]*\) \/>/\1\2\" BindPath=\"[BindImagePaths]\5 \/>/" >GitComponents.wxs
 
 # Make the .msi file
 mkdir -p obj &&

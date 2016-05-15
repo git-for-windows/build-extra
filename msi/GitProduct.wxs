@@ -33,6 +33,8 @@
     <PropertyRef Id="WIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED" />
 
     <!-- Git for Windows MSI Properties -->
+    <SetProperty Id="BindImagePaths" Value="[INSTALLFOLDER]usr\bin;[MingwFolder]bin;[System$(var.SixtyFourBit)Folder]" After="CostFinalize" />
+
     <SetProperty Id="CMDLINE_CLIENVIRONMENT" Value="[CLIENVIRONMENT]" Before="AppSearch" Sequence="first">
       CLIENVIRONMENT~="Bash" OR CLIENVIRONMENT~="CmdTools"
     </SetProperty>
