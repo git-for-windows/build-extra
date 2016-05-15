@@ -30,7 +30,7 @@
 
     <Feature Id='Git'>
       <Component Directory='INSTALLFOLDER'>
-        <RegistryValue Root='HKLM' Key='Software\Git' Name='InstallFolder' Value='[INSTALLFOLDER]' Type='string' />
+        <RegistryValue Root='HKLM' Key='SOFTWARE\GitForWindows' Name='InstallFolder' Value='[INSTALLFOLDER]' Type='string' />
         <Environment Name='PATH' Value='[BinFolder]' Action='set' Part='last' System='yes' />
 
         <RemoveFolder Directory='GitProgramMenuFolder' On='uninstall' />
