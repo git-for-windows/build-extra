@@ -69,7 +69,7 @@
       <!-- Execute the post-install.bat at the end of the installation
            transaction on install and repair but not removal. -->
       <Custom Action="ExecPostInstallBat" Before="InstallFinalize">
-        REMOVE &lt;&gt; "ALL"
+        <![CDATA[ REMOVE <> "ALL" ]]>
       </Custom>
     </InstallExecuteSequence>
   </Fragment>
