@@ -86,7 +86,7 @@ do
 	then
 
 		case "$name" in
-		git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|mintty|msys2-runtime)
+		git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|mintty|msys2-runtime|mingw-w64-x86_64-git-credential-manager|mingw-w64-i686-git-credential-manager)
 			url="$bintray_source_url/$filename"
 			sf1_url=
 			sf2_url=
