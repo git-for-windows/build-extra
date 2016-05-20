@@ -30,7 +30,24 @@
 
     <!-- Git for Windows MSI Properties -->
     <Property Id="CLIENVIRONMENT" Value="Cmd" />
-    <Property Id="LINEENDINGS" Value="true" />
+
+    <SetProperty Id="CMDLINE_LINEENDINGS" Value="[LINEENDINGS]" Before="AppSearch" Sequence="first">
+      <![CDATA[ LINEENDINGS~="input" OR LINEENDINGS~="false" ]]>
+    </SetProperty>
+    <Property Id="LINEENDINGS" Value="true">
+      <RegistrySearch Id="LineEndingsSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="core.autocrlf" Type="raw" />
+    </Property>
+    <SetProperty Id="LINEENDINGS" Value="[CMDLINE_LINEENDINGS]" After="AppSearch" Sequence="first">CMDLINE_LINEENDINGS</SetProperty>
+    <SetProperty Id="LINEENDINGS" Value="true" Action="NormalizeTrueLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
+      LINEENDINGS~="true"
+    </SetProperty>
+    <SetProperty Id="LINEENDINGS" Value="input" Action="NormalizeInputLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
+      LINEENDINGS~="input"
+    </SetProperty>
+    <SetProperty Id="LINEENDINGS" Value="false" Action="NormalizeFalseLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
+      LINEENDINGS~="false"
+    </SetProperty>
+
     <Property Id="TERMINAL" Value="MinTTY" />
     <Property Id="ENABLEFSCACHE" Value="true" />
     <Property Id="ENABLEGCM" Value="1" />
@@ -222,6 +239,8 @@
   <?endif?>
     <SetProperty Id="ExecConfigureSslCAInfo" Value='"[#BashExe]" -c "git config --system http.sslCAinfo \"/[#ca_bundle.crt]\""' Sequence="execute" Before="ExecConfigureSslCAInfo"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
     <CustomAction Id="ExecConfigureSslCAInfo" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
+    <SetProperty Id="ExecConfigureCoreAutoCrlf" Value='"[#GitExe]" config --system core.autocrlf [LINEENDINGS]' Sequence="execute" Before="ExecConfigureCoreAutoCrlf"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
+    <CustomAction Id="ExecConfigureCoreAutoCrlf" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
     <!-- Schedule two "best effort" actions:
           1. Write the command to run the post-install.bat to the transaction log
           2. Execute the command during the installation transaction
@@ -233,7 +252,8 @@
     <?if $(sys.BUILDARCH)=x64 ?>
       <Custom Action="ExecConfigurePackSizeLimit" Before="ExecConfigureSslCAInfo"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
     <?endif?>
-      <Custom Action="ExecConfigureSslCAInfo" Before="ExecPostInstallBat"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
+      <Custom Action="ExecConfigureSslCAInfo" Before="ExecConfigureCoreAutoCrlf"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
+      <Custom Action="ExecConfigureCoreAutoCrlf" Before="ExecPostInstallBat"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
       <!-- Execute the post-install.bat at the end of the installation transaction on install and repair but not removal. -->
       <Custom Action="ExecPostInstallBat" Before="InstallFinalize"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
     </InstallExecuteSequence>
