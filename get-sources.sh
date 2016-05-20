@@ -26,11 +26,21 @@ dir=cached-source-packages
 mkdir -p "$dir" ||
 die "Could not make the cache directory"
 
-ref=refs/heads/all-sources
-commit="$(git rev-parse --verify $ref 2>/dev/null)"
-GIT_INDEX_FILE=.git/tmp-index
-export GIT_INDEX_FILE
-rm -f $GIT_INDEX_FILE
+zipdir=source-zips
+zipprev=$zipdir.previous
+rm -rf $zipprev
+test ! -d $zipdir ||
+mv $zipdir $zipprev
+mkdir $zipdir
+
+tar2zip () {
+	unpackdir=$dir/.unpack &&
+	rm -rf $unpackdir &&
+	mkdir $unpackdir &&
+	(cd $unpackdir && tar xzf -) <"$1" &&
+	(cd $unpackdir && zip -9qr - .) >"$2" ||
+	die "Could not transmogrify $1 to $2"
+}
 
 cat "$1" |
 while read name version
@@ -68,9 +78,14 @@ do
 	mingw-w64-*-antiword-0.37-2) version=0.37-1;;
 	esac
 
-	# Already merged?
-	test -z "$(git ls-files $name/.SRCINFO)" ||
-	continue
+	zipname=$name-$version.zip
+
+	# Already transformed?
+	test ! -f $zipprev/$zipname || {
+		mv $zipprev/$zipname $zipdir/ ||
+		die "Could not move previous zip: $zipprev/$zipname"
+		continue
+	}
 
 	w64=${name#mingw-w64-x86_64-}
 	w64=${w64#mingw-w64-i686-}
@@ -132,17 +147,9 @@ do
 		die "Empty file: $dir/$filename"
 	fi
 
-	/usr/src/git/contrib/fast-import/import-tars.perl "$dir/$filename" ||
-	die "Could not import $dir/$filename"
-
-	echo "Merging sources for $name $version"
-	git read-tree --prefix=$name/ refs/heads/import-tars &&
-	tree="$(git write-tree)" &&
-	commit2="$(git commit-tree -m "Import sources for $name $version" \
-		${commit:+-p} $commit "$tree")" &&
-	git update-ref -m "Import $name $version" $ref $commit2 $commit &&
-	commit=$commit2 &&
-	git update-ref -m "Clean up" -d refs/heads/import-tars ||
-	die "Could not merge sources for $name $version"
+	echo "Converting $filename to $zipname"
+	tar2zip "$dir/$filename" "$zipdir/$zipname" ||
+	die "Could not transform $dir/$filename"
 done
 
+echo "Sources are in $zipdir/"
