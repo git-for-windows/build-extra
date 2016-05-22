@@ -60,17 +60,12 @@
           1. Write the command to run the post-install.bat to the transaction log
           2. Execute the command during the installation transaction
     -->
-    <SetProperty Id="ExecPostInstallBat" Value='"[System$(var.SixtyFourBit)Folder]cmd.exe" /c "[#PostInstallBat]"'
-                 Sequence="execute" Before="ExecPostInstallBat" />
-    <CustomAction Id="ExecPostInstallBat" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)"
-                  Execute="deferred" Return="ignore" Impersonate="no" />
+    <SetProperty Id="ExecPostInstallBat" Value='"[System$(var.SixtyFourBit)Folder]cmd.exe" /c "[#PostInstallBat]"' Sequence="execute" Before="ExecPostInstallBat"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
+    <CustomAction Id="ExecPostInstallBat" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
 
     <InstallExecuteSequence>
-      <!-- Execute the post-install.bat at the end of the installation
-           transaction on install and repair but not removal. -->
-      <Custom Action="ExecPostInstallBat" Before="InstallFinalize">
-        <![CDATA[ REMOVE <> "ALL" ]]>
-      </Custom>
+      <!-- Execute the post-install.bat at the end of the installation transaction on install and repair but not removal. -->
+      <Custom Action="ExecPostInstallBat" Before="InstallFinalize"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
     </InstallExecuteSequence>
   </Fragment>
 </Wix>
