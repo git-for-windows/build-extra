@@ -57,7 +57,7 @@ DisableDirPage=auto
 DefaultGroupName={#APP_NAME}
 DisableProgramGroupPage=auto
 DisableReadyPage=yes
-InfoBeforeFile={#SourcePath}\gpl-2.0.rtf
+InfoBeforeFile={#SourcePath}\..\gpl-2.0.rtf
 #ifdef OUTPUT_TO_TEMP
 PrivilegesRequired=lowest
 #else
@@ -73,7 +73,7 @@ VersionInfoVersion={#APP_VERSION}
 #endif
 
 ; Cosmetic
-SetupIconFile={#SourcePath}\git.ico
+SetupIconFile={#SourcePath}\..\git.ico
 WizardImageBackColor=clWhite
 WizardImageStretch=no
 WizardImageFile={#SourcePath}\git.bmp

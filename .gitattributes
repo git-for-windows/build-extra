@@ -7,4 +7,6 @@ PKGBUILD eol=lf
 *.h eol=lf
 *.md eol=lf
 *.post eol=lf
+*.sh eol=lf
 *.txt eol=lf
+*.wxs eol=lf

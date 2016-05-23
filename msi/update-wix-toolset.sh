@@ -33,7 +33,7 @@ die "Could not install WiX toolset"
 dos2unix wix/*.config
 
 # Remove unneeded files
-rm wix/{LuxTasks.dll,ThmViewer.exe,Wix{[CFGHILMPSV],Di,Tas,Toolset.B,UI}*.dll}
+rm wix/{LuxTasks.dll,ThmViewer.exe,Wix{[CFGHILMPSV],Di,Tas,Toolset.B}*.dll}
 rm wix/{dark,difx,lux,melt,nit,pyro,retina,shine,smoke,swc,torch}*
 rm wix/*.targets
 rm -r wix/{doc,sdk}

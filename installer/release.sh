@@ -5,52 +5,6 @@ die () {
 	exit 1
 }
 
-render_release_notes () {
-	# Generate the ReleaseNotes.html file
-	test -f ReleaseNotes.html &&
-	test ReleaseNotes.html -nt ReleaseNotes.md &&
-	test ReleaseNotes.html -nt release.sh || {
-		test -x /usr/bin/markdown ||
-		export PATH="$PATH:$(readlink -f "$PWD"/..)/../../bin"
-
-		# Install markdown
-		type markdown ||
-		pacman -Sy --noconfirm markdown ||
-		die "Could not install markdown"
-
-		(homepage=https://git-for-windows.github.io/ &&
-		 contribute=$homepage#contribute &&
-		 wiki=https://github.com/git-for-windows/git/wiki &&
-		 faq=$wiki/FAQ &&
-		 mailinglist=mailto:git@vger.kernel.org &&
-		 links="$(printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" \
-			'<div class="links">' \
-			'<ul>' \
-			'<li><a href="'$homepage'">homepage</a></li>' \
-			'<li><a href="'$faq'">faq</a></li>' \
-			'<li><a href="'$contribute'">contribute</a></li>' \
-			'<li><a href="'$contribute'">bugs</a></li>' \
-			'<li><a href="'$mailinglist'">questions</a></li>' \
-			'</ul>' \
-			'</div>')" &&
-		 printf '%s\n%s\n%s\n%s %s\n%s %s\n%s\n%s\n%s\n%s\n' \
-			'<!DOCTYPE html>' \
-			'<html>' \
-			'<head>' \
-			'<meta http-equiv="Content-Type" content="text/html;' \
-			'charset=UTF-8">' \
-			'<link rel="stylesheet"' \
-			' href="usr/share/git/ReleaseNotes.css">' \
-			'</head>' \
-			'<body class="details">' \
-			"$links" \
-			'<div class="content">'
-		 markdown ReleaseNotes.md ||
-		 die "Could not generate ReleaseNotes.html"
-		 printf '</div>\n</body>\n</html>\n') >ReleaseNotes.html
-	}
-}
-
 # change directory to the script's directory
 cd "$(dirname "$0")" ||
 die "Could not switch directory"
@@ -75,11 +29,6 @@ do
 			"#define OUTPUT_TO_TEMP ''")"
 		skip_files=t
 		;;
-	-r|--render-release-notes)
-		render_release_notes &&
-		start ReleaseNotes.html
-		exit
-		;;
 	*)
 		break
 	esac
@@ -102,7 +51,7 @@ case "$version" in
 *) die "InnoSetup requires a version that begins with a digit";;
 esac
 
-render_release_notes
+../render-release-notes.sh --css usr/share/git/
 
 # Evaluate architecture
 ARCH="$(uname -m)"
@@ -132,7 +81,7 @@ fi
 
 printf "; List of files\n%s\n%s\n%s\n%s\n%s\n" \
 	"Source: \"{#SourcePath}\\package-versions.txt\"; DestDir: {app}\\etc; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
-	"Source: \"{#SourcePath}\\usr\\share\\git\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"{#SourcePath}\\..\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"cmd\\git.exe\"; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: bash.exe; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: sh.exe; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \

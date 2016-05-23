@@ -419,19 +419,19 @@ tag_git () { #
 	nextver="$(sed -ne \
 		'1s/.* \(v[0-9][.0-9]*\)(\([0-9][0-9]*\)) .*/\1.windows.\2/p' \
 		-e '1s/.* \(v[0-9][.0-9]*\) .*/\1.windows.1/p' \
-		<"$build_extra_dir/installer/ReleaseNotes.md")"
+		<"$build_extra_dir/ReleaseNotes.md")"
 	! git --git-dir="$git_src_dir" rev-parse --verify \
 		refs/tags/"$nextver" >/dev/null 2>&1 ||
 	die "Already tagged: %s\n" "$nextver"
 
 	notes="$("$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-		'markdown </usr/src/build-extra/installer/ReleaseNotes.md |
+		'markdown </usr/src/build-extra/ReleaseNotes.md |
 		 w3m -dump -cols 72 -T text/html | \
 		 sed -n "/^Changes since/,\${:1;p;n;/^Changes/q;b1}"')"
 
 	tag_message="$(printf "%s\n\n%s" \
 		"$(sed -n '1s/.*\(Git for Windows v[^ ]*\).*/\1/p' \
-		<"$build_extra_dir/installer/ReleaseNotes.md")" "$notes")" &&
+		<"$build_extra_dir/ReleaseNotes.md")" "$notes")" &&
 	(cd "$git_src_dir" &&
 	 git tag -m "$tag_message" -a "$nextver" git-for-windows/master) ||
 	die "Could not tag %s in %s\n" "$nextver" "$git_src_dir"
@@ -615,12 +615,12 @@ set_version_from_sdks_git () {
 
 version_from_release_notes () {
 	sed -e '1s/^# Git for Windows v\(.*\) Release Notes$/\1/' -e 1q \
-		"$sdk64/usr/src/build-extra/installer/ReleaseNotes.md"
+		"$sdk64/usr/src/build-extra/ReleaseNotes.md"
 }
 
 previous_version_from_release_notes () {
 	sed -n "/^## Changes since/{s/## .* v\([^ ]*\) (.*/\1/p;q}" \
-		<"$sdk64"/usr/src/build-extra/installer/ReleaseNotes.md
+		<"$sdk64"/usr/src/build-extra/ReleaseNotes.md
 }
 
 today () {
@@ -642,7 +642,7 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 	up_to_date usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
-	relnotes="$sdk64"/usr/src/build-extra/installer/ReleaseNotes.md
+	relnotes="$sdk64"/usr/src/build-extra/ReleaseNotes.md
 	latest="$(version_from_release_notes)"
 	if test "$latest" != "$(previous_version_from_release_notes)"
 	then
@@ -674,7 +674,7 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 	 what_singular="$(echo "$what" |
 		 sed -e 's/Fixes/Fix/' -e 's/Features/Feature/')" &&
 	 git commit -s -m "Mention $what_singular in release notes" \
-		-m "$(echo "$*" | fmt -72)" installer/ReleaseNotes.md) ||
+		-m "$(echo "$*" | fmt -72)" ReleaseNotes.md) ||
 	die "Could not commit release note edits\n"
 
 	(cd "$sdk32"/usr/src/build-extra &&
@@ -730,12 +730,12 @@ finalize () { # <what, e.g. release-notes>
 
 	sed -i -e "1s/.*/# Git for Windows v$displayver Release Notes/" \
 		-e "2s/.*/Latest update: $(today)/" \
-		"$sdk64"/usr/src/build-extra/installer/ReleaseNotes.md ||
+		"$sdk64"/usr/src/build-extra/ReleaseNotes.md ||
 	die "Could not edit release notes\n"
 
 	(cd "$sdk64"/usr/src/build-extra &&
 	 git commit -s -m "Prepare release notes for v$displayver" \
-		installer/ReleaseNotes.md) ||
+		ReleaseNotes.md) ||
 	die "Could not commit finalized release notes\n"
 
 	(cd "$sdk32"/usr/src/build-extra &&
@@ -776,7 +776,7 @@ release () { #
 	die "Incorrect version in the release notes\n"
 
 	test "Latest update: $(today)" = "$(sed -n 2p \
-		<"$sdk64/usr/src/build-extra/installer/ReleaseNotes.md")" ||
+		<"$sdk64/usr/src/build-extra/ReleaseNotes.md")" ||
 	die "Incorrect release date in the release notes\n"
 
 	for sdk in "$sdk32" "$sdk64"
@@ -852,7 +852,7 @@ publish () { #
 	name="Git for Windows $displayver"
 	text="$(sed -n \
 		"/^## Changes since/,\${s/## //;:1;p;n;/^## Changes/q;b1}" \
-		<"$sdk64"/usr/src/build-extra/installer/ReleaseNotes.md)"
+		<"$sdk64"/usr/src/build-extra/ReleaseNotes.md)"
 	checksums="$(printf 'Filename | SHA-256\n-------- | -------\n'
 		(cd "$HOME" && sha256sum.exe \
 			Git-"$ver"-64-bit.exe \

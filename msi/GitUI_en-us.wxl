@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<WixLocalization Culture="en-us" xmlns="http://wixtoolset.org/schemas/v4/wxl">
+  <!-- Customize some WiX Stock Dialog localizations -->
+  <String Id="InstallDirDlgTitle" Overridable="yes">{\WixUI_Font_Title}Installation Location</String>
+  <String Id="InstallDirDlgDescription" Overridable="yes">Choose the installation location for [ProductName]</String>
+
+  <!-- Dialogs Text -->
+  <String Id="GitChooseEnvironmentDlg_Title" Overridable="yes">[ProductName] Setup</String>
+  <String Id="GitChooseEnvironmentDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+  <String Id="GitChooseEnvironmentDlg_RbBash" Overridable="yes">Only use Git from Git from the Bash &amp;shell</String>
+  <String Id="GitChooseEnvironmentDlg_RbCmd" Overridable="yes">Use Git from &amp;both the Windows Command Prompt and the Bash shell</String>
+  <String Id="GitChooseEnvironmentDlg_RbCmdTools" Overridable="yes">Use Git and optional Unix tools from the Windows Command &amp;Prompt</String>
+  <String Id="GitChooseEnvironmentDlgDescription" Overridable="yes">Choose how you would like to use Git from the command line</String>
+  <String Id="GitChooseEnvironmentDlgTitle" Overridable="yes">{\WixUI_Font_Title}Git Command Line Environment Options</String>
+  <String Id="GitChooseEnvironmentDlg_Text" Overridable="yes">Select from one of the three options below to configure how you would like to use Git from the command line:</String>
+  <String Id="GitChooseEnvironmentDlg_OptionDescription" Overridable="yes">Option Description:</String>
+  <String Id="GitChooseEnvironmentDlg_BashText" Overridable="yes">This is the safest choice as your PATH environment variable will not be modified at all. You will only be able to use the Git command line tools from Git Bash.</String>
+  <String Id="GitChooseEnvironmentDlg_CmdText" Overridable="yes">This option is considered safe as it only adds some minimal Git wrappers to your PATH environment variable to avoid cluttering your environment with optional Unix tools. You will be able to use Git from both Git Bash and the Windows Command Prompt.</String>
+  <String Id="GitChooseEnvironmentDlg_CmdToolsText" Overridable="yes">Warning: This will override Windows tools like 'find' and 'sort'. Only use this option if you understand the implications.</String>
+
+  <String Id="GitChooseTerminalDlg_Title" Overridable="yes">[ProductName] Setup</String>
+  <String Id="GitChooseTerminalDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+  <String Id="GitChooseTerminalDlg_RbMinTTY" Overridable="yes">&amp;MinTTY</String>
+  <String Id="GitChooseTerminalDlg_RbCmdPrompt" Overridable="yes">&amp;Windows Console Command Prompt</String>
+  <String Id="GitChooseTerminalDlgDescription" Overridable="yes">Choose the default [ProductName] Terminal Console</String>
+  <String Id="GitChooseTerminalDlgTitle" Overridable="yes">{\WixUI_Font_Title}[ProductName] Default Terminal Console Selection</String>
+  <String Id="GitChooseTerminalDlg_Text" Overridable="yes">Choose which command-line interface console to use with [ProductName]:</String>
+  <String Id="GitChooseTerminalDlg_OptionDescription" Overridable="yes">Option Description:</String>
+  <String Id="GitChooseTerminalDlg_MinTTYText" Overridable="yes">Git Bash will use MinTTY as the terminal emulator, which sports a resizable window, non-rectangular selections, a Unicode font, and emulation of various terminal standards such as VT-100 and XTerm-256Color. Windows console programs (such as interactive Python) must be launched via 'winpty' to work in MinTTY.</String>
+  <String Id="GitChooseTerminalDlg_CmdPromptText" Overridable="yes">Git will use the default command prompt console window of Windows (&quot;cmd.exe&quot;), which works well with Win32 console programs such as interactive Python or node.js, but has a very limited default scroll-back buffer, needs to be configured to use a Unicode font in order to display non-ASCII characters correctly, and prior to Windows 10, its window was not freely resizable and only allowed rectangular text selections.</String>
+
+  <String Id="GitCustomizeLineEndingsDlg_Title" Overridable="yes">[ProductName] Setup</String>
+  <String Id="GitCustomizeLineEndingsDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+  <String Id="GitCustomizeLineEndingsDlg_RbConvertOnCheckout" Overridable="yes">Checkout text files with &amp;Windows-style CRLF line-endings</String>
+  <String Id="GitCustomizeLineEndingsDlg_RbConvertOnCommit" Overridable="yes">Commit text files with &amp;Unix-style LF (or NL) line-endings</String>
+  <String Id="GitCustomizeLineEndingsDlg_RbNoConversion" Overridable="yes">&amp;Perform no line-ending conversion on checkout or commit</String>
+  <String Id="GitCustomizeLineEndingsDlgDescription" Overridable="yes">Choose how text file line-endingss are converted on checkout and commit</String>
+  <String Id="GitCustomizeLineEndingsDlgTitle" Overridable="yes">{\WixUI_Font_Title}Choose Line-Ending Conversion Option</String>
+  <String Id="GitCustomizeLineEndingsDlg_Text" Overridable="yes">Choose how [ProductName] should convert line endings for text files on checkout or commit:</String>
+  <String Id="GitCustomizeLineEndingsDlg_OptionDescription" Overridable="yes">Option Description:</String>
+  <String Id="GitCustomizeLineEndingsDlg_ConvertOnCheckoutText" Overridable="yes">When checking out text files, Git will convert them so that they have Windows-style, CRLF line endings. When committing text files, they will be committed using Unix-style LF (or NL) line endings. For cross-platfrom development, this is the recommended setting on Windows development workstations. This is analogous to setting core.autocrlf to true.</String>
+  <String Id="GitCustomizeLineEndingsDlg_ConvertOnCommitText" Overridable="yes">When checking out text files, no line-ending conversion will occur. When committing text files, they will be converted to use Unix-style LF (or NL) line-endings. For cross-platfrom development, this is the recommended setting on Unix development workstations. This is analogous to setting core.autocrlf to input.</String>
+  <String Id="GitCustomizeLineEndingsDlg_NoConversionText" Overridable="yes">When checking out text files, no line-ending conversion will occur. Likewise, when committing text files, no line-ending conversion will occur. For cross-platform development, this setting is not recommended. This is analogous to setting core.autocrlf to false.</String>
+
+  <String Id="GitLineEndingsDlg_Title" Overridable="yes">[ProductName] Setup</String>
+  <String Id="GitLineEndingsDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+  <String Id="GitLineEndingsDlg_RbUseDefault" Overridable="yes">&amp;No, use the default line ending settings for [ProductName]</String>
+  <String Id="GitLineEndingsDlg_RbCustomize" Overridable="yes">&amp;Yes, I have specific development requirements and need to customize how [ProductName] will handle line endings in text files on checkout or commit.</String>
+  <String Id="GitLineEndingsDlgDescription" Overridable="yes">Choose how [ProductName] should handle line-endings in text files</String>
+  <String Id="GitLineEndingsDlgTitle" Overridable="yes">Line Ending Options for [ProductName]</String>
+  <String Id="GitLineEndingsDlg_Text1" Overridable="yes">Do you want to change how [ProductName] will handle line feeds (LF) and carriage returns (CR) when checking out and committing files?</String>
+  <String Id="GitLineEndingsDlg_Text2" Overridable="yes">Unless you know you have specific development requirements regarding line endings in text files, it's safe to use the default option selected below for [ProductName].  Selecting the wrong line ending setting can result in difficulties for you and for others with whom you share a Git repository when checking out and committing files with Git.</String>
+  <String Id="GitLineEndingsDlg_Text3" Overridable="yes">If the setting chosen during installation of [ProductName] later causes problems with committing files to Git repositories, you can always change this setting after installation without having to re-run this installer.  At a command line interface, type &quot;git config --help&quot; and read about the core.autocrlf configuration setting for more information.</String>
+
+  <String Id="GitMaintenanceTypeDlg_Title" Overridable="yes">[ProductName] Setup</String>
+  <String Id="GitMaintenanceTypeDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+  <String Id="GitMaintenanceTypeDlg_ChangeButtonIcon" Overridable="yes">custicon</String>
+  <String Id="GitMaintenanceTypeDlg_ChangeButton_Tooltip" Overridable="yes">Modify Installation</String>
+  <String Id="GitMaintenanceTypeDlg_ChangeLabel" Overridable="yes">{\WixUI_Font_Title}&amp;Modify</String>
+  <String Id="GitMaintenanceTypeDlg_ChangeText" Overridable="yes">Install additional features or change or remove current installed features.</String>
+  <String Id="GitMaintenanceTypeDlg_Description" Overridable="yes">Select the operation you wish to perform.</String>
+  <String Id="GitMaintenanceTypeDlg_RemoveButtonIcon" Overridable="yes">removico</String>
+  <String Id="GitMaintenanceTypeDlg_RemoveButton_Tooltip" Overridable="yes">Remove Installation</String>
+  <String Id="GitMaintenanceTypeDlg_RemoveLabel" Overridable="yes">{\WixUI_Font_Title}&amp;Remove</String>
+  <String Id="GitMaintenanceTypeDlg_RemoveText" Overridable="yes">Removes [ProductName] from your computer.</String>
+  <String Id="GitMaintenanceTypeDlg_RepairButtonIcon" Overridable="yes">repairic</String>
+  <String Id="GitMaintenanceTypeDlg_RepairButton_Tooltip" Overridable="yes">Repair Installation</String>
+  <String Id="GitMaintenanceTypeDlg_RepairLabel" Overridable="yes">{\WixUI_Font_Title}Re&amp;pair</String>
+  <String Id="GitMaintenanceTypeDlg_RepairText" Overridable="yes">Repairs errors in the most recent installation state - fixes missing or corrupt files, shortcuts and registry entries.</String>
+  <String Id="GitMaintenanceTypeDlg_Title" Overridable="yes">{\WixUI_Font_Title}Modify, Repair or Remove installation</String>
+
+  <String Id="GitAdditionalOptionsDlg_Title" Overridable="yes">[ProductName] Setup</String>
+  <String Id="GitAdditionalOptionsDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+  <String Id="GitAdditionalOptionsDlg_EnableFsCacheCheckBox" Overridable="yes">Enable &amp;file-system caching</String>
+  <String Id="GitAdditionalOptionsDlg_EnableFSCacheText" Overridable="yes">File system data will be read in bulk and cached in memory for certain operations. This provides a significant performance boost. Enabling this option is analogous to setting core.fscache to true.</String>
+  <String Id="GitAdditionalOptionsDlg_EnableGcmText" Overridable="yes">The Git Credential Manager for Windows provides secure Git credential storage for Windows, most notably multi-factor authentication support for Visual Studio Team Services and GitHub. (Requires the .NET framework v4.5.1 or later.)</String>
+  <String Id="GitAdditionalOptionsDlg_EnableGcmCheckBox" Overridable="yes">Enable &amp;Git Credential Manager for Windows</String>
+  <String Id="GitAdditionalOptionsDlgTitle" Overridable="yes">{\WixUI_Font_Title}Enable Additional Options</String>
+  <String Id="GitAdditionalOptionsDlgDescription" Overridable="yes">Choose additional options to configure [ProductName] on your computer</String>
+
+  <String Id="GitShellOptionsDlg_Title" Overridable="yes">[ProductName] Setup</String>
+  <String Id="GitShellOptionsDlgBannerBitmap" Overridable="yes">WixUI_Bmp_Banner</String>
+  <String Id="GitShellOptionsDlg_ContextMenuText" Overridable="yes">Windows Explorer Context Menu Entries:</String>
+  <String Id="GitShellOptionsDlg_GitBashHereCheckBox" Overridable="yes">Add 'Git &amp;Bash Here' Windows Explorer context menu entry</String>
+  <String Id="GitShellOptionsDlg_GitGUIHereCheckBox" Overridable="yes">Add 'Git &amp;GUI Here' Windows Explorer context menu entry</String>
+  <String Id="GitShellOptionsDlg_GitFileAssociationsText" Overridable="yes">Windows Explorer File Associations:</String>
+  <String Id="GitShellOptionsDlg_GitFileAssociationsCheckBox" Overridable="yes">&amp;Associate .git* configuration files with the default text editor</String>
+  <String Id="GitShellOptionsDlg_GitBashDesktopIconCheckBox" Overridable="yes">Create an icon on the Windows Desktop for Git Bash</String>
+  <String Id="GitShellOptionsDlg_GitGUIDesktopIconCheckBox" Overridable="yes">Create an icon on the Windows Desktop for Git GUI</String>
+  <String Id="GitShellOptionsDlg_DesktopIconsText" Overridable="yes">Desktop Icon Options</String>
+  <String Id="GitShellOptionsDlgDescription" Overridable="yes">Choose additional Windows Explorer integration options</String>
+  <String Id="GitShellOptionsDlgTitle" Overridable="yes">{\WixUI_Font_Title}Choose Windows Integration Options</String>
+</WixLocalization>
