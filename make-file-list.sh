@@ -16,6 +16,16 @@ pacman_list () {
 		done |
 		grep -v -e '^db$' -e '^info$' -e '^heimdal$' \
 			-e '^git$' -e '^util-linux$' |
+		if test -z "$MINIMAL_GIT"
+		then
+			cat
+		else
+			grep -v -e '^\(.*-bzip2\|.*-c-ares\|.*-libsystre\)$' \
+				-e '^\(.*libtre-git\)$' \
+				-e '^\(.*-tcl\|.*-tk\|.*-wineditline\)$' \
+				-e '^\(gdbm\|icu\|libdb\|libedit\|libgdbm\)$' \
+				-e '^\(ncurses\|perl\|perl-.*\)$'
+		fi |
 		sort |
 		uniq) &&
 	if test -n "$PACKAGE_VERSIONS_FILE"
@@ -41,13 +51,18 @@ test -z "$required" ||
 pacman -S --noconfirm $required >&2 ||
 die "Could not install required packages: $required"
 
-pacman_list mingw-w64-$ARCH-git mingw-w64-$ARCH-git-doc-html \
-	mingw-w64-$ARCH-git-credential-manager \
-	git-extra ncurses mintty vim openssh winpty \
-	sed awk less grep gnupg tar findutils coreutils diffutils patch \
-	dos2unix which subversion mingw-w64-$ARCH-tk \
-	mingw-w64-$ARCH-connect git-flow docx2txt mingw-w64-$ARCH-antiword \
-	ssh-pageant "$@" |
+packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager
+git-extra openssh sed awk grep findutils coreutils"
+if test -z "$MINIMAL_GIT"
+then
+	packages="$packages mingw-w64-$ARCH-git-doc-html ncurses mintty vim
+		winpty less gnupg tar diffutils patch dos2unix which subversion
+		mingw-w64-$ARCH-tk mingw-w64-$ARCH-connect git-flow docx2txt
+		mingw-w64-$ARCH-antiword ssh-pageant"
+
+fi
+pacman_list $packages "$@" |
+
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '/man/' -e '/pkgconfig/' -e '/emacs/' \
 	-e '^/usr/lib/python' -e '^/usr/lib/ruby' \
@@ -78,7 +93,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
 	-e '^/usr/share/vim/vim74/lang/' \
 	-e '^/etc/profile.d/git-sdk.sh$' |
-if test -n "$WITH_L10N"
+if test -n "$WITH_L10N" && test -z "$MINIMAL_GIT"
 then
 	cat
 else
@@ -86,6 +101,77 @@ else
 		-e '^/mingw../share/locale/' \
 		-e '^/usr/share/locale/'
 fi |
+if test -z "$MINIMAL_GIT"
+then
+	cat
+else
+	grep -v -e '^/cmd/start-.*$' -e '^/cmd/\(git-gui\|gitk\).exe$' \
+		-e '^/etc/\(DIR_COLORS\|inputrc\|vimrc\)$' \
+		-e '^/etc/profile\.d/\(aliases\|env\|git-prompt\)\.sh$' \
+		-e '^/git-\(bash\|cmd\)\.exe$' \
+		-e '^/mingw64/bin/\(certtool\.exe\|create-shortcut\.exe\)$' \
+		-e '^/mingw64/bin/\(curl\.exe\|envsubst\.exe\|gettext\.exe\)$' \
+		-e '^/mingw64/bin/\(gettext\.sh\|gettextize\|git-cvsserver\)$' \
+		-e '^/mingw64/bin/\(gitk\|git-upload-archive\.exe\)$' \
+		-e '^/mingw64/bin/lib\(atomic\|charset\)-.*\.dll$' \
+		-e '^/mingw64/bin/lib\(gcc_s_seh\|libgmpxx\)-.*\.dll$' \
+		-e '^/mingw64/bin/lib\(gomp\|jansson\|minizip\)-.*\.dll$' \
+		-e '^/mingw64/bin/libvtv.*\.dll$' \
+		-e '^/mingw64/bin/\(.*\.def\|update-ca-trust\)$' \
+		-e '^/mingw64/bin/\(openssl\|p11tool\|pkcs1-conv\)\.exe$' \
+		-e '^/mingw64/bin/\(psktool\|recode-.*\|sexp.*\|srp.*\)\.exe$' \
+		-e '^/mingw64/bin/\(WhoUses\|xmlwf\)\.exe$' \
+		-e '^/mingw64/etc/pki' -e '^/mingw64/lib/p11-kit/' \
+		-e '/git-\(add--interactive\|archimport\|citool\|cvs.*\)$' \
+		-e '/git-\(difftool.*\|git-gui.*\|instaweb\|p4\|relink\)$' \
+		-e '/git-\(send-email\|svn\)$' \
+		-e '/mingw64/libexec/git-core/git-\(imap-send\|daemon\)\.exe$' \
+		-e '/mingw64/libexec/git-core/git-remote-ftp.*\.exe$' \
+		-e '/mingw64/libexec/git-core/git-http-backend\.exe$' \
+		-e "/mingw64/libexec/git-core/git-\\($(sed \
+			-e 's/^git-//' -e 's/\.exe$//' -e 's/$/\\/' \
+				</mingw64/share/git/builtins.txt |
+			tr '\n' '|')\\)\\.exe\$" \
+		-e '^/mingw64/share/doc/nghttp2/' \
+		-e '^/mingw64/share/gettext-' \
+		-e '^/mingw64/share/git/\(builtins\|compat\|completion\)' \
+		-e '^/mingw64/share/git/.*\.ico$' \
+		-e '^/mingw64/share/\(git-gui\|gitweb\)/' \
+		-e '^/mingw64/share/perl' \
+		-e '^/mingw64/share/pki/' \
+		-e '/zsh/' \
+		-e '^/usr/bin/\(astextplain\|bashbug\|c_rehash\|egrep\)$' \
+		-e '^/usr/bin/\(fgrep\|findssl\.sh\|igawk\|notepad\)$' \
+		-e '^/usr/bin/\(ssh-copy-id\|updatedb\|vi\|wordpad\)$' \
+		-e '^/usr/bin/\(\[\|arch\|base32\|base64\|bash\|chcon\)\.exe$' \
+		-e '^/usr/bin/\(chgrp\|chmod\|chown\|chroot\|cksum\)\.exe$' \
+		-e '^/usr/bin/\(csplit\|cygcheck\|cygpath\|cygwin-.*\)\.exe$' \
+		-e '^/usr/bin/\(dd\|df\|dir\|dircolors\|du\|expand\)\.exe$' \
+		-e '^/usr/bin/\(factor\|fmt\|fold\|gawk.*\|getconf\)\.exe$' \
+		-e '^/usr/bin/\(getfacl\.exe\|gkill\|groups\|host.*\)\.exe$' \
+		-e '^/usr/bin/\(iconv\|id\|install\|join\|kill\|ldd\)\.exe$' \
+		-e '^/usr/bin/\(ldh\|link\|ln\|locale\|locate\|yes\)\.exe$' \
+		-e '^/usr/bin/\(logname\|md5sum\|minidumper\|mkfifo\)\.exe$' \
+		-e '^/usr/bin/\(mkgroup\|mknod\|mkpasswd\|mount\|nice\)\.exe$' \
+		-e '^/usr/bin/\(nl\|nohup\|nproc\|numfmt\|od\|openssl\)\.exe$' \
+		-e '^/usr/bin/\(passwd\|paste\|patchchk\|pinky\|pldd\)\.exe$' \
+		-e '^/usr/bin/\(pr\|printenv\|ps\|ptx\|realpath\)\.exe$' \
+		-e '^/usr/bin/\(regtool\|runcon\|scp\|seq\|setfacl\)\.exe$' \
+		-e '^/usr/bin/\(setmetamode\|sftp\|sha.*sum\|shred\)\.exe$' \
+		-e '^/usr/bin/\(shuf\|sleep\|slogin\|split\|sshd\)\.exe$' \
+		-e '^/usr/bin/\(ssh-key.*\|ssp\|stat\|stdbuf\|strace\)\.exe$' \
+		-e '^/usr/bin/\(stty\|sum\|sync\|tac\|tee\|timeout\)\.exe$' \
+		-e '^/usr/bin/\(truncate\|tsort\|tty\|tzset\|umount\)\.exe$' \
+		-e '^/usr/bin/\(unexpand\|unlink\|users\|vdir\|who.*\)\.exe$' \
+		-e '^/usr/bin/msys-\(atomic\|charset\|cilkrts\)-.*\.dll$' \
+		-e '^/usr/bin/msys-\(hdb\|kadm5\|kafs\|kdc\|otp\|sl\).*\.dll$' \
+		-e '^/usr/bin/msys-sqlite3[a-z].*\.dll$' \
+		-e '^/usr/bin/msys-\(gmpxx\|gomp.*\|vtv.*\)-.*\.dll$' \
+		-e '^/usr/lib/\(awk\|coreutils\|gawk\|openssl\|ssh\)/' \
+		-e '^/usr/libexec/\(bigram\|code\|frcode\)\.exe$' \
+		-e '^/usr/share/\(cygwin\|git\)/' \
+		-e '^/usr/ssl/misc/'
+fi | sort |
 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)$)' |
 sed 's/^\///'
 
@@ -101,15 +187,18 @@ etc/bash.bashrc
 etc/fstab
 etc/nsswitch.conf
 mingw$BITNESS/etc/gitconfig
-etc/post-install/01-devices.post
-etc/post-install/03-mtab.post
-etc/post-install/06-windows-files.post
-usr/bin/start
 usr/bin/dash.exe
 usr/bin/rebase.exe
 usr/bin/rebaseall
 usr/bin/getopt.exe
 mingw$BITNESS/etc/gitattributes
+EOF
+
+test -n "$MINIMAL_GIT" || cat <<EOF
+etc/post-install/01-devices.post
+etc/post-install/03-mtab.post
+etc/post-install/06-windows-files.post
+usr/bin/start
 mingw$BITNESS/bin/pdftotext.exe
 mingw$BITNESS/bin/libstdc++-6.dll
 usr/bin/column.exe
