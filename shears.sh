@@ -458,8 +458,11 @@ EOF
 			grep -n -e "^\(pick\|# skip\) $commit" \
 				-e "^merge [-_\\.0-9a-zA-Z/ ]* -C $commit")"
 		linenumber=${linenumber%%:*}
-		test -n "$linenumber" ||
-		die "Internal error: could not find $commit ($(name_commit $commit)) in $todo"
+		test -n "$linenumber" || {
+			echo "Warning: could not find $commit ($(name_commit $commit)); assuming 'onto'" >&2
+			linenumber=1
+		}
+
 		todo="$(printf '%s' "$todo" |
 			sed "${linenumber}a\\
 mark $(name_commit $commit)\\
