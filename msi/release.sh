@@ -199,7 +199,7 @@ wix/light.exe \
 	obj/GitMaintenanceTypeDlg.wixobj \
 	obj/GitAdditionalOptionsDlg.wixobj \
 	obj/GitShellOptionsDlg.wixobj \
-	-o $TARGET -ext WixUtilExtension -ext WixTagExtension \
+	-o "$TARGET" -ext WixUtilExtension -ext WixTagExtension \
 	-ext WixUIExtension -ext WixNetFxExtension \
 	-loc GitUI_en-us.wxl \
 	-cultures:en-us \
