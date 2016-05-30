@@ -49,19 +49,22 @@ int edit_git_bash(LPWSTR git_bash_path, LPWSTR new_command_line)
 	len = wcslen(new_command_line);
 	alloc = 2 * (len + 16);
 	buffer = calloc(alloc, 1);
+
 	if (!buffer)
 		return 1;
+
 	buffer[0] = (WCHAR) len;
 	memcpy(buffer + 1, new_command_line, 2 * len);
 
 	if (!(handle = BeginUpdateResource(git_bash_path, FALSE)))
 		return 2;
 
-        if (!UpdateResource(handle, RT_STRING, MAKEINTRESOURCE(1),
+	if (!UpdateResource(handle, RT_STRING, MAKEINTRESOURCE(1),
 			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
 			buffer, alloc))
 		result = 3;
-        if (!EndUpdateResource(handle, FALSE))
+
+	if (!EndUpdateResource(handle, FALSE))
 		return 4;
 
 	return result;
