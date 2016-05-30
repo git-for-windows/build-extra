@@ -60,7 +60,7 @@ int edit_git_bash(LPWSTR git_bash_path, LPWSTR new_command_line)
 		return 2;
 
 	if (!UpdateResource(handle, RT_STRING, MAKEINTRESOURCE(1),
-			MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+			MAKELANGID(LANG_ENGLISH, SUBLANG_ENGLISH_US),
 			buffer, alloc))
 		result = 3;
 
