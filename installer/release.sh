@@ -1,5 +1,12 @@
 #!/bin/bash
 
+usage () {
+	die "
+Usage: $0 [-f | --force] [--skip-files] --debug-wizard-page=<page> [<optional-package>...]
+   or: $0 [-f | --force] [--skip-files] <version>[-test] [<optional-package>...]
+"
+}
+
 die () {
 	echo "$*" >&2
 	exit 1
@@ -9,18 +16,23 @@ die () {
 cd "$(dirname "$0")" ||
 die "Could not switch directory"
 
+test $# -eq 0 && usage
+
 force=
 inno_defines=
 skip_files=
 test_installer=
-while test $# -gt 0
+#while test $# -gt 0
+for arg
 do
 	case "$1" in
 	-f|--force)
 		force=t
+		shift
 		;;
 	--skip-files)
 		skip_files=t
+		shift
 		;;
 	--debug-wizard-page=*)
 		test_installer=t
@@ -28,28 +40,62 @@ do
 			"#define DEBUG_WIZARD_PAGE '${1#*=}'" \
 			"#define OUTPUT_TO_TEMP ''")"
 		skip_files=t
+		shift
+		;;
+	-h|--help|-\?)
+		usage
+		;;
+	-*)
+		die "
+Unrecognized option: $1
+Try '$0 --help' for more information.
+"
 		;;
 	*)
+		if test -z "$version"
+		then
+			if test -n "$test_installer"
+			then
+				version=0-test
+			else
+				version=$1
+				test_installer="$(echo "$version" | grep -o -e "-.*" | sed 's/.*/t/')"
+				shift
+			fi
+		fi
 		break
 	esac
-	shift
+	#shift
 done
 
-if test -n "$test_installer"
-then
-	version=0-test
-else
-	version=$1
-	shift
-fi
+# if test -n "$test_installer"
+# then
+# 	version=0-test
+# else
+# 	version=$1
+# 	shift
+# fi
 
-test $# = 0 ||
-die "Usage: $0 [-f | --force] ( --debug-wizard-page=<page> | <version> )"
+# test $# = 0 ||
+# die "Usage: $0 [-f | --force] ( --debug-wizard-page=<page> | <version> )"
 
 case "$version" in
 [0-9]*) ;; # okay
 *) die "InnoSetup requires a version that begins with a digit";;
 esac
+
+cat <<EOF
+
+DEBUG INFO:
+=============
+Force? $force
+Skip Files? $skip_files
+Debug Wizard Page: = $inno_defines
+Test Installer? $test_installer
+Version: $version
+
+EOF
+exit
 
 ../render-release-notes.sh --css usr/share/git/
 
@@ -75,7 +121,7 @@ else
 	echo "Generating file list to be included in the installer ..."
 	LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 		PACKAGE_VERSIONS_FILE=package-versions.txt \
-		sh ../make-file-list.sh)" ||
+		sh ../make-file-list.sh "$@")" ||
 	die "Could not generate file list"
 fi
 
