@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Child processes [no longer inherit handles to temporary files](https://github.com/git-for-windows/git/pull/755), which previously could prevent `index.lock` from being deleted.
+* When configuring Git Bash with Windows' default console, it [no longer loses its icon](https://github.com/git-for-windows/build-extra/pull/118).
 
 ## Changes since Git for Windows v2.8.2 (May 3rd 2016)
 
