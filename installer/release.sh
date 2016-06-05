@@ -51,8 +51,6 @@ case "$version" in
 *) die "InnoSetup requires a version that begins with a digit";;
 esac
 
-../render-release-notes.sh --css usr/share/git/
-
 # Evaluate architecture
 ARCH="$(uname -m)"
 
@@ -67,6 +65,12 @@ x86_64)
 	die "Unhandled architecture: $ARCH"
 	;;
 esac
+
+echo "Generating release notes to be included in the installer ..."
+../render-release-notes.sh --css usr/share/git/
+
+echo "Compiling edit-git-bash.dll ..."
+make -C ../ edit-git-bash.dll
 
 if test t = "$skip_files"
 then
