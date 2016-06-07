@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.8.3 (May 20th 2016)
 
+### New Features
+
+* Comes with [Git 2.8.4](https://github.com/git/git/blob/v2.8.4/Documentation/RelNotes/2.8.4.txt).
+
 ### Bug Fixes
 
 * Child processes [no longer inherit handles to temporary files](https://github.com/git-for-windows/git/pull/755), which previously could prevent `index.lock` from being deleted.
