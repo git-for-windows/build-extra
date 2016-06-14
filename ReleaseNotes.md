@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.8.4 (June 7th 2016)
 
+### New Features
+
+* Comes with [Git 2.9.0](https://github.com/git/git/blob/v2.9.0/Documentation/RelNotes/2.9.0.txt).
+
 ### Bug Fixes
 
 * When running `git gc --aggressive` or `git repack -ald` in the presence of multiple pack files, the command still had open handles to the pack files it wanted to remove. This [has been fixed](https://github.com/git-for-windows/git/commit/85bc5ad9a69fa120b23471d483dc8da35d771ab7).
