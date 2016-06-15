@@ -3,18 +3,18 @@
 _realname="git-credential-manager"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.3.0
+pkgver=1.4.0
 pkgrel=1
 pkgdesc="Credential Manager for Git for Windows"
 arch=('any')
 project_url="https://github.com/Microsoft/Git-Credential-Manager-for-Windows"
-zip_url="${project_url}/releases/download/v${pkgver}/gcmw-v${pkgver}.zip"
+zip_url="${project_url}/releases/download/v${pkgver}/gcm-v${pkgver}.zip"
 license=('MIT')
 groups=('VCS')
 
 source=("${zip_url}")
 
-sha256sums=('e2623793429b6b62796ae28f00f44cfb12e7361c6b760ed0a7a710a0c6791c1a')
+sha256sums=('e724e517f2fb64b4caf33db8d20e51fe7cefbe0a9adc0167991113bd4c246199')
 
 package() {
   builddir=build-${MINGW_CHOST}
