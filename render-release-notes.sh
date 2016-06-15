@@ -109,7 +109,7 @@ test $# -eq 0 && COPYCSS=1 || {
 			shift
 			OUTPUTDIR="${1%/}"
 			;;
-		--preview)
+		--preview|-p)
 			PREVIEW=1
 			COPYCSS=1
 			;;
