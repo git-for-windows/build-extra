@@ -120,6 +120,9 @@ die "Could not switch directory to $SCRIPT_PATH"
 ../render-release-notes.sh --css usr/share/git/ ||
 die "Could not generate ReleaseNotes.html."
 
+# Compile edit-git-bash.exe
+make -C ../ edit-git-bash.exe ||
+die "Could not build edit-git-bash.exe."
 
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
@@ -157,6 +160,10 @@ BUILD_EXTRA_WINPATH="$(cd "$SCRIPT_PATH"/.. && pwd -W | tr / \\\\)"
             <Component Directory="INSTALLFOLDER:\\usr\\share\\git\\">
                 <File Id="ReleaseNotes_Css" Source="$BUILD_EXTRA_WINPATH\\ReleaseNotes.css" />
             </Component>
+            <Component Directory="INSTALLFOLDER" Guid="">
+                <Condition>TERMINAL = "CmdPrompt"</Condition>
+                <File DoNotBind Id="EditGitBash" Source="$BUILD_EXTRA_WINPATH\\edit-git-bash.exe" KeyPath="yes" />
+            </Component>
 EOF
 echo "$LIST" |
 sort |
@@ -172,6 +179,7 @@ sed -e 's/\(.*\)\\\(.*\)/            <Component Directory="INSTALLFOLDER:\\\1\\"
 	-e 's/\(<File Source="git-bash.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git Bash" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="INSTALLFOLDER" Arguments="--cd-to-home" Advertise="yes" \/>/' \
 	-e 's/\(<File Source="git-cmd.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git CMD" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="INSTALLFOLDER" Arguments="--cd-to-home" Advertise="yes" \/>/' \
 	-e 's/\(<File Source="cmd\\git-gui.exe"[^>]*\) \/>/\1 \/><Shortcut Name="Git GUI" Icon="git.ico" Directory="GitProgramMenuFolder" WorkingDirectory="INSTALLFOLDER" Arguments="--cd-to-home" Advertise="yes" \/>/' \
+	-e 's/\(Source="git-bash.exe" \)\([^>]\)*/Id="GitBash" \1\2/' \
 	-e 's/\(<Component Directory="INSTALLFOLDER:\\etc\\post-install\\"\)>/\1 Guid="" >/' \
 	-e 's/\(<File Source="etc\\post-install\\.*\.post"\) \/>/\1 KeyPath="yes" \/>/'
 cat <<EOF
@@ -179,7 +187,8 @@ cat <<EOF
     </Fragment>
 </Wix>
 EOF
-) | sed -e "s/\(<File .*Source=\"\)\(.*\(compat-\)?\(ba\)?sh.exe\|.*git.*\.exe\)\([^>]*\) \/>/\1\2\" BindPath=\"[BindImagePaths]\5 \/>/" >GitComponents.wxs
+) | sed -e 's/\(<File \(Id=".*" \)\?Source="\)\(.*\(compat-\)\?\(ba\)\?sh\.exe\|.*git.*\.exe\)\([^>]\)* \/>/\1\3" BindPath="[BindImagePaths]\6 \/>/' \
+	-e 's/\(<File \)\(DoNotBind\) \([^>]*\)>/\1\3>/' >GitComponents.wxs
 
 # Make the .msi file
 mkdir -p obj &&

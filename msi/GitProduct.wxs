@@ -72,7 +72,20 @@
       LINEENDINGS~="false"
     </SetProperty>
 
+    <Property Id="CMDLINE_TERMINAL" Value="MinTTY" />
     <Property Id="TERMINAL" Value="MinTTY" />
+    <SetProperty Id="CMDLINE_TERMINAL" Value="[TERMINAL]" Before="AppSearch" Sequence="first"><![CDATA[ TERMINAL <> CMDLINE_TERMINAL AND (TERMINAL~="CmdPrompt" OR TERMINAL~="MinTTY") ]]></SetProperty>
+    <Property Id="TERMINALSEARCH">
+      <RegistrySearch Id="TerminalSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="Terminal" Type="raw" />
+    </Property>
+    <SetProperty Id="TERMINAL" Value="[TERMINALSEARCH]" Action="GetUpgradeTERMINALValue" After="AppSearch" Sequence="first">TERMINALSEARCH</SetProperty>
+    <SetProperty Id="TERMINAL" Value="[CMDLINE_TERMINAL]" After="GetUpgradeTERMINALValue" Sequence="first"><![CDATA[ CMDLINE_TERMINAL <> TERMINAL ]]></SetProperty>
+    <SetProperty Id="TERMINAL" Value="MinTTY" Action="NormalizeMinTTYCasing" After="SetTERMINAL" Sequence="first">
+      TERMINAL~="MinTTY"
+    </SetProperty>
+    <SetProperty Id="TERMINAL" Value="CmdPrompt" Action="NormalizeCmdPromptCasing" After="SetTERMINAL" Sequence="first">
+      TERMINAL~="CmdPrompt"
+    </SetProperty>
 
     <SetProperty Id="CMDLINE_ENABLEFSCACHE" Value="false" Before="AppSearch" Sequence="first">
       ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0
@@ -342,6 +355,10 @@
     <CustomAction Id="ExecConfigureFsCache" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
     <SetProperty Id="ExecConfigureGcm" Value='"[#GitExe]" config --system credential.helper manager' Sequence="execute" Before="ExecConfigureGcm"><![CDATA[ REMOVE <> "ALL" AND ENABLEGCM=1 ]]></SetProperty>
     <CustomAction Id="ExecConfigureGcm" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
+    <SetProperty Id="ExecEditGitBash" Value='"[#EditGitBash]" "[#GitBash]" "SHOW_CONSOLE=1 APPEND_QUOTE=1 @@COMSPEC@@ /S /C \"\"@@EXEPATH@@\usr\bin\bash.exe\" --login -i"' Sequence="execute" Before="ExecEditGitBash"><![CDATA[ REMOVE <> "ALL" AND TERMINAL = "CmdPrompt" ]]></SetProperty>
+    <CustomAction Id="ExecEditGitBash" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="check" Impersonate="no" />
+    <SetProperty Id="DeleteEditGitBash" Value='"[System$(var.SixtyFourBit)Folder]cmd.exe" /S /C del "[#EditGitBash]"' Sequence="execute" Before="DeleteEditGitBash"><![CDATA[ REMOVE <> "ALL" AND TERMINAL = "CmdPrompt" ]]></SetProperty>
+    <CustomAction Id="DeleteEditGitBash" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
     <!-- Schedule two "best effort" actions:
           1. Write the command to run the post-install.bat to the transaction log
           2. Execute the command during the installation transaction
@@ -356,7 +373,9 @@
       <Custom Action="ExecConfigureSslCAInfo" Before="ExecConfigureCoreAutoCrlf"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
       <Custom Action="ExecConfigureCoreAutoCrlf" Before="ExecConfigureFsCache"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
       <Custom Action="ExecConfigureFsCache" Before="ExecConfigureGcm"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
-      <Custom Action="ExecConfigureGcm" Before="ExecPostInstallBat"><![CDATA[ REMOVE <> "ALL" AND ENABLEGCM=1 ]]></Custom>
+      <Custom Action="ExecConfigureGcm" Before="ExecEditGitBash"><![CDATA[ REMOVE <> "ALL" AND ENABLEGCM=1 ]]></Custom>
+      <Custom Action="ExecEditGitBash" Before="DeleteEditGitBash"><![CDATA[ TERMINAL = "CmdPrompt" AND REMOVE <> "ALL" ]]></Custom>
+      <Custom Action="DeleteEditGitBash" Before="ExecPostInstallBat"><![CDATA[ TERMINAL = "CmdPrompt" AND REMOVE <> "ALL" ]]></Custom>
       <!-- Execute the post-install.bat at the end of the installation transaction on install and repair but not removal. -->
       <Custom Action="ExecPostInstallBat" Before="InstallFinalize"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
     </InstallExecuteSequence>
