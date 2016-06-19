@@ -117,7 +117,9 @@ cd "$SCRIPT_PATH" ||
 die "Could not switch directory to $SCRIPT_PATH"
 
 # Generate the ReleaseNotes.html file
-../render-release-notes.sh --css usr/share/git/
+../render-release-notes.sh --css usr/share/git/ ||
+die "Could not generate ReleaseNotes.html."
+
 
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
