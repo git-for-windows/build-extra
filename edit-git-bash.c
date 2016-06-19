@@ -76,7 +76,17 @@ int main(int argc, char **argv)
 	int wargc, result;
 	LPWSTR *wargv;
 
+#ifdef DEBUG
+	LPTSTR cmdLine = GetCommandLineW();
+	fwprintf(stderr, L"Command Line: %s\n", cmdLine);
+	
+	wargv = CommandLineToArgvW(cmdLine, &wargc);
+
+	for (int i = 1; i < wargc; ++i)
+		fwprintf(stderr, L"Arg %d: %s\n", i, wargv[i]);
+#else
 	wargv = CommandLineToArgvW(GetCommandLineW(), &wargc);
+#endif
 
 	if (wargc != 3) {
 		fwprintf(stderr, L"Usage: %s <path-to-exe> <new-commad-line>\n",
