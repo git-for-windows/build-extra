@@ -35,25 +35,35 @@
     <!-- Git for Windows MSI Properties -->
     <SetProperty Id="BindImagePaths" Value="[INSTALLFOLDER]usr\bin;[MingwFolder]bin;[System$(var.SixtyFourBit)Folder]" After="CostFinalize" />
 
-    <SetProperty Id="CMDLINE_CLIENVIRONMENT" Value="[CLIENVIRONMENT]" Before="AppSearch" Sequence="first">
-      CLIENVIRONMENT~="Bash" OR CLIENVIRONMENT~="CmdTools"
-    </SetProperty>
-    <Property Id="CLIENVIRONMENT" Value="Cmd">
+    <Property Id="CLIENVIRONMENT" Value="Cmd" />
+    <Property Id="COMMANDLINE_CLIENVIRONMENT" Value="Unset" />
+    <Property Id="CLIENVIRONMENTSEARCH">
       <RegistrySearch Id="CliEnvironmentSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="CliEnvironment" Type="raw" />
     </Property>
-    <SetProperty Id="CLIENVIRONMENT" Value="[CMDLINE_CLIENVIRONMENT]" After="AppSearch" Sequence="first">CMDLINE_CLIENVIRONMENT</SetProperty>
-    <SetProperty Id="CLIENVIRONMENT" Value="Bash" Action="NomalizeBashCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+    <SetProperty Id="CLIENVIRONMENT" Value="[CLIENVIRONMENTSEARCH]" Action="SetCLIENVIRONMENTUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND (CLIENVIRONMENTSEARCH~="Bash" OR CLIENVIRONMENTSEARCH~="Cmd" OR CLIENVIRONMENTSEARCH~="CmdTools")
+    </SetProperty>
+    <SetProperty Id="CLIENVIRONMENT" Value="[COMMANDLINE_CLIENVIRONMENT]" Action="SetCLIENVIRONMENTFromCommandLine" After="SetCLIENVIRONMENTUsingPreviouslyInstalledValue" Sequence="first">
+      COMMANDLINE_CLIENVIRONMENT~="Bash" OR COMMANDLINE_CLIENVIRONMENT~="Cmd" OR COMMANDLINE_CLIENVIRONMENT~="CmdTools"
+    </SetProperty>
+    <SetProperty Id="CLIENVIRONMENT" Value="Bash" Action="NomalizeCaseCLIENVIRONMENTBash" After="SetCLIENVIRONMENTFromCommandLine" Sequence="first">
       CLIENVIRONMENT~="Bash"
     </SetProperty>
-    <SetProperty Id="CLIENVIRONMENT" Value="Cmd" Action="NormalizeCmdCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+    <SetProperty Id="CLIENVIRONMENT" Value="Cmd" Action="NormalizeCaseCLIENVIRONMENTCmd" After="SetCLIENVIRONMENTFromCommandLine" Sequence="first">
       CLIENVIRONMENT~="Cmd"
     </SetProperty>
-    <SetProperty Id="CLIENVIRONMENT" Value="CmdTools" Action="NormalizeCmdToolsCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+    <SetProperty Id="CLIENVIRONMENT" Value="CmdTools" Action="NormalizeCaseCLIENVIRONMENTCmdTools" After="SetCLIENVIRONMENTFromCommandLine" Sequence="first">
       CLIENVIRONMENT~="CmdTools"
     </SetProperty>
-    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIORNMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Bash"</SetProperty>
-    <SetProperty Action="SetCmdCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Cmd"</SetProperty>
-    <SetProperty Action="SetCmdToolsCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd;[MingwFolder]bin;[INSTALLFOLDER]usr\bin" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "CmdTools"</SetProperty>
+    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIORNMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">
+      CLIENVIRONMENT = "Bash"
+    </SetProperty>
+    <SetProperty Action="SetCmdCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd" Before="InstallValidate" Sequence="execute">
+      CLIENVIRONMENT = "Cmd"
+    </SetProperty>
+    <SetProperty Action="SetCmdToolsCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd;[MingwFolder]bin;[INSTALLFOLDER]usr\bin" Before="InstallValidate" Sequence="execute">
+      CLIENVIRONMENT = "CmdTools"
+    </SetProperty>
 
     <SetProperty Id="CMDLINE_LINEENDINGS" Value="[LINEENDINGS]" Before="AppSearch" Sequence="first">
       <![CDATA[ LINEENDINGS~="input" OR LINEENDINGS~="false" ]]>
