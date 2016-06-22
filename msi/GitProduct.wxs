@@ -35,25 +35,37 @@
     <!-- Git for Windows MSI Properties -->
     <SetProperty Id="BindImagePaths" Value="[INSTALLFOLDER]usr\bin;[MingwFolder]bin;[System$(var.SixtyFourBit)Folder]" After="CostFinalize" />
 
-    <SetProperty Id="CMDLINE_CLIENVIRONMENT" Value="[CLIENVIRONMENT]" Before="AppSearch" Sequence="first">
-      CLIENVIRONMENT~="Bash" OR CLIENVIRONMENT~="CmdTools"
-    </SetProperty>
-    <Property Id="CLIENVIRONMENT" Value="Cmd">
+    <Property Id="CLI" Value="Unset" />
+    <Property Id="GfwCliEnvironment" Value="Cmd" />
+    <Property Id="CLIENVIRONMENT" Value="Cmd" />
+    <Property Id="CLIENVIRONMENTSEARCH">
       <RegistrySearch Id="CliEnvironmentSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="CliEnvironment" Type="raw" />
     </Property>
-    <SetProperty Id="CLIENVIRONMENT" Value="[CMDLINE_CLIENVIRONMENT]" After="AppSearch" Sequence="first">CMDLINE_CLIENVIRONMENT</SetProperty>
-    <SetProperty Id="CLIENVIRONMENT" Value="Bash" Action="NomalizeBashCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
-      CLIENVIRONMENT~="Bash"
+    <SetProperty Id="GfwCliEnvironment" Value="[CLIENVIRONMENTSEARCH]" Action="SetGfwCliEnvironmentUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND (CLIENVIRONMENTSEARCH~="Bash" OR CLIENVIRONMENTSEARCH~="Cmd" OR CLIENVIRONMENTSEARCH~="CmdTools")
     </SetProperty>
-    <SetProperty Id="CLIENVIRONMENT" Value="Cmd" Action="NormalizeCmdCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
-      CLIENVIRONMENT~="Cmd"
+    <SetProperty Id="GfwCliEnvironment" Value="[CLI]" Action="SetGfwCliEnvironmentFromCommandLine" After="SetGfwCliEnvironmentUsingPreviouslyInstalledValue" Sequence="first">
+      CLI~="Bash" OR CLI~="Cmd" OR CLI~="CmdTools"
     </SetProperty>
-    <SetProperty Id="CLIENVIRONMENT" Value="CmdTools" Action="NormalizeCmdToolsCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
-      CLIENVIRONMENT~="CmdTools"
+    <SetProperty Id="GfwCliEnvironment" Value="Bash" Action="NormalizeCaseGfwCliEnvironmentBash" After="SetGfwCliEnvironmentFromCommandLine" Sequence="first">
+      GfwCliEnvironment~="Bash"
     </SetProperty>
-    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIORNMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Bash"</SetProperty>
-    <SetProperty Action="SetCmdCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Cmd"</SetProperty>
-    <SetProperty Action="SetCmdToolsCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd;[MingwFolder]bin;[INSTALLFOLDER]usr\bin" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "CmdTools"</SetProperty>
+    <SetProperty Id="GfwCliEnvironment" Value="Cmd" Action="NormalizeCaseGfwCliEnvironmentCmd" After="SetGfwCliEnvironmentFromCommandLine" Sequence="first">
+      GfwCliEnvironment~="Cmd"
+    </SetProperty>
+    <SetProperty Id="GfwCliEnvironment" Value="CmdTools" Action="NormalizeCaseGfwCliEnvironmentCmdTools" After="SetGfwCliEnvironmentFromCommandLine" Sequence="first">
+      GfwCliEnvironment~="CmdTools"
+    </SetProperty>
+    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIORNMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">
+      GfwCliEnvironment = "Bash"
+    </SetProperty>
+    <SetProperty Action="SetCmdCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd" Before="InstallValidate" Sequence="execute">
+      GfwCliEnvironment = "Cmd"
+    </SetProperty>
+    <SetProperty Action="SetCmdToolsCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd;[MingwFolder]bin;[INSTALLFOLDER]usr\bin" Before="InstallValidate" Sequence="execute">
+      GfwCliEnvironment = "CmdTools"
+    </SetProperty>
+    <SetProperty Id="CLIENVIRONMENT" Value="[GfwCliEnvironment]" Before="CostFinalize" Sequence="first" />
 
     <SetProperty Id="CMDLINE_LINEENDINGS" Value="[LINEENDINGS]" Before="AppSearch" Sequence="first">
       <![CDATA[ LINEENDINGS~="input" OR LINEENDINGS~="false" ]]>
