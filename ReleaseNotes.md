@@ -38,6 +38,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Git Credential Manager was updated to [v1.4.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.4.0).
 
+### Bug Fixes
+
+* When `git bundle create` is asked to create an empty bundle, it is supposed to error out and delete the corrupt bundle file. The deletion [no longer fails due to an unreleased lock file](https://github.com/git-for-windows/git/pull/797).
+
 ## Changes since Git for Windows v2.8.4 (June 7th 2016)
 
 ### New Features
