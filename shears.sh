@@ -203,7 +203,10 @@ cleanup () {
 		merge $rewritten
 		git update-ref -d refs/rewritten/$rewritten
 	done &&
-	git config --unset alias..r
+	if ! test -f "$git_dir"/before-rebase-merge/cross-validating
+	then
+		git config --unset alias..r
+	fi
 }
 
 merging=
