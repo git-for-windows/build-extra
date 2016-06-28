@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * When `git bundle create` is asked to create an empty bundle, it is supposed to error out and delete the corrupt bundle file. The deletion [no longer fails due to an unreleased lock file](https://github.com/git-for-windows/git/pull/797).
+* When launching `git help <command>`, the `help.browser` config setting [is now respected](https://github.com/git-for-windows/git/pull/793).
 
 ## Changes since Git for Windows v2.8.4 (June 7th 2016)
 
