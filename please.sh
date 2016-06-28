@@ -41,6 +41,9 @@ die () {
 	exit 1
 }
 
+# Never allow the SDKs to change directory to $HOME
+export CHERE_INVOKING=1
+
 sdk_path () { # <bitness>
 	result="$(git config windows.sdk"$1".path)" && test -n "$result" ||
 	result="C:/git-sdk-$1"
