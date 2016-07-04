@@ -103,7 +103,7 @@ Filename: {app}\ReleaseNotes.html; Description: View Release Notes; Flags: shell
 ; Install files that might be in use during setup under a different name.
 #include "file-list.iss"
 Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
-Source: {#SourcePath}\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
+Source: {#SourcePath}\..\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore; Check: ParamIsSet('VSNOTICE')
 Source: {#SourcePath}\..\edit-git-bash.dll; Flags: dontcopy
 

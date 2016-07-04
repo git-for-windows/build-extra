@@ -40,6 +40,9 @@ esac
 
 # Generate a couple of files dynamically
 
+cp "$SCRIPT_PATH/../LICENSE.txt" "$SCRIPT_PATH/root/" ||
+die "Could not copy license file"
+
 mkdir -p "$SCRIPT_PATH/root/etc" ||
 die "Could not make etc/ directory"
 
@@ -54,7 +57,7 @@ cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/bash.exe" &&
 cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/sh.exe" ||
 die "Could not install bin/ redirectors"
 
-cp $SCRIPT_PATH/../post-install.bat $SCRIPT_PATH/root/ ||
+cp "$SCRIPT_PATH/../post-install.bat" "$SCRIPT_PATH/root/" ||
 die "Could not copy post-install script"
 
 # Make a list of files to include
