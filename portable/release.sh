@@ -57,7 +57,7 @@ cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/bash.exe" &&
 cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/sh.exe" ||
 die "Could not install bin/ redirectors"
 
-cp $SCRIPT_PATH/../post-install.bat $SCRIPT_PATH/root/ ||
+cp "$SCRIPT_PATH/../post-install.bat" "$SCRIPT_PATH/root/" ||
 die "Could not copy post-install script"
 
 # Make a list of files to include
