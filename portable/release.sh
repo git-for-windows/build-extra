@@ -40,6 +40,9 @@ esac
 
 # Generate a couple of files dynamically
 
+cp "$SCRIPT_PATH/../LICENSE.txt" "$SCRIPT_PATH/root/" ||
+die "Could not copy license file"
+
 mkdir -p "$SCRIPT_PATH/root/etc" ||
 die "Could not make etc/ directory"
 
