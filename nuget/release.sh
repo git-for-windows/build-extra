@@ -50,7 +50,8 @@ x86_64)
 esac
 
 # Generate release notes for NuGet
-../render-release-notes.sh --css content/
+../render-release-notes.sh --css content/ ||
+die "Could not generate ReleaseNotes.html."
 
 SPECIN="$BUILDEXTRA"/nuget/GitForWindows.nuspec.in
 SPEC="$BUILDEXTRA/nuget/$ID".nuspec
