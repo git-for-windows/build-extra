@@ -45,7 +45,7 @@ do
 	curl -f -o "$OUT" $URL ||
 	die "Could not retrieve $URL" >&2
 
-	if grep '\[PATCH.* 0/[1-9]' "$OUT"
+	if grep '\[PATCH.* 00*/[1-9]' "$OUT"
 	then
 		echo "Multi-part: $OUT $URL" >&2
 		GROUP=${URL%/raw}
@@ -60,7 +60,7 @@ do
 		NO=1
 		while true
 		do
-			URL3="$(sed -n '/.*\[PATCH.*'$NO'\/[1-9]/{
+			URL3="$(sed -n '/.*\[PATCH.* 0*'$NO'\/[1-9]/{
 					s/.*\(http:\/\/article[^\"]*\).*/\1/p;q
 				}' <"$OUT2")"
 			test -n "$URL3" || break
