@@ -515,7 +515,67 @@ end;
     Setup event functions
 }
 
+function NextNumber(Str:String;var Pos:Integer):Integer;
+var
+    From:Integer;
+begin
+    From:=Pos;
+    while (Pos<=Length(Str)) and (Str[Pos]>=#48) and (Str[Pos]<=#57) do
+        Pos:=Pos+1;
+    if Pos>From then
+        Result:=StrToInt(Copy(Str,From,Pos-From))
+    else
+        Result:=-1;
+end;
+
+function IsDowngrade(CurrentVersion,PreviousVersion:String):Boolean;
+var
+    i,j,Current,Previous:Integer;
+begin
+    Result:=False;
+    i:=1;
+    j:=1;
+    while True do begin
+        if j>Length(PreviousVersion) then
+            Exit;
+        if i>Length(CurrentVersion) then begin
+            Result:=True;
+            Exit;
+        end;
+        Previous:=NextNumber(PreviousVersion,j);
+        if Previous<0 then
+            Exit;
+        Current:=NextNumber(CurrentVersion,i);
+        if Current<0 then begin
+            Result:=True;
+            Exit;
+        end;
+        if Current>Previous then
+            Exit;
+        if Current<Previous then begin
+            Result:=True;
+            Exit;
+        end;
+        if j>Length(PreviousVersion) then
+            Exit;
+        if i>Length(CurrentVersion) then begin
+            Result:=True;
+            Exit;
+        end;
+        if CurrentVersion[i]<>PreviousVersion[j] then begin
+            Result:=PreviousVersion[j]='.';
+            Exit;
+        end;
+        if CurrentVersion[i]<>'.' then
+            Exit;
+        i:=i+1;
+        j:=j+1;
+    end;
+end;
+
 function InitializeSetup:Boolean;
+var
+    CurrentVersion,PreviousVersion:String;
 begin
     UpdateInfFilenames;
 #if BITNESS=='32'
@@ -526,6 +586,13 @@ begin
         Result:=False;
     end else begin
         Result:=True;
+    end;
+#endif
+#if APP_VERSION!='0-test'
+    if Result and RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousVersion) then begin
+        CurrentVersion:=ExpandConstant('{#APP_VERSION}');
+        if (IsDowngrade(CurrentVersion,PreviousVersion)) and (SuppressibleMsgBox('Git for Windows '+PreviousVersion+' is currently installed.'+#13+'Do you really want to downgrade to Git for Windows '+CurrentVersion+'?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO) then
+            Result:=False;
     end;
 #endif
 end;
