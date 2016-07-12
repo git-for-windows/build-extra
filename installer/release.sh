@@ -23,9 +23,10 @@ do
 		skip_files=t
 		;;
 	-d=*|--debug-wizard-page=*)
+		page="${1#*=}"
 		test_installer=t
 		inno_defines="$(printf "%s\n%s\n%s" "$inno_defines" \
-			"#define DEBUG_WIZARD_PAGE '${1#*=}'" \
+			"#define DEBUG_WIZARD_PAGE '$page'" \
 			"#define OUTPUT_TO_TEMP ''")"
 		skip_files=t
 		;;
