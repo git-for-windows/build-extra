@@ -24,6 +24,7 @@ do
 		;;
 	-d=*|--debug-wizard-page=*)
 		page="${1#*=}"
+		case "$page" in *Page);; *)page=${page}Page;; esac
 		test_installer=t
 		if ! grep "^ *$page:TWizardPage;$" install.iss >/dev/null
 		then
