@@ -25,6 +25,12 @@ do
 	-d=*|--debug-wizard-page=*)
 		page="${1#*=}"
 		test_installer=t
+		if ! grep "^ *$page:TWizardPage;$" install.iss >/dev/null
+		then
+			echo "Unknown page '$page'. Known pages:" >&2
+			sed -n 's/:TWizardPage;$//p' <install.iss >&2
+			exit 1
+		fi
 		inno_defines="$(printf "%s\n%s\n%s" "$inno_defines" \
 			"#define DEBUG_WIZARD_PAGE '$page'" \
 			"#define OUTPUT_TO_TEMP ''")"
