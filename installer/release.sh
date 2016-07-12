@@ -22,7 +22,7 @@ do
 	--skip-files)
 		skip_files=t
 		;;
-	--debug-wizard-page=*)
+	-d=*|--debug-wizard-page=*)
 		test_installer=t
 		inno_defines="$(printf "%s\n%s\n%s" "$inno_defines" \
 			"#define DEBUG_WIZARD_PAGE '${1#*=}'" \
