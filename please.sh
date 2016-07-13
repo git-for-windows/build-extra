@@ -345,20 +345,30 @@ pkg_build () {
 	esac
 }
 
+fast_forward () {
+	git -C "$1" fetch "$2" refs/heads/master &&
+	git -C "$1" merge --ff-only "$3" &&
+	test "a$3" = "a$(git -C "$1" rev-parse --verify HEAD)"
+}
+
 # up_to_date <path>
 up_to_date () {
 	# test that repos at <path> are up-to-date in both 64-bit and 32-bit
 	path="$1"
 
+	foreach_sdk require_clean_worktree
+
 	commit32="$(cd "$sdk32/$path" && git rev-parse --verify HEAD)" &&
 	commit64="$(cd "$sdk64/$path" && git rev-parse --verify HEAD)" ||
 	die "Could not determine HEAD commit in %s\n" "$path"
 
-	test "a$commit32" = "a$commit64" ||
-	die "%s: commit %s (32-bit) != %s (64-bit)\n" \
-		"$path" "$commit32" "$commit64"
-
-	foreach_sdk require_clean_worktree
+	if test "a$commit32" != "a$commit64"
+	then
+		fast_forward "$sdk32/$path" "$sdk64/$path" "$commit64" ||
+		fast_forward "$sdk64/$path" "$sdk32/$path" "$commit32" ||
+		die "%s: commit %s (32-bit) != %s (64-bit)\n" \
+			"$path" "$commit32" "$commit64"
+	fi
 }
 
 build () { # <package>
