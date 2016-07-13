@@ -589,7 +589,7 @@ begin
     end;
 #endif
 #if APP_VERSION!='0-test'
-    if Result and RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousVersion) then begin
+    if Result and not ParamIsSet('ALLOWDOWNGRADE') and RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousVersion) then begin
         CurrentVersion:=ExpandConstant('{#APP_VERSION}');
         if (IsDowngrade(CurrentVersion,PreviousVersion)) and (SuppressibleMsgBox('Git for Windows '+PreviousVersion+' is currently installed.'+#13+'Do you really want to downgrade to Git for Windows '+CurrentVersion+'?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO) then
             Result:=False;
