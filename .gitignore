@@ -13,6 +13,8 @@ edit-git-bash.exe
 /installer/is-unicode.exe
 /installer/file-list.iss
 /installer/package-versions.txt
+/mingit/LICENSE.txt
+/mingit/etc/package-versions.txt
 /msi/GitComponents.wxs
 /msi/obj/
 /msi/package-versions.txt
