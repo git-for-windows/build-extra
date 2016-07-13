@@ -3,7 +3,7 @@
 _realname="git-credential-manager"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.4.0
+pkgver=1.5.0
 pkgrel=1
 pkgdesc="Credential Manager for Git for Windows"
 arch=('any')
@@ -14,7 +14,7 @@ groups=('VCS')
 
 source=("${zip_url}")
 
-sha256sums=('e724e517f2fb64b4caf33db8d20e51fe7cefbe0a9adc0167991113bd4c246199')
+sha256sums=('59e2d15e7bdc89070f9ffa45f43867cc7098eefffc46955a7df82bb4558156cc')
 
 package() {
   builddir=build-${MINGW_CHOST}
