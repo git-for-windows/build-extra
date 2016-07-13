@@ -109,36 +109,36 @@ else
 		-e '^/etc/\(DIR_COLORS\|inputrc\|vimrc\)$' \
 		-e '^/etc/profile\.d/\(aliases\|env\|git-prompt\)\.sh$' \
 		-e '^/git-\(bash\|cmd\)\.exe$' \
-		-e '^/mingw64/bin/\(certtool\.exe\|create-shortcut\.exe\)$' \
-		-e '^/mingw64/bin/\(curl\.exe\|envsubst\.exe\|gettext\.exe\)$' \
-		-e '^/mingw64/bin/\(gettext\.sh\|gettextize\|git-cvsserver\)$' \
-		-e '^/mingw64/bin/\(gitk\|git-upload-archive\.exe\)$' \
-		-e '^/mingw64/bin/lib\(atomic\|charset\)-.*\.dll$' \
-		-e '^/mingw64/bin/lib\(gcc_s_seh\|libgmpxx\)-.*\.dll$' \
-		-e '^/mingw64/bin/lib\(gomp\|jansson\|minizip\)-.*\.dll$' \
-		-e '^/mingw64/bin/libvtv.*\.dll$' \
-		-e '^/mingw64/bin/\(.*\.def\|update-ca-trust\)$' \
-		-e '^/mingw64/bin/\(openssl\|p11tool\|pkcs1-conv\)\.exe$' \
-		-e '^/mingw64/bin/\(psktool\|recode-.*\|sexp.*\|srp.*\)\.exe$' \
-		-e '^/mingw64/bin/\(WhoUses\|xmlwf\)\.exe$' \
-		-e '^/mingw64/etc/pki' -e '^/mingw64/lib/p11-kit/' \
+		-e '^/mingw../bin/\(certtool\.exe\|create-shortcut\.exe\)$' \
+		-e '^/mingw../bin/\(curl\.exe\|envsubst\.exe\|gettext\.exe\)$' \
+		-e '^/mingw../bin/\(gettext\.sh\|gettextize\|git-cvsserver\)$' \
+		-e '^/mingw../bin/\(gitk\|git-upload-archive\.exe\)$' \
+		-e '^/mingw../bin/lib\(atomic\|charset\)-.*\.dll$' \
+		-e '^/mingw../bin/lib\(gcc_s_seh\|libgmpxx\)-.*\.dll$' \
+		-e '^/mingw../bin/lib\(gomp\|jansson\|minizip\)-.*\.dll$' \
+		-e '^/mingw../bin/libvtv.*\.dll$' \
+		-e '^/mingw../bin/\(.*\.def\|update-ca-trust\)$' \
+		-e '^/mingw../bin/\(openssl\|p11tool\|pkcs1-conv\)\.exe$' \
+		-e '^/mingw../bin/\(psktool\|recode-.*\|sexp.*\|srp.*\)\.exe$' \
+		-e '^/mingw../bin/\(WhoUses\|xmlwf\)\.exe$' \
+		-e '^/mingw../etc/pki' -e '^/mingw../lib/p11-kit/' \
 		-e '/git-\(add--interactive\|archimport\|citool\|cvs.*\)$' \
 		-e '/git-\(difftool.*\|git-gui.*\|instaweb\|p4\|relink\)$' \
 		-e '/git-\(send-email\|svn\)$' \
-		-e '/mingw64/libexec/git-core/git-\(imap-send\|daemon\)\.exe$' \
-		-e '/mingw64/libexec/git-core/git-remote-ftp.*\.exe$' \
-		-e '/mingw64/libexec/git-core/git-http-backend\.exe$' \
-		-e "/mingw64/libexec/git-core/git-\\($(sed \
+		-e '/mingw../libexec/git-core/git-\(imap-send\|daemon\)\.exe$' \
+		-e '/mingw../libexec/git-core/git-remote-ftp.*\.exe$' \
+		-e '/mingw../libexec/git-core/git-http-backend\.exe$' \
+		-e "/mingw../libexec/git-core/git-\\($(sed \
 			-e 's/^git-//' -e 's/\.exe$//' -e 's/$/\\/' \
-				</mingw64/share/git/builtins.txt |
+				</mingw$BITNESS/share/git/builtins.txt |
 			tr '\n' '|')\\)\\.exe\$" \
-		-e '^/mingw64/share/doc/nghttp2/' \
-		-e '^/mingw64/share/gettext-' \
-		-e '^/mingw64/share/git/\(builtins\|compat\|completion\)' \
-		-e '^/mingw64/share/git/.*\.ico$' \
-		-e '^/mingw64/share/\(git-gui\|gitweb\)/' \
-		-e '^/mingw64/share/perl' \
-		-e '^/mingw64/share/pki/' \
+		-e '^/mingw../share/doc/nghttp2/' \
+		-e '^/mingw../share/gettext-' \
+		-e '^/mingw../share/git/\(builtins\|compat\|completion\)' \
+		-e '^/mingw../share/git/.*\.ico$' \
+		-e '^/mingw../share/\(git-gui\|gitweb\)/' \
+		-e '^/mingw../share/perl' \
+		-e '^/mingw../share/pki/' \
 		-e '/zsh/' \
 		-e '^/usr/bin/\(astextplain\|bashbug\|c_rehash\|egrep\)$' \
 		-e '^/usr/bin/\(fgrep\|findssl\.sh\|igawk\|notepad\)$' \
