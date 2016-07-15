@@ -67,22 +67,22 @@
     </SetProperty>
     <SetProperty Id="CLIENVIRONMENT" Value="[GfwCliEnvironment]" Before="CostFinalize" Sequence="first" />
 
-    <SetProperty Id="CMDLINE_LINEENDINGS" Value="[LINEENDINGS]" Before="AppSearch" Sequence="first">
-      <![CDATA[ LINEENDINGS~="input" OR LINEENDINGS~="false" ]]>
-    </SetProperty>
-    <Property Id="LINEENDINGS" Value="true">
+    <Property Id="AUTOCRLF" Value="Unset" />
+    <Property Id="GfwLineEndings" Value="true" />
+    <Property Id="LINEENDINGS" Value="true" />
+    <Property Id="LINEENDINGSSEARCH">
       <RegistrySearch Id="LineEndingsSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="core.autocrlf" Type="raw" />
     </Property>
-    <SetProperty Id="LINEENDINGS" Value="[CMDLINE_LINEENDINGS]" After="AppSearch" Sequence="first">CMDLINE_LINEENDINGS</SetProperty>
-    <SetProperty Id="LINEENDINGS" Value="true" Action="NormalizeTrueLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
-      LINEENDINGS~="true"
+    <SetProperty Id="GfwLineEndings" Value="[LINEENDINGSSEARCH]" Action="SetGfwLineEndingsUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND (LINEENDINGSSEARCH~="true" OR LINEENDINGSSEARCH~="input" OR LINEENDINGSSEARCH~="false")
     </SetProperty>
-    <SetProperty Id="LINEENDINGS" Value="input" Action="NormalizeInputLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
-      LINEENDINGS~="input"
+    <SetProperty Id="GfwLineEndings" Value="[AUTOCRLF]" Action="SetGfwLineEndingsFromCommandLine" After="SetGfwLineEndingsUsingPreviouslyInstalledValue" Sequence="first">
+      AUTOCRLF~="true" OR AUTOCRLF~="input" OR AUTOCRLF~="false"
     </SetProperty>
-    <SetProperty Id="LINEENDINGS" Value="false" Action="NormalizeFalseLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
-      LINEENDINGS~="false"
-    </SetProperty>
+    <SetProperty Id="GfwLineEndings" Value="true" Action="NormalizeCaseGfwLineEndingsTrue" After="SetGfwLineEndingsFromCommandLine" Sequence="first">GfwLineEndings~="true"</SetProperty>
+    <SetProperty Id="GfwLineEndings" Value="input" Action="NormalizeCaseGfwLineEndingsInput" After="SetGfwLineEndingsFromCommandLine" Sequence="first">GfwLineEndings~="input"</SetProperty>
+    <SetProperty Id="GfwLineEndings" Value="false" Action="NormalizeCaseGfwLineEndingsFalse" After="SetGfwLineEndingsFromCommandLine" Sequence="first">GfwLineEndings~="false"</SetProperty>
+    <SetProperty Id="LINEENDINGS" Value="[GfwLineEndings]" Before="CostFinalize" Sequence="first" />
 
     <Property Id="CMDLINE_TERMINAL" Value="MinTTY" />
     <Property Id="TERMINAL" Value="MinTTY" />
