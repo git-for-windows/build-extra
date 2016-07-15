@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * When launching `git help <command>`, the `help.browser` config setting [is now respected](https://github.com/git-for-windows/git/pull/793).
 * The title bar in Git for Windows' SDK [shows the correct prefix again](https://github.com/git-for-windows/build-extra/pull/122).
 * We [no longer throw an assertion](https://github.com/git-for-windows/git/commit/ac008b30ec070f459450d602c55d55816aae2915) when using the `git credential-store`.
+* When configuring `notepad` as commit message editor, [UTF-8 messages are now handled correctly](https://github.com/git-for-windows/build-extra/pull/123).
 
 ## Changes since Git for Windows v2.8.4 (June 7th 2016)
 
