@@ -79,12 +79,8 @@
     <SetProperty Id="LINEENDINGS" Value="true" Action="NormalizeCaseLINEENDINGSTrue" After="SetLINEENDINGSFromCommandLine" Sequence="first">LINEENDINGS~="true"</SetProperty>
     <SetProperty Id="LINEENDINGS" Value="input" Action="NormalizeCaseLINEENDINGSInput" After="SetLINEENDINGSFromCommandLine" Sequence="first">LINEENDINGS~="input"</SetProperty>
     <SetProperty Id="LINEENDINGS" Value="false" Action="NormalizeCaseLINEENDINGSFalse" After="SetLINEENDINGSFromCommandLine" Sequence="first">LINEENDINGS~="false"</SetProperty>
-    <SetProperty Id="CustomizeLineEndings" Value="Yes" Before="CostFinalize" Sequence="ui">\
-      <![CDATA[
-        (NOT WIX_UPGRADE_DETECTED AND LINEENDINGS AND NOT LINEENDINGS~="true")
-        OR
-        (WIX_UPGRADE_DETECTED AND ((LINEENDINGS AND NOT LINEENDINGS~="true") OR (LINEENDINGSSEARCH AND NOT LINEENDINGSSEARCH~="true")))
-      ]]>
+    <SetProperty Id="CustomizeLineEndings" Value="Yes" Before="CostFinalize" Sequence="ui">
+        (WIX_UPGRADE_DETECTED AND LINEENDINGSSEARCH AND NOT LINEENDINGSSEARCH~="true") OR (NOT (COMMANDLINE_LINEENDINGS="Unset" OR COMMANDLINE_LINEENDINGS~="true"))
     </SetProperty>
 
     <Property Id="CMDLINE_TERMINAL" Value="MinTTY" />
@@ -320,7 +316,8 @@
       <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 
       <Publish Dialog="GitChooseEnvironmentDlg" Control="Back" Event="NewDialog" Value="InstallDirDlg">1</Publish>
-      <Publish Dialog="GitChooseEnvironmentDlg" Control="Next" Event="NewDialog" Value="GitLineEndingsDlg">1</Publish>
+      <Publish Dialog="GitChooseEnvironmentDlg" Control="Next" Event="NewDialog" Value="GitLineEndingsDlg">CustomizeLineEndings = "No"</Publish>
+      <Publish Dialog="GitChooseEnvironmentDlg" Control="Next" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">CustomizeLineEndings = "Yes"</Publish>
 
       <Publish Dialog="GitLineEndingsDlg" Control="Back" Event="NewDialog" Value="GitChooseEnvironmentDlg">1</Publish>
       <Publish Dialog="GitLineEndingsDlg" Control="Next" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">CustomizeLineEndings = "Yes"</Publish>
