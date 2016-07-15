@@ -65,21 +65,26 @@
       CLIENVIRONMENT = "CmdTools"
     </SetProperty>
 
-    <SetProperty Id="CMDLINE_LINEENDINGS" Value="[LINEENDINGS]" Before="AppSearch" Sequence="first">
-      <![CDATA[ LINEENDINGS~="input" OR LINEENDINGS~="false" ]]>
-    </SetProperty>
-    <Property Id="LINEENDINGS" Value="true">
+    <Property Id="LINEENDINGS" Value="true" />
+    <Property Id="COMMANDLINE_LINEENDINGS" Value="Unset" />
+    <Property Id="LINEENDINGSSEARCH">
       <RegistrySearch Id="LineEndingsSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="core.autocrlf" Type="raw" />
     </Property>
-    <SetProperty Id="LINEENDINGS" Value="[CMDLINE_LINEENDINGS]" After="AppSearch" Sequence="first">CMDLINE_LINEENDINGS</SetProperty>
-    <SetProperty Id="LINEENDINGS" Value="true" Action="NormalizeTrueLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
-      LINEENDINGS~="true"
+    <SetProperty Id="LINEENDINGS" Value="[LINEENDINGSSEARCH]" Action="SetLINEENDINGSUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND (LINEENDINGSSEARCH~="true" OR LINEENDINGSSEARCH~="input" OR LINEENDINGSSEARCH~="false")
     </SetProperty>
-    <SetProperty Id="LINEENDINGS" Value="input" Action="NormalizeInputLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
-      LINEENDINGS~="input"
+    <SetProperty Id="LINEENDINGS" Value="[COMMANDLINE_LINEENDINGS]" Action="SetLINEENDINGSFromCommandLine" After="SetLINEENDINGSUsingPreviouslyInstalledValue" Sequence="first">
+      COMMANDLINE_LINEENDINGS~="true" OR COMMANDLINE_LINEENDINGS~="input" OR COMMANDLINE_LINEENDINGS~="false"
     </SetProperty>
-    <SetProperty Id="LINEENDINGS" Value="false" Action="NormalizeFalseLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
-      LINEENDINGS~="false"
+    <SetProperty Id="LINEENDINGS" Value="true" Action="NormalizeCaseLINEENDINGSTrue" After="SetLINEENDINGSFromCommandLine" Sequence="first">LINEENDINGS~="true"</SetProperty>
+    <SetProperty Id="LINEENDINGS" Value="input" Action="NormalizeCaseLINEENDINGSInput" After="SetLINEENDINGSFromCommandLine" Sequence="first">LINEENDINGS~="input"</SetProperty>
+    <SetProperty Id="LINEENDINGS" Value="false" Action="NormalizeCaseLINEENDINGSFalse" After="SetLINEENDINGSFromCommandLine" Sequence="first">LINEENDINGS~="false"</SetProperty>
+    <SetProperty Id="CustomizeLineEndings" Value="Yes" Before="CostFinalize" Sequence="ui">\
+      <![CDATA[
+        (NOT WIX_UPGRADE_DETECTED AND LINEENDINGS AND NOT LINEENDINGS~="true")
+        OR
+        (WIX_UPGRADE_DETECTED AND ((LINEENDINGS AND NOT LINEENDINGS~="true") OR (LINEENDINGSSEARCH AND NOT LINEENDINGSSEARCH~="true")))
+      ]]>
     </SetProperty>
 
     <Property Id="CMDLINE_TERMINAL" Value="MinTTY" />
