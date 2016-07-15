@@ -69,6 +69,7 @@
 
     <Property Id="AUTOCRLF" Value="Unset" />
     <Property Id="GfwLineEndings" Value="true" />
+    <Property Id="SkipGitLineEndingsDlg" Value="No" />
     <Property Id="LINEENDINGS" Value="true" />
     <Property Id="LINEENDINGSSEARCH">
       <RegistrySearch Id="LineEndingsSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="core.autocrlf" Type="raw" />
@@ -83,6 +84,9 @@
     <SetProperty Id="GfwLineEndings" Value="input" Action="NormalizeCaseGfwLineEndingsInput" After="SetGfwLineEndingsFromCommandLine" Sequence="first">GfwLineEndings~="input"</SetProperty>
     <SetProperty Id="GfwLineEndings" Value="false" Action="NormalizeCaseGfwLineEndingsFalse" After="SetGfwLineEndingsFromCommandLine" Sequence="first">GfwLineEndings~="false"</SetProperty>
     <SetProperty Id="LINEENDINGS" Value="[GfwLineEndings]" Before="CostFinalize" Sequence="first" />
+    <SetProperty Id="SkipGitLineEndingsDlg" Value="Yes" Before="CostFinalize" Sequence="ui">
+      NOT GfwLineEndings="true" OR AUTOCRLF~="true" OR AUTOCRLF~="input" OR AUTOCRLF~="false"
+    </SetProperty>
 
     <Property Id="CMDLINE_TERMINAL" Value="MinTTY" />
     <Property Id="TERMINAL" Value="MinTTY" />
@@ -317,17 +321,19 @@
       <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 
       <Publish Dialog="GitChooseEnvironmentDlg" Control="Back" Event="NewDialog" Value="InstallDirDlg">1</Publish>
-      <Publish Dialog="GitChooseEnvironmentDlg" Control="Next" Event="NewDialog" Value="GitLineEndingsDlg">1</Publish>
+      <Publish Dialog="GitChooseEnvironmentDlg" Control="Next" Event="NewDialog" Value="GitLineEndingsDlg">SkipGitLineEndingsDlg = "No"</Publish>
+      <Publish Dialog="GitChooseEnvironmentDlg" Control="Next" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">SkipGitLineEndingsDlg = "Yes"</Publish>
 
       <Publish Dialog="GitLineEndingsDlg" Control="Back" Event="NewDialog" Value="GitChooseEnvironmentDlg">1</Publish>
       <Publish Dialog="GitLineEndingsDlg" Control="Next" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">CustomizeLineEndings = "Yes"</Publish>
       <Publish Dialog="GitLineEndingsDlg" Control="Next" Event="NewDialog" Value="GitChooseTerminalDlg">CustomizeLineEndings = "No"</Publish>
 
-      <Publish Dialog="GitCustomizeLineEndingsDlg" Control="Back" Event="NewDialog" Value="GitLineEndingsDlg">1</Publish>
+      <Publish Dialog="GitCustomizeLineEndingsDlg" Control="Back" Event="NewDialog" Value="GitLineEndingsDlg">SkipGitLineEndingsDlg = "No"</Publish>
+      <Publish Dialog="GitCustomizeLineEndingsDlg" Control="Back" Event="NewDialog" Value="GitChooseEnvironmentDlg">SkipGitLineEndingsDlg = "Yes"</Publish>
       <Publish Dialog="GitCustomizeLineEndingsDlg" Control="Next" Event="NewDialog" Value="GitChooseTerminalDlg">1</Publish>
 
-      <Publish Dialog="GitChooseTerminalDlg" Control="Back" Event="NewDialog" Value="GitLineEndingsDlg">CustomizeLineEndings = "No"</Publish>
-      <Publish Dialog="GitChooseTerminalDlg" Control="Back" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">CustomizeLineEndings = "Yes"</Publish>
+      <Publish Dialog="GitChooseTerminalDlg" Control="Back" Event="NewDialog" Value="GitLineEndingsDlg">CustomizeLineEndings = "No" AND SkipGitLineEndingsDlg = "No"</Publish>
+      <Publish Dialog="GitChooseTerminalDlg" Control="Back" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">CustomizeLineEndings = "Yes" OR SkipGitLineEndingsDlg = "Yes"</Publish>
       <Publish Dialog="GitChooseTerminalDlg" Control="Next" Event="NewDialog" Value="GitAdditionalOptionsDlg">1</Publish>
 
       <Publish Dialog="GitAdditionalOptionsDlg" Control="Back" Event="NewDialog" Value="GitChooseTerminalDlg">1</Publish>
