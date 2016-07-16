@@ -83,20 +83,19 @@
         (WIX_UPGRADE_DETECTED AND LINEENDINGSSEARCH AND NOT LINEENDINGSSEARCH~="true") OR (NOT (COMMANDLINE_LINEENDINGS="Unset" OR COMMANDLINE_LINEENDINGS~="true"))
     </SetProperty>
 
-    <Property Id="CMDLINE_TERMINAL" Value="MinTTY" />
     <Property Id="TERMINAL" Value="MinTTY" />
-    <SetProperty Id="CMDLINE_TERMINAL" Value="[TERMINAL]" Before="AppSearch" Sequence="first"><![CDATA[ TERMINAL <> CMDLINE_TERMINAL AND (TERMINAL~="CmdPrompt" OR TERMINAL~="MinTTY") ]]></SetProperty>
+    <Property Id="COMMANDLINE_TERMINAL" Value="Unset" />>
     <Property Id="TERMINALSEARCH">
       <RegistrySearch Id="TerminalSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="Terminal" Type="raw" />
     </Property>
-    <SetProperty Id="TERMINAL" Value="[TERMINALSEARCH]" Action="GetUpgradeTERMINALValue" After="AppSearch" Sequence="first">TERMINALSEARCH</SetProperty>
-    <SetProperty Id="TERMINAL" Value="[CMDLINE_TERMINAL]" After="GetUpgradeTERMINALValue" Sequence="first"><![CDATA[ CMDLINE_TERMINAL <> TERMINAL ]]></SetProperty>
-    <SetProperty Id="TERMINAL" Value="MinTTY" Action="NormalizeMinTTYCasing" After="SetTERMINAL" Sequence="first">
-      TERMINAL~="MinTTY"
+    <SetProperty Id="TERMINAL" Value="[TERMINALSEARCH]" Action="SetTERMINALUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND (TERMINALSEARCH~="MinTTY" OR TERMINALSEARCH~="CmdPrompt")
     </SetProperty>
-    <SetProperty Id="TERMINAL" Value="CmdPrompt" Action="NormalizeCmdPromptCasing" After="SetTERMINAL" Sequence="first">
-      TERMINAL~="CmdPrompt"
+    <SetProperty Id="TERMINAL" Value="[COMMANDLINE_TERMINAL]" Action="SetTERMINALFromCommandLine" After="SetTERMINALUsingPreviouslyInstalledValue" Sequence="first">
+      COMMANDLINE_TERMINAL~="MinTTY" OR COMMANDLINE_TERMINAL~="CmdPrompt"
     </SetProperty>
+    <SetProperty Id="TERMINAL" Value="MinTTY" Action="NormalizeCaseTERMINALMinTTY" After="SetTERMINALFromCommandLine" Sequence="first">TERMINAL~="MinTTY"</SetProperty>
+    <SetProperty Id="TERMINAL" Value="CmdPrompt" Action="NormalizeCaseTERMINALCmdPrompt" After="SetTERMINALFromCommandLine" Sequence="first">TERMINAL~="CmdPrompt"</SetProperty>
 
     <SetProperty Id="CMDLINE_ENABLEFSCACHE" Value="false" Before="AppSearch" Sequence="first">
       ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0
