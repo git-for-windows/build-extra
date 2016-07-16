@@ -104,20 +104,27 @@
     <SetProperty Id="GfwTerminal" Value="CmdPrompt" Action="NormalizeCaseGfwTerminalCmdPrompt" After="SetGfwTerminalFromCommandLine" Sequence="first">GfwTerminal~="CmdPrompt"</SetProperty>
     <SetProperty Id="TERMINAL" Value="[GfwTerminal]" Before="CostFinalize" Sequence="first" />
 
-    <SetProperty Id="CMDLINE_ENABLEFSCACHE" Value="false" Before="AppSearch" Sequence="first">
-      ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0
-    </SetProperty>
-    <Property Id="ENABLEFSCACHE" Value="true">
+    <Property Id="USEFSCACHE" Value="Unset" />
+    <Property Id="GfwEnableFsCache" Value="true" />
+    <Property Id="ENABLEFSCACHE" Value="true" />
+    <Property Id="FSCACHESEARCH">
       <RegistrySearch Id="EnableFsCacheSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="core.fscache" Type="raw" />
     </Property>
-    <SetProperty Id="ENABLEFSCACHE" Action="SetENABLESCACHEToTrue" Value="true" After="AppSearch" Sequence="first">
-      <![CDATA[ UILevel < 5 AND (ENABLEFSCACHE~="true" OR ENABLEFSCACHE=1) ]]>
+    <SetProperty Id="GfwEnableFsCache" Value="[FSCACHESEARCH]" Action="SetGfwEnableFsCacheUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND (FSCACHESEARCH~="true" OR FSCACHESEARCH~="false" OR FSCACHESEARCH~="yes" OR FSCACHESEARCH~="no" OR FSCACHESEARCH~="on" OR FSCACHESEARCH~="off" OR FSCACHESEARCH="0" OR FSCACHESEARCH="1")
     </SetProperty>
-    <SetProperty Id="ENABLEFSCACHE" Action="SetENABLEFSCACHEToFalse" Value="false" After="AppSearch" Sequence="first">
-      <![CDATA[ UILevel < 5 AND (ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0) ]]>
+    <SetProperty Id="GfwEnableFsCache" Value="[USEFSCACHE]" Action="SetGfwEnableFsCacheFromCommandLine" After="SetGfwEnableFsCacheUsingPreviouslyInstalledValue" Sequence="first">
+      USEFSCACHE~="true" OR USEFSCACHE~="false" OR USEFSCACHE~="yes" OR USEFSCACHE~="no" OR USEFSCACHE~="on" OR USEFSCACHE~="off" OR USEFSCACHE="1" OR USEFSCACHE="0"
     </SetProperty>
-    <SetProperty Id="ENABLEFSCACHE" Action="ClearENABLEFSCACHEForFullUIInstallIfFalse" Value="{}" After="AppSearch" Sequence="ui">
-      UILevel = 5 AND (CMDLINE_ENABLEFSCACHE OR ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0)
+    <SetProperty Id="GfwEnableFsCache" Value="true" Action="NormalizeGfwEnableFsCacheTrue" After="SetGfwEnableFsCacheFromCommandLine" Sequence="first">
+      GfwEnableFsCache~="true" OR GfwEnableFsCache~="yes" OR GfwEnableFsCache~="on" OR GfwEnableFsCache="1"
+    </SetProperty>
+    <SetProperty Id="GfwEnableFsCache" Value="false" Action="NormalizeGfwEnableFsCacheFalse" After="SetGfwEnableFsCacheFromCommandLine" Sequence="first">
+      GfwEnableFsCache~="false" OR GfwEnableFsCache~="no" OR GfwEnableFsCache~="off" OR GfwEnableFsCache="0"
+    </SetProperty>
+    <SetProperty Id="ENABLEFSCACHE" Value="[GfwEnableFsCache]" Before="CostFinalize" Sequence="first" />
+    <SetProperty Id="ENABLEFSCACHE" Value="{}" Action="ClearENABLEFSCACHEOnFullUIInstallIfFalse" After="SetENABLEFSCACHE" Sequence="ui">
+      UILevel = 5 AND ENABLEFSCACHE="false"
     </SetProperty>
 
     <SetProperty Id="CMDLINE_ENABLEGCM" Value="0" Before="AppSearch" Sequence="first">
