@@ -97,20 +97,25 @@
     <SetProperty Id="TERMINAL" Value="MinTTY" Action="NormalizeCaseTERMINALMinTTY" After="SetTERMINALFromCommandLine" Sequence="first">TERMINAL~="MinTTY"</SetProperty>
     <SetProperty Id="TERMINAL" Value="CmdPrompt" Action="NormalizeCaseTERMINALCmdPrompt" After="SetTERMINALFromCommandLine" Sequence="first">TERMINAL~="CmdPrompt"</SetProperty>
 
-    <SetProperty Id="CMDLINE_ENABLEFSCACHE" Value="false" Before="AppSearch" Sequence="first">
-      ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0
-    </SetProperty>
-    <Property Id="ENABLEFSCACHE" Value="true">
+    <Property Id="ENABLEFSCACHE" Value="true" />
+    <Property Id="COMMANDLINE_ENABLEFSCACHE" Value="Unset" />
+    <Property Id="ENABLEFSCACHESEARCH">
       <RegistrySearch Id="EnableFsCacheSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="core.fscache" Type="raw" />
     </Property>
-    <SetProperty Id="ENABLEFSCACHE" Action="SetENABLESCACHEToTrue" Value="true" After="AppSearch" Sequence="first">
-      <![CDATA[ UILevel < 5 AND (ENABLEFSCACHE~="true" OR ENABLEFSCACHE=1) ]]>
+    <SetProperty Id="ENABLEFSCACHE" Value="[ENABLEFSCACHESEARCH]" Action="SetENABLEFSCACHEUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND (ENABLEFSCACHESEARCH~="true" OR ENABLEFSCACHESEARCH~="false" OR ENABLEFSCACHESEARCH~="yes" OR ENABLEFSCACHESEARCH~="no" OR ENABLEFSCACHESEARCH="1" OR ENABLEFSCACHESEARCH="0")
     </SetProperty>
-    <SetProperty Id="ENABLEFSCACHE" Action="SetENABLEFSCACHEToFalse" Value="false" After="AppSearch" Sequence="first">
-      <![CDATA[ UILevel < 5 AND (ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0) ]]>
+    <SetProperty Id="ENABLEFSCACHE" Value="[COMMANDLINE_ENABLEFSCACHE]" Action="SetENABLEFSCACHEFromCommandLine" After="SetENABLEFSCACHEUsingPreviouslyInstalledValue" Sequence="first">
+      COMMANDLINE_ENABLEFSCACHE~="true" OR COMMANDLINE_ENABLEFSCACHE~="false" OR COMMANDLINE_ENABLEFSCACHE~="yes" OR COMMANDLINE_ENABLEFSCACHE~="no" OR COMMANDLINE_ENABLEFSCACHE="1" OR COMMANDLINE_ENABLEFSCACHE="0"
     </SetProperty>
-    <SetProperty Id="ENABLEFSCACHE" Action="ClearENABLEFSCACHEForFullUIInstallIfFalse" Value="{}" After="AppSearch" Sequence="ui">
-      UILevel = 5 AND (CMDLINE_ENABLEFSCACHE OR ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0)
+    <SetProperty Id="ENABLEFSCACHE" Value="true" Action="NormalizeENABLEFSCACHETrue" After="SetENABLEFSCACHEFromCommandLine" Sequence="first">
+      ENABLEFSCACHE~="true" OR ENABLEFSCACHE~="yes" OR ENABLEFSCACHE="1"
+    </SetProperty>
+    <SetProperty Id="ENABLEFSCACHE" Value="false" Action="NormalizeENABLEFSCACHEFalse" After="SetENABLEFSCACHEFromCommandLine" Sequence="first">
+      ENABLEFSCACHE~="false" OR ENABLEFSCACHE~="no" OR ENABLEFSCACHE="0"
+    </SetProperty>
+    <SetProperty Id="ENABLEFSCACHE" Value="{}" Action="ClearENABLEFSCACHEIfFalseAndFullUIInstall" After="NormalizeENABLEFSCACHEFalse" Sequence="ui">
+      UILevel = 5 AND ENABLEFSCACHE="false"
     </SetProperty>
 
     <SetProperty Id="CMDLINE_ENABLEGCM" Value="0" Before="AppSearch" Sequence="first">
