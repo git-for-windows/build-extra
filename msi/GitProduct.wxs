@@ -118,23 +118,25 @@
       UILevel = 5 AND ENABLEFSCACHE="false"
     </SetProperty>
 
-    <SetProperty Id="CMDLINE_ENABLEGCM" Value="0" Before="AppSearch" Sequence="first">
-      ENABLEGCM~="false" OR ENABLEGCM=0
-    </SetProperty>
-    <Property Id="ENABLEGCM" Value="1">
+    <Property Id="ENABLEGCM" Value="1" />
+    <Property Id="COMMANDLINE_ENABLEGCM" Value="Unset" />
+    <Property Id="ENABLEGCMSEARCH">
       <RegistrySearch Id="EnableGcmSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="EnableGcm" Type="raw" />
     </Property>
-    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMTo1OnUpgradeIfPreviouslyEnabled" Value="1" After="AppSearch" Sequence="first">
-      ENABLEGCM~="true" OR ENABLEGCM="#1"
+    <SetProperty Id="ENABLEGCM" Value="[ENABLEGCMSEARCH]" Action="SetENABLEGCMUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND ENABLEGCMSEARCH
     </SetProperty>
-    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMTo0FromCmdLineOrOnUpgradeIfDisabled" Value="0" After="AppSearch" Sequence="first">
-      CMDLINE_ENABLEGCM OR ENABLEGCM~="false" OR ENABLEGCM="#0"
+    <SetProperty Id="ENABLEGCM" Value="[COMMANDLINE_ENABLEGCM]" Action="SetENABLEGCMFromCommandLine" After="SetENABLEGCMUsingPreviouslyInstalledValue" Sequence="first">
+      COMMANDLINE_ENABLEGCM~="true" OR COMMANDLINE_ENABLEGCM~="false" OR COMMANDLINE_ENABLEGCM~="yes" OR COMMANDLINE_ENABLEGCM~="no" OR COMMANDLINE_ENABLEGCM="1" OR COMMANDLINE_ENABLEGCM="0"
     </SetProperty>
-    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMTo0IfNoNetFx451Plus" Value="0" After="SetWIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED" Sequence="first">
-      NOT WIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED
+    <SetProperty Id="ENABLEGCM" Value="1" Action="NormalizeENABLEGCMTrue" After="SetENABLEGCMFromCommandLine" Sequence="first">
+      ENABLEGCM~="true" OR ENABLEGCM~="yes" OR ENABLEGCM="1" OR ENABLEGCM="#1"
     </SetProperty>
-    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMToNullIfDisabledAndFullUIInstall" Value="{}" After="SetENABLEGCMTo0IfNoNetFx451Plus" Sequence="ui">
-      UILevel = 5 AND ENABLEGCM=0
+    <SetProperty Id="ENABLEGCM" Value="0" Action="NormalizeENABLEGCMIfFalseOrSetFalseIfNetFx451NotInstalled" After="SetWIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED" Sequence="first">
+      NOT WIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED OR ENABLEGCM~="false" OR ENABLEGCM~="no" OR ENABLEGCM="0" OR ENABLEGCM="#0"
+    </SetProperty>
+    <SetProperty Id="ENABLEGCM" Value="{}" Action="ClearENABLEGCMIfFalseAndFullUIInstall" After="NormalizeENABLEGCMIfFalseOrSetFalseIfNetFx451NotInstalled" Sequence="ui">
+      UILevel = 5 AND ENABLEGCM = 0
     </SetProperty>
 
     <Property Id="GITBASHHERE" Value="1" />
