@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * Git Credential Manager was updated to [v1.5.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.5.0).
 * The `git status` command [now sports a very verbose mode intended for third-party tools](https://github.com/git-for-windows/git/pull/812) such as IDEs.
 * The installer [will now refuse to downgrade Git for Windows, unless the user assures that it is intended](https://github.com/git-for-windows/build-extra/commit/82dc6284).
+* MinGit, the portable, non-interactive Git intended for third-party tools, [is now also built as part of Git for Windows' official versions](https://github.com/git-for-windows/build-extra/commit/16a8cf5).
 
 ### Bug Fixes
 
