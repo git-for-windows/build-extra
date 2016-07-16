@@ -36,7 +36,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [Git 2.9.1](https://github.com/git/git/blob/v2.9.1/Documentation/RelNotes/2.9.1.txt).
+* Comes with [Git 2.9.2](https://github.com/git/git/blob/v2.9.2/Documentation/RelNotes/2.9.2.txt) (skipping the Windows release of [Git 2.9.1](https://github.com/git/git/blob/v2.9.1/Documentation/RelNotes/2.9.1.txt) due to a regression caught by the automated tests).
 * Git Credential Manager was updated to [v1.5.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.5.0).
 * The installer [will now refuse to downgrade Git for Windows, unless the user assures that it is intended](https://github.com/git-for-windows/build-extra/commit/82dc6284).
 * MinGit, the portable, non-interactive Git intended for third-party tools, [is now also built as part of Git for Windows' official versions](https://github.com/git-for-windows/build-extra/commit/16a8cf5).
