@@ -794,7 +794,7 @@ release () { #
 
 	for sdk in "$sdk32" "$sdk64"
 	do
-		for dir in installer portable archive
+		for dir in installer portable archive mingit
 		do
 			"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 				"/usr/src/build-extra/$dir/release.sh '$ver'" ||
@@ -885,6 +885,8 @@ publish () { #
 		"$HOME"/Git-"$ver"-32-bit.exe \
 		"$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
 		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe \
+		"$HOME"/MinGit-"$ver"-64-bit.zip \
+		"$HOME"/MinGit-"$ver"-32-bit.zip \
 		"$HOME"/Git-"$ver"-64-bit.tar.bz2 \
 		"$HOME"/Git-"$ver"-32-bit.tar.bz2 ||
 	die "Could not upload files\n"
