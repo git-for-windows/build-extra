@@ -55,7 +55,7 @@
     <SetProperty Id="CLIENVIRONMENT" Value="CmdTools" Action="NormalizeCaseCLIENVIRONMENTCmdTools" After="SetCLIENVIRONMENTFromCommandLine" Sequence="first">
       CLIENVIRONMENT~="CmdTools"
     </SetProperty>
-    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIORNMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">
+    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">
       CLIENVIRONMENT = "Bash"
     </SetProperty>
     <SetProperty Action="SetCmdCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd" Before="InstallValidate" Sequence="execute">
