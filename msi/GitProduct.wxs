@@ -56,7 +56,7 @@
     <SetProperty Id="GfwCliEnvironment" Value="CmdTools" Action="NormalizeCaseGfwCliEnvironmentCmdTools" After="SetGfwCliEnvironmentFromCommandLine" Sequence="first">
       GfwCliEnvironment~="CmdTools"
     </SetProperty>
-    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIORNMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">
+    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">
       GfwCliEnvironment = "Bash"
     </SetProperty>
     <SetProperty Action="SetCmdCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd" Before="InstallValidate" Sequence="execute">
