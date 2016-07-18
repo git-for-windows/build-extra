@@ -872,6 +872,8 @@ publish () { #
 			Git-"$ver"-32-bit.exe \
 			PortableGit-"$ver"-64-bit.7z.exe \
 			PortableGit-"$ver"-32-bit.7z.exe \
+			MinGit-"$ver"-64-bit.zip \
+			MinGit-"$ver"-32-bit.zip \
 			Git-"$ver"-64-bit.tar.bz2 \
 			Git-"$ver"-32-bit.tar.bz2) |
 		sed -n 's/\([^ ]*\) \*\(.*\)/\2 | \1/p')"
