@@ -126,6 +126,7 @@
     <SetProperty Id="ENABLEFSCACHE" Value="{}" Action="ClearENABLEFSCACHEOnFullUIInstallIfFalse" After="SetENABLEFSCACHE" Sequence="ui">
       UILevel = 5 AND ENABLEFSCACHE="false"
     </SetProperty>
+    <SetProperty Id="ENABLEFSCACHE" Value="false" Action="SetENABLEFSCACHEToFalseIfItDoesNotExistAfterUISequenceIsComplete" Before="InstallValidate" Sequence="execute">NOT ENABLEFSCACHE</SetProperty>
 
     <Property Id="USEGCM" Value="Unset" />
     <Property Id="GfwEnableGcm" Value="1" />
@@ -149,6 +150,7 @@
     <SetProperty Id="ENABLEGCM" Value="{}" Action="ClearENABLEGCMIfFalseAndFullUIInstall" After="SetENABLEGCM" Sequence="ui">
       UILevel = 5 AND ENABLEGCM = 0
     </SetProperty>
+    <SetProperty Id="ENABLEGCM" Value="0" Action="SetENABLEGCMToZeroIfItDoesNotExistAfterUISequenceIsComplete" Before="InstallValidate" Sequence="execute">NOT ENABLEGCM</SetProperty>
 
     <Property Id="GITBASHHERE" Value="1" />
     <Property Id="GITGUIHERE" Value="1" />
