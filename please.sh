@@ -420,6 +420,57 @@ require_push_url () {
 	fi
 }
 
+is_rebasing () {
+	test -d "$(git rev-parse --git-path rebase-merge)"
+}
+
+has_merge_conflicts () {
+	test -n "$(git ls-files --unmerged)"
+}
+
+rebase () { # <upstream-branch-or-tag>
+	sdk="$sdk64"
+
+	build_extra_dir="$sdk64/usr/src/build-extra"
+	(cd "$build_extra_dir" &&
+	 sdk= path=$PWD ff_master) ||
+	die "Could not update build-extra\n"
+
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	(cd "$git_src_dir" &&
+	 require_remote upstream https://github.com/git/git &&
+	 require_remote git-for-windows \
+		https://github.com/git-for-windows/git &&
+	 require_push_url git-for-windows) ||
+	die "Could not update remotes\n"
+
+	(cd "$git_src_dir" &&
+	 if ! onto=$(git rev-parse -q --verify refs/remotes/upstream/"$1" ||
+		git rev-parse -q --verify refs/tags/"$1")
+	 then
+		die "No such upstream branch or tag: %s\n" "$1"
+	 fi &&
+	 git checkout git-for-windows/master &&
+	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS 'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true'" &&
+	 export GIT_CONFIG_PARAMETERS &&
+	 if ! "$build_extra_dir"/shears.sh \
+		-f --merging --onto "$onto" merging-rebase
+	 then
+		is_rebasing ||
+		die "shears aborted without starting the rebase\n"
+	 fi &&
+	 while is_rebasing && ! has_merge_conflicts
+	 do
+		git rebase --continue
+	 done &&
+	 if ! is_rebasing && test 0 -lt $(git rev-list --count "$onto"..)
+	 then
+		git push git-for-windows +HEAD:refs/heads/shears/"$1"
+	 fi &&
+	 ! is_rebasing ||
+	 die "Rebase requires manual resolution:\n%s\n" "$(pwd)") || exit
+}
+
 tag_git () { #
 	sdk="$sdk64" require w3m w3m
 
