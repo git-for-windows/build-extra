@@ -420,12 +420,65 @@ require_push_url () {
 	fi
 }
 
+whatis () {
+	git show -s --pretty='tformat:%h (%s, %ad)' --date=short "$@"
+}
+
 is_rebasing () {
 	test -d "$(git rev-parse --git-path rebase-merge)"
 }
 
 has_merge_conflicts () {
 	test -n "$(git ls-files --unmerged)"
+}
+
+record_rerere_train () {
+	conflicts="$(git ls-files --unmerged)" &&
+	test -n "$conflicts" ||
+	die "No merge conflicts?!?\n"
+
+	commit="$(git rev-parse -q --verify refs/heads/rerere-train)" ||
+	commit="$(git rev-parse -q --verify \
+		refs/remotes/git-for-windows/rerere-train)"
+	if test -z "$GIT_INDEX_FILE"
+	then
+		GIT_INDEX_FILE="$(git rev-parse --git-path index)"
+	fi &&
+	orig_index="$GIT_INDEX_FILE" &&
+	(GIT_INDEX_FILE="$orig_index.tmp" &&
+	 export GIT_INDEX_FILE &&
+
+	 for stage in 1 2 3
+	 do
+		cp "$orig_index" "$GIT_INDEX_FILE" &&
+		echo "$conflicts" |
+		sed -n "s/^\\([^ ]* [^ ]* \\)$stage/\\10/p" |
+		git update-index --index-info &&
+		git ls-files --unmerged |
+		sed -n "s/^[^ ]*/0/p" |
+		git update-index --index-info &&
+		eval tree$stage="$(git write-tree)" ||
+		die "Could not write tree %s\n" "$stage"
+	 done &&
+	 cp "$orig_index" "$GIT_INDEX_FILE" &&
+	 git add -u &&
+	 tree4="$(git write-tree)" &&
+	 base_msg="$(printf "cherry-pick %s onto %s\n\n%s\n%s\n\n\t%s" \
+		"$(git show -s --pretty=tformat:%h rebase-merge/stopped-sha)" \
+		"$(git show -s --pretty=tformat:%h HEAD)" \
+		"This commit helps to teach \`git rerere\` to resolve merge " \
+		"conflicts when cherry-picking:" \
+		"$(whatis rebase-merge/stopped-sha)")" &&
+	 commit=$(git commit-tree ${commit:+-p} $commit \
+		-m "base: $base_msg" $tree1) &&
+	 commit2=$(git commit-tree -p $commit -m "pick: $base_msg" $tree3) &&
+	 commit=$(git commit-tree -p $commit -m "upstream: $base_msg" $tree2) &&
+	 commit=$(git commit-tree -p $commit -p $commit2 \
+		-m "resolve: $base_msg" $tree4) &&
+	 git update-ref -m "$base_msg" refs/heads/rerere-train $commit) || exit
+
+	git add -u &&
+	git rerere
 }
 
 rebase () { # <upstream-branch-or-tag>
@@ -438,26 +491,36 @@ rebase () { # <upstream-branch-or-tag>
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	(cd "$git_src_dir" &&
-	 require_remote upstream https://github.com/git/git &&
-	 require_remote git-for-windows \
-		https://github.com/git-for-windows/git &&
-	 require_push_url git-for-windows) ||
-	die "Could not update remotes\n"
-
-	(cd "$git_src_dir" &&
+	 if ! is_rebasing
+	 then
+		require_remote upstream https://github.com/git/git &&
+		require_remote git-for-windows \
+			https://github.com/git-for-windows/git &&
+		require_push_url git-for-windows ||
+		die "Could not update remotes\n"
+	 fi &&
 	 if ! onto=$(git rev-parse -q --verify refs/remotes/upstream/"$1" ||
 		git rev-parse -q --verify refs/tags/"$1")
 	 then
 		die "No such upstream branch or tag: %s\n" "$1"
 	 fi &&
-	 git checkout git-for-windows/master &&
 	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS 'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true'" &&
 	 export GIT_CONFIG_PARAMETERS &&
-	 if ! "$build_extra_dir"/shears.sh \
-		-f --merging --onto "$onto" merging-rebase
+	 if is_rebasing
 	 then
-		is_rebasing ||
-		die "shears aborted without starting the rebase\n"
+		test 0 = $(git rev-list --count HEAD..$onto) ||
+		die "Current rebase is not on top of %s\n" "$1"
+
+		# record rerere-train, update index & continue
+		record_rerere_train
+	 else
+		git checkout git-for-windows/master &&
+		if ! "$build_extra_dir"/shears.sh \
+			-f --merging --onto "$onto" merging-rebase
+		then
+			is_rebasing ||
+			die "shears aborted without starting the rebase\n"
+		fi
 	 fi &&
 	 while is_rebasing && ! has_merge_conflicts
 	 do
@@ -468,7 +531,10 @@ rebase () { # <upstream-branch-or-tag>
 		git push git-for-windows +HEAD:refs/heads/shears/"$1"
 	 fi &&
 	 ! is_rebasing ||
-	 die "Rebase requires manual resolution:\n%s\n" "$(pwd)") || exit
+	 die "Rebase requires manual resolution in:\n\n\t%s\n\n%s\n" \
+		"$(pwd)" \
+		"(Call \`please.sh $1\` to contine, do *not* stage changes!") ||
+	exit
 }
 
 tag_git () { #
