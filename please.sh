@@ -481,6 +481,40 @@ record_rerere_train () {
 	git rerere
 }
 
+rerere_train () {
+	git rev-list --parents "$@" |
+	while read commit parent1 parent2 rest
+	do
+		test -n "$parent2" && test -z "$rest" || continue
+
+		printf "Learning merge conflict resolution from %s\n" \
+			"$(whatis "$commit")" >&2
+
+		(GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS 'rerere.enabled=true'" &&
+		 export GIT_CONFIG_PARAMETERS &&
+		 worktree="$(git rev-parse --git-path train)" &&
+		 if test ! -d "$worktree"
+		 then
+			git worktree add "$worktree" "$parent1" ||
+			die "Could not create worktree %s\n" "$worktree"
+		 fi &&
+		 cd "$worktree" &&
+		 git checkout -f -q "$parent1" &&
+		 git reset -q --hard &&
+		 if git merge "$parent2" >/dev/null 2>&1
+		 then
+			echo "Nothing to be learned: no merge conflicts" >&2
+		 elif test -s "$(git rev-parse --git-path MERGE_RR)"
+		 then
+			git checkout -q "$commit" -- . &&
+			git rerere ||
+			die "Could not learn from %s\n" "$commit"
+		 else
+			die "Merge conflicts, but no MERGE_RR!\n"
+		 fi) || exit
+	done
+}
+
 rebase () { # <upstream-branch-or-tag>
 	sdk="$sdk64"
 
@@ -493,11 +527,30 @@ rebase () { # <upstream-branch-or-tag>
 	(cd "$git_src_dir" &&
 	 if ! is_rebasing
 	 then
+		orig_rerere_train="$(git rev-parse -q --verify \
+			refs/remotes/git-for-windows/rerere-train)"
+		test -z "$orig_rerere_train" ||
+		orig_rerere_train="$orig_rerere_train.."
+		if rerere_train="$(git rev-parse -q --verify \
+				refs/heads/rerere-train)" &&
+			test 0 -lt $(git rev-list --count \
+				"$orig_rerere_train$rerere_train")
+		then
+			die 'The `rerere-train` branch has unpushed changes\n'
+		fi
+
 		require_remote upstream https://github.com/git/git &&
 		require_remote git-for-windows \
 			https://github.com/git-for-windows/git &&
 		require_push_url git-for-windows ||
 		die "Could not update remotes\n"
+
+		if rerere_train="$(git rev-parse -q --verify \
+			refs/remotes/git-for-windows/rerere-train)"
+		then
+			rerere_train "$orig_rerere_train$rerere_train" ||
+			die "Could not replay merge conflict resolutions\n"
+		fi
 	 fi &&
 	 if ! onto=$(git rev-parse -q --verify refs/remotes/upstream/"$1" ||
 		git rev-parse -q --verify refs/tags/"$1")
@@ -528,7 +581,18 @@ rebase () { # <upstream-branch-or-tag>
 	 done &&
 	 if ! is_rebasing && test 0 -lt $(git rev-list --count "$onto"..)
 	 then
-		git push git-for-windows +HEAD:refs/heads/shears/"$1"
+		git push git-for-windows +HEAD:refs/heads/shears/"$1" ||
+		die "Could not push shears/%s\n" "$1"
+		if git rev-parse -q --verify refs/heads/rerere-train
+		then
+			git rev-parse -q --verify \
+				refs/remotes/git-for-windows/rerere-train &&
+			test 0 -eq $(git rev-list --count \
+				refs/heads/rerere-train \
+				^refs/remotes/git-for-windows/rerere-train) ||
+			git push git-for-windows refs/heads/rerere-train ||
+			die "Could not push rerere-train\n"
+		fi
 	 fi &&
 	 ! is_rebasing ||
 	 die "Rebase requires manual resolution in:\n\n\t%s\n\n%s\n" \
