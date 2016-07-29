@@ -524,6 +524,31 @@ rebase () { # <upstream-branch-or-tag>
 	die "Could not update build-extra\n"
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	if test ! -d "$git_src_dir"
+	then
+		if test ! -d "${git_src_dir%/src/git}"
+		then
+			cd "${git_src_dir%/*/src/git}" &&
+			git fetch &&
+			git checkout -t origin/master ||
+			die "Could not check out %s\n" \
+				"${git_src_dir%*/src/git}"
+		fi
+		(cd "${git_src_dir%/src/git}" &&
+		 echo "Checking out Git (not making it)" >&2 &&
+		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
+			'makepkg --noconfirm -s -o') ||
+		die "Could not initialize %s\n" "$git_src_dir"
+	fi
+
+
+	test false = "$(git -C "$git_src_dir" config core.autocrlf)" ||
+	(cd "$git_src_dir" &&
+	 git config core.autocrlf false &&
+	 rm .git/index
+	 git stash) ||
+	die "Could not make sure Git sources are checked out LF-only\n"
+
 	(cd "$git_src_dir" &&
 	 if ! is_rebasing
 	 then
