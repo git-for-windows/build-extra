@@ -504,13 +504,17 @@ rerere_train () {
 		 if git merge "$parent2" >/dev/null 2>&1
 		 then
 			echo "Nothing to be learned: no merge conflicts" >&2
-		 elif test -s "$(git rev-parse --git-path MERGE_RR)"
-		 then
+		 else
+			if ! test -s "$(git rev-parse --git-path MERGE_RR)"
+			then
+				git rerere forget &&
+				test -s "$(git rev-parse --git-path MERGE_RR)" ||
+				die "Could not re-learn from %s\n" "$commit"
+			fi
+
 			git checkout -q "$commit" -- . &&
 			git rerere ||
 			die "Could not learn from %s\n" "$commit"
-		 else
-			die "Merge conflicts, but no MERGE_RR!\n"
 		 fi) || exit
 	done
 }
