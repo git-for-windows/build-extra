@@ -399,7 +399,16 @@ require_remote () {
 # require_push_url # [<remote>]
 require_push_url () {
 	remote=${1:-origin}
-	if test -z "$(git config remote."$remote".pushurl)"
+	if ! grep -q '^Host github.com$' "$HOME/.ssh/config" 2>/dev/null
+	then
+		# Allow build agents to use Personal Access Tokens
+		url="$(git config remote."$remote".url)" &&
+		case "$(git config http."$url".extraheader)" in
+		Authorization:*) true;; # okay
+		*) false;;
+		esac ||
+		die "No github.com entry in ~/.ssh/config\n"
+	elif test -z "$(git config remote."$remote".pushurl)"
 	then
 		pushurl="$(git config remote."$remote".url |
 			sed -n 's|^https://github.com/\(.*\)|github.com:\1|p')"
@@ -408,9 +417,6 @@ require_push_url () {
 
 		git remote set-url --push "$remote" "$pushurl" ||
 		die "Could not set push URL of %s to %s\n" "$remote" "$pushurl"
-
-		grep -q '^Host github.com$' "$HOME/.ssh/config" ||
-		die "No github.com entry in ~/.ssh/config\n"
 	fi
 }
 
