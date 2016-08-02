@@ -399,7 +399,16 @@ require_remote () {
 # require_push_url # [<remote>]
 require_push_url () {
 	remote=${1:-origin}
-	if test -z "$(git config remote."$remote".pushurl)"
+	if ! grep -q '^Host github.com$' "$HOME/.ssh/config" 2>/dev/null
+	then
+		# Allow build agents to use Personal Access Tokens
+		url="$(git config remote."$remote".url)" &&
+		case "$(git config http."$url".extraheader)" in
+		Authorization:*) true;; # okay
+		*) false;;
+		esac ||
+		die "No github.com entry in ~/.ssh/config\n"
+	elif test -z "$(git config remote."$remote".pushurl)"
 	then
 		pushurl="$(git config remote."$remote".url |
 			sed -n 's|^https://github.com/\(.*\)|github.com:\1|p')"
@@ -408,10 +417,225 @@ require_push_url () {
 
 		git remote set-url --push "$remote" "$pushurl" ||
 		die "Could not set push URL of %s to %s\n" "$remote" "$pushurl"
-
-		grep -q '^Host github.com$' "$HOME/.ssh/config" ||
-		die "No github.com entry in ~/.ssh/config\n"
 	fi
+}
+
+whatis () {
+	git show -s --pretty='tformat:%h (%s, %ad)' --date=short "$@"
+}
+
+is_rebasing () {
+	test -d "$(git rev-parse --git-path rebase-merge)"
+}
+
+has_merge_conflicts () {
+	test -n "$(git ls-files --unmerged)"
+}
+
+record_rerere_train () {
+	conflicts="$(git ls-files --unmerged)" &&
+	test -n "$conflicts" ||
+	die "No merge conflicts?!?\n"
+
+	commit="$(git rev-parse -q --verify refs/heads/rerere-train)" ||
+	commit="$(git rev-parse -q --verify \
+		refs/remotes/git-for-windows/rerere-train)"
+	if test -z "$GIT_INDEX_FILE"
+	then
+		GIT_INDEX_FILE="$(git rev-parse --git-path index)"
+	fi &&
+	orig_index="$GIT_INDEX_FILE" &&
+	(GIT_INDEX_FILE="$orig_index.tmp" &&
+	 export GIT_INDEX_FILE &&
+
+	 for stage in 1 2 3
+	 do
+		cp "$orig_index" "$GIT_INDEX_FILE" &&
+		echo "$conflicts" |
+		sed -n "s/^\\([^ ]* [^ ]* \\)$stage/\\10/p" |
+		git update-index --index-info &&
+		git ls-files --unmerged |
+		sed -n "s/^[^ ]*/0/p" |
+		git update-index --index-info &&
+		eval tree$stage="$(git write-tree)" ||
+		die "Could not write tree %s\n" "$stage"
+	 done &&
+	 cp "$orig_index" "$GIT_INDEX_FILE" &&
+	 git add -u &&
+	 tree4="$(git write-tree)" &&
+	 base_msg="$(printf "cherry-pick %s onto %s\n\n%s\n%s\n\n\t%s" \
+		"$(git show -s --pretty=tformat:%h rebase-merge/stopped-sha)" \
+		"$(git show -s --pretty=tformat:%h HEAD)" \
+		"This commit helps to teach \`git rerere\` to resolve merge " \
+		"conflicts when cherry-picking:" \
+		"$(whatis rebase-merge/stopped-sha)")" &&
+	 commit=$(git commit-tree ${commit:+-p} $commit \
+		-m "base: $base_msg" $tree1) &&
+	 commit2=$(git commit-tree -p $commit -m "pick: $base_msg" $tree3) &&
+	 commit=$(git commit-tree -p $commit -m "upstream: $base_msg" $tree2) &&
+	 commit=$(git commit-tree -p $commit -p $commit2 \
+		-m "resolve: $base_msg" $tree4) &&
+	 git update-ref -m "$base_msg" refs/heads/rerere-train $commit) || exit
+
+	git add -u &&
+	git rerere
+}
+
+rerere_train () {
+	git rev-list --parents "$@" |
+	while read commit parent1 parent2 rest
+	do
+		test -n "$parent2" && test -z "$rest" || continue
+
+		printf "Learning merge conflict resolution from %s\n" \
+			"$(whatis "$commit")" >&2
+
+		(GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS 'rerere.enabled=true'" &&
+		 export GIT_CONFIG_PARAMETERS &&
+		 worktree="$(git rev-parse --git-path train)" &&
+		 if test ! -d "$worktree"
+		 then
+			git worktree add "$worktree" "$parent1" ||
+			die "Could not create worktree %s\n" "$worktree"
+		 fi &&
+		 cd "$worktree" &&
+		 git checkout -f -q "$parent1" &&
+		 git reset -q --hard &&
+		 if git merge "$parent2" >/dev/null 2>&1
+		 then
+			echo "Nothing to be learned: no merge conflicts" >&2
+		 else
+			if ! test -s "$(git rev-parse --git-path MERGE_RR)"
+			then
+				git rerere forget &&
+				test -s "$(git rev-parse --git-path MERGE_RR)" ||
+				die "Could not re-learn from %s\n" "$commit"
+			fi
+
+			git checkout -q "$commit" -- . &&
+			git rerere ||
+			die "Could not learn from %s\n" "$commit"
+		 fi) || exit
+	done
+}
+
+rebase () { # <upstream-branch-or-tag>
+	sdk="$sdk64"
+
+	build_extra_dir="$sdk64/usr/src/build-extra"
+	(cd "$build_extra_dir" &&
+	 sdk= path=$PWD ff_master) ||
+	die "Could not update build-extra\n"
+
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	if test ! -d "$git_src_dir"
+	then
+		if test ! -d "${git_src_dir%/src/git}"
+		then
+			cd "${git_src_dir%/*/src/git}" &&
+			git fetch &&
+			git checkout -t origin/master ||
+			die "Could not check out %s\n" \
+				"${git_src_dir%*/src/git}"
+		fi
+		(cd "${git_src_dir%/src/git}" &&
+		 echo "Checking out Git (not making it)" >&2 &&
+		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
+			'makepkg --noconfirm -s -o') ||
+		die "Could not initialize %s\n" "$git_src_dir"
+	fi
+
+
+	test false = "$(git -C "$git_src_dir" config core.autocrlf)" ||
+	(cd "$git_src_dir" &&
+	 git config core.autocrlf false &&
+	 rm .git/index
+	 git stash) ||
+	die "Could not make sure Git sources are checked out LF-only\n"
+
+	(cd "$git_src_dir" &&
+	 if ! is_rebasing
+	 then
+		orig_rerere_train="$(git rev-parse -q --verify \
+			refs/remotes/git-for-windows/rerere-train)"
+		test -z "$orig_rerere_train" ||
+		orig_rerere_train="$orig_rerere_train.."
+		if rerere_train="$(git rev-parse -q --verify \
+				refs/heads/rerere-train)" &&
+			test 0 -lt $(git rev-list --count \
+				"$orig_rerere_train$rerere_train")
+		then
+			die 'The `rerere-train` branch has unpushed changes\n'
+		fi
+
+		require_remote upstream https://github.com/git/git &&
+		require_remote git-for-windows \
+			https://github.com/git-for-windows/git &&
+		require_push_url git-for-windows ||
+		die "Could not update remotes\n"
+
+		if rerere_train="$(git rev-parse -q --verify \
+			refs/remotes/git-for-windows/rerere-train)"
+		then
+			rerere_train "$orig_rerere_train$rerere_train" ||
+			die "Could not replay merge conflict resolutions\n"
+		fi
+	 fi &&
+	 if ! onto=$(git rev-parse -q --verify refs/remotes/upstream/"$1" ||
+		git rev-parse -q --verify refs/tags/"$1")
+	 then
+		die "No such upstream branch or tag: %s\n" "$1"
+	 fi &&
+	 if prev=$(git rev-parse -q --verify \
+		refs/remotes/git-for-windows/shears/"$1") &&
+		test 0 = $(git rev-list --count \
+			^"$prev" git-for-windows/master $onto)
+	 then
+		echo "shears/$1 was already rebased" >&2
+		exit 0
+	 fi &&
+	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS 'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true'" &&
+	 export GIT_CONFIG_PARAMETERS &&
+	 if is_rebasing
+	 then
+		test 0 = $(git rev-list --count HEAD..$onto) ||
+		die "Current rebase is not on top of %s\n" "$1"
+
+		# record rerere-train, update index & continue
+		record_rerere_train
+	 else
+		git checkout git-for-windows/master &&
+		if ! "$build_extra_dir"/shears.sh \
+			-f --merging --onto "$onto" merging-rebase
+		then
+			is_rebasing ||
+			die "shears aborted without starting the rebase\n"
+		fi
+	 fi &&
+	 while is_rebasing && ! has_merge_conflicts
+	 do
+		git rebase --continue
+	 done &&
+	 if ! is_rebasing && test 0 -lt $(git rev-list --count "$onto"..)
+	 then
+		git push git-for-windows +HEAD:refs/heads/shears/"$1" ||
+		die "Could not push shears/%s\n" "$1"
+		if git rev-parse -q --verify refs/heads/rerere-train
+		then
+			git rev-parse -q --verify \
+				refs/remotes/git-for-windows/rerere-train &&
+			test 0 -eq $(git rev-list --count \
+				refs/heads/rerere-train \
+				^refs/remotes/git-for-windows/rerere-train) ||
+			git push git-for-windows refs/heads/rerere-train ||
+			die "Could not push rerere-train\n"
+		fi
+	 fi &&
+	 ! is_rebasing ||
+	 die "Rebase requires manual resolution in:\n\n\t%s\n\n%s\n" \
+		"$(pwd)" \
+		"(Call \`please.sh $1\` to contine, do *not* stage changes!") ||
+	exit
 }
 
 tag_git () { #
