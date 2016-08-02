@@ -586,6 +586,14 @@ rebase () { # <upstream-branch-or-tag>
 	 then
 		die "No such upstream branch or tag: %s\n" "$1"
 	 fi &&
+	 if prev=$(git rev-parse -q --verify \
+		refs/remotes/git-for-windows/shears/"$1") &&
+		test 0 = $(git rev-list --count \
+			^"$prev" git-for-windows/master $onto)
+	 then
+		echo "shears/$1 was already rebased" >&2
+		exit 0
+	 fi &&
 	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS 'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true'" &&
 	 export GIT_CONFIG_PARAMETERS &&
 	 if is_rebasing
