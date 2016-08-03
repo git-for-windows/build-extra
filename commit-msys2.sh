@@ -18,7 +18,8 @@ die "You need to run this script in a Git for Windows SDK"
 
 list_packages () {
 	(cd "$root"/var/lib/pacman/local &&
-	 ls | grep -v ALPM_DB_VERSION)
+	 # order by ctime
+	 ls -rtc | grep -v ALPM_DB_VERSION)
 }
 
 commit_package () {
