@@ -48,7 +48,31 @@ commit_package () {
 	exit
 }
 
-for package in $(list_packages)
-do
-	commit_package $package
-done
+case "$1" in
+init)
+	if test ! -d "$root"/.git
+	then
+		(cd "$root" && git init) ||
+		die "Could not initialize Git repository"
+	fi
+
+	if test false != "$(git -C "$root" config core.autocrlf)"
+	then
+		git -C "$root" config core.autocrlf false ||
+		die "Could not force core.autocrlf = false"
+	fi
+
+	for package in $(list_packages)
+	do
+		commit_package $package || exit
+	done
+
+	(cd "$root" &&
+	 git add var/lib/pacman/sync &&
+	 git commit -s -m "Pacman package index") ||
+	die "Could not conclude initial commits"
+	;;
+*)
+	die "Unknown command: $1"
+	;;
+esac
