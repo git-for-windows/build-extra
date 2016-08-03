@@ -41,6 +41,7 @@ commit_package () {
 	 git ls-tree -r import-tars |
 	 sed -n 's/^\([0-9]* \)blob \([0-9a-f]*\)\(\t[^.].*\)/\1\2\3/p' |
 	 git update-index --index-info &&
+	 git add "$root"/var/lib/pacman/local/"$1" &&
 	 git commit -s -m "$1" ||
 	 die "Could not commit $1") ||
 	exit
