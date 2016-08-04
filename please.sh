@@ -519,7 +519,16 @@ rerere_train () {
 	done
 }
 
-rebase () { # <upstream-branch-or-tag>
+rebase () { # [--test] <upstream-branch-or-tag>
+	run_tests=
+	while case "$1" in
+	--test) run_tests=t;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected 1 argument, got $#: %s\n" "$*"
+
 	sdk="$sdk64"
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
@@ -631,10 +640,21 @@ rebase () { # <upstream-branch-or-tag>
 			die "Could not push rerere-train\n"
 		fi
 	 fi &&
-	 ! is_rebasing ||
-	 die "Rebase requires manual resolution in:\n\n\t%s\n\n%s\n" \
-		"$(pwd)" \
-		"(Call \`please.sh $1\` to contine, do *not* stage changes!") ||
+	 if is_rebasing
+	 then
+		die "Rebase requires manual resolution in:\n\n\t%s\n\n%s%s\n" \
+			"$(pwd)" \
+			"(Call \`please.sh $1\` to contine, " \
+			"do *not* stage changes!"
+	 else
+		if test -n "$run_tests"
+		then
+			echo "Building and testing Git" >&2 &&
+			GIT_CONFIG_PARAMETERS= \
+			"$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
+				'make -j5 DEVELOPER=1 -k test'
+		fi
+	 fi) ||
 	exit
 }
 
