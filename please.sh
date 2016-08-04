@@ -1241,7 +1241,15 @@ usage="$(sed -n "s/^$command () { # \?/ /p" <"$0")"
 test -n "$usage" ||
 die "Unknown command: %s\n" "$command"
 
-test $# = $(echo "$usage" | tr -dc '<' | wc -c) ||
+case "$usage" in
+*'['*)
+	test $# -ge $(echo "$usage" | sed -e 's/\[[^]]*\]//g' | tr -dc '<' |
+		wc -c)
+	;;
+*)
+	test $# = $(echo "$usage" | tr -dc '<' | wc -c)
+	;;
+esac ||
 die "Usage: %s %s%s\n" "$0" "$command" "$usage"
 
 "$command" "$@"
