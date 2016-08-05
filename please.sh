@@ -519,11 +519,13 @@ rerere_train () {
 	done
 }
 
-rebase () { # [--test] [--continue] <upstream-branch-or-tag>
+rebase () { # [--test] [--abort-previous] [--continue] <upstream-branch-or-tag>
 	run_tests=
+	abort_previous=
 	continue_rebase=
 	while case "$1" in
 	--test) run_tests=t;;
+	--abort-previous) abort_previous=t;;
 	--continue) continue_rebase=t;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -567,8 +569,14 @@ rebase () { # [--test] [--continue] <upstream-branch-or-tag>
 	(cd "$git_src_dir" &&
 	 if is_rebasing && test -z "$continue_rebase"
 	 then
-		die "Rebase already in progress.\n%s\n" \
-			"Require --continue or to continue."
+		if test -n "$abort_previous"
+		then
+			git rebase --abort ||
+			die "Could not abort previous rebase\n"
+		else
+			die "Rebase already in progress.\n%s\n" \
+				"Require --continue or --abort-previous."
+		fi
 	 fi &&
 
 	 if ! is_rebasing
