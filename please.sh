@@ -519,10 +519,12 @@ rerere_train () {
 	done
 }
 
-rebase () { # [--test] <upstream-branch-or-tag>
+rebase () { # [--test] [--continue] <upstream-branch-or-tag>
 	run_tests=
+	continue_rebase=
 	while case "$1" in
 	--test) run_tests=t;;
+	--continue) continue_rebase=t;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
@@ -563,8 +565,17 @@ rebase () { # [--test] <upstream-branch-or-tag>
 	die "Could not make sure Git sources are checked out LF-only\n"
 
 	(cd "$git_src_dir" &&
+	 if is_rebasing && test -z "$continue_rebase"
+	 then
+		die "Rebase already in progress.\n%s\n" \
+			"Require --continue or to continue."
+	 fi &&
+
 	 if ! is_rebasing
 	 then
+		test -z "$continue_rebase" ||
+		die "No rebase was started...\n"
+
 		orig_rerere_train="$(git rev-parse -q --verify \
 			refs/remotes/git-for-windows/rerere-train)"
 		test -z "$orig_rerere_train" ||
