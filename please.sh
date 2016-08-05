@@ -642,7 +642,10 @@ rebase () { # [--test] <upstream-branch-or-tag>
 	 fi &&
 	 if is_rebasing
 	 then
-		die "Rebase requires manual resolution in:\n\n\t%s\n\n%s%s\n" \
+		printf "There are merge conflicts:\n\n" >&2
+		git diff >&2
+
+		die "\nRebase needs manual resolution in:\n\n\t%s\n\n%s%s\n" \
 			"$(pwd)" \
 			"(Call \`please.sh $1\` to contine, " \
 			"do *not* stage changes!"
