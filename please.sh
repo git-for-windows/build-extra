@@ -642,7 +642,7 @@ rebase () { # [--test] [--abort-previous] [--continue] <upstream-branch-or-tag>
 	 fi &&
 	 while is_rebasing && ! has_merge_conflicts
 	 do
-		git rebase --continue
+		git rebase --continue || true
 	 done &&
 	 if ! is_rebasing && test 0 -lt $(git rev-list --count "$onto"..)
 	 then
