@@ -680,6 +680,46 @@ rebase () { # [--test] [--abort-previous] [--continue] <upstream-branch-or-tag>
 	exit
 }
 
+test_remote_branch () { # <remote-tracking-branch>
+	sdk="$sdk64"
+
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	if test ! -d "$git_src_dir"
+	then
+		if test ! -d "${git_src_dir%/src/git}"
+		then
+			cd "${git_src_dir%/*/src/git}" &&
+			git fetch &&
+			git checkout -t origin/master ||
+			die "Could not check out %s\n" \
+				"${git_src_dir%*/src/git}"
+		fi
+		(cd "${git_src_dir%/src/git}" &&
+		 echo "Checking out Git (not making it)" >&2 &&
+		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
+			'makepkg --noconfirm -s -o') ||
+		die "Could not initialize %s\n" "$git_src_dir"
+	fi
+
+	test false = "$(git -C "$git_src_dir" config core.autocrlf)" ||
+	(cd "$git_src_dir" &&
+	 git config core.autocrlf false &&
+	 rm .git/index
+	 git stash) ||
+	die "Could not make sure Git sources are checked out LF-only\n"
+
+	(cd "$git_src_dir" &&
+	 require_remote upstream https://github.com/git/git &&
+	 require_remote git-for-windows \
+		https://github.com/git-for-windows/git &&
+	 git checkout -f "$1" &&
+	 git reset --hard &&
+	 GIT_CONFIG_PARAMETERS= \
+	 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
+	 'make -j5 DEVELOPER=1 -k test') ||
+	exit
+}
+
 tag_git () { #
 	sdk="$sdk64" require w3m w3m
 
