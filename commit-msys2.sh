@@ -12,12 +12,12 @@ die () {
 root="$(cd "$(dirname "$0")/../../.." && pwd)" ||
 die "Could not determine root directory"
 
-import_tars="$root"/usr/src/git/contrib/fast-import/import-tars.perl
+import_tars="${root%/}"/usr/src/git/contrib/fast-import/import-tars.perl
 test -x "$import_tars" ||
 die "You need to run this script in a Git for Windows SDK"
 
 list_packages () {
-	(cd "$root"/var/lib/pacman/local &&
+	(cd "${root%/}"/var/lib/pacman/local &&
 	 # order by ctime
 	 ls -rtc | grep -v ALPM_DB_VERSION)
 }
@@ -42,7 +42,7 @@ commit_package () {
 	 git ls-tree -r import-tars |
 	 sed -n 's/^\([0-9]* \)blob \([0-9a-f]*\)\(\t[^.].*\)/\1\2\3/p' |
 	 git update-index --index-info &&
-	 git add "$root"/var/lib/pacman/local/"$1" &&
+	 git add "${root%/}"/var/lib/pacman/local/"$1" &&
 	 git commit -s -m "$1" ||
 	 die "Could not commit $1") ||
 	exit
@@ -50,7 +50,7 @@ commit_package () {
 
 case "$1" in
 init)
-	if test ! -d "$root"/.git
+	if test ! -d "${root%/}"/.git
 	then
 		(cd "$root" && git init) ||
 		die "Could not initialize Git repository"
