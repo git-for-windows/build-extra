@@ -490,7 +490,7 @@ rerere_train () {
 		printf "Learning merge conflict resolution from %s\n" \
 			"$(whatis "$commit")" >&2
 
-		(GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS 'rerere.enabled=true'" &&
+		(GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'rerere.enabled=true'" &&
 		 export GIT_CONFIG_PARAMETERS &&
 		 worktree="$(git rev-parse --git-path train)" &&
 		 if test ! -d "$worktree"
@@ -652,7 +652,7 @@ rebase () { # [--test] [--abort-previous] [--continue] <upstream-branch-or-tag>
 		echo "shears/$1 was already rebased" >&2
 		exit 0
 	 fi &&
-	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS 'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true'" &&
+	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true'" &&
 	 export GIT_CONFIG_PARAMETERS &&
 	 if is_rebasing
 	 then
