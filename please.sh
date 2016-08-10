@@ -482,7 +482,7 @@ record_rerere_train () {
 }
 
 rerere_train () {
-	git rev-list --parents "$@" |
+	git rev-list --reverse --parents "$@" |
 	while read commit parent1 parent2 rest
 	do
 		test -n "$parent2" && test -z "$rest" || continue
@@ -490,7 +490,7 @@ rerere_train () {
 		printf "Learning merge conflict resolution from %s\n" \
 			"$(whatis "$commit")" >&2
 
-		(GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS 'rerere.enabled=true'" &&
+		(GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'rerere.enabled=true'" &&
 		 export GIT_CONFIG_PARAMETERS &&
 		 worktree="$(git rev-parse --git-path train)" &&
 		 if test ! -d "$worktree"
@@ -519,7 +519,55 @@ rerere_train () {
 	done
 }
 
-rebase () { # <upstream-branch-or-tag>
+# build_and_test_64; intended to build and test 64-bit Git in MINGW-packages
+build_and_test_64 () {
+	 GIT_CONFIG_PARAMETERS= \
+	 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
+	 	: make sure that the .dll files are correctly resolved: &&
+	 	cd $PWD &&
+		rm -f t/test-results/*.{counts,tee} &&
+	 	if ! make -j5 DEVELOPER=1 -k test
+	 	then
+			cd t &&
+			failed_tests="$(cd test-results &&
+				grep -l "^failed [1-9]" t[0-9]*.counts)" || {
+				echo "No failed tests ?!?" >&2
+				exit 1
+			}
+			failed_count=0
+			for t in $failed_tests
+			do
+				t=${t%-[1-9]*.counts}
+				echo "Re-running $t" >&2
+				time bash $t.sh -i -v -x --tee ||
+				failed_count=$(($failed_count+1))
+			done
+			test 0 = $failed_count || {
+				echo "$failed_count tests still failing!" >&2
+				exit 1
+			}
+		fi'
+}
+
+rebase () { # [--test] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag>
+	run_tests=
+	abort_previous=
+	continue_rebase=
+	skip_rebase=
+	while case "$1" in
+	--test) run_tests=t;;
+	--abort-previous) abort_previous=t;;
+	--continue) continue_rebase=t;;
+	--skip) skip_rebase=t;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected 1 argument, got $#: %s\n" "$*"
+
+	test tt != "$skip_rebase$continue_rebase" ||
+	die "Cannot continue *and* skip\n"
+
 	sdk="$sdk64"
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
@@ -554,8 +602,23 @@ rebase () { # <upstream-branch-or-tag>
 	die "Could not make sure Git sources are checked out LF-only\n"
 
 	(cd "$git_src_dir" &&
+	 if is_rebasing && test -z "$continue_rebase$skip_rebase"
+	 then
+		if test -n "$abort_previous"
+		then
+			git rebase --abort ||
+			die "Could not abort previous rebase\n"
+		else
+			die "Rebase already in progress.\n%s\n" \
+				"Require --continue or --abort-previous."
+		fi
+	 fi &&
+
 	 if ! is_rebasing
 	 then
+		test -z "$continue_rebase$skip_rebase" ||
+		die "No rebase was started...\n"
+
 		orig_rerere_train="$(git rev-parse -q --verify \
 			refs/remotes/git-for-windows/rerere-train)"
 		test -z "$orig_rerere_train" ||
@@ -594,12 +657,16 @@ rebase () { # <upstream-branch-or-tag>
 		echo "shears/$1 was already rebased" >&2
 		exit 0
 	 fi &&
-	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS 'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true'" &&
+	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true'" &&
 	 export GIT_CONFIG_PARAMETERS &&
 	 if is_rebasing
 	 then
 		test 0 = $(git rev-list --count HEAD..$onto) ||
 		die "Current rebase is not on top of %s\n" "$1"
+
+		test -z "$skip_rebase" ||
+		git diff HEAD | git apply -R ||
+		die "Could not skip current commit in rebase\n"
 
 		# record rerere-train, update index & continue
 		record_rerere_train
@@ -614,7 +681,7 @@ rebase () { # <upstream-branch-or-tag>
 	 fi &&
 	 while is_rebasing && ! has_merge_conflicts
 	 do
-		git rebase --continue
+		git rebase --continue || true
 	 done &&
 	 if ! is_rebasing && test 0 -lt $(git rev-list --count "$onto"..)
 	 then
@@ -631,10 +698,60 @@ rebase () { # <upstream-branch-or-tag>
 			die "Could not push rerere-train\n"
 		fi
 	 fi &&
-	 ! is_rebasing ||
-	 die "Rebase requires manual resolution in:\n\n\t%s\n\n%s\n" \
-		"$(pwd)" \
-		"(Call \`please.sh $1\` to contine, do *not* stage changes!") ||
+	 if is_rebasing
+	 then
+		printf "There are merge conflicts:\n\n" >&2
+		git diff >&2
+
+		die "\nRebase needs manual resolution in:\n\n\t%s\n\n%s%s\n" \
+			"$(pwd)" \
+			"(Call \`please.sh $1\` to contine, " \
+			"do *not* stage changes!"
+	 else
+		if test -n "$run_tests"
+		then
+			echo "Building and testing Git" >&2 &&
+			build_and_test_64
+		fi
+	 fi) ||
+	exit
+}
+
+test_remote_branch () { # <remote-tracking-branch>
+	sdk="$sdk64"
+
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	if test ! -d "$git_src_dir"
+	then
+		if test ! -d "${git_src_dir%/src/git}"
+		then
+			cd "${git_src_dir%/*/src/git}" &&
+			git fetch &&
+			git checkout -t origin/master ||
+			die "Could not check out %s\n" \
+				"${git_src_dir%*/src/git}"
+		fi
+		(cd "${git_src_dir%/src/git}" &&
+		 echo "Checking out Git (not making it)" >&2 &&
+		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
+			'makepkg --noconfirm -s -o') ||
+		die "Could not initialize %s\n" "$git_src_dir"
+	fi
+
+	test false = "$(git -C "$git_src_dir" config core.autocrlf)" ||
+	(cd "$git_src_dir" &&
+	 git config core.autocrlf false &&
+	 rm .git/index
+	 git stash) ||
+	die "Could not make sure Git sources are checked out LF-only\n"
+
+	(cd "$git_src_dir" &&
+	 require_remote upstream https://github.com/git/git &&
+	 require_remote git-for-windows \
+		https://github.com/git-for-windows/git &&
+	 git checkout -f "$1" &&
+	 git reset --hard &&
+	 build_and_test_64) ||
 	exit
 }
 
@@ -1241,7 +1358,15 @@ usage="$(sed -n "s/^$command () { # \?/ /p" <"$0")"
 test -n "$usage" ||
 die "Unknown command: %s\n" "$command"
 
-test $# = $(echo "$usage" | tr -dc '<' | wc -c) ||
+case "$usage" in
+*'['*)
+	test $# -ge $(echo "$usage" | sed -e 's/\[[^]]*\]//g' | tr -dc '<' |
+		wc -c)
+	;;
+*)
+	test $# = $(echo "$usage" | tr -dc '<' | wc -c)
+	;;
+esac ||
 die "Usage: %s %s%s\n" "$0" "$command" "$usage"
 
 "$command" "$@"
