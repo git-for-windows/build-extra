@@ -589,7 +589,7 @@ rebase () { # [--test] [--abort-previous] [--continue | --skip] <upstream-branch
 		(cd "${git_src_dir%/src/git}" &&
 		 echo "Checking out Git (not making it)" >&2 &&
 		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
-			'makepkg --noconfirm -s -o') ||
+			'makepkg-mingw --noconfirm -s -o') ||
 		die "Could not initialize %s\n" "$git_src_dir"
 	fi
 
@@ -734,7 +734,7 @@ test_remote_branch () { # <remote-tracking-branch>
 		(cd "${git_src_dir%/src/git}" &&
 		 echo "Checking out Git (not making it)" >&2 &&
 		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
-			'makepkg --noconfirm -s -o') ||
+			'makepkg-mingw --noconfirm -s -o') ||
 		die "Could not initialize %s\n" "$git_src_dir"
 	fi
 
