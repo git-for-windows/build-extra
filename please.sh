@@ -549,19 +549,24 @@ build_and_test_64 () {
 		fi'
 }
 
-rebase () { # [--test] [--abort-previous] [--continue] <upstream-branch-or-tag>
+rebase () { # [--test] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag>
 	run_tests=
 	abort_previous=
 	continue_rebase=
+	skip_rebase=
 	while case "$1" in
 	--test) run_tests=t;;
 	--abort-previous) abort_previous=t;;
 	--continue) continue_rebase=t;;
+	--skip) skip_rebase=t;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
 	test $# = 1 ||
 	die "Expected 1 argument, got $#: %s\n" "$*"
+
+	test tt != "$skip_rebase$continue_rebase" ||
+	die "Cannot continue *and* skip\n"
 
 	sdk="$sdk64"
 
@@ -597,7 +602,7 @@ rebase () { # [--test] [--abort-previous] [--continue] <upstream-branch-or-tag>
 	die "Could not make sure Git sources are checked out LF-only\n"
 
 	(cd "$git_src_dir" &&
-	 if is_rebasing && test -z "$continue_rebase"
+	 if is_rebasing && test -z "$continue_rebase$skip_rebase"
 	 then
 		if test -n "$abort_previous"
 		then
@@ -611,7 +616,7 @@ rebase () { # [--test] [--abort-previous] [--continue] <upstream-branch-or-tag>
 
 	 if ! is_rebasing
 	 then
-		test -z "$continue_rebase" ||
+		test -z "$continue_rebase$skip_rebase" ||
 		die "No rebase was started...\n"
 
 		orig_rerere_train="$(git rev-parse -q --verify \
@@ -658,6 +663,10 @@ rebase () { # [--test] [--abort-previous] [--continue] <upstream-branch-or-tag>
 	 then
 		test 0 = $(git rev-list --count HEAD..$onto) ||
 		die "Current rebase is not on top of %s\n" "$1"
+
+		test -z "$skip_rebase" ||
+		git diff HEAD | git apply -R ||
+		die "Could not skip current commit in rebase\n"
 
 		# record rerere-train, update index & continue
 		record_rerere_train
