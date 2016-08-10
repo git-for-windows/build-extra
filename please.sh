@@ -482,7 +482,7 @@ record_rerere_train () {
 }
 
 rerere_train () {
-	git rev-list --parents "$@" |
+	git rev-list --reverse --parents "$@" |
 	while read commit parent1 parent2 rest
 	do
 		test -n "$parent2" && test -z "$rest" || continue
