@@ -519,6 +519,36 @@ rerere_train () {
 	done
 }
 
+# build_and_test_64; intended to build and test 64-bit Git in MINGW-packages
+build_and_test_64 () {
+	 GIT_CONFIG_PARAMETERS= \
+	 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
+	 	: make sure that the .dll files are correctly resolved: &&
+	 	cd $PWD &&
+		rm -f t/test-results/*.{counts,tee} &&
+	 	if ! make -j5 DEVELOPER=1 -k test
+	 	then
+			cd t &&
+			failed_tests="$(cd test-results &&
+				grep -l "^failed [1-9]" t[0-9]*.counts)" || {
+				echo "No failed tests ?!?" >&2
+				exit 1
+			}
+			failed_count=0
+			for t in $failed_tests
+			do
+				t=${t%-[1-9]*.counts}
+				echo "Re-running $t" >&2
+				time bash $t.sh -i -v -x --tee ||
+				failed_count=$(($failed_count+1))
+			done
+			test 0 = $failed_count || {
+				echo "$failed_count tests still failing!" >&2
+				exit 1
+			}
+		fi'
+}
+
 rebase () { # [--test] [--abort-previous] [--continue] <upstream-branch-or-tag>
 	run_tests=
 	abort_previous=
@@ -672,9 +702,7 @@ rebase () { # [--test] [--abort-previous] [--continue] <upstream-branch-or-tag>
 		if test -n "$run_tests"
 		then
 			echo "Building and testing Git" >&2 &&
-			GIT_CONFIG_PARAMETERS= \
-			"$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
-				'make -j5 DEVELOPER=1 -k test'
+			build_and_test_64
 		fi
 	 fi) ||
 	exit
@@ -714,9 +742,7 @@ test_remote_branch () { # <remote-tracking-branch>
 		https://github.com/git-for-windows/git &&
 	 git checkout -f "$1" &&
 	 git reset --hard &&
-	 GIT_CONFIG_PARAMETERS= \
-	 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
-	 'make -j5 DEVELOPER=1 -k test') ||
+	 build_and_test_64) ||
 	exit
 }
 
