@@ -519,8 +519,29 @@ rerere_train () {
 	done
 }
 
+# ensure_valid_login_shell <bitness>
+ensure_valid_login_shell () {
+	# Only perform this stunt for special accounts, such as NETWORK SERVICE
+	test 256 -gt "$UID" ||
+	return 0
+
+	sdk="$(eval "echo \$sdk$1")"
+	"$sdk/git-cmd" --command=usr\\bin\\sh.exe -c '
+		# use `strace` to avoid segmentation faults for special accounts
+		line="$(strace -o /dev/null mkpasswd -c | grep -v ^create)"
+		case "$line" in
+		*/nologin)
+			if ! grep -q "^${line%%:*}" /etc/passwd 2>/dev/null
+			then
+				echo "${line%:*}:/usr/bin/bash" >>/etc/passwd
+			fi
+			;;
+		esac' >&2
+}
+
 # build_and_test_64; intended to build and test 64-bit Git in MINGW-packages
 build_and_test_64 () {
+	ensure_valid_login_shell 64 &&
 	GIT_CONFIG_PARAMETERS= \
 	"$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
 		: make sure that the .dll files are correctly resolved: &&
