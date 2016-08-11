@@ -642,6 +642,9 @@ rebase () { # [--test] [--abort-previous] [--continue | --skip] <upstream-branch
 		then
 			rerere_train "$orig_rerere_train$rerere_train" ||
 			die "Could not replay merge conflict resolutions\n"
+
+			git push . $rerere_train:refs/heads/rerere-train ||
+			die "Could not update local 'rerere-train' branch\n"
 		fi
 	 fi &&
 	 if ! onto=$(git rev-parse -q --verify refs/remotes/upstream/"$1" ||
