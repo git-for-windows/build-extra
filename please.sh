@@ -705,8 +705,8 @@ rebase () { # [--test] [--abort-previous] [--continue | --skip] <upstream-branch
 
 		die "\nRebase needs manual resolution in:\n\n\t%s\n\n%s%s\n" \
 			"$(pwd)" \
-			"(Call \`please.sh $1\` to contine, " \
-			"do *not* stage changes!"
+			"(Call \`please.sh rebase --continue $1\` to " \
+			"contine, do *not* stage changes!"
 	 else
 		if test -n "$run_tests"
 		then
