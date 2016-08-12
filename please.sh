@@ -521,13 +521,13 @@ rerere_train () {
 
 # build_and_test_64; intended to build and test 64-bit Git in MINGW-packages
 build_and_test_64 () {
-	 GIT_CONFIG_PARAMETERS= \
-	 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
-	 	: make sure that the .dll files are correctly resolved: &&
-	 	cd $PWD &&
+	GIT_CONFIG_PARAMETERS= \
+	"$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
+		: make sure that the .dll files are correctly resolved: &&
+		cd $PWD &&
 		rm -f t/test-results/*.{counts,tee} &&
-	 	if ! make -j5 DEVELOPER=1 -k test
-	 	then
+		if ! make -j5 DEVELOPER=1 -k test
+		then
 			cd t &&
 			failed_tests="$(cd test-results &&
 				grep -l "^failed [1-9]" t[0-9]*.counts)" || {
