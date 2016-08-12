@@ -645,15 +645,16 @@ rebase () { # [--test] [--abort-previous] [--continue | --skip] <upstream-branch
 		test -z "$continue_rebase$skip_rebase" ||
 		die "No rebase was started...\n"
 
-		orig_rerere_train="$(git rev-parse -q --verify \
-			refs/remotes/git-for-windows/rerere-train)"
-		test -z "$orig_rerere_train" ||
-		orig_rerere_train="$orig_rerere_train.."
+		orig_rerere_train=
 		if rerere_train="$(git rev-parse -q --verify \
-				refs/heads/rerere-train)" &&
-			test 0 -lt $(git rev-list --count \
-				"$orig_rerere_train$rerere_train")
+				refs/heads/rerere-train)"
 		then
+			orig_rerere_train="$rerere_train.."
+
+			! rerere_train2="$(git rev-parse -q --verify \
+				refs/remotes/git-for-windows/rerere-train)" ||
+			test 0 -eq $(git rev-list --count \
+				"$rerere_train2..$rerere_train") ||
 			die 'The `rerere-train` branch has unpushed changes\n'
 		fi
 
