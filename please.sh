@@ -519,8 +519,29 @@ rerere_train () {
 	done
 }
 
+# ensure_valid_login_shell <bitness>
+ensure_valid_login_shell () {
+	# Only perform this stunt for special accounts, such as NETWORK SERVICE
+	test 256 -gt "$UID" ||
+	return 0
+
+	sdk="$(eval "echo \$sdk$1")"
+	"$sdk/git-cmd" --command=usr\\bin\\sh.exe -c '
+		# use `strace` to avoid segmentation faults for special accounts
+		line="$(strace -o /dev/null mkpasswd -c | grep -v ^create)"
+		case "$line" in
+		*/nologin)
+			if ! grep -q "^${line%%:*}" /etc/passwd 2>/dev/null
+			then
+				echo "${line%:*}:/usr/bin/bash" >>/etc/passwd
+			fi
+			;;
+		esac' >&2
+}
+
 # build_and_test_64; intended to build and test 64-bit Git in MINGW-packages
 build_and_test_64 () {
+	ensure_valid_login_shell 64 &&
 	# t3200.32 uses a long branch name, which is too long when
 	# the absolute path is used in the working directory in
 	# c:/git-sdk-64-ci/usr/src/MINGW-packages/mingw-w64-git/src/git
@@ -647,6 +668,9 @@ rebase () { # [--test] [--abort-previous] [--continue | --skip] <upstream-branch
 		then
 			rerere_train "$orig_rerere_train$rerere_train" ||
 			die "Could not replay merge conflict resolutions\n"
+
+			git push . $rerere_train:refs/heads/rerere-train ||
+			die "Could not update local 'rerere-train' branch\n"
 		fi
 	 fi &&
 	 if ! onto=$(git rev-parse -q --verify refs/remotes/upstream/"$1" ||
