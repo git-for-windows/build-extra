@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.9.2(2) (August 9th 2016)
 
+### New Features
+
+* Updated Git Credential Manager to [version 1.6.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v.1.6.0).
+
 ### Bug Fixes
 
 * When `~/.gitconfig` sets `core.hideDotFiles=false`, `git init` [respects that again](https://github.com/git-for-windows/git/issues/789).
