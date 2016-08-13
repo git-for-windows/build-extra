@@ -36,6 +36,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git 2.9.3](https://github.com/git/git/blob/v2.9.3/Documentation/RelNotes/2.9.3.txt).
 * Updated Git Credential Manager to [version 1.6.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v.1.6.0).
 * Includes support for `git status --porcelain=v2`.
 * Avoids evaluating unnecessary patch IDs when determining which commits do not need to be rebased because they are already upstream.
