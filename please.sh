@@ -147,40 +147,40 @@ set_package () {
 	case "$package" in
 	git-extra)
 		type=MINGW
-		path=/usr/src/build-extra/git-extra
+		pkgpath=/usr/src/build-extra/git-extra
 		;;
 	git)
 		package=mingw-w64-git
 		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man"
 		type=MINGW
-		path=/usr/src/MINGW-packages/$package
+		pkgpath=/usr/src/MINGW-packages/$package
 		;;
 	mingw-w64-git)
 		type=MINGW
 		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man"
-		path=/usr/src/MINGW-packages/$package
+		pkgpath=/usr/src/MINGW-packages/$package
 		;;
 	mingw-w64-git-credential-manager)
 		type=MINGW
-		path=/usr/src/build-extra/mingw-w64-git-credential-manager
+		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager
 		;;
 	gcm|credential-manager|git-credential-manager)
 		package=mingw-w64-git-credential-manager
 		type=MINGW
-		path=/usr/src/build-extra/mingw-w64-git-credential-manager
+		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager
 		;;
 	msys2-runtime)
 		type=MSYS
 		extra_packages="msys2-runtime-devel"
-		path=/usr/src/MSYS2-packages/$package
+		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
 	mintty)
 		type=MSYS
-		path=/usr/src/MSYS2-packages/$package
+		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
 	w3m)
 		type=MSYS
-		path=/usr/src/MSYS2-packages/$package
+		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
 	*)
 		die "Unknown package: %s\n" "$package"
@@ -198,8 +198,8 @@ foreach_sdk () {
 		test MINGW != "$type" ||
 		continue
 
-		(cd "$sdk/$path" ||
-		 die "%s does not exist\n" "$sdk/$path"
+		(cd "$sdk/$pkgpath" ||
+		 die "%s does not exist\n" "$sdk/$pkgpath"
 
 		 "$@") || exit
 	done
@@ -209,23 +209,23 @@ require_clean_worktree () {
 	git update-index -q --ignore-submodules --refresh &&
 	git diff-files --quiet --ignore-submodules &&
 	git diff-index --cached --quiet --ignore-submodules HEAD ||
-	die "%s not up-to-date\n" "$sdk/$path"
+	die "%s not up-to-date\n" "$sdk/$pkgpath"
 }
 
 ff_master () {
 	test refs/heads/master = "$(git rev-parse --symbolic-full-name HEAD)" ||
-	die "%s: Not on 'master'\n" "$sdk/$path"
+	die "%s: Not on 'master'\n" "$sdk/$pkgpath"
 
 	require_clean_worktree
 
 	git pull --ff-only origin master ||
-	die "%s: cannot fast-forward 'master'\n" "$sdk/$path"
+	die "%s: cannot fast-forward 'master'\n" "$sdk/$pkgpath"
 }
 
 update () { # <package>
 	if test git != "$1" && test -d "$sdk64"/usr/src/"$1"
 	then
-		path=/usr/src/"$1"
+		pkgpath=/usr/src/"$1"
 	else
 		set_package "$1"
 	fi
@@ -289,10 +289,10 @@ pkg_build () {
 			'MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
 				makepkg-mingw -s --noconfirm &&
 			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource' ||
-		die "%s: could not build\n" "$sdk/$path"
+		die "%s: could not build\n" "$sdk/$pkgpath"
 
 		git commit -s -m "$package: new version" PKGBUILD ||
-		die "%s: could not commit after build\n" "$sdk/$path"
+		die "%s: could not commit after build\n" "$sdk/$pkgpath"
 		;;
 	MSYS)
 		require msys2-devel binutils
@@ -326,20 +326,20 @@ pkg_build () {
 			 export PATH=/usr/bin:/opt/bin:$PATH &&
 			 MAKEFLAGS=-j5 makepkg -s --noconfirm &&
 			 makepkg --allsource' ||
-		die "%s: could not build\n" "$sdk/$path"
+		die "%s: could not build\n" "$sdk/$pkgpath"
 
 		if test "a$sdk32" = "a$sdk"
 		then
 			git diff-files --quiet --ignore-submodules PKGBUILD ||
 			git commit -s -m "$package: new version" PKGBUILD ||
-			die "%s: could not commit after build\n" "$sdk/$path"
+			die "%s: could not commit after build\n" "$sdk/$pkgpath"
 		else
 			git add PKGBUILD &&
-			git pull "$sdk32/${path%/*}/.git" \
+			git pull "$sdk32/${pkgpath%/*}/.git" \
 				"$(git rev-parse --symbolic-full-name HEAD)" &&
 			require_clean_worktree ||
 			die "%s: unexpected difference between 32/64-bit\n" \
-				"$path"
+				"$pkgpath"
 		fi
 		;;
 	esac
@@ -354,20 +354,20 @@ fast_forward () {
 # up_to_date <path>
 up_to_date () {
 	# test that repos at <path> are up-to-date in both 64-bit and 32-bit
-	path="$1"
+	pkgpath="$1"
 
 	foreach_sdk require_clean_worktree
 
-	commit32="$(cd "$sdk32/$path" && git rev-parse --verify HEAD)" &&
-	commit64="$(cd "$sdk64/$path" && git rev-parse --verify HEAD)" ||
-	die "Could not determine HEAD commit in %s\n" "$path"
+	commit32="$(cd "$sdk32/$pkgpath" && git rev-parse --verify HEAD)" &&
+	commit64="$(cd "$sdk64/$pkgpath" && git rev-parse --verify HEAD)" ||
+	die "Could not determine HEAD commit in %s\n" "$pkgpath"
 
 	if test "a$commit32" != "a$commit64"
 	then
-		fast_forward "$sdk32/$path" "$sdk64/$path" "$commit64" ||
-		fast_forward "$sdk64/$path" "$sdk32/$path" "$commit32" ||
+		fast_forward "$sdk32/$pkgpath" "$sdk64/$pkgpath" "$commit64" ||
+		fast_forward "$sdk64/$pkgpath" "$sdk32/$pkgpath" "$commit32" ||
 		die "%s: commit %s (32-bit) != %s (64-bit)\n" \
-			"$path" "$commit32" "$commit64"
+			"$pkgpath" "$commit32" "$commit64"
 	fi
 }
 
@@ -375,8 +375,8 @@ build () { # <package>
 	set_package "$1"
 
 	test MINGW = "$type" ||
-	up_to_date "$path" ||
-	die "%s: not up-to-date\n" "$path"
+	up_to_date "$pkgpath" ||
+	die "%s: not up-to-date\n" "$pkgpath"
 
 	foreach_sdk pkg_build
 }
@@ -598,7 +598,7 @@ rebase () { # [--test] [--abort-previous] [--continue | --skip] <upstream-branch
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= path=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not update build-extra\n"
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
@@ -790,7 +790,7 @@ tag_git () { #
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= path=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not update build-extra\n"
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
@@ -840,7 +840,7 @@ pkg_files () {
 		-e '/^pkgver=/{N;s/.*=\([0-9].*\)\npkgrel=\(.*\)/\1-\2/p}' \
 		<PKGBUILD)"
 	test -n "$pkgver" ||
-	die "%s: could not determine pkgver\n" "$sdk/$path"
+	die "%s: could not determine pkgver\n" "$sdk/$pkgpath"
 
 	test a--for-upload != "a$1" ||
 	echo $package-$pkgver.src.tar.gz
@@ -953,7 +953,7 @@ upload () { # <package>
 	grep -q '^machine api\.bintray\.com$' "$HOME"/_netrc ||
 	die "Missing BinTray entries in ~/_netrc\n"
 
-	(cd "$sdk64/$path" &&
+	(cd "$sdk64/$pkgpath" &&
 	 require_push_url origin) || exit
 
 	pacman_helper fetch &&
@@ -964,16 +964,16 @@ upload () { # <package>
 	# Here, we exploit the fact that the 64-bit SDK is either the only
 	# SDK where the package was built (MinGW) or it agrees with thw 32-bit
 	# SDK's build product (MSYS2).
-	(cd "$sdk64/$path" &&
+	(cd "$sdk64/$pkgpath" &&
 	 test -z "$(git rev-list @{u}..)" ||
 	 if test refs/heads/master = \
 		"$(git rev-parse --symbolic-full-name HEAD)"
 	 then
 		git -c push.default=simple push
 	 else
-		echo "The local branch in $sdk64/$path has unpushed changes" >&2
+		echo "The local branch in $sdk64/$pkgpath has unpushed changes" >&2
 	 fi) ||
-	die "Could not push commits in %s/%s\n" "$sdk64" "$path"
+	die "Could not push commits in %s/%s\n" "$sdk64" "$pkgpath"
 }
 
 set_version_from_sdks_git () {
@@ -1076,7 +1076,7 @@ finalize () { # <what, e.g. release-notes>
 	die "build-extra is not up-to-date\n"
 
 	update git &&
-	dir_option="--git-dir=$sdk64/$path"/src/git/.git &&
+	dir_option="--git-dir=$sdk64/$pkgpath"/src/git/.git &&
 	git "$dir_option" fetch --tags git-for-windows &&
 	git "$dir_option" fetch --tags junio ||
 	die "Could not update Git\n"
@@ -1222,14 +1222,14 @@ publish () { #
 			"$wwwdir"
 	fi &&
 	(cd "$wwwdir" &&
-	 sdk= path=$PWD ff_master &&
+	 sdk= pkgpath=$PWD ff_master &&
 	 require_push_url &&
 	 sdk="$sdk64" require mingw-w64-x86_64-nodejs) ||
 	die "Could not prepare website clone for update\n"
 
 	(cd "$sdk64/usr/src/build-extra" &&
 	 require_push_url &&
-	 sdk= path=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not prepare build-extra for download-stats update\n"
 
 	echo "Preparing release message"
@@ -1340,7 +1340,7 @@ release_sdk () { # <version>
 		"$sdk"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			'cd /usr/src/build-extra/sdk-installer &&
 			 ./release.sh '"$version" ||
-		die "%s: could not build\n" "$sdk/$path"
+		die "%s: could not build\n" "$sdk/$pkgpath"
 	done
 
 	sign_files "$HOME"/git-sdk-installer-"$version"-64.7z.exe \
