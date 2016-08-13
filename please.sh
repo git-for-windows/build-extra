@@ -61,7 +61,7 @@ sdk64="$(sdk_path 64)"
 sdk32="$(sdk_path 32)"
 
 in_use () { # <sdk> <path>
-	test -n "$($1/mingw??/bin/WhoUses.exe -m "$1$path" |
+	test -n "$($1/mingw??/bin/WhoUses.exe -m "$1$2" |
 		grep '^[^-P]')"
 }
 
