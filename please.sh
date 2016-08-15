@@ -575,13 +575,21 @@ build_and_test_64 () {
 		fi'
 }
 
-rebase () { # [--test] [--redo] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag>
+rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag>
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	run_tests=
 	redo=
 	abort_previous=
 	continue_rebase=
 	skip_rebase=
 	while case "$1" in
+	--worktree=*)
+		git_src_dir=${1#*=}
+		test -d "$git_src_dir" ||
+		die "Worktree does not exist: %s\n" "$git_src_dir"
+		git rev-parse -q --verify e83c5163316f89bfbde7d ||
+		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
+		;;
 	--test) run_tests=t;;
 	--redo) redo=t;;
 	--abort-previous) abort_previous=t;;
@@ -603,7 +611,6 @@ rebase () { # [--test] [--redo] [--abort-previous] [--continue | --skip] <upstre
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not update build-extra\n"
 
-	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	if test ! -d "$git_src_dir"
 	then
 		if test ! -d "${git_src_dir%/src/git}"
@@ -752,10 +759,23 @@ rebase () { # [--test] [--redo] [--abort-previous] [--continue | --skip] <upstre
 	exit
 }
 
-test_remote_branch () { # <remote-tracking-branch>
-	sdk="$sdk64"
-
+test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	while case "$1" in
+	--worktree=*)
+		git_src_dir=${1#*=}
+		test -d "$git_src_dir" ||
+		die "Worktree does not exist: %s\n" "$git_src_dir"
+		git rev-parse -q --verify e83c5163316f89bfbde7d ||
+		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected 1 argument, got $#: %s\n" "$*"
+
+	sdk="$sdk64"
 	if test ! -d "$git_src_dir"
 	then
 		if test ! -d "${git_src_dir%/src/git}"
