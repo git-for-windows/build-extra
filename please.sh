@@ -801,9 +801,15 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	die "Could not make sure Git sources are checked out LF-only\n"
 
 	(cd "$git_src_dir" &&
-	 require_remote upstream https://github.com/git/git &&
-	 require_remote git-for-windows \
-		https://github.com/git-for-windows/git &&
+	 case "$1" in
+	 git-for-windows/*|v[1-9]*.windows.[1-9]*)
+		require_remote git-for-windows \
+			https://github.com/git-for-windows/git
+		;;
+	 upstream/*|v[1-9]*)
+		require_remote upstream https://github.com/git/git
+		;;
+	 esac &&
 	 git checkout -f "$1" &&
 	 git reset --hard &&
 	 build_and_test_64) ||
