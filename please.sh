@@ -575,13 +575,15 @@ build_and_test_64 () {
 		fi'
 }
 
-rebase () { # [--test] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag>
+rebase () { # [--test] [--redo] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag>
 	run_tests=
+	redo=
 	abort_previous=
 	continue_rebase=
 	skip_rebase=
 	while case "$1" in
 	--test) run_tests=t;;
+	--redo) redo=t;;
 	--abort-previous) abort_previous=t;;
 	--continue) continue_rebase=t;;
 	--skip) skip_rebase=t;;
@@ -684,8 +686,11 @@ rebase () { # [--test] [--abort-previous] [--continue | --skip] <upstream-branch
 		test 0 = $(git rev-list --count \
 			^"$prev" git-for-windows/master $onto)
 	 then
-		echo "shears/$1 was already rebased" >&2
-		exit 0
+		if test -z "$redo"
+		then
+			echo "shears/$1 was already rebased" >&2
+			exit 0
+		fi
 	 fi &&
 	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true'" &&
 	 export GIT_CONFIG_PARAMETERS &&
