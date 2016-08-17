@@ -25,6 +25,9 @@ bintray_source_url=https://dl.bintray.com/git-for-windows/pacman/sources
 cd "$(dirname "$0")" ||
 die "Could not change directory to build-extra/"
 
+test -f "$1" ||
+die "File not found (use absolute path?): $1"
+
 dir=cached-source-packages
 mkdir -p "$dir" ||
 die "Could not make the cache directory"
