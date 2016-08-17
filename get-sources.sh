@@ -12,6 +12,9 @@ die () {
 test $# = 1 ||
 die "Usage: $0 <package-versions>"
 
+test -d /usr/src/MSYS2-packages/git ||
+die "Need to run this in an SDK"
+
 msys_source_url=http://repo.msys2.org/msys/sources
 mingw_source_url=http://repo.msys2.org/mingw/sources
 sf_repos_url=http://sourceforge.net/projects/msys2/files/REPOS
