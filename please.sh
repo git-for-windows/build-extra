@@ -1335,12 +1335,14 @@ publish () { #
 	rendered="$(echo "$text" |
 		"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			'markdown | w3m -dump -cols 72 -T text/html')"
-	printf "%s\n%s\n%s\n%s\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n%s\n" \
+	printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n%s\n" \
 		"From $version Mon Sep 17 00:00:00 2001" \
 		"From: $(git var GIT_COMMITTER_IDENT | sed -e 's/>.*/>/')" \
 		"Date: $(date -R)" \
 		"To: git-for-windows@googlegroups.com, git@vger.kernel.org" \
 		"Subject: [ANNOUNCE] Git for Windows $displayver" \
+		"Content-Type: text/plain; charset=UTF-8" \
+		"Fcc: Sent" \
 		"$prefix" \
 		"$rendered" \
 		"$checksums" \
