@@ -289,9 +289,18 @@ pkg_build () {
 			die "Could not edit tag\n"
 		fi
 
+		
+		if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
+			config alias.signtool)"
+		then
+			extra=
+		else
+			extra="SIGNTOOL=\"git --git-dir=\\\"$sdk64/usr/src"
+			extra="$extra/build-extra/.git\\\" signtool\" "
+		fi
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			'MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
-				makepkg-mingw -s --noconfirm &&
+				'"$extra"'makepkg-mingw -s --noconfirm &&
 			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource' ||
 		die "%s: could not build\n" "$sdk/$pkgpath"
 
