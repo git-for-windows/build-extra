@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with Git Credential Manager [v1.6.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.6.1).
 * The feature introduced with Git for Windows v2.9.3 where `cat-file` can apply smudge filters was renamed to `--filters` and made compatible with the `--batch` mode (the former option name `--smudge` has been deprecated and will go away in v2.10.0).
+* Comes with OpenSSH [7.3p1](https://github.com/git-for-windows/MSYS2-packages/compare/da63f58~3...da63f58).
 
 ## Changes since Git for Windows v2.9.2 (July 16th 2016)
 
