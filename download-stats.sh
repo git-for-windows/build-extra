@@ -18,8 +18,6 @@ test "--update" != "$1" || {
 }
 
 # IDs
-# v2.4.4.windows.2
-#id=${1:-1441039}
 # v2.4.5.windows.1
 #id=${1:-1471836}
 # v2.4.6.windows.1
@@ -77,7 +75,9 @@ test "--update" != "$1" || {
 # v2.9.2.windows.3
 #id=${1:-3876868}
 # v2.9.3.windows.1
-id=${1:-3880739}
+#id=${1:-3880739}
+# v2.9.3.windows.2
+id=${1:-3972357}
 
 case "$id" in
 *.*)
