@@ -1098,6 +1098,13 @@ begin
         Height:=ScaleY(39);
     end;
 
+    // Restore the settings chosen during a previous install.
+    Data:=ReplayChoice('Performance Tweaks FSCache','Enabled');
+
+    if Data='Enabled' then begin
+        RdbExtraOptions[GP_FSCache].Checked:=True;
+    end;
+
     // 2nd option
     RdbExtraOptions[GP_GCM]:=TCheckBox.Create(ExtraOptionsPage);
     with RdbExtraOptions[GP_GCM] do begin
