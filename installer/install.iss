@@ -767,6 +767,17 @@ begin
         Font.Style:=[fsBold];
     end;
 
+    // Restore the setting chosen during a previous install.
+    Data:=ReplayChoice('Path Option','Cmd');
+
+    if Data='BashOnly' then begin
+        RdbPath[GP_BashOnly].Checked:=True;
+    end else if Data='Cmd' then begin
+        RdbPath[GP_Cmd].Checked:=True;
+    end else if Data='CmdTools' then begin
+        RdbPath[GP_CmdTools].Checked:=True;
+    end;
+
     (*
      * Create a custom page for using (Tortoise)Plink instead of OpenSSH
      * if at least one PuTTY session is found in the Registry.
