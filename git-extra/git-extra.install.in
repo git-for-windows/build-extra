@@ -14,6 +14,24 @@ GITCONFIG
 @@GITATTRIBUTES@@
 
 GITATTRIBUTES
+
+		# Drop git-wrapper in place of builtins "to save space"
+		git_wrapper=/$dir/share/git/git-wrapper.exe
+		if test -f $git_wrapper &&
+			! cmp -s $git_wrapper /$dir/bin/git-receive-pack.exe
+		then
+			for b in $(cat /$dir/share/git/builtins.txt)
+			do
+				rm /$dir/libexec/git-core/$b &&
+				ln $git_wrapper /$dir/libexec/git-core/$b
+
+				if test -x /$dir/bin/$b
+				then
+					rm /$dir/bin/$b &&
+					ln $git_wrapper /$dir/bin/$b
+				fi
+			done
+		fi
 	done
 
 	grep -q '^db_home: env windows' /etc/nsswitch.conf ||
