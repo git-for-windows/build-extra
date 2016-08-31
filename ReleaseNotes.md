@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * After helping the end-users to use the new defaults for PATH and FSCache, the installer now respects the saved settings again.
+* Comes with Git v2.10.0.
 
 ## Changes since Git for Windows v2.9.3 (August 13th 2016)
 
