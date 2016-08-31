@@ -78,9 +78,9 @@ echo "Generating release notes to be included in the installer ..."
 ../render-release-notes.sh --css usr/share/git/ ||
 die "Could not generate release notes"
 
-echo "Compiling edit-git-bash.dll ..."
-make -C ../ edit-git-bash.dll ||
-die "Could not build edit-git-bash.dll; try: pacman -S mingw-w64-i686-toolchain"
+echo "Compiling edit-git-bash.exe ..."
+make -C ../ edit-git-bash.exe ||
+die "Could not build edit-git-bash.exe"
 
 if test t = "$skip_files"
 then
