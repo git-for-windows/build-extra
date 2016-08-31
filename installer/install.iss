@@ -1370,7 +1370,7 @@ begin
 
         if RegQueryStringValue(Domain,Key,'UninstallString',UninstallString) then
             // Using ShellExec() here, in case privilege elevation is required
-            if not ShellExec('',UninstallString,'/SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
+            if not ShellExec('',UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
                 LogError('Could not uninstall previous version. Trying to continue anyway.');
     end;
 end;
