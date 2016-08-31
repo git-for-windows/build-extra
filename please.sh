@@ -521,7 +521,7 @@ rerere_train () {
 			if ! test -s "$(git rev-parse --git-path MERGE_RR)"
 			then
 				git rerere forget -- . &&
-				test -s "$(git rev-parse --git-path MERGE_RR)" ||
+				test -f "$(git rev-parse --git-path MERGE_RR)" ||
 				die "Could not re-learn from %s\n" "$commit"
 			fi
 
