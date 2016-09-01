@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * When upgrading Git for Windows, the installer [no longer opens a second window while uninstalling the previous version](https://github.com/git-for-windows/build-extra/commit/6682a86026e801d9c88c1903d5bd4dd1a0d79c4e).
+* Git for Windows' SDK [can build an installer out of the box again](https://github.com/git-for-windows/build-extra/commit/955e82b25a825f005946e7e4951e29404370aa94), without requiring an extra package to be installed.
 
 ## Changes since Git for Windows v2.9.3 (August 13th 2016)
 
