@@ -105,7 +105,7 @@ Filename: {app}\ReleaseNotes.html; Description: View Release Notes; Flags: shell
 Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\..\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore; Check: ParamIsSet('VSNOTICE')
-Source: {#SourcePath}\..\edit-git-bash.dll; Flags: dontcopy
+Source: {#SourcePath}\..\edit-git-bash.exe; Flags: dontcopy
 
 [Dirs]
 Name: "{app}\tmp"
@@ -257,14 +257,16 @@ external 'CreateHardLinkW@Kernel32.dll stdcall delayload setuponly';
 external 'CreateHardLinkA@Kernel32.dll stdcall delayload setuponly';
 #endif
 
-function EditGitBash(ExePath:WideString;Resource:WideString):Integer;
-external 'edit_git_bash@files:edit-git-bash.dll stdcall delayload setuponly';
-
 function OverrideGitBashCommandLine(GitBashPath:String;CommandLine:String):Integer;
 var
     Msg:String;
 begin
-    Result:=EditGitBash(GitBashPath,CommandLine);
+    if not FileExists(ExpandConstant('{tmp}\edit-git-bash.exe')) then
+        ExtractTemporaryFile('edit-git-bash.exe');
+    StringChangeEx(GitBashPath,'"','\"',True);
+    StringChangeEx(CommandLine,'"','\"',True);
+    CommandLine:='"'+GitBashPath+'" "'+CommandLine+'"';
+    Exec(ExpandConstant('{tmp}\edit-git-bash.exe'),CommandLine,'',SW_HIDE,ewWaitUntilTerminated,Result);
     if Result<>0 then begin
         if Result=1 then begin
             Msg:='Unable to edit '+GitBashPath+' (out of memory).';
@@ -1368,7 +1370,7 @@ begin
 
         if RegQueryStringValue(Domain,Key,'UninstallString',UninstallString) then
             // Using ShellExec() here, in case privilege elevation is required
-            if not ShellExec('',UninstallString,'/SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
+            if not ShellExec('',UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
                 LogError('Could not uninstall previous version. Trying to continue anyway.');
     end;
 end;
