@@ -37,7 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Git v2.10.0](https://github.com/git/git/blob/v2.10.0/Documentation/RelNotes/2.10.0.txt).
-* After helping the end-users to use the new defaults for PATH and FSCache, the installer now respects the saved settings again.
+* After helping the end-users to use the new defaults for PATH and FSCache, the installer [now respects the saved settings again](https://github.com/git-for-windows/build-extra/compare/a0a8613c54c0bd651904432f07f7b2999790b097~2...a0a8613c54c0bd651904432f07f7b2999790b097).
 
 ### Bug Fixes
 
