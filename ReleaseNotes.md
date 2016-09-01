@@ -39,6 +39,10 @@ This package contains software from a number of other projects including Bash, z
 * After helping the end-users to use the new defaults for PATH and FSCache, the installer now respects the saved settings again.
 * Comes with Git v2.10.0.
 
+### Bug Fixes
+
+* When upgrading Git for Windows, the installer [no longer opens a second window while uninstalling the previous version](https://github.com/git-for-windows/build-extra/commit/6682a86026e801d9c88c1903d5bd4dd1a0d79c4e).
+
 ## Changes since Git for Windows v2.9.3 (August 13th 2016)
 
 ### New Features
