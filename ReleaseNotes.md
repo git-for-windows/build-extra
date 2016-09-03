@@ -37,7 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Git v2.10.0](https://github.com/git/git/blob/v2.10.0/Documentation/RelNotes/2.10.0.txt).
-* The `git rebase -i` command was made faster by reimplementing large parts in C.
+* The `git rebase -i` command was made faster [by reimplementing large parts in C](https://github.com/git-for-windows/git/compare/3259f1f348b8173050c269dde7dc02346db759f3^...3259f1f348b8173050c269dde7dc02346db759f3^2).
 * After helping the end-users to use the new defaults for PATH and FSCache, the installer [now respects the saved settings again](https://github.com/git-for-windows/build-extra/compare/a0a8613c54c0bd651904432f07f7b2999790b097~2...a0a8613c54c0bd651904432f07f7b2999790b097).
 * `git version --build-options` now [also reports the architecture](https://github.com/git-for-windows/git/pull/866).
 
