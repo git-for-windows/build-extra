@@ -971,6 +971,11 @@ install () { # <package>
 	esac
 
 	foreach_sdk pkg_install
+
+	test mingw-w64-git != "$package" || {
+		set_package git-extra
+		foreach_sdk pkg_install
+	}
 }
 
 pacman_helper () {
