@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The icon in the Explorer integration ("Git Bash Here"), which was lost by mistake in v2.10.0, [is back](https://github.com/git-for-windows/git/issues/870).
+* [Fixed a crash](https://github.com/git-for-windows/git/commit/c4f481a41de66d24f6f9943104600f2e4f24b152) when calling `git diff -G<regex>` on new-born files without configured user diff drivers.
 
 ## Changes since Git for Windows v2.9.3(2) (August 25th 2016)
 
