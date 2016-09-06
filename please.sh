@@ -731,6 +731,10 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 	 fi &&
 	 while is_rebasing && ! has_merge_conflicts
 	 do
+		test ! -f "$(git rev-parse --git-path MERGE_HEAD)" ||
+		git commit ||
+		die "Could not continue merge\n"
+
 		git rebase --continue || true
 	 done &&
 	 if ! is_rebasing && test 0 -lt $(git rev-list --count "$onto"..)
