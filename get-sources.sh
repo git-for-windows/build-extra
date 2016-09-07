@@ -9,8 +9,16 @@ die () {
 	exit 1
 }
 
+mingit=
+case "$1" in
+--mingit)
+	shift
+	mingit=t
+	;;
+esac
+
 test $# = 1 ||
-die "Usage: $0 <package-versions>"
+die "Usage: $0 [--mingit] <package-versions>"
 
 test -d /usr/src/MSYS2-packages/git ||
 die "Need to run this in an SDK"
@@ -32,12 +40,21 @@ dir=cached-source-packages
 mkdir -p "$dir" ||
 die "Could not make the cache directory"
 
-zipdir=source-zips
-zipprev=$zipdir.previous
-rm -rf $zipprev
-test ! -d $zipdir ||
-mv $zipdir $zipprev
-mkdir $zipdir
+if test -n "$mingit"
+then
+	zipdir=source-zips-mingit
+	rm -rf $zipdir &&
+	mkdir $zipdir ||
+	die "Could not make $zipdir"
+	zipprev=source-zips
+else
+	zipdir=source-zips
+	zipprev=$zipdir.previous
+	rm -rf $zipprev
+	test ! -d $zipdir ||
+	mv $zipdir $zipprev
+	mkdir $zipdir
+fi
 
 tar2zip () {
 	unpackdir=$dir/.unpack &&
@@ -91,11 +108,17 @@ do
 	zipname=$name-$version.zip
 
 	# Already transformed?
-	test ! -f $zipprev/$zipname || {
+	test ! -f $zipprev/$zipname ||
+	if test -n "$mingit"
+	then
+		cp $zipprev/$zipname $zipdir/ ||
+		die "Could not copy zip: $zipprev/$zipname"
+		continue
+	else
 		mv $zipprev/$zipname $zipdir/ ||
 		die "Could not move previous zip: $zipprev/$zipname"
 		continue
-	}
+	fi
 
 	w64=${name#mingw-w64-x86_64-}
 	w64=${w64#mingw-w64-i686-}
