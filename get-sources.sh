@@ -111,6 +111,7 @@ do
 	test ! -f $zipprev/$zipname ||
 	if test -n "$mingit"
 	then
+		echo "Copying $zipname..." >&2
 		cp $zipprev/$zipname $zipdir/ ||
 		die "Could not copy zip: $zipprev/$zipname"
 		continue
