@@ -245,6 +245,22 @@ require () {
 	die "Could not install %s\n" "$1"
 }
 
+install_git_32bit_prereqs () {
+	for prereq in mingw-w64-i686-asciidoctor-extensions
+	do
+		test ! -d "$sdk64"/var/lib/pacman/local/$prereq-[0-9]* ||
+		continue
+
+		sdk="$sdk32" require $prereq &&
+		pkg="$sdk32/var/cache/pacman/pkg/$("$sdk32/git-cmd.exe" \
+			--command=usr\\bin\\pacman.exe -Q "$prereq" |
+			sed -e 's/ /-/' -e 's/$/-any.pkg.tar.xz/')" &&
+		"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+			'pacman -U --noconfirm "'"$pkg"'"' ||
+		die "Could not install %s into SDK-64\n" "$prereq"
+	done
+}
+
 pkg_build () {
 	require_clean_worktree
 
@@ -259,19 +275,7 @@ pkg_build () {
 	# Let's just steal it from the 32-bit SDK
 	test mingw-w64-git != $package ||
 	test x86_64 != $arch ||
-	for prereq in mingw-w64-i686-asciidoctor-extensions
-	do
-		test ! -d "$sdk64"/var/lib/pacman/local/$prereq-[0-9]* ||
-		continue
-
-		sdk="$sdk32" require $prereq &&
-		pkg="$sdk32/var/cache/pacman/pkg/$("$sdk32/git-cmd.exe" \
-			--command=usr\\bin\\pacman.exe -Q "$prereq" |
-			sed -e 's/ /-/' -e 's/$/-any.pkg.tar.xz/')" &&
-		"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'pacman -U --noconfirm "'"$pkg"'"' ||
-		die "Could not install %s into SDK-64\n" "$prereq"
-	done
+	install_git_32bit_prereqs
 
 	case "$type" in
 	MINGW)
