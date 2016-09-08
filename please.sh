@@ -812,11 +812,16 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
-prerelease () { # [--mingit] <revision>
+prerelease () { # [--mingit] [--output=<directory>] <revision>
 	mode=installer
+	output=
 	while case "$1" in
 	--mingit)
 		mode=mingit
+		;;
+	--output=*)
+		output="--output='$(cygpath -am "${1#*=}")'" ||
+		die "Directory '%s' inaccessible\n" "${1#*=}"
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -926,7 +931,7 @@ prerelease () { # [--mingit] <revision>
 			done || exit
 			eval "$precmd" &&
 			/usr/src/build-extra/'"$mode"'/release.sh \
-				"'"$tag_name"'" &&
+				'"$output"' "'"$tag_name"'" &&
 			eval "$postcmd"' ||
 		die "Could not install '%s' in '%s'\n" "$pkglist" "$sdk"
 	done
