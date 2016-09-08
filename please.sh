@@ -812,6 +812,101 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
+prerelease () { # <revision>
+	sdk="$sdk64"
+
+	build_extra_dir="$sdk64/usr/src/build-extra"
+	(cd "$build_extra_dir" &&
+	 sdk= pkgpath=$PWD ff_master) ||
+	die "Could not update build-extra\n"
+
+	tag_name="$(git describe --match 'v[0-9]*' "$1" | tr - .)"
+	test -n "$tag_name" ||
+	die "Could not find revision '%s'\n" "$1"
+
+	test -z "$(echo "$tag_name" | tr -d 'A-Za-z0-9.')" ||
+	die "The revision '%s' yields unusable tag name '%s'\n" "$1" "$tag_name"
+
+	! git rev-parse --verify -q "$tag_name" 2>/dev/null ||
+	die "Tag '%s' already exists\n" "$tag_name"
+
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	require_git_src_dir
+
+	! git -C "$git_src_dir" rev-parse --verify -q "$tag_name" 2>/dev/null ||
+	die "Tag '%s' already exists in '%s'\n" "$tag_name" "$git_src_dir"
+
+	git tag -a -m "Prerelease of $1" "$tag_name" "$1" ||
+	die "Could not create tag '%s'\n" "$tag_name"
+
+	git push "$git_src_dir" "refs/tags/$tag_name" ||
+	die "Could not push tag '%s' to '%s'\n" "$tag_name" "$git_src_dir"
+
+	sed -e "s/^tag=.*/tag=${tag_name#v}/" \
+		-e "s/^\(source.*tag=\)[^\"]*/\\1$tag_name/" \
+		-e "s/^pkgver=.*/pkgver=${tag_name#v}/" \
+		-e "s/^pkgver *(/disabled_&/" \
+		-e "s/^pkgrel=.*/pkgrel=1/" \
+		<"$git_src_dir/../../PKGBUILD" \
+		>"$git_src_dir/../../prerelease-$tag_name.pkgbuild" ||
+	die "Could not generate prerelase-%s.pkgbuild\n" "$tag_name"
+
+	install_git_32bit_prereqs
+	require mingw-w64-toolchain mingw-w64-x86_64-make
+	if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
+		config alias.signtool)"
+	then
+		extra=
+	else
+		extra="SIGNTOOL=\"git --git-dir=\\\"$sdk64/usr/src"
+		extra="$extra/build-extra/.git\\\" signtool\" "
+	fi
+	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		"cd \"$git_src_dir/../..\" &&"'
+		MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 '"$extra"' \
+		makepkg-mingw -s --noconfirm \
+			-p prerelease-'"$tag_name".pkgbuild ||
+	die "%s: could not build '%s'\n" "$git_src_dir" "$tag_name"
+
+	pkgsuffix="$(sed -n '/^pkgver=/{N;
+			s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2-any.pkg.tar.xz/p}' \
+		<"$git_src_dir/../../prerelease-$tag_name.pkgbuild")" ||
+	die "Could not determine package suffix\n"
+
+	pkglist="git git-doc-html git-doc-man"
+	for sdk in "$sdk32" "$sdk64"
+	do
+		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c '
+			cd "'"$git_src_dir"'/../.." &&
+			precmd="pacman --noconfirm -U" &&
+			postcmd="pacman --noconfirm -U" &&
+			for pkg in '"$pkglist"'
+			do
+				pkg=mingw-w64-"$(uname -m)"-$pkg
+
+				file=$(pacman -Q $pkg | tr \  -)-any.pkg.tar.xz
+				file=/var/cache/pacman/pkg/$file
+				test -f $file || {
+					echo "$file does not exist" >&2
+					exit 1
+				}
+				postcmd="$postcmd $file"
+
+				file=$pkg-'"$pkgsuffix"'
+				test -f $file || {
+					echo "$file was not built" >&2
+					exit 1
+				}
+				precmd="$precmd $file"
+			done || exit
+			eval "$precmd" &&
+			/usr/src/build-extra/installer/release.sh \
+				"'"$tag_name"'" &&
+			eval "$postcmd"' ||
+		die "Could not install '%s' in '%s'\n" "$pkglist" "$sdk"
+	done
+}
+
 tag_git () { #
 	sdk="$sdk64" require w3m w3m
 
