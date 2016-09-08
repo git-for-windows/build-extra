@@ -812,7 +812,7 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
-prerelease () { # [--mingit] [--output=<directory>] <revision>
+prerelease () { # [--mingit] [--[clean-]output=<directory>] <revision>
 	mode=installer
 	output=
 	while case "$1" in
@@ -820,6 +820,13 @@ prerelease () { # [--mingit] [--output=<directory>] <revision>
 		mode=mingit
 		;;
 	--output=*)
+		output="--output='$(cygpath -am "${1#*=}")'" ||
+		die "Directory '%s' inaccessible\n" "${1#*=}"
+		;;
+	--clean-output=*)
+		rm -rf "${1#*=}" &&
+		mkdir -p "${1#*=}" ||
+		die "Could not make directory '%s'\n" "${1#*=}"
 		output="--output='$(cygpath -am "${1#*=}")'" ||
 		die "Directory '%s' inaccessible\n" "${1#*=}"
 		;;
