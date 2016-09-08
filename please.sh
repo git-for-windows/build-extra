@@ -812,7 +812,18 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
-prerelease () { # <revision>
+prerelease () { # [--mingit] <revision>
+	mode=installer
+	while case "$1" in
+	--mingit)
+		mode=mingit
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected 1 argument, got $#: %s\n" "$*"
+
 	sdk="$sdk64"
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
@@ -847,8 +858,15 @@ prerelease () { # <revision>
 		-e "s/^pkgver=.*/pkgver=${tag_name#v}/" \
 		-e "s/^pkgver *(/disabled_&/" \
 		-e "s/^pkgrel=.*/pkgrel=1/" \
-		<"$git_src_dir/../../PKGBUILD" \
-		>"$git_src_dir/../../prerelease-$tag_name.pkgbuild" ||
+		<"$git_src_dir/../../PKGBUILD" |
+	case "$mode" in
+	mingit)
+		sed -e '/^pkgname=/{N;N;s/"[^"]*-doc[^"]*"//g}'
+		;;
+	*)
+		cat
+		;;
+	esac >"$git_src_dir/../../prerelease-$tag_name.pkgbuild" ||
 	die "Could not generate prerelase-%s.pkgbuild\n" "$tag_name"
 
 	install_git_32bit_prereqs
@@ -873,7 +891,14 @@ prerelease () { # <revision>
 		<"$git_src_dir/../../prerelease-$tag_name.pkgbuild")" ||
 	die "Could not determine package suffix\n"
 
-	pkglist="git git-doc-html git-doc-man"
+	case "$mode" in
+	mingit)
+		pkglist="git"
+		;;
+	*)
+		pkglist="git git-doc-html git-doc-man"
+		;;
+	esac
 	for sdk in "$sdk32" "$sdk64"
 	do
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c '
@@ -900,7 +925,7 @@ prerelease () { # <revision>
 				precmd="$precmd $file"
 			done || exit
 			eval "$precmd" &&
-			/usr/src/build-extra/installer/release.sh \
+			/usr/src/build-extra/'"$mode"'/release.sh \
 				"'"$tag_name"'" &&
 			eval "$postcmd"' ||
 		die "Could not install '%s' in '%s'\n" "$pkglist" "$sdk"
