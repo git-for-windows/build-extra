@@ -819,7 +819,11 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 prerelease () { # [--mingit] [--[clean-]output=<directory>] <revision>
 	mode=installer
 	output=
+	force_tag=
 	while case "$1" in
+	--force-tag)
+		force_tag=t
+		;;
 	--mingit)
 		mode=mingit
 		;;
@@ -854,20 +858,33 @@ prerelease () { # [--mingit] [--[clean-]output=<directory>] <revision>
 	test -z "$(echo "$tag_name" | tr -d 'A-Za-z0-9.')" ||
 	die "The revision '%s' yields unusable tag name '%s'\n" "$1" "$tag_name"
 
-	! git rev-parse --verify -q "$tag_name" 2>/dev/null ||
-	die "Tag '%s' already exists\n" "$tag_name"
-
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	require_git_src_dir
 
-	! git -C "$git_src_dir" rev-parse --verify -q "$tag_name" 2>/dev/null ||
-	die "Tag '%s' already exists in '%s'\n" "$tag_name" "$git_src_dir"
+	if test -n "$force_tag"
+	then
+		git tag -f -a -m "Prerelease of $1" "$tag_name" "$1" ||
+		die "Could not create tag '%s'\n" "$tag_name"
 
-	git tag -a -m "Prerelease of $1" "$tag_name" "$1" ||
-	die "Could not create tag '%s'\n" "$tag_name"
+		git push --force "$git_src_dir" "refs/tags/$tag_name" ||
+		die "Could not push tag '%s' to '%s'\n" \
+			"$tag_name" "$git_src_dir"
+	else
+		! git rev-parse --verify -q "$tag_name" 2>/dev/null ||
+		die "Tag '%s' already exists\n" "$tag_name"
 
-	git push "$git_src_dir" "refs/tags/$tag_name" ||
-	die "Could not push tag '%s' to '%s'\n" "$tag_name" "$git_src_dir"
+		! git -C "$git_src_dir" rev-parse --verify -q "$tag_name" \
+			2>/dev/null ||
+		die "Tag '%s' already exists in '%s'\n" \
+			"$tag_name" "$git_src_dir"
+
+		git tag -a -m "Prerelease of $1" "$tag_name" "$1" ||
+		die "Could not create tag '%s'\n" "$tag_name"
+
+		git push "$git_src_dir" "refs/tags/$tag_name" ||
+		die "Could not push tag '%s' to '%s'\n" \
+			"$tag_name" "$git_src_dir"
+	fi
 
 	sed -e "s/^tag=.*/tag=${tag_name#v}/" \
 		-e "s/^\(source.*tag=\)[^\"]*/\\1$tag_name/" \
