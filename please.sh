@@ -293,7 +293,6 @@ pkg_build () {
 			die "Could not edit tag\n"
 		fi
 
-		
 		if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
 			config alias.signtool)"
 		then
