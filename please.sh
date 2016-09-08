@@ -245,6 +245,22 @@ require () {
 	die "Could not install %s\n" "$1"
 }
 
+install_git_32bit_prereqs () {
+	for prereq in mingw-w64-i686-asciidoctor-extensions
+	do
+		test ! -d "$sdk64"/var/lib/pacman/local/$prereq-[0-9]* ||
+		continue
+
+		sdk="$sdk32" require $prereq &&
+		pkg="$sdk32/var/cache/pacman/pkg/$("$sdk32/git-cmd.exe" \
+			--command=usr\\bin\\pacman.exe -Q "$prereq" |
+			sed -e 's/ /-/' -e 's/$/-any.pkg.tar.xz/')" &&
+		"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+			'pacman -U --noconfirm "'"$pkg"'"' ||
+		die "Could not install %s into SDK-64\n" "$prereq"
+	done
+}
+
 pkg_build () {
 	require_clean_worktree
 
@@ -259,19 +275,7 @@ pkg_build () {
 	# Let's just steal it from the 32-bit SDK
 	test mingw-w64-git != $package ||
 	test x86_64 != $arch ||
-	for prereq in mingw-w64-i686-asciidoctor-extensions
-	do
-		test ! -d "$sdk64"/var/lib/pacman/local/$prereq-[0-9]* ||
-		continue
-
-		sdk="$sdk32" require $prereq &&
-		pkg="$sdk32/var/cache/pacman/pkg/$("$sdk32/git-cmd.exe" \
-			--command=usr\\bin\\pacman.exe -Q "$prereq" |
-			sed -e 's/ /-/' -e 's/$/-any.pkg.tar.xz/')" &&
-		"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'pacman -U --noconfirm "'"$pkg"'"' ||
-		die "Could not install %s into SDK-64\n" "$prereq"
-	done
+	install_git_32bit_prereqs
 
 	case "$type" in
 	MINGW)
@@ -289,7 +293,6 @@ pkg_build () {
 			die "Could not edit tag\n"
 		fi
 
-		
 		if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
 			config alias.signtool)"
 		then
@@ -552,6 +555,37 @@ ensure_valid_login_shell () {
 		esac' >&2
 }
 
+require_git_src_dir () {
+	sdk="$sdk64"
+	if test ! -d "$git_src_dir"
+	then
+		if test ! -d "${git_src_dir%/src/git}"
+		then
+			cd "${git_src_dir%/*/src/git}" &&
+			git fetch &&
+			git checkout -t origin/master ||
+			die "Could not check out %s\n" \
+				"${git_src_dir%*/src/git}"
+		fi
+		(cd "${git_src_dir%/src/git}" &&
+		 echo "Checking out Git (not making it)" >&2 &&
+		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
+			'makepkg-mingw --noconfirm -s -o') ||
+		die "Could not initialize %s\n" "$git_src_dir"
+	fi
+
+	(cd "$git_src_dir/../.." &&
+	 sdk= pkgpath=$PWD ff_master) ||
+	die "MINGW-packages not up-to-date\n"
+
+	test false = "$(git -C "$git_src_dir" config core.autocrlf)" ||
+	(cd "$git_src_dir" &&
+	 git config core.autocrlf false &&
+	 rm .git/index
+	 git stash) ||
+	die "Could not make sure Git sources are checked out LF-only\n"
+}
+
 # build_and_test_64; intended to build and test 64-bit Git in MINGW-packages
 build_and_test_64 () {
 	ensure_valid_login_shell 64 &&
@@ -619,30 +653,7 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not update build-extra\n"
 
-	if test ! -d "$git_src_dir"
-	then
-		if test ! -d "${git_src_dir%/src/git}"
-		then
-			cd "${git_src_dir%/*/src/git}" &&
-			git fetch &&
-			git checkout -t origin/master ||
-			die "Could not check out %s\n" \
-				"${git_src_dir%*/src/git}"
-		fi
-		(cd "${git_src_dir%/src/git}" &&
-		 echo "Checking out Git (not making it)" >&2 &&
-		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
-			'makepkg-mingw --noconfirm -s -o') ||
-		die "Could not initialize %s\n" "$git_src_dir"
-	fi
-
-
-	test false = "$(git -C "$git_src_dir" config core.autocrlf)" ||
-	(cd "$git_src_dir" &&
-	 git config core.autocrlf false &&
-	 rm .git/index
-	 git stash) ||
-	die "Could not make sure Git sources are checked out LF-only\n"
+	require_git_src_dir
 
 	(cd "$git_src_dir" &&
 	 if is_rebasing && test -z "$continue_rebase$skip_rebase"
@@ -787,30 +798,7 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	test $# = 1 ||
 	die "Expected 1 argument, got $#: %s\n" "$*"
 
-	sdk="$sdk64"
-	if test ! -d "$git_src_dir"
-	then
-		if test ! -d "${git_src_dir%/src/git}"
-		then
-			cd "${git_src_dir%/*/src/git}" &&
-			git fetch &&
-			git checkout -t origin/master ||
-			die "Could not check out %s\n" \
-				"${git_src_dir%*/src/git}"
-		fi
-		(cd "${git_src_dir%/src/git}" &&
-		 echo "Checking out Git (not making it)" >&2 &&
-		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
-			'makepkg-mingw --noconfirm -s -o') ||
-		die "Could not initialize %s\n" "$git_src_dir"
-	fi
-
-	test false = "$(git -C "$git_src_dir" config core.autocrlf)" ||
-	(cd "$git_src_dir" &&
-	 git config core.autocrlf false &&
-	 rm .git/index
-	 git stash) ||
-	die "Could not make sure Git sources are checked out LF-only\n"
+	require_git_src_dir
 
 	(cd "$git_src_dir" &&
 	 case "$1" in
@@ -826,6 +814,138 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	 git reset --hard &&
 	 build_and_test_64) ||
 	exit
+}
+
+prerelease () { # [--mingit] [--[clean-]output=<directory>] <revision>
+	mode=installer
+	output=
+	while case "$1" in
+	--mingit)
+		mode=mingit
+		;;
+	--output=*)
+		output="--output='$(cygpath -am "${1#*=}")'" ||
+		die "Directory '%s' inaccessible\n" "${1#*=}"
+		;;
+	--clean-output=*)
+		rm -rf "${1#*=}" &&
+		mkdir -p "${1#*=}" ||
+		die "Could not make directory '%s'\n" "${1#*=}"
+		output="--output='$(cygpath -am "${1#*=}")'" ||
+		die "Directory '%s' inaccessible\n" "${1#*=}"
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected 1 argument, got $#: %s\n" "$*"
+
+	sdk="$sdk64"
+
+	build_extra_dir="$sdk64/usr/src/build-extra"
+	(cd "$build_extra_dir" &&
+	 sdk= pkgpath=$PWD ff_master) ||
+	die "Could not update build-extra\n"
+
+	tag_name="$(git describe --match 'v[0-9]*' "$1" | tr - .)"
+	test -n "$tag_name" ||
+	die "Could not find revision '%s'\n" "$1"
+
+	test -z "$(echo "$tag_name" | tr -d 'A-Za-z0-9.')" ||
+	die "The revision '%s' yields unusable tag name '%s'\n" "$1" "$tag_name"
+
+	! git rev-parse --verify -q "$tag_name" 2>/dev/null ||
+	die "Tag '%s' already exists\n" "$tag_name"
+
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	require_git_src_dir
+
+	! git -C "$git_src_dir" rev-parse --verify -q "$tag_name" 2>/dev/null ||
+	die "Tag '%s' already exists in '%s'\n" "$tag_name" "$git_src_dir"
+
+	git tag -a -m "Prerelease of $1" "$tag_name" "$1" ||
+	die "Could not create tag '%s'\n" "$tag_name"
+
+	git push "$git_src_dir" "refs/tags/$tag_name" ||
+	die "Could not push tag '%s' to '%s'\n" "$tag_name" "$git_src_dir"
+
+	sed -e "s/^tag=.*/tag=${tag_name#v}/" \
+		-e "s/^\(source.*tag=\)[^\"]*/\\1$tag_name/" \
+		-e "s/^pkgver=.*/pkgver=${tag_name#v}/" \
+		-e "s/^pkgver *(/disabled_&/" \
+		-e "s/^pkgrel=.*/pkgrel=1/" \
+		<"$git_src_dir/../../PKGBUILD" |
+	case "$mode" in
+	mingit)
+		sed -e '/^pkgname=/{N;N;s/"[^"]*-doc[^"]*"//g}'
+		;;
+	*)
+		cat
+		;;
+	esac >"$git_src_dir/../../prerelease-$tag_name.pkgbuild" ||
+	die "Could not generate prerelase-%s.pkgbuild\n" "$tag_name"
+
+	install_git_32bit_prereqs
+	require mingw-w64-toolchain mingw-w64-x86_64-make
+	if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
+		config alias.signtool)"
+	then
+		extra=
+	else
+		extra="SIGNTOOL=\"git --git-dir=\\\"$sdk64/usr/src"
+		extra="$extra/build-extra/.git\\\" signtool\" "
+	fi
+	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		"cd \"$git_src_dir/../..\" &&"'
+		MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 '"$extra"' \
+		makepkg-mingw -s --noconfirm \
+			-p prerelease-'"$tag_name".pkgbuild ||
+	die "%s: could not build '%s'\n" "$git_src_dir" "$tag_name"
+
+	pkgsuffix="$(sed -n '/^pkgver=/{N;
+			s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2-any.pkg.tar.xz/p}' \
+		<"$git_src_dir/../../prerelease-$tag_name.pkgbuild")" ||
+	die "Could not determine package suffix\n"
+
+	case "$mode" in
+	mingit)
+		pkglist="git"
+		;;
+	*)
+		pkglist="git git-doc-html git-doc-man"
+		;;
+	esac
+	for sdk in "$sdk32" "$sdk64"
+	do
+		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c '
+			cd "'"$git_src_dir"'/../.." &&
+			precmd="pacman --noconfirm -U" &&
+			postcmd="pacman --noconfirm -U" &&
+			for pkg in '"$pkglist"'
+			do
+				pkg=mingw-w64-"$(uname -m)"-$pkg
+
+				file=$(pacman -Q $pkg | tr \  -)-any.pkg.tar.xz
+				file=/var/cache/pacman/pkg/$file
+				test -f $file || {
+					echo "$file does not exist" >&2
+					exit 1
+				}
+				postcmd="$postcmd $file"
+
+				file=$pkg-'"$pkgsuffix"'
+				test -f $file || {
+					echo "$file was not built" >&2
+					exit 1
+				}
+				precmd="$precmd $file"
+			done || exit
+			eval "$precmd" &&
+			/usr/src/build-extra/'"$mode"'/release.sh \
+				'"$output"' "'"$tag_name"'" &&
+			eval "$postcmd"' ||
+		die "Could not install '%s' in '%s'\n" "$pkglist" "$sdk"
+	done
 }
 
 tag_git () { #

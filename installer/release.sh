@@ -5,10 +5,6 @@ die () {
 	exit 1
 }
 
-# change directory to the script's directory
-cd "$(dirname "$0")" ||
-die "Could not switch directory"
-
 force=
 inno_defines=
 skip_files=
@@ -37,11 +33,22 @@ do
 			"#define OUTPUT_TO_TEMP ''")"
 		skip_files=t
 		;;
+	--output=*)
+		output_directory="$(cd "${1#*=}" && pwd)" ||
+		die "Directory inaccessible: '${1#*=}'"
+
+		inno_defines="$(printf "%s\n%s" "$inno_defines" \
+			"#define OUTPUT_DIRECTORY '$output_directory'")"
+		;;
 	*)
 		break
 	esac
 	shift
 done
+
+# change directory to the script's directory
+cd "$(dirname "$0")" ||
+die "Could not switch directory"
 
 if test -n "$test_installer"
 then
@@ -52,7 +59,7 @@ else
 fi
 
 test $# = 0 ||
-die "Usage: $0 [-f | --force] ( --debug-wizard-page=<page> | <version> )"
+die "Usage: $0 [-f | --force] [--output=<directory>] ( --debug-wizard-page=<page> | <version> )"
 
 case "$version" in
 [0-9]*) ;; # okay

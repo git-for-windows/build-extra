@@ -3,7 +3,7 @@
 # Build the "really minimal" Git for Windows.
 
 test -z "$1" && {
-	echo "Usage: $0 <version> [optional components]"
+	echo "Usage: $0 [--output=<directory>] <version> [optional components]"
 	exit 1
 }
 
@@ -11,6 +11,18 @@ die () {
 	echo "$*" >&1
 	exit 1
 }
+
+output_directory="$HOME"
+while case "$1" in
+--output=*)
+	output_directory="$(cd "${1#*=}" && pwd)" ||
+	die "Directory inaccessible: '${1#*=}'"
+	;;
+-*) die "Unknown option: %s\n" "$1";;
+*) break;;
+esac; do shift; done
+test $# = 1 ||
+die "Expect a version, got $# arguments"
 
 ARCH="$(uname -m)"
 case "$ARCH" in
@@ -26,7 +38,7 @@ x86_64)
 esac
 VERSION=$1
 shift
-TARGET="$HOME"/MinGit-"$VERSION"-"$BITNESS"-bit.zip
+TARGET="$output_directory"/MinGit-"$VERSION"-"$BITNESS"-bit.zip
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
 case "$SCRIPT_PATH" in

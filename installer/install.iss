@@ -31,7 +31,11 @@ OutputBaseFilename={#APP_VERSION}
 OutputDir={#GetEnv('TEMP')}
 #else
 OutputBaseFilename={#APP_NAME+'-'+APP_VERSION}-{#BITNESS}-bit
+#ifdef OUTPUT_DIRECTORY
+OutputDir={#OUTPUT_DIRECTORY}
+#else
 OutputDir={#GetEnv('USERPROFILE')}
+#endif
 #endif
 SolidCompression=yes
 SourceDir={#SourcePath}\..\..\..\..
