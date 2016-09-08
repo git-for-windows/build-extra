@@ -574,6 +574,10 @@ require_git_src_dir () {
 		die "Could not initialize %s\n" "$git_src_dir"
 	fi
 
+	(cd "$git_src_dir/../.." &&
+	 sdk= pkgpath=$PWD ff_master) ||
+	die "MINGW-packages not up-to-date\n"
+
 	test false = "$(git -C "$git_src_dir" config core.autocrlf)" ||
 	(cd "$git_src_dir" &&
 	 git config core.autocrlf false &&
