@@ -886,7 +886,7 @@ prerelease () { # [--mingit] [--[clean-]output=<directory>] <revision>
 	die "Could not generate prerelase-%s.pkgbuild\n" "$tag_name"
 
 	install_git_32bit_prereqs
-	require mingw-w64-toolchain mingw-w64-x86_64-make
+	require mingw-w64-x86_64-toolchain mingw-w64-x86_64-make
 	if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
 		config alias.signtool)"
 	then
