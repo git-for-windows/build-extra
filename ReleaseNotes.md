@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * [Fixed a crash](https://github.com/git-for-windows/git/commit/c4f481a41de66d24f6f9943104600f2e4f24b152) when calling `git diff -G<regex>` on new-born files without configured user diff drivers.
 * Interactive GPG signing of commits and tags [was fixed](https://github.com/git-for-windows/git/issues/871).
 * Calling Git with `--date=format:<invalid-format>` [no longer results in an out-of-memory](https://github.com/git-for-windows/git/issues/863) but reports the problem and aborts instead.
+* Git Bash [now opens properly even for Azure AD accounts](https://github.com/git-for-windows/git/issues/580).
 
 ## Changes since Git for Windows v2.9.3(2) (August 25th 2016)
 
