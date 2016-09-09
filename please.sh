@@ -962,7 +962,8 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 				}
 				file="/var/cache/pacman/pkg/$(echo $file |
 					tr \  -)-any.pkg.tar.xz"
-				test -f $file || {
+				test -f $file ||
+				cp "${file##*/}" "$file" || {
 					echo "$file does not exist" >&2
 					exit 1
 				}
