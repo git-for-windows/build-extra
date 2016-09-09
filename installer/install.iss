@@ -27,10 +27,10 @@
 Compression=lzma2/ultra64
 LZMAUseSeparateProcess=yes
 #ifdef OUTPUT_TO_TEMP
-OutputBaseFilename={#APP_VERSION}
+OutputBaseFilename={#FILENAME_VERSION}
 OutputDir={#GetEnv('TEMP')}
 #else
-OutputBaseFilename={#APP_NAME+'-'+APP_VERSION}-{#BITNESS}-bit
+OutputBaseFilename={#APP_NAME+'-'+FILENAME_VERSION}-{#BITNESS}-bit
 #ifdef OUTPUT_DIRECTORY
 OutputDir={#OUTPUT_DIRECTORY}
 #else

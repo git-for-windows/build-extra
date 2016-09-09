@@ -61,9 +61,10 @@ fi
 test $# = 0 ||
 die "Usage: $0 [-f | --force] [--output=<directory>] ( --debug-wizard-page=<page> | <version> )"
 
-case "$version" in
+displayver="$(echo "${version#prerelease-}" | sed -e 's/\.[^.0-9]*\./\./g')"
+case "$displayver" in
 [0-9]*) ;; # okay
-*) die "InnoSetup requires a version that begins with a digit";;
+*) die "InnoSetup requires a version that begins with a digit ($displayver)";;
 esac
 
 # Evaluate architecture
@@ -123,8 +124,9 @@ sed -n -e 's|^[^ ]* /\(.*\.exe\)$|\1|p' \
 	-e 's|^[^ ]* /\(.*\.dll\)$|\1|p' > bindimage.txt
 echo "Source: \"{#SourcePath}\\bindimage.txt\"; DestDir: {app}\\mingw$BITNESS\\share\git\bindimage.txt; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" >> file-list.iss
 
-printf "%s\n%s%s" \
-	"#define APP_VERSION '$version'" \
+printf "%s\n%s\n%s%s" \
+	"#define APP_VERSION '$displayver'" \
+	"#define FILENAME_VERSION '$version'" \
 	"#define BITNESS '$BITNESS'" \
 	"$inno_defines" \
 	>config.iss
