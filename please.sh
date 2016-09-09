@@ -851,12 +851,13 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not update build-extra\n"
 
-	tag_name="$(git describe --match 'v[0-9]*' "$1" | tr - .)"
+	pkgver="$(git describe --match 'v[0-9]*' "$1" | tr - .)"
+	tag_name=prerelease-$pkgver
 	test -n "$tag_name" ||
 	die "Could not find revision '%s'\n" "$1"
 
-	test -z "$(echo "$tag_name" | tr -d 'A-Za-z0-9.')" ||
-	die "The revision '%s' yields unusable tag name '%s'\n" "$1" "$tag_name"
+	test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
+	die "The revision '%s' yields unusable version '%s'\n" "$1" "$pkgver"
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	require_git_src_dir
@@ -888,7 +889,7 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 
 	sed -e "s/^tag=.*/tag=${tag_name#v}/" \
 		-e "s/^\(source.*tag=\)[^\"]*/\\1$tag_name/" \
-		-e "s/^pkgver=.*/pkgver=${tag_name#v}/" \
+		-e "s/^pkgver=.*/pkgver=${pkgver#v}/" \
 		-e "s/^pkgver *(/disabled_&/" \
 		-e "s/^pkgrel=.*/pkgrel=1/" \
 		<"$git_src_dir/../../PKGBUILD" |
@@ -899,8 +900,8 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 	*)
 		cat
 		;;
-	esac >"$git_src_dir/../../prerelease-$tag_name.pkgbuild" ||
-	die "Could not generate prerelase-%s.pkgbuild\n" "$tag_name"
+	esac >"$git_src_dir/../../prerelease-$pkgver.pkgbuild" ||
+	die "Could not generate prerelase-%s.pkgbuild\n" "$pkgver"
 
 	install_git_32bit_prereqs
 	require mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
@@ -917,12 +918,12 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 		"cd \"$git_src_dir/../..\" &&"'
 		MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 '"$extra"' \
 		makepkg-mingw -s --noconfirm '"$force_tag"' \
-			-p prerelease-'"$tag_name".pkgbuild ||
-	die "%s: could not build '%s'\n" "$git_src_dir" "$tag_name"
+			-p prerelease-'"$pkgver".pkgbuild ||
+	die "%s: could not build '%s'\n" "$git_src_dir" "$pkgver"
 
 	pkgsuffix="$(sed -n '/^pkgver=/{N;
 			s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2-any.pkg.tar.xz/p}' \
-		<"$git_src_dir/../../prerelease-$tag_name.pkgbuild")" ||
+		<"$git_src_dir/../../prerelease-$pkgver.pkgbuild")" ||
 	die "Could not determine package suffix\n"
 
 	case "$mode" in
@@ -959,11 +960,11 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 				precmd="$precmd $file"
 			done || exit
 			eval "$precmd" &&
-			sed -i -e "1s/.*/# Pre-release '"$tag_name"'/" \
+			sed -i -e "1s/.*/# Pre-release '"$pkgver"'/" \
 				-e "2s/.*/Date: '"$(today)"'/" \
 				/usr/src/build-extra/ReleaseNotes.md &&
 			/usr/src/build-extra/'"$mode"'/release.sh \
-				'"$output"' "'"$tag_name"'" &&
+				'"$output"' "prerelease-'"${pkgver#v}"'" &&
 			git -C /usr/src/build-extra stash &&
 			eval "$postcmd"' ||
 		die "Could not install '%s' in '%s'\n" "$pkglist" "$sdk"
