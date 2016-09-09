@@ -982,7 +982,8 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 				/usr/src/build-extra/ReleaseNotes.md &&
 			/usr/src/build-extra/'"$mode"'/release.sh \
 				'"$output"' "prerelease-'"${pkgver#v}"'" &&
-			git -C /usr/src/build-extra stash &&
+			(cd /usr/src/build-extra &&
+			 git diff -- ReleaseNotes.md | git apply -R) &&
 			eval "$postcmd"' ||
 		die "Could not install '%s' in '%s'\n" "$pkglist" "$sdk"
 	done
