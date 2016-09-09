@@ -822,7 +822,7 @@ prerelease () { # [--mingit] [--[clean-]output=<directory>] <revision>
 	force_tag=
 	while case "$1" in
 	--force-tag)
-		force_tag=t
+		force_tag=-f
 		;;
 	--mingit)
 		mode=mingit
@@ -915,7 +915,7 @@ prerelease () { # [--mingit] [--[clean-]output=<directory>] <revision>
 	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 		"cd \"$git_src_dir/../..\" &&"'
 		MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 '"$extra"' \
-		makepkg-mingw -s --noconfirm \
+		makepkg-mingw -s --noconfirm '"$force_tag"' \
 			-p prerelease-'"$tag_name".pkgbuild ||
 	die "%s: could not build '%s'\n" "$git_src_dir" "$tag_name"
 
