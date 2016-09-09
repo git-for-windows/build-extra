@@ -959,8 +959,12 @@ prerelease () { # [--mingit] [--[clean-]output=<directory>] <revision>
 				precmd="$precmd $file"
 			done || exit
 			eval "$precmd" &&
+			sed -i -e "1s/.*/# Pre-release '"$tag_name"'/" \
+				-e "2s/.*/Date: '"$(today)"'/" \
+				/usr/src/build-extra/ReleaseNotes.md &&
 			/usr/src/build-extra/'"$mode"'/release.sh \
 				'"$output"' "'"$tag_name"'" &&
+			git -C /usr/src/build-extra stash &&
 			eval "$postcmd"' ||
 		die "Could not install '%s' in '%s'\n" "$pkglist" "$sdk"
 	done
