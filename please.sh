@@ -816,7 +816,7 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
-prerelease () { # [--mingit] [--[clean-]output=<directory>] <revision>
+prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>] <revision>
 	mode=installer
 	output=
 	force_tag=
