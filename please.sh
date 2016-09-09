@@ -862,7 +862,15 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	require_git_src_dir
 
-	if test -n "$force_tag"
+	skip_makepkg=
+	pkgprefix="$git_src_dir/../../mingw-w64"
+	pkgsuffix="${pkgver#v}-1-any.pkg.tar.xz"
+	if test -f "${pkgprefix}-i686-git-doc-man-${pkgsuffix}" &&
+		test -f "${pkgprefix}-x86_64-git-doc-man-${pkgsuffix}"
+	then
+		echo "Skipping makepkg: already built packages" >&2
+		skip_makepkg=t
+	elif test -n "$force_tag"
 	then
 		git tag -f -a -m "Prerelease of $1" "$tag_name" "$1" ||
 		die "Could not create tag '%s'\n" "$tag_name"
@@ -903,28 +911,32 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 	esac >"$git_src_dir/../../prerelease-$pkgver.pkgbuild" ||
 	die "Could not generate prerelase-%s.pkgbuild\n" "$pkgver"
 
-	install_git_32bit_prereqs
-	require mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
-		mingw-w64-x86_64-make
-	if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
-		config alias.signtool)"
+	if test -z "$skip_makepkg"
 	then
-		extra=
-	else
-		extra="SIGNTOOL=\"git --git-dir=\\\"$sdk64/usr/src"
-		extra="$extra/build-extra/.git\\\" signtool\" "
-	fi
-	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-		"cd \"$git_src_dir/../..\" &&"'
-		MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 '"$extra"' \
-		makepkg-mingw -s --noconfirm '"$force_tag"' \
-			-p prerelease-'"$pkgver".pkgbuild ||
-	die "%s: could not build '%s'\n" "$git_src_dir" "$pkgver"
+		install_git_32bit_prereqs
+		require mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
+			mingw-w64-x86_64-make
+		if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
+			config alias.signtool)"
+		then
+			extra=
+		else
+			extra="SIGNTOOL=\"git --git-dir=\\\"$sdk64/usr/src"
+			extra="$extra/build-extra/.git\\\" signtool\" "
+		fi
+		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			"cd \"$git_src_dir/../..\" &&"'
+			MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
+			'"$extra"' \
+			makepkg-mingw -s --noconfirm '"$force_tag"' \
+				-p prerelease-'"$pkgver".pkgbuild ||
+		die "%s: could not build '%s'\n" "$git_src_dir" "$pkgver"
 
-	pkgsuffix="$(sed -n '/^pkgver=/{N;
+		pkgsuffix="$(sed -n '/^pkgver=/{N;
 			s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2-any.pkg.tar.xz/p}' \
-		<"$git_src_dir/../../prerelease-$pkgver.pkgbuild")" ||
-	die "Could not determine package suffix\n"
+			<"$git_src_dir/../../prerelease-$pkgver.pkgbuild")" ||
+		die "Could not determine package suffix\n"
+	fi
 
 	case "$mode" in
 	mingit)
