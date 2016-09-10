@@ -34,7 +34,7 @@ do
 		skip_files=t
 		;;
 	--output=*)
-		output_directory="$(cd "${1#*=}" && pwd)" ||
+		output_directory="$(cygpath -m "${1#*=}")" ||
 		die "Directory inaccessible: '${1#*=}'"
 
 		inno_defines="$(printf "%s\n%s" "$inno_defines" \
