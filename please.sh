@@ -574,6 +574,7 @@ require_git_src_dir () {
 		die "Could not initialize %s\n" "$git_src_dir"
 	fi
 
+	test ! -f "$git_src_dir/PKGBUILD" ||
 	(cd "$git_src_dir/../.." &&
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "MINGW-packages not up-to-date\n"
