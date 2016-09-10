@@ -958,8 +958,11 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 				pkg=mingw-w64-"$(uname -m)"-$pkg
 
 				file="$(pacman -Q $pkg)" || {
-					echo "$pkg was not installed" >&2
-					exit 1
+					pacman -S $pkg &&
+					file="$(pacman -Q $pkg)" || {
+						echo "$pkg not installed" >&2
+						exit 1
+					}
 				}
 				file="/var/cache/pacman/pkg/$(echo $file |
 					tr \  -)-any.pkg.tar.xz"
