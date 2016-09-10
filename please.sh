@@ -958,7 +958,7 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 				pkg=mingw-w64-"$(uname -m)"-$pkg
 
 				file="$(pacman -Q $pkg)" || {
-					pacman -S $pkg &&
+					pacman -S --noconfirm $pkg &&
 					file="$(pacman -Q $pkg)" || {
 						echo "$pkg not installed" >&2
 						exit 1
