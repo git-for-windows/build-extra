@@ -847,6 +847,11 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 
 	sdk="$sdk64"
 
+	build_extra_dir="$sdk32/usr/src/build-extra"
+	(cd "$build_extra_dir" &&
+	 sdk= pkgpath=$PWD ff_master) ||
+	die "Could not update 32-bit build-extra\n"
+
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
 	 sdk= pkgpath=$PWD ff_master) ||
