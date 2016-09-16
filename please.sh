@@ -606,7 +606,13 @@ build_and_test_64 () {
 			failed_count=0
 			for t in $failed_tests
 			do
-				t=${t%-[1-9]*.counts}
+				t=${t%*.counts}
+				test -f "$t.sh" || {
+					t=${t%*-[1-9]*}
+					test -f "$t.sh" ||
+					echo "Cannot find script for $t" >&2
+					exit 1
+				}
 				echo "Re-running $t" >&2
 				time bash $t.sh -i -v -x --tee ||
 				failed_count=$(($failed_count+1))
