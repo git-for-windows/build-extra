@@ -479,12 +479,14 @@ record_rerere_train () {
 	 cp "$orig_index" "$GIT_INDEX_FILE" &&
 	 git add -u &&
 	 tree4="$(git write-tree)" &&
+	 stopped_sha="$(git rev-parse --git-path rebase-merge/stopped-sha)" &&
+	 stopped_sha="$(cat "$stopped_sha")" &&
 	 base_msg="$(printf "cherry-pick %s onto %s\n\n%s\n%s\n\n\t%s" \
-		"$(git show -s --pretty=tformat:%h rebase-merge/stopped-sha)" \
+		"$(git show -s --pretty=tformat:%h $stopped_sha)" \
 		"$(git show -s --pretty=tformat:%h HEAD)" \
 		"This commit helps to teach \`git rerere\` to resolve merge " \
 		"conflicts when cherry-picking:" \
-		"$(whatis rebase-merge/stopped-sha)")" &&
+		"$(whatis $stopped_sha)")" &&
 	 commit=$(git commit-tree ${commit:+-p} $commit \
 		-m "base: $base_msg" $tree1) &&
 	 commit2=$(git commit-tree -p $commit -m "pick: $base_msg" $tree3) &&
