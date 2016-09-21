@@ -605,7 +605,7 @@ build_and_test_64 () {
 				echo "No failed tests ?!?" >&2
 				exit 1
 			}
-			failed_count=0
+			still_failing=
 			for t in $failed_tests
 			do
 				t=${t%*.counts}
@@ -617,10 +617,11 @@ build_and_test_64 () {
 				}
 				echo "Re-running $t" >&2
 				time bash $t.sh -i -v -x --tee ||
-				failed_count=$(($failed_count+1))
+				still_failing="$(printf "%s\\n%s" \
+					"$still_failing" $t.sh)"
 			done
-			test 0 = $failed_count || {
-				echo "$failed_count tests still failing!" >&2
+			test -z "$still_failing" || {
+				echo "Still failing:$still_failing" >&2
 				exit 1
 			}
 		fi'
