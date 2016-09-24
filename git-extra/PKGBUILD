@@ -32,6 +32,7 @@ source=('inputrc'
         'bash_profile.sh'
         'msys2-32.ico'
         '99-post-install-cleanup.post'
+        'gitattributes'
         'astextplain'
         'git-sdk.sh')
 md5sums=('3fab57079f0322efe256e95fe29d516f'
