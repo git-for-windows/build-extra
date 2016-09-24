@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.10.0 (September 3rd 2016)
 
+### New Features
+
+* We [now produce nice diffs for `.docm` and `.dotm` files](https://github.com/git-for-windows/build-extra/pull/128), just as we did for `.docx` files already.
+
 ### Bug Fixes
 
 * The icon in the Explorer integration ("Git Bash Here"), which was lost by mistake in v2.10.0, [is back](https://github.com/git-for-windows/git/issues/870).
