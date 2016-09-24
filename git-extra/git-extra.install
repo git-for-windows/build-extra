@@ -32,14 +32,23 @@ GITCONFIG
 *.DOC	diff=astextplain
 *.docx	diff=astextplain
 *.DOCX	diff=astextplain
+*.docm	diff=astextplain
+*.DOCM	diff=astextplain
 *.dot	diff=astextplain
 *.DOT	diff=astextplain
+*.dotm	diff=astextplain
+*.DOTM	diff=astextplain
 *.pdf	diff=astextplain
 *.PDF	diff=astextplain
 *.rtf	diff=astextplain
 *.RTF	diff=astextplain
 
 GITATTRIBUTES
+
+		grep -q '^\*\.docm' /$dir/etc/gitattributes ||
+		sed -i -e 's/^\*\.DOCX\(.*\)/&\n*.docm\1\n*.DOCM\1/' \
+			-e 's/^\*\.DOT\(.*\)/&\n*.dotm\1\n*.DOTM\1/' \
+			/$dir/etc/gitattributes
 
 		# Drop git-wrapper in place of builtins "to save space"
 		git_wrapper=/$dir/share/git/git-wrapper.exe

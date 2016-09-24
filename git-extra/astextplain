@@ -11,7 +11,7 @@ case "$1" in
 	*.doc | *.DOC | *.dot | *.DOT)
 		antiword -m UTF-8 "$1" | sed "s/\^M$//" || cat "$1"
 		;;
-	*.docx | *.DOCX)
+	*.docx | *.DOCX | *.docm | *.DOCM | *.dotm | *.DOTM)
 		docx2txt.pl "$1" -
 		;;
 	*.pdf | *.PDF)
