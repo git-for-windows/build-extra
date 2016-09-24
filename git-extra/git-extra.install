@@ -45,6 +45,11 @@ GITCONFIG
 
 GITATTRIBUTES
 
+		grep -q '^\*\.docm' /$dir/etc/gitattributes ||
+		sed -i -e 's/^\*\.DOCX\(.*\)/&\n*.docm\1\n*.DOCM\1/' \
+			-e 's/^\*\.DOT\(.*\)/&\n*.dotm\1\n*.DOTM\1/' \
+			/$dir/etc/gitattributes
+
 		# Drop git-wrapper in place of builtins "to save space"
 		git_wrapper=/$dir/share/git/git-wrapper.exe
 		if test -f $git_wrapper &&
