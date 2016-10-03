@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * We [now produce nice diffs for `.docm` and `.dotm` files](https://github.com/git-for-windows/build-extra/pull/128), just as we did for `.docx` files already.
+* Comes with Git Credential Manager [v1.7.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.7.0).
 
 ### Bug Fixes
 
