@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 * Calling Git with `--date=format:<invalid-format>` [no longer results in an out-of-memory](https://github.com/git-for-windows/git/issues/863) but reports the problem and aborts instead.
 * Git Bash [now opens properly even for Azure AD accounts](https://github.com/git-for-windows/git/issues/580).
 * Git GUI [respects the `commit.gpgsign` setting again](https://github.com/git-for-windows/git/issues/850).
+* Upgrades the bundled OpenSSL to [v1.0.2j](https://www.openssl.org/news/cl102.txt).
 
 ## Changes since Git for Windows v2.9.3(2) (August 25th 2016)
 
