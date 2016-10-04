@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Git v2.10.1](https://github.com/git/git/blob/v2.10.1/Documentation/RelNotes/2.10.1.txt).
 * Comes with Git Credential Manager [v1.7.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.7.0).
+* Comes with [Git Flow v1.10.0](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.10.0).
 * We [now produce nice diffs for `.docm` and `.dotm` files](https://github.com/git-for-windows/build-extra/pull/128), just as we did for `.docx` files already.
 
 ### Bug Fixes
