@@ -1060,6 +1060,7 @@ test_git () { # <bitness>
 pkg_files () {
 	pkgver="$(sed -ne \
 		'/^_basever=/{N;N;s/.*=\([0-9].*\)\n.*\npkgrel=\(.*\)/\1-\2/p}' \
+		-e '/^_ver=/{N;N;N;s/.*=\([.0-9]*\)\([a-z][a-z]*\)\n.*\n.*\npkgrel=\(.*\)/\1.\2-\3/p}' \
 		-e '/^pkgver=/{N;s/.*=\([0-9].*\)\npkgrel=\(.*\)/\1-\2/p}' \
 		<PKGBUILD)"
 	test -n "$pkgver" ||
