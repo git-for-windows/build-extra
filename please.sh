@@ -144,6 +144,7 @@ mount_sdks () { #
 set_package () {
 	package="$1"
 	extra_packages=
+	extra_makepkg_opts=--nocheck
 	case "$package" in
 	git-extra)
 		type=MINGW
@@ -185,6 +186,16 @@ set_package () {
 	openssh)
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
+	openssl)
+		type=MSYS
+		extra_packages="libopenssl openssl-devel"
+		pkgpath=/usr/src/MSYS2-packages/$package
+		extra_makepkg_opts=--nocheck
+		;;
+	mingw-w64-openssl)
+		type=MINGW
+		pkgpath=/usr/src/MINGW-packages/$package
 		;;
 	*)
 		die "Unknown package: %s\n" "$package"
@@ -341,7 +352,8 @@ pkg_build () {
 			'cd '"$pkgpath"' &&
 			 export MSYSTEM=MSYS &&
 			 export PATH=/usr/bin:/opt/bin:$PATH &&
-			 MAKEFLAGS=-j5 makepkg -s --noconfirm &&
+			 MAKEFLAGS=-j5 makepkg -s --noconfirm \
+				'"$extra_makepkg_opts"' &&
 			 makepkg --allsource' ||
 		die "%s: could not build\n" "$sdk/$pkgpath"
 
