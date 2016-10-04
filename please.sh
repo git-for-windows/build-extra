@@ -338,7 +338,8 @@ pkg_build () {
 		fi
 
 		"$sdk/git-cmd" --command=usr\\bin\\sh.exe -l -c \
-			'export MSYSTEM=MSYS &&
+			'cd '"$pkgpath"' &&
+			 export MSYSTEM=MSYS &&
 			 export PATH=/usr/bin:/opt/bin:$PATH &&
 			 MAKEFLAGS=-j5 makepkg -s --noconfirm &&
 			 makepkg --allsource' ||
