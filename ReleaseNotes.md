@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * The speed of the SHA-1 calculation was improved by [using OpenSSL's routines](https://github.com/git-for-windows/git/pull/915) which leverages features of current Intel hardware.
+* The `git reset` command [learned the (still experimental) `--stdin` option](https://github.com/git-for-windows/git/commit/6a6c0e84720ab5a374b61341ba9ab645ffafd35f).
 
 ## Changes since Git for Windows v2.10.0 (September 3rd 2016)
 
