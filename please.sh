@@ -104,17 +104,25 @@ sync () { #
 		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe -Sy ||
 		die "Cannot run pacman in %s\n" "$sdk"
 
-		for p in bash pacman "msys2-runtime msys2-runtime-devel"
-		do
-			"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe \
-				-S --noconfirm --needed $p ||
-			die "Could not update %s in %s\n" "$p" "$sdk"
-		done
+		PATH="$sdk/usr/bin:$PATH" \
+		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\pacman.exe \
+			-Su --noconfirm ||
+		die "Could not update packages in %s\n" "$sdk"
 
-		PATH="$sdk/bin:$PATH" \
-		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\sh.exe -l \
-			-c 'pacman -Su --noconfirm' ||
-		die "Cannot update packages in %s\n" "$sdk"
+		case "$(tail -c 16384 "$sdk/var/log/pacman.log" |
+			grep '\[PACMAN\] starting .* system upgrade' |
+			tail -n 1)" in
+		*"full system upgrade")
+			;; # okay
+		*)
+			# only "core" packages were updated, update again
+			PATH="$sdk/usr/bin:$PATH" \
+			"$sdk/git-cmd.exe" --cd="$sdk" \
+				--command=usr\\bin\\sh.exe -l \
+				-c 'pacman -Su --noconfirm' ||
+			die "Cannot update packages in %s\n" "$sdk"
+			;;
+		esac
 
 		# git-extra rewrites some files owned by other packages,
 		# therefore it has to be (re-)installed now
