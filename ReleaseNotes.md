@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Git for Windows [can now be built easily with Visual C++ 2015](https://github.com/git-for-windows/git/pull/773).
+* Comes with Git Credential Manager [v1.8.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.8.0).
 
 ## Changes since Git for Windows v2.10.1 (October 4th 2016)
 
