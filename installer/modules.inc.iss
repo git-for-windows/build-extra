@@ -51,7 +51,7 @@ type
 
     ProcessEntry=record
         ID:DWORD;
-        Path,Name:String;
+        Name:String;
         Restartable:Boolean;
     end;
     ProcessList=array of ProcessEntry;
@@ -256,7 +256,6 @@ begin
                             i:=GetArrayLength(Processes);
                             SetArrayLength(Processes,i+1);
                             Processes[i].ID:=ProcEntry.th32ProcessID;
-                            Processes[i].Path:=ProcPath;
                             Processes[i].Name:=GetFileDescription(ProcPath);
                             if Length(Processes[i].Name)=0 then begin
                                 Processes[i].Name:=ExtractFileName(ProcPath);
@@ -395,7 +394,6 @@ begin
                             i:=GetArrayLength(Processes);
                             SetArrayLength(Processes,i+1);
                             Processes[i].ID:=ProcList[p];
-                            Processes[i].Path:=Path;
                             Processes[i].Name:=GetFileDescription(Path);
                             if Length(Processes[i].Name)=0 then begin
                                 Processes[i].Name:=ExtractFileName(Path);
@@ -501,7 +499,6 @@ var
     Name:SessionKey;
     Apps:array of RM_UNIQUE_PROCESS;
     Services:TArrayOfString;
-    Process:THandle;
     Path:String;
     PathLength:DWORD;
     Needed,Have,i:UINT;
@@ -530,21 +527,11 @@ begin
 
         if (Success=ERROR_SUCCESS) and (Needed>0) then begin
             for i:=0 to Needed-1 do begin
-                Process:=OpenProcess(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ,False,AppList[i].Process.dwProcessId);
-                if Process<>0 then begin
-                    SetLength(Path,MAX_PATH);
-                    PathLength:=GetModuleFileNameEx(Process,0,Path,MAX_PATH);
-                    SetLength(Path,PathLength);
-
-                    Have:=GetArrayLength(Processes);
-                    SetArrayLength(Processes,Have+1);
-                    Processes[Have].ID:=AppList[i].Process.dwProcessId;
-                    Processes[Have].Path:=Path;
-                    Processes[Have].Name:=ArrayToString(AppList[i].strAppName);
-                    Processes[Have].Restartable:=AppList[i].bRestartable;
-
-                    CloseHandle(Process);
-                end;
+                Have:=GetArrayLength(Processes);
+                SetArrayLength(Processes,Have+1);
+                Processes[Have].ID:=AppList[i].Process.dwProcessId;
+                Processes[Have].Name:=ArrayToString(AppList[i].strAppName);
+                Processes[Have].Restartable:=AppList[i].bRestartable;
             end;
             Result:=Handle;
         end;
