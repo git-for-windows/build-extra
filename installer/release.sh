@@ -5,6 +5,10 @@ die () {
 	exit 1
 }
 
+# change directory to the script's directory
+cd "$(dirname "$0")" ||
+die "Could not switch directory"
+
 force=
 inno_defines=
 skip_files=
@@ -45,10 +49,6 @@ do
 	esac
 	shift
 done
-
-# change directory to the script's directory
-cd "$(dirname "$0")" ||
-die "Could not switch directory"
 
 if test -n "$test_installer"
 then
