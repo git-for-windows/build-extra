@@ -42,6 +42,10 @@ This package contains software from a number of other projects including Bash, z
 * The installer [now logs `post-install` errors more verbosely](https://github.com/git-for-windows/build-extra/commit/8332900af09116544f1bee8d20bbfd77daf3186f).
 * A new option asks the installer [to skip installation if Git's files are in use](https://github.com/git-for-windows/build-extra/commit/410b4b13505a8a25b199f5cbad0f4afa1a698f34).
 
+### Bug Fixes
+
+* when upgrading Git for Windows, SSH agent processes [are now auto-terminated](https://github.com/git-for-windows/git/issues/920).
+
 ## Changes since Git for Windows v2.10.1 (October 4th 2016)
 
 ### New Features
