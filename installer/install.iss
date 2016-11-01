@@ -634,6 +634,16 @@ begin
         Result:=GetPreviousData(Key,Default);
 end;
 
+function ReadFileAsString(Path:String):String;
+var
+    Contents:AnsiString;
+begin
+    if not LoadStringFromFile(Path,Contents) then
+        Result:='(no output)'
+    else
+        Result:=Contents;
+end;
+
 function DetectNetFxVersion:Cardinal;
 begin
     // We are only interested in version v4.5.1 or later, therefore it
@@ -1723,8 +1733,8 @@ begin
     }
 
     Cmd:=AppDir+'\post-install.bat';
-    if not Exec(Cmd, '', AppDir, SW_HIDE, ewWaitUntilTerminated, i) then
-        LogError('Line {#__LINE__}: Unable to run post-install scripts.');
+    if not Exec(Cmd,ExpandConstant('>"{tmp}\post-install.log"'),AppDir,SW_HIDE,ewWaitUntilTerminated,i) or (i<>0) then
+        LogError('Line {#__LINE__}: Unable to run post-install scripts:'+#13+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')));
 
     {
         Restart any processes that were shut down via the Restart Manager
