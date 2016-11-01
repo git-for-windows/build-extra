@@ -1151,7 +1151,7 @@ begin
     with LblGCM do begin
         Parent:=ExtraOptionsPage.Surface;
         Caption:=
-            'The Git Credential Manager for Windows provides secure Git credential storage'+#13+'for Windows, most notably multi-factor authentication support for Visual Studio'+#13+'Team Services and GitHub. (requires .NET framework v4.5.1 or or later)';
+            'The Git Credential Manager for Windows provides secure Git credential storage'+#13+'for Windows, most notably multi-factor authentication support for Visual Studio'+#13+'Team Services and GitHub. (requires .NET framework v4.5.1 or or later).';
         Left:=ScaleX(28);
         Top:=ScaleY(104);
         Width:=ScaleX(405);
