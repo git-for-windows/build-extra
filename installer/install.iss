@@ -310,6 +310,7 @@ const
     // Extra options
     GP_FSCache        = 1;
     GP_GCM            = 2;
+    GP_Symlinks       = 3;
 
     // BindImageEx API constants.
     BIND_NO_BOUND_IMPORTS  = $00000001;
@@ -340,7 +341,7 @@ var
 
     // Wizard page and variables for the extra options.
     ExtraOptionsPage:TWizardPage;
-    RdbExtraOptions:array[GP_FSCache..GP_GCM] of TCheckBox;
+    RdbExtraOptions:array[GP_FSCache..GP_Symlinks] of TCheckBox;
 
     // Wizard page and variables for the processes page.
     SessionHandle:DWORD;
@@ -650,6 +651,29 @@ begin
   ShellExec('','https://github.com/Microsoft/Git-Credential-Manager-for-Windows','','',SW_SHOW,ewNoWait,ExitStatus);
 end;
 
+procedure OpenSymlinksWikiPage(Sender:TObject);
+var
+  ExitStatus:Integer;
+begin
+  ShellExec('','https://github.com/git-for-windows/git/wiki/Symbolic-Links','','',SW_SHOW,ewNoWait,ExitStatus);
+end;
+
+function EnableSymlinksByDefault():Boolean;
+var
+    ResultCode:Integer;
+    Output:AnsiString;
+begin
+    if IsAdminLoggedOn then begin
+        // The only way to tell whether non-admin users can create symbolic
+	// links is to try using a non-admin user.
+        Result:=False;
+	Exit;
+    end;
+
+    ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
+    Result:=DirExists(ExpandConstant('{tmp}\symbolic link'));
+end;
+
 function GetTextWidth(Text:String;Font:TFont):Integer;
 var
     DummyBitmap:TBitmap;
@@ -668,7 +692,7 @@ var
     PuTTYSessions,EnvSSH:TArrayOfString;
     LblLFOnly,LblCRLFAlways,LblCRLFCommitAsIs:TLabel;
     LblMinTTY,LblConHost:TLabel;
-    LblFSCache,LblGCM,LblGCMLink:TLabel;
+    LblFSCache,LblGCM,LblGCMLink,LblSymlinks,LblSymlinksLink:TLabel;
     BtnPlink:TButton;
     Data:String;
 begin
@@ -1158,6 +1182,55 @@ begin
         RdbExtraOptions[GP_GCM].Checked:=Data='Enabled';
     end;
 
+    // 3rd option
+    RdbExtraOptions[GP_Symlinks]:=TCheckBox.Create(ExtraOptionsPage);
+    with RdbExtraOptions[GP_Symlinks] do begin
+        Parent:=ExtraOptionsPage.Surface;
+        Caption:='Enable symbolic links';
+        Left:=ScaleX(4);
+        Top:=ScaleY(152);
+        Width:=ScaleX(405);
+        Height:=ScaleY(17);
+        Font.Style:=[fsBold];
+        TabOrder:=1;
+    end;
+    LblSymlinks:=TLabel.Create(ExtraOptionsPage);
+    with LblSymlinks do begin
+        Parent:=ExtraOptionsPage.Surface;
+        Caption:=
+            'Enable symbolic links (requires the SeCreateSymbolicLink permission).'+#13+'Please note that existing repositories are unaffected by this setting.';
+        Left:=ScaleX(28);
+        Top:=ScaleY(176);
+        Width:=ScaleX(405);
+        Height:=ScaleY(26);
+    end;
+    LblSymlinksLink:=TLabel.Create(ExtraOptionsPage);
+    with LblSymlinksLink do begin
+        Parent:=ExtraOptionsPage.Surface;
+        Caption:='symbolic links';
+        Left:=GetTextWidth('Enable ',LblSymlinks.Font)+ScaleX(28);
+        Top:=ScaleY(176);
+        Width:=ScaleX(405);
+        Height:=ScaleY(13);
+        Font.Color:=clBlue;
+        Font.Style:=[fsUnderline];
+        Cursor:=crHand;
+        OnClick:=@OpenSymlinksWikiPage;
+    end;
+
+    // Restore the settings chosen during a previous install, or auto-detect
+    // by running `mklink` (unless started as administrator, in which case that
+    // test would be meaningless).
+    Data:=ReplayChoice('Enable Symlinks','Auto');
+    if Data='Auto' then begin
+        if EnableSymlinksByDefault() then
+	    Data:='Enabled'
+	else
+	    Data:='Disabled';
+    end;
+
+    RdbExtraOptions[GP_Symlinks].Checked:=Data='Enabled';
+
 
     (*
      * Create a custom page for finding the processes that lock a module.
@@ -1600,6 +1673,14 @@ begin
             LogError('Unable to enable the extra option: ' + Cmd);
     end;
 
+    if RdbExtraOptions[GP_Symlinks].checked then
+        Cmd:='core.symlinks true'
+    else
+        Cmd:='core.symlinks false';
+    if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config -f config ' + Cmd,
+                ProgramData + '\Git', SW_HIDE, ewWaitUntilTerminated, i) then
+        LogError('Unable to enable the extra option: ' + Cmd);
+
     {
         Modify the environment
 
@@ -1787,6 +1868,11 @@ begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Performance Tweaks FSCache',Data);
+    Data:='Disabled';
+    if RdbExtraOptions[GP_Symlinks].Checked then begin
+        Data:='Enabled';
+    end;
+    RecordChoice(PreviousDataKey,'Enable Symlinks',Data);
 
     Path:=ExpandConstant('{app}\etc\install-options.txt');
     if not SaveStringToFile(Path,ChosenOptions,False) then
