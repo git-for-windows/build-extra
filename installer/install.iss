@@ -1549,7 +1549,7 @@ var
 begin
     if CurStep=ssInstall then begin
 #ifdef DEBUG_WIZARD_PAGE
-        Abort();
+        ExitEarlyWithSuccess();
 #endif
         // Shutdown locking processes just before the actual installation starts.
         if SessionHandle>0 then try
