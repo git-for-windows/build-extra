@@ -37,9 +37,14 @@ const
     INVALID_HANDLE_VALUE = -1;
 
     // For OpenProcess().
+    PROCESS_TERMINATE         = $0001;
     PROCESS_VM_READ           = $0010;
     PROCESS_QUERY_INFORMATION = $0400;
+    SYNCHRONIZE               = $00100000;
 
+    // For WaitForSingleObject().
+    WAIT_TIMEOUT = $00000102;
+    WAIT_FAILED  = $ffffffff;
 type
     HMODULE   = DWORD;
     LONG      = Longint;
@@ -51,8 +56,8 @@ type
 
     ProcessEntry=record
         ID:DWORD;
-        Path,Name:String;
-        Restartable:Boolean;
+        Name:String;
+        Restartable,ToTerminate:Boolean;
     end;
     ProcessList=array of ProcessEntry;
 
@@ -256,7 +261,6 @@ begin
                             i:=GetArrayLength(Processes);
                             SetArrayLength(Processes,i+1);
                             Processes[i].ID:=ProcEntry.th32ProcessID;
-                            Processes[i].Path:=ProcPath;
                             Processes[i].Name:=GetFileDescription(ProcPath);
                             if Length(Processes[i].Name)=0 then begin
                                 Processes[i].Name:=ExtractFileName(ProcPath);
@@ -395,7 +399,6 @@ begin
                             i:=GetArrayLength(Processes);
                             SetArrayLength(Processes,i+1);
                             Processes[i].ID:=ProcList[p];
-                            Processes[i].Path:=Path;
                             Processes[i].Name:=GetFileDescription(Path);
                             if Length(Processes[i].Name)=0 then begin
                                 Processes[i].Name:=ExtractFileName(Path);
@@ -501,7 +504,6 @@ var
     Name:SessionKey;
     Apps:array of RM_UNIQUE_PROCESS;
     Services:TArrayOfString;
-    Process:THandle;
     Path:String;
     PathLength:DWORD;
     Needed,Have,i:UINT;
@@ -530,21 +532,13 @@ begin
 
         if (Success=ERROR_SUCCESS) and (Needed>0) then begin
             for i:=0 to Needed-1 do begin
-                Process:=OpenProcess(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ,False,AppList[i].Process.dwProcessId);
-                if Process<>0 then begin
-                    SetLength(Path,MAX_PATH);
-                    PathLength:=GetModuleFileNameEx(Process,0,Path,MAX_PATH);
-                    SetLength(Path,PathLength);
-
-                    Have:=GetArrayLength(Processes);
-                    SetArrayLength(Processes,Have+1);
-                    Processes[Have].ID:=AppList[i].Process.dwProcessId;
-                    Processes[Have].Path:=Path;
-                    Processes[Have].Name:=ArrayToString(AppList[i].strAppName);
-                    Processes[Have].Restartable:=AppList[i].bRestartable;
-
-                    CloseHandle(Process);
-                end;
+                Have:=GetArrayLength(Processes);
+                SetArrayLength(Processes,Have+1);
+                Processes[Have].ID:=AppList[i].Process.dwProcessId;
+                Processes[Have].Name:=ArrayToString(AppList[i].strAppName);
+                Processes[Have].Restartable:=AppList[i].bRestartable;
+                if (Pos('ssh-add.exe',Processes[Have].Name)>0) or (Pos('ssh-agent.exe',Processes[Have].Name)>0) or (Pos('ssh-pageant.exe',Processes[Have].Name)>0) then
+		    Processes[Have].ToTerminate:=True;
             end;
             Result:=Handle;
         end;
@@ -665,5 +659,44 @@ begin
             RegisterServer(Is64BitInstallMode,CurFile,False);
         end;
         Result:=True;
+    end;
+end;
+
+function TerminateProcess(hProcess:THandle;uExitCode:UINT):Boolean;
+external 'TerminateProcess@Kernel32.dll';
+
+function WaitForSingleObject(hHandle:THandle;dwMilliseconds:DWORD):DWORD;
+external 'WaitForSingleObject@Kernel32.dll';
+
+function IsProcessRunning(dwProcessId:DWORD):Boolean;
+var
+    ProcList:IdList;
+    i:Integer;
+begin
+    if not GetProcessList(ProcList) then
+        Exit;
+    for i:=0 to GetArraylength(ProcList)-1 do
+        if dwProcessId=ProcList[i] then begin
+	    Result:=True;
+	    Exit;
+	end;
+    Result:=False;
+end;
+
+function TerminateProcessByID(dwProcessId:DWORD):Boolean;
+var
+    Process:THandle;
+    WaitResult:DWORD;
+begin
+    Process:=OpenProcess(SYNCHRONIZE or PROCESS_TERMINATE,False,dwProcessId);
+    if Process=0 then
+	Result:=not IsProcessRunning(dwProcessId)
+    else begin
+        Result:=TerminateProcess(Process,3)
+	if not Result then
+	    Exit;
+	WaitResult:=WaitForSingleObject(Process,5000);
+        Result:=(WaitResult<>WAIT_TIMEOUT) and (WaitResult<>WAIT_FAILED);
+	CloseHandle(Process);
     end;
 end;

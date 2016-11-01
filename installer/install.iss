@@ -469,6 +469,8 @@ begin
             Caption:=Processes[i].Name+' (PID '+IntToStr(Processes[i].ID);
             if Processes[i].Restartable then begin
                 Caption:=Caption+', closing is optional';
+            end else if Processes[i].ToTerminate then begin
+                Caption:=Caption+', will be terminated';
             end else begin
                 Caption:=Caption+', closing is required';
                 ManualClosingRequired:=True;
@@ -1211,10 +1213,6 @@ end;
 
 function ShouldSkipPage(PageID:Integer):Boolean;
 begin
-#ifdef DEBUG_WIZARD_PAGE
-    Result:=PageID<>DebugWizardPage
-    Exit;
-#endif
     if (ProcessesPage<>NIL) and (PageID=ProcessesPage.ID) then begin
         // This page is only reached forward (by pressing "Next", never by pressing "Back").
         RefreshProcessList(NIL);
@@ -1222,6 +1220,10 @@ begin
     end else begin
         Result:=False;
     end;
+#ifdef DEBUG_WIZARD_PAGE
+    Result:=PageID<>DebugWizardPage
+    Exit;
+#endif
 end;
 
 procedure CurPageChanged(CurPageID:Integer);
@@ -1283,7 +1285,14 @@ begin
         // It would have been nicer to just disable the "Next" button, but the
         // WizardForm exports the button just read-only.
         for i:=0 to GetArrayLength(Processes)-1 do begin
-            if not Processes[i].Restartable then begin
+            if Processes[i].ToTerminate then begin
+	        if not TerminateProcessByID(Processes[i].ID) then begin
+                    SuppressibleMsgBox('Failed to terminate '+Processes[i].Name+' (pid '+IntToStr(Processes[i].ID)+')'+#13+'Please terminate it manually and press the "Refresh" button.',mbCriticalError,MB_OK,IDOK);
+                    Result:=False;
+                    Exit;
+                end;
+		    ;
+            end else if not Processes[i].Restartable then begin
                 SuppressibleMsgBox(
                     'Setup cannot continue until you close at least those applications in the list that are marked as "closing is required".'
                 ,   mbCriticalError
