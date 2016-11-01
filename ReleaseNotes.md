@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * when upgrading Git for Windows, SSH agent processes [are now auto-terminated](https://github.com/git-for-windows/git/issues/920).
+* When trying to install/upgrade on a Windows version that is no longer supported, [we now refuse to do so](https://github.com/git-for-windows/git/issues/928).
 
 ## Changes since Git for Windows v2.10.1 (October 4th 2016)
 
