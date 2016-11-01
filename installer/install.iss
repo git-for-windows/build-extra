@@ -581,6 +581,15 @@ begin
     end;
 end;
 
+procedure ExitProcess(uExitCode:Integer);
+external 'ExitProcess@kernel32.dll stdcall';
+
+procedure ExitEarlyWithSuccess();
+begin
+    DelTree(ExpandConstant('{tmp}'),True,True,True);
+    ExitProcess(0);
+end;
+
 function InitializeSetup:Boolean;
 var
     CurrentVersion,PreviousVersion:String;
@@ -1246,6 +1255,7 @@ function NextButtonClick(CurPageID:Integer):Boolean;
 var
     i:Integer;
     Version:TWindowsVersion;
+    Msg:String;
 begin
     // On a silent install, if your NextButtonClick function returns False
     // prior to installation starting, Setup will exit automatically.
@@ -1283,6 +1293,14 @@ begin
                 end;
 		    ;
             end else if not Processes[i].Restartable then begin
+	        if WizardSilent() and (ParamIsSet('SKIPIFINUSE') or ParamIsSet('VSNOTICE')) then begin
+		    Msg:='Skipping installation because the process '+Processes[i].Name+' (pid '+IntToStr(Processes[i].ID)+') is running, using Git for Windows'+#39+' files.';
+		    if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
+		        LogError(Msg)
+		    else
+		        Log(Msg);
+		    ExitEarlyWithSuccess();
+		end;
                 SuppressibleMsgBox(
                     'Setup cannot continue until you close at least those applications in the list that are marked as "closing is required".'
                 ,   mbCriticalError
