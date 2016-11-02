@@ -593,7 +593,7 @@ end;
 
 function InitializeSetup:Boolean;
 var
-    CurrentVersion,PreviousVersion:String;
+    CurrentVersion,PreviousVersion,Msg:String;
     Version:TWindowsVersion;
     ErrorCode:Integer;
 begin
@@ -618,8 +618,18 @@ begin
 #if APP_VERSION!='0-test'
     if Result and not ParamIsSet('ALLOWDOWNGRADE') and RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousVersion) then begin
         CurrentVersion:=ExpandConstant('{#APP_VERSION}');
-        if (IsDowngrade(CurrentVersion,PreviousVersion)) and (SuppressibleMsgBox('Git for Windows '+PreviousVersion+' is currently installed.'+#13+'Do you really want to downgrade to Git for Windows '+CurrentVersion+'?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO) then
-            Result:=False;
+        if (IsDowngrade(CurrentVersion,PreviousVersion)) then begin
+            if WizardSilent() and (ParamIsSet('SKIPDOWNGRADE') or ParamIsSet('VSNOTICE')) then begin
+                Msg:='Skipping downgrade from '+PreviousVersion+' to '+CurrentVersion;
+                if ParamIsSet('SKIPDOWNGRADE') or (ExpandConstant('{log}')='') then
+                    LogError(Msg)
+                else
+                    Log(Msg);
+                ExitEarlyWithSuccess();
+            end;
+            if SuppressibleMsgBox('Git for Windows '+PreviousVersion+' is currently installed.'+#13+'Do you really want to downgrade to Git for Windows '+CurrentVersion+'?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO then
+                Result:=False;
+        end;
     end;
 #endif
 end;
