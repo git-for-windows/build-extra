@@ -34,6 +34,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.10.1(2) (October 13th 2016)
 
+Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for windows installer for that version).
+
 ### New Features
 
 * Comes with [Git v2.10.2](https://github.com/git/git/blob/v2.10.2/Documentation/RelNotes/2.10.2.txt).
