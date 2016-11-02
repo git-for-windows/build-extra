@@ -3,7 +3,7 @@
 _realname="git-credential-manager"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.8.0
+pkgver=1.8.1
 pkgrel=1
 pkgdesc="Credential Manager for Git for Windows"
 arch=('any')
@@ -15,15 +15,16 @@ groups=('VCS')
 
 source=("${zip_url}" "$src_zip_url")
 
-sha256sums=('15c40f54083fc869dcdbf671ad716c80cac561451e0572c9d2dcfcc5148109e1'
-            'c1003affc25b4b44f9d6584a4a2f91ae80d79b49d85e6a6a8b1350e963800c33')
+sha256sums=('9c5f467a4c358a7176c339f70b93f0c20f80a489fc20e0cada15ca863f6625b1'
+            'SKIP')
 
 package() {
   builddir=build-${MINGW_CHOST}
   prefix="$pkgdir/${MINGW_PREFIX}"
+  srcdir2=${srcdir}/"Git Credential Manager v${pkgver}"
   install -d -m755 "${prefix}"/libexec/git-core
-  install -m755 $srcdir/*.{dll,exe} "${prefix}"/libexec/git-core
+  install -m755 "$srcdir2"/*.{dll,exe} "${prefix}"/libexec/git-core
   install -d -m755 "${prefix}"/doc/git-credential-manager
-  install -m644 $srcdir/{README.md,LICENSE.txt} \
+  install -m644 "$srcdir2"/{README.md,LICENSE.txt} \
     "${prefix}"/doc/git-credential-manager
 }
