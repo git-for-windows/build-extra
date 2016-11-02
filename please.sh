@@ -205,6 +205,15 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
+	curl)
+		type=MSYS
+		extra_packages="libcurl libcurl-devel"
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
+	mingw-w64-curl)
+		type=MINGW
+		pkgpath=/usr/src/MINGW-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
