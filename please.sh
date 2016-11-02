@@ -1529,7 +1529,16 @@ publish () { #
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git" &&
 	nextver=v"$version" &&
 	(cd "$git_src_dir" &&
-	 git push git-for-windows "$nextver") ||
+	 git push git-for-windows "$nextver" &&
+	 mirrors="$( git config --get-regexp 'remote\..*\.releasemirror' |
+		sed -n 's/^remote.\(.*\).releasemirror true$/\1/p')" &&
+	 if test -n "$mirrors"
+	 then
+		for remote in $mirrors
+		do
+			git push $remote "$nextver^{commit}:master" "$nextver"
+		done
+	 fi) ||
 	die "Could not push tag %s in %s\n" "$nextver" "$git_src_dir"
 
 	url=https://api.github.com/repos/git-for-windows/git/releases
