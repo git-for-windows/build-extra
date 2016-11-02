@@ -1071,6 +1071,8 @@ tag_git () { #
 	(cd "$git_src_dir" &&
 	 git tag -m "$tag_message" -a "$nextver" git-for-windows/master) ||
 	die "Could not tag %s in %s\n" "$nextver" "$git_src_dir"
+
+	echo "Created tag $nextver" >&2
 }
 
 test_git () { # <bitness>
