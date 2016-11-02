@@ -1566,7 +1566,8 @@ publish () { #
 	echo "Updating download-stats.sh..." >&2
 	(cd "$sdk64/usr/src/build-extra" &&
 	 ./download-stats.sh --update &&
-	 git commit -a -s -m "download-stats: new Git for Windows version" &&
+	 git commit -s -m "download-stats: new Git for Windows version" \
+		./download-stats.sh &&
 	 git push origin HEAD) ||
 	die "Could not update download-stats.sh\n"
 
