@@ -1525,7 +1525,8 @@ publish () { #
 	die "Could not upload files\n"
 
 	"$sdk64/usr/src/build-extra/nuget/nuget.exe" \
-		push "$HOME"/GitForWindows.$ver.nupkg ||
+		push -NonInteractive -Verbosity detailed -Timeout 3000 \
+		"$HOME"/GitForWindows.$ver.nupkg ||
 	die "Could not upload %s\n" "$HOME"/GitForWindows.$ver.nupkg
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git" &&
