@@ -1489,7 +1489,7 @@ publish () { #
 
 	(cd "$sdk64/usr/src/build-extra" &&
 	 require_push_url &&
-	 sdk= pkgpath=$PWD ff_master) ||
+echo	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not prepare build-extra for download-stats update\n"
 
 	echo "Preparing release message"
@@ -1512,7 +1512,7 @@ publish () { #
 	quoted="$(echo "$body" |
 		sed -e ':1;${s/[\\"]/\\&/g;s/\n/\\n/g};N;b1')"
 
-	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
+echo	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
 		--repo=git "v$version" \
 		"$HOME"/Git-"$ver"-64-bit.exe \
 		"$HOME"/Git-"$ver"-32-bit.exe \
@@ -1524,7 +1524,7 @@ publish () { #
 		"$HOME"/Git-"$ver"-32-bit.tar.bz2 ||
 	die "Could not upload files\n"
 
-	"$sdk64/usr/src/build-extra/nuget/nuget.exe" \
+echo	"$sdk64/usr/src/build-extra/nuget/nuget.exe" \
 		push "$HOME"/GitForWindows.$ver.nupkg ||
 	die "Could not upload %s\n" "$HOME"/GitForWindows.$ver.nupkg
 
