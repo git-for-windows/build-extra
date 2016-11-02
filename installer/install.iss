@@ -1860,8 +1860,12 @@ begin
     }
 
     Cmd:=AppDir+'\post-install.bat';
-    if not Exec(Cmd,ExpandConstant('>"{tmp}\post-install.log"'),AppDir,SW_HIDE,ewWaitUntilTerminated,i) or (i<>0) then
-        LogError('Line {#__LINE__}: Unable to run post-install scripts:'+#13+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')));
+    if not Exec(Cmd,ExpandConstant('>"{tmp}\post-install.log"'),AppDir,SW_HIDE,ewWaitUntilTerminated,i) or (i<>0) then begin
+        if FileExists(ExpandConstant('>"{tmp}\post-install.log"')) then
+            LogError('Line {#__LINE__}: Unable to run post-install scripts:'+#13+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')))
+	else
+	    Log('post-install output:'+#13+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')));
+    end;
 
     {
         Restart any processes that were shut down via the Restart Manager
