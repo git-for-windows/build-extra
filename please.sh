@@ -1524,9 +1524,15 @@ publish () { #
 		"$HOME"/Git-"$ver"-32-bit.tar.bz2 ||
 	die "Could not upload files\n"
 
-	"$sdk64/usr/src/build-extra/nuget/nuget.exe" \
-		push -NonInteractive -Verbosity detailed -Timeout 3000 \
-		"$HOME"/GitForWindows.$ver.nupkg ||
+	count=0
+	while test $count -lt 5
+	do
+		"$sdk64/usr/src/build-extra/nuget/nuget.exe" \
+			push -NonInteractive -Verbosity detailed -Timeout 3000 \
+			"$HOME"/GitForWindows.$ver.nupkg && break
+		count=$(($count+1))
+	done
+	test $count -lt 5 ||
 	die "Could not upload %s\n" "$HOME"/GitForWindows.$ver.nupkg
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git" &&
