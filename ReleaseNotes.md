@@ -40,6 +40,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 
 * Comes with [Git v2.10.2](https://github.com/git/git/blob/v2.10.2/Documentation/RelNotes/2.10.2.txt).
 * Comes with Git Credential Manager [v1.8.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.8.0).
+* Comes with cURL [v7.51.0](https://github.com/curl/curl/releases/tag/curl-7_51_0).
 * Git for Windows [can now be built easily with Visual C++ 2015](https://github.com/git-for-windows/git/pull/773).
 * The installer [now logs `post-install` errors more verbosely](https://github.com/git-for-windows/build-extra/commit/8332900af09116544f1bee8d20bbfd77daf3186f).
 * A new option asks the installer [to skip installation if Git's files are in use](https://github.com/git-for-windows/build-extra/commit/410b4b13505a8a25b199f5cbad0f4afa1a698f34).
