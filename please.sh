@@ -1581,6 +1581,11 @@ publish () { #
 		"Ciao," \
 		"$(git var GIT_COMMITTER_IDENT | sed -e 's/ .*//')" \
 		> "$HOME/announce-$ver"
+
+	test -z "$(git config alias.sendannouncementmail)" ||
+	git sendAnnouncementMail "$HOME/announce-$ver" ||
+	echo "error: could not send announcement" >&2
+
 	echo "Announcement saved as ~/announcement-$ver" >&2
 }
 
