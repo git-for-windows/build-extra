@@ -1593,6 +1593,8 @@ publish () { #
 		"To: git-for-windows@googlegroups.com, git@vger.kernel.org" \
 		"Subject: [ANNOUNCE] Git for Windows $displayver" \
 		"Content-Type: text/plain; charset=UTF-8" \
+		"Content-Transfer-Encoding: 8bit" \
+		"MIME-Version: 1.0" \
 		"Fcc: Sent" \
 		"$prefix" \
 		"$rendered" \
