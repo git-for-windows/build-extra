@@ -185,6 +185,7 @@ etc/profile.d/lang.sh
 etc/bash.bash_logout
 etc/bash.bashrc
 etc/fstab
+etc/msystem
 etc/nsswitch.conf
 mingw$BITNESS/etc/gitconfig
 usr/bin/dash.exe
