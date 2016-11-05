@@ -856,7 +856,7 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
-prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>] <revision>
+prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directory> | --output=<directory>] <revision>
 	mode=installer
 	output=
 	force_tag=
@@ -864,8 +864,8 @@ prerelease () { # [--mingit] [--clean-output=<directory> | --output=<directory>]
 	--force-tag)
 		force_tag=-f
 		;;
-	--mingit)
-		mode=mingit
+	--installer|--portable|--mingit)
+		mode=${1#--}
 		;;
 	--output=*)
 		output="--output='$(cygpath -am "${1#*=}")'" ||
