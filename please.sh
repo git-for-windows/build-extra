@@ -861,8 +861,18 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	mode2=
 	output=
 	force_tag=
+	force_version=
 	while case "$1" in
 	--force-tag)
+		force_tag=-f
+		;;
+	--force-version)
+		shift
+		force_version="$1"
+		force_tag=-f
+		;;
+	--force-version=*)
+		force_version="${1#--}"
 		force_tag=-f
 		;;
 	--installer|--portable|--mingit)
@@ -901,13 +911,23 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not update build-extra\n"
 
-	pkgver="$(git describe --match 'v[0-9]*' "$1" | tr - .)"
-	tag_name=prerelease-$pkgver
-	test -n "$tag_name" ||
-	die "Could not find revision '%s'\n" "$1"
+	if test -n "$force_version"
+	then
+		tag_name="v$force_version"
+		pkgver="$(echo "$force_version" | tr - .)"
 
-	test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
-	die "The revision '%s' yields unusable version '%s'\n" "$1" "$pkgver"
+		test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
+		die "Unusable version '%s'\n" "$force_version"
+	else
+		pkgver="$(git describe --match 'v[0-9]*' "$1" | tr - .)"
+		tag_name=prerelease-$pkgver
+		test -n "$tag_name" ||
+		die "Could not find revision '%s'\n" "$1"
+
+		test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
+		die "The revision '%s' yields unusable version '%s'\n" \
+			"$1" "$pkgver"
+	fi
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	require_git_src_dir
