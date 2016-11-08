@@ -858,6 +858,7 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 
 prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directory> | --output=<directory>] <revision>
 	mode=installer
+	mode2=
 	output=
 	force_tag=
 	while case "$1" in
@@ -866,6 +867,10 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		;;
 	--installer|--portable|--mingit)
 		mode=${1#--}
+		;;
+	--installer+portable)
+		mode=installer
+		mode2=portable
 		;;
 	--output=*)
 		output="--output='$(cygpath -am "${1#*=}")'" ||
@@ -1030,6 +1035,12 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 				/usr/src/build-extra/ReleaseNotes.md &&
 			/usr/src/build-extra/'"$mode"'/release.sh \
 				'"$output"' "prerelease-'"${pkgver#v}"'" &&
+			if test -n "'$mode2'"
+			then
+				/usr/src/build-extra/'"$mode2"'/release.sh \
+					'"$output"' \
+					"prerelease-'"${pkgver#v}"'"
+			fi &&
 			(cd /usr/src/build-extra &&
 			 git diff -- ReleaseNotes.md | git apply -R) &&
 			eval "$postcmd"' ||
