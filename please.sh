@@ -933,10 +933,14 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	require_git_src_dir
 
 	skip_makepkg=
+	force_makepkg=
 	pkgprefix="$git_src_dir/../../mingw-w64"
 	pkgsuffix="${pkgver#v}-1-any.pkg.tar.xz"
 	if test -f "${pkgprefix}-i686-git-doc-man-${pkgsuffix}" &&
-		test -f "${pkgprefix}-x86_64-git-doc-man-${pkgsuffix}"
+		test -f "${pkgprefix}-x86_64-git-doc-man-${pkgsuffix}" &&
+		test "$(git rev-parse --verify "$1"^{commit})" = \
+			"$(git -C "$git_src_dir" rev-parse --verify \
+				"$tag_name"^{commit})"
 	then
 		echo "Skipping makepkg: already built packages" >&2
 		skip_makepkg=t
@@ -948,6 +952,8 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		git push --force "$git_src_dir" "refs/tags/$tag_name" ||
 		die "Could not push tag '%s' to '%s'\n" \
 			"$tag_name" "$git_src_dir"
+
+		force_makepkg=--force
 	else
 		! git rev-parse --verify -q "$tag_name" 2>/dev/null ||
 		die "Tag '%s' already exists\n" "$tag_name"
@@ -999,6 +1005,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 			MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
 			'"$extra"' \
 			makepkg-mingw -s --noconfirm '"$force_tag"' \
+				'"$force_makepkg"' \
 				-p prerelease-'"$pkgver".pkgbuild ||
 		die "%s: could not build '%s'\n" "$git_src_dir" "$pkgver"
 
