@@ -858,14 +858,29 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 
 prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directory> | --output=<directory>] <revision>
 	mode=installer
+	mode2=
 	output=
 	force_tag=
+	force_version=
 	while case "$1" in
 	--force-tag)
 		force_tag=-f
 		;;
+	--force-version)
+		shift
+		force_version="$1"
+		force_tag=-f
+		;;
+	--force-version=*)
+		force_version="${1#--}"
+		force_tag=-f
+		;;
 	--installer|--portable|--mingit)
 		mode=${1#--}
+		;;
+	--installer+portable)
+		mode=installer
+		mode2=portable
 		;;
 	--output=*)
 		output="--output='$(cygpath -am "${1#*=}")'" ||
@@ -896,22 +911,36 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not update build-extra\n"
 
-	pkgver="$(git describe --match 'v[0-9]*' "$1" | tr - .)"
-	tag_name=prerelease-$pkgver
-	test -n "$tag_name" ||
-	die "Could not find revision '%s'\n" "$1"
+	if test -n "$force_version"
+	then
+		tag_name="v$force_version"
+		pkgver="$(echo "$force_version" | tr - .)"
 
-	test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
-	die "The revision '%s' yields unusable version '%s'\n" "$1" "$pkgver"
+		test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
+		die "Unusable version '%s'\n" "$force_version"
+	else
+		pkgver="$(git describe --match 'v[0-9]*' "$1" | tr - .)"
+		tag_name=prerelease-$pkgver
+		test -n "$tag_name" ||
+		die "Could not find revision '%s'\n" "$1"
+
+		test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
+		die "The revision '%s' yields unusable version '%s'\n" \
+			"$1" "$pkgver"
+	fi
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	require_git_src_dir
 
 	skip_makepkg=
+	force_makepkg=
 	pkgprefix="$git_src_dir/../../mingw-w64"
 	pkgsuffix="${pkgver#v}-1-any.pkg.tar.xz"
 	if test -f "${pkgprefix}-i686-git-doc-man-${pkgsuffix}" &&
-		test -f "${pkgprefix}-x86_64-git-doc-man-${pkgsuffix}"
+		test -f "${pkgprefix}-x86_64-git-doc-man-${pkgsuffix}" &&
+		test "$(git rev-parse --verify "$1"^{commit})" = \
+			"$(git -C "$git_src_dir" rev-parse --verify \
+				"$tag_name"^{commit})"
 	then
 		echo "Skipping makepkg: already built packages" >&2
 		skip_makepkg=t
@@ -923,6 +952,8 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		git push --force "$git_src_dir" "refs/tags/$tag_name" ||
 		die "Could not push tag '%s' to '%s'\n" \
 			"$tag_name" "$git_src_dir"
+
+		force_makepkg=--force
 	else
 		! git rev-parse --verify -q "$tag_name" 2>/dev/null ||
 		die "Tag '%s' already exists\n" "$tag_name"
@@ -974,6 +1005,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 			MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
 			'"$extra"' \
 			makepkg-mingw -s --noconfirm '"$force_tag"' \
+				'"$force_makepkg"' \
 				-p prerelease-'"$pkgver".pkgbuild ||
 		die "%s: could not build '%s'\n" "$git_src_dir" "$pkgver"
 
@@ -1030,6 +1062,12 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 				/usr/src/build-extra/ReleaseNotes.md &&
 			/usr/src/build-extra/'"$mode"'/release.sh \
 				'"$output"' "prerelease-'"${pkgver#v}"'" &&
+			if test -n "'$mode2'"
+			then
+				/usr/src/build-extra/'"$mode2"'/release.sh \
+					'"$output"' \
+					"prerelease-'"${pkgver#v}"'"
+			fi &&
 			(cd /usr/src/build-extra &&
 			 git diff -- ReleaseNotes.md | git apply -R) &&
 			eval "$postcmd"' ||
