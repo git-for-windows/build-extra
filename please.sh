@@ -920,6 +920,10 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	test $# = 1 ||
 	die "Expected 1 argument, got $#: %s\n" "$*"
 
+	ensure_valid_login_shell 32 &&
+	ensure_valid_login_shell 64 ||
+	die "Could not ensure valid login shell\n"
+
 	sdk="$sdk64"
 
 	build_extra_dir="$sdk32/usr/src/build-extra"
