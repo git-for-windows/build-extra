@@ -701,6 +701,9 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 	test $# = 1 ||
 	die "Expected 1 argument, got $#: %s\n" "$*"
 
+	ensure_valid_login_shell 64 ||
+	die "Could not ensure valid login shell\n"
+
 	test tt != "$skip_rebase$continue_rebase" ||
 	die "Cannot continue *and* skip\n"
 
