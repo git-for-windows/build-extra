@@ -593,9 +593,24 @@ require_git_src_dir () {
 	then
 		if test ! -d "${git_src_dir%/src/git}"
 		then
-			cd "${git_src_dir%/*/src/git}" &&
-			git fetch &&
-			git checkout -t origin/master ||
+			mingw_packages_dir="${git_src_dir%/*/src/git}"
+			if test ! -d "$mingw_packages_dir"
+			then
+				case "$mingw_packages_dir" in
+				*/MINGW-packages)
+					o=https://github.com/git-for-windows &&
+					git -C "${mingw_packages_dir%/*}" \
+						clone $o/MINGW-packages
+					;;
+				*)
+					die "Do not know how to clone %s\n" \
+						"$mingw_packages_dir"
+					;;
+				esac
+			fi &&
+			git -C "$mingw_packages_dir" fetch &&
+			git -C "$mingw_packages_dir" \
+				checkout -t origin/master ||
 			die "Could not check out %s\n" \
 				"${git_src_dir%*/src/git}"
 		fi
