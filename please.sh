@@ -600,19 +600,22 @@ require_git_src_dir () {
 				*/MINGW-packages)
 					o=https://github.com/git-for-windows &&
 					git -C "${mingw_packages_dir%/*}" \
-						clone $o/MINGW-packages
+						clone $o/MINGW-packages ||
+					die "Could not clone into %s\n" \
+						"$mingw_packages_dir"
 					;;
 				*)
 					die "Do not know how to clone %s\n" \
 						"$mingw_packages_dir"
 					;;
 				esac
-			fi &&
-			git -C "$mingw_packages_dir" fetch &&
-			git -C "$mingw_packages_dir" \
-				checkout -t origin/master ||
-			die "Could not check out %s\n" \
-				"${git_src_dir%*/src/git}"
+			else
+				git -C "$mingw_packages_dir" fetch &&
+				git -C "$mingw_packages_dir" \
+					checkout -t origin/master ||
+				die "Could not check out %s\n" \
+					"$mingw_packages_dir"
+			fi
 		fi
 		(cd "${git_src_dir%/src/git}" &&
 		 echo "Checking out Git (not making it)" >&2 &&
