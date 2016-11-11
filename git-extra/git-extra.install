@@ -135,6 +135,10 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 }\
 ' /etc/profile
 	}
+
+	grep -q 'case "\${MSYS2_PATH_TYPE:-inherit}"' /etc/profile ||
+	sed -i 's/{MSYS2_PATH_TYPE:-[^}]*}/{MSYS2_PATH_TYPE:-inherit}/g' \
+		/etc/profile
 }
 
 post_upgrade () {
