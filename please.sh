@@ -938,9 +938,59 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 
 	if test -n "$force_version"
 	then
-		tag_name="v$force_version"
-		pkgver="$(echo "$force_version" | tr - .)"
+		while case "$force_version" in
+		*'%(use-existing-tag)'*)
+			tag_name="$(git for-each-ref --points-at="$1" \
+				--sort=-taggerdate --count=1 \
+				--format='%(refname:strip=2)' 'refs/tags/*')"
+			if test -z "$tag_name"
+			then
+				force_version="$(echo "$force_version" |
+					sed 's/%(use-existing-tag)//g')"
+			else
+				force_version="$tag_name"
+				break
+			fi
+			;;
+		*'%(base-version)'*)
+			tag_name="v$(git describe --match='v[0-9]*' HEAD |
+			  sed -e 's/[A-Za-z]*//g' -e 's/[^.0-9]/./g' \
+			    -e 's/\.\.*/./g' \
+			    -e 's/^\([^.]*\.[^.]*\.[^.]*\.[^.]*\)\..*$/\1/')"
+			force_version="$(echo "$force_version" |
+				sed "s/%(base-version)/$tag_name/g")"
+			;;
+		*'%(counter)')
+			force_version="${force_version%?(counter)}"
+			tag_name=1
+			while git rev-parse --verify -q \
+				"$force_version$tag_name" >/dev/null
+			do
+				tag_name=$(($tag_name+1))
+			done
+			force_version="$force_version$tag_name"
+			;;
+		*'%(counter)'*)
+			die "%(counter) must be last\n"
+			;;
+		*'%'*)
+			die "Unknown placeholder: '%s'\n" \
+				"$(echo "%${force_version#*%}" |
+					sed -e 's/).*/)/')"
+			;;
+		*)
+			break
+			;;
 
+		esac
+		do
+			: go on
+		done
+		tag_name="$force_version"
+		pkgver="$(echo "${force_version#v}" | tr - . |
+			sed 's/\.[A-Za-z].*//')"
+
+		test -n "$pkgver" &&
 		test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
 		die "Unusable version '%s'\n" "$force_version"
 	else
