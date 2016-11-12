@@ -893,7 +893,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		force_tag=-f
 		;;
 	--force-version=*)
-		force_version="${1#--}"
+		force_version="${1#*=}"
 		force_tag=-f
 		;;
 	--installer|--portable|--mingit)
