@@ -12,9 +12,6 @@ die () {
 root="$(cd "$(dirname "$0")/../../.." && pwd)" ||
 die "Could not determine root directory"
 
-import_tars="${root%/}"/usr/src/git/contrib/fast-import/import-tars.perl
-test -x "$import_tars" ||
-die "You need to run this script in a Git for Windows SDK"
 
 list_packages () {
 	(cd "${root%/}"/var/lib/pacman/local &&
@@ -50,6 +47,10 @@ commit_package () {
 
 case "$1" in
 init)
+	import_tars="${root%/}"/usr/src/git/contrib/fast-import/import-tars.perl
+	test -x "$import_tars" ||
+	die "You need to run this script in a Git for Windows SDK"
+
 	if test ! -d "${root%/}"/.git
 	then
 		(cd "$root" && git init) ||
