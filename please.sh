@@ -98,7 +98,18 @@ info () { #
 		"$warning"
 }
 
-sync () { #
+sync () { # [--force]
+	force=
+	while case "$1" in
+	--force)
+		force=--force
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 0 ||
+	die "Expected no argument, got $#: %s\n" "$*"
+
 	for sdk in "$sdk32" "$sdk64"
 	do
 		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe -Sy ||
@@ -106,7 +117,7 @@ sync () { #
 
 		PATH="$sdk/usr/bin:$PATH" \
 		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\pacman.exe \
-			-Su --noconfirm ||
+			-Su $force --noconfirm ||
 		die "Could not update packages in %s\n" "$sdk"
 
 		case "$(tail -c 16384 "$sdk/var/log/pacman.log" |
@@ -119,7 +130,7 @@ sync () { #
 			PATH="$sdk/usr/bin:$PATH" \
 			"$sdk/git-cmd.exe" --cd="$sdk" \
 				--command=usr\\bin\\sh.exe -l \
-				-c 'pacman -Su --noconfirm' ||
+				-c 'pacman -Su '$force' --noconfirm' ||
 			die "Cannot update packages in %s\n" "$sdk"
 			;;
 		esac
@@ -128,7 +139,7 @@ sync () { #
 		# therefore it has to be (re-)installed now
 		PATH="$sdk/bin:$PATH" \
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'pacman -S --noconfirm git-extra' ||
+			'pacman -S '$force' --noconfirm git-extra' ||
 		die "Cannot update git-extra in %s\n" "$sdk"
 	done
 }
