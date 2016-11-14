@@ -75,6 +75,11 @@ init)
 	;;
 commit)
 	(cd "$root" &&
+	 if test false != "$(git config core.autocrlf)"
+	 then
+		git config core.autocrlf false ||
+		die "Could not force core.autocrlf = false"
+	 fi &&
 	 git add -A . &&
 	 git diff-index --exit-code --cached HEAD ||
 	 git commit -q -s -m "Update $(date +%Y%m%d-%H%M%S)") ||
