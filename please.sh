@@ -353,7 +353,7 @@ pkg_build () {
 		require msys2-devel binutils
 		if test msys2-runtime = "$package"
 		then
-			require mingw-w64-cross-gcc mingw-w64-cross-gcc
+			require mingw-w64-cross-gcc
 			test ! -d msys2-runtime ||
 			(cd msys2-runtime && git fetch) ||
 			die "Could not fetch from origin"
@@ -1076,8 +1076,8 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	if test -z "$skip_makepkg"
 	then
 		install_git_32bit_prereqs
-		require mingw-w64-i686-toolchain mingw-w64-x86_64-toolchain \
-			mingw-w64-x86_64-make
+		require mingw-w64-i686-toolchain mingw-w64-i686-make
+		require mingw-w64-x86_64-toolchain mingw-w64-x86_64-make
 		if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
 			config alias.signtool)"
 		then
@@ -1162,7 +1162,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 }
 
 tag_git () { #
-	sdk="$sdk64" require w3m w3m
+	sdk="$sdk64" require w3m
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
