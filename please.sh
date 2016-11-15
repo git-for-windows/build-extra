@@ -1104,7 +1104,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		sed -e '/^pkgname=/{N;N;s/"[^"]*-doc[^"]*"//g}'
 		;;
 	*)
-		cat
+		sed -e '/^pkgname=/{N;N;s/"[^"]*-doc-man[^"]*"//g}'
 		;;
 	esac >"$git_src_dir/../../prerelease-$pkgver.pkgbuild" ||
 	die "Could not generate prerelase-%s.pkgbuild\n" "$pkgver"
@@ -1142,7 +1142,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		pkglist="git"
 		;;
 	*)
-		pkglist="git git-doc-html git-doc-man"
+		pkglist="git git-doc-html"
 		;;
 	esac
 	for sdk in "$sdk32" "$sdk64"
