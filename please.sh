@@ -1122,6 +1122,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 			extra="SIGNTOOL=\"git --git-dir=\\\"$sdk64/usr/src"
 			extra="$extra/build-extra/.git\\\" signtool\" "
 		fi
+		MSYSTEM=MINGW64 \
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			"cd \"$git_src_dir/../..\" &&"'
 			MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
