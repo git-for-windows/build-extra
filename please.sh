@@ -1148,8 +1148,8 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	do
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c '
 			cd "'"$git_src_dir"'/../.." &&
-			precmd="pacman --noconfirm -U" &&
-			postcmd="pacman --noconfirm -U" &&
+			precmd="pacman --force --noconfirm -U" &&
+			postcmd="pacman --force --noconfirm -U" &&
 			for pkg in '"$pkglist"'
 			do
 				pkg=mingw-w64-"$(uname -m)"-$pkg
