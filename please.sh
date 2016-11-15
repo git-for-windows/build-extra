@@ -1034,8 +1034,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 			: go on
 		done
 		tag_name="$force_version"
-		pkgver="$(echo "${force_version#v}" | tr - . |
-			sed 's/\.[A-Za-z].*//')"
+		pkgver="$(echo "${force_version#v}" | tr - .)"
 
 		test -n "$pkgver" &&
 		test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
