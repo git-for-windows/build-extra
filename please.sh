@@ -1123,7 +1123,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 			extra="$extra/build-extra/.git\\\" signtool\" "
 		fi
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			"export PATH=/mingw64/bin:$PATH &&
+			"export PATH=/mingw64/bin:\"$PATH\" &&
 			cd \"$git_src_dir/../..\" &&"'
 			MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
 			'"$extra"' \
