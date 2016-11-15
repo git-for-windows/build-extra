@@ -141,6 +141,42 @@ sync () { # [--force]
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			'pacman -S '$force' --noconfirm git-extra' ||
 		die "Cannot update git-extra in %s\n" "$sdk"
+
+		pacnew="$(sed -ne '/starting core system upgrade/{s/.*//;x}' -e\
+			'/warning:.*installed as .*\.pacnew$/{s/.* as //;H}' -e\
+			'${x;s/^\n//;/./p}' <"$sdk"/var/log/pacman.log)" ||
+		die "Could not get list of .pacnew files\n"
+		if test -n "$pacnew"
+		then
+			# Make sure we have the git-extra package locally, as
+			# one of the .pacnew files could be pacman.conf, and
+			# replacing it removes the link to Git for Windows'
+			# Pacman repository
+			PATH="$sdk/bin:$PATH" \
+			"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			   'pkg=/var/cache/pacman/pkg/$(pacman -Q git-extra |
+				tr \  -)*.pkg.tar.xz
+			    test -f $pkg || {
+				pacman -Sw --noconfirm git-extra &&
+				test -f $pkg || {
+					echo "Could not cache $pkg" >&2
+					exit 1
+				}
+			    }
+			    for f in '"$(echo "$pacnew" | tr '\n' ' ')"'
+			    do
+				test ! -f $f ||
+				mv -f $f ${f%.pacnew} || {
+					echo "Could not rename $f" >&2
+					exit 1
+				}
+			    done
+			    pacman -U --noconfirm '$force' $pkg || {
+				echo "Could not reinstall $pkg" >&2
+				exit 1
+			    }' ||
+			die "Could not handle .pacnew files\n"
+		fi
 	done
 }
 
