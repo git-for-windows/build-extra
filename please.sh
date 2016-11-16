@@ -1041,6 +1041,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		do
 			: go on
 		done
+		echo "Using version $force_version" >&2
 		tag_name="$force_version"
 		pkgver="$(echo "${force_version#v}" | tr - .)"
 
