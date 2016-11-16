@@ -1077,8 +1077,9 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	elif test -n "$force_tag"
 	then
 		test -n "$force_version" &&
-		test "$(git rev-parse --verify "$1"^{commit})" = \
-			"$(git rev-parse --verify "$tag_name"^{commit})" ||
+		test "$(git rev-parse -q --verify "$1"^{commit})" = \
+			"$(git rev-parse -q --verify \
+				"refs/tags/$tag_name"^{commit})" ||
 		git tag -f -a -m "Prerelease of $1" "$tag_name" "$1" ||
 		die "Could not create tag '%s'\n" "$tag_name"
 
