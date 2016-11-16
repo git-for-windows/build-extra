@@ -1003,7 +1003,8 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 			tag_name="${force_version#*%(infix:}"
 			tag_name="${tag_name%%)*}"
 			tag_name="$(git describe --match "v[0-9]*" --abbrev=7 \
-				"$1" | sed "s|\.windows\.|.$tag_name.|g")"
+				"$1" | sed -e "s|-\(g[0-9a-f]*\)$|.\1|g" -e \
+					"s|\.windows\.|.$tag_name.|g")"
 			force_version="$(echo "$force_version" |
 				sed "s|%(infix:[^)]*)|$tag_name|g")"
 			;;
