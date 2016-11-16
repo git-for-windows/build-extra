@@ -999,6 +999,15 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 				break
 			fi
 			;;
+		*'%(infix:'*')'*)
+			tag_name="${force_version#*%(infix:}"
+			tag_name="${tag_name%%)*}"
+			tag_name="$(git describe --match "v[0-9]*" --abbrev=7 \
+				"$1" | sed -e "s|-\(g[0-9a-f]*\)$|.\1|g" -e \
+					"s|\.windows\.|.$tag_name.|g")"
+			force_version="$(echo "$force_version" |
+				sed "s|%(infix:[^)]*)|$tag_name|g")"
+			;;
 		*'%(base-version)'*)
 			tag_name="v$(git describe --match='v[0-9]*' HEAD |
 			  sed -e 's/[A-Za-z]*//g' -e 's/[^.0-9]/./g' \
@@ -1033,6 +1042,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		do
 			: go on
 		done
+		echo "Using version $force_version" >&2
 		tag_name="$force_version"
 		pkgver="$(echo "${force_version#v}" | tr - .)"
 
@@ -1067,6 +1077,10 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		skip_makepkg=t
 	elif test -n "$force_tag"
 	then
+		test -n "$force_version" &&
+		test "$(git rev-parse -q --verify "$1"^{commit})" = \
+			"$(git rev-parse -q --verify \
+				"refs/tags/$tag_name"^{commit})" ||
 		git tag -f -a -m "Prerelease of $1" "$tag_name" "$1" ||
 		die "Could not create tag '%s'\n" "$tag_name"
 

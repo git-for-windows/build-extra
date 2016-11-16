@@ -2,15 +2,36 @@
 
 # Build the portable Git for Windows.
 
-test -z "$1" && {
-	echo "Usage: $0 <version> [optional components]"
-	exit 1
-}
-
 die () {
 	echo "$*" >&1
 	exit 1
 }
+
+output_directory="$HOME"
+while test $# -gt 0
+do
+	case "$1" in
+	--output)
+		shift
+		output_directory="$1"
+		;;
+	--output=*)
+		output_directory="${1#*=}"
+		;;
+	-*)
+		die "Unknown option: $1"
+		;;
+	*)
+		break
+	esac
+	shift
+done
+
+test $# -gt 0 ||
+die "Usage: $0 [--output=<directory>] <version> [optional components]"
+
+test -d "$output_directory" ||
+die "Directory inaccessible: '$output_directory'"
 
 ARCH="$(uname -m)"
 case "$ARCH" in
@@ -26,7 +47,7 @@ x86_64)
 esac
 VERSION=$1
 shift
-TARGET="$HOME"/PortableGit-"$VERSION"-"$BITNESS"-bit.7z.exe
+TARGET="$output_directory"/PortableGit-"$VERSION"-"$BITNESS"-bit.7z.exe
 OPTS7="-m0=lzma -mx=9 -md=64M"
 TMPPACK=/tmp.7z
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
