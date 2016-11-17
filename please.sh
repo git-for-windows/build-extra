@@ -1066,6 +1066,10 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	require_git_src_dir
 
+	(cd "$git_src_dir/../.." &&
+	 sdk= pkgpath=$PWD ff_master) ||
+	die "Could not update mingw-w64-git\n"
+
 	skip_makepkg=
 	force_makepkg=
 	pkgprefix="$git_src_dir/../../mingw-w64"
@@ -1141,6 +1145,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			"cd \"$git_src_dir/../..\" &&"'
 			MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
+			rm -f src/git/{git-wrapper.o,*.res} &&
 			'"$extra"' \
 			makepkg-mingw -s --noconfirm '"$force_tag"' \
 				'"$force_makepkg"' \
