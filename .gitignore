@@ -1,10 +1,12 @@
 *.swp
+/ReleaseNotes.html
 edit-git-bash.exe
 /cached-source-packages/
 /download-stats.ids
 /git-extra/pkg/
 /git-extra/src/
 /git-extra/git-extra-*.pkg.tar.xz
+/git-extra/git-extra-*.src.tar.gz
 /installer/ReleaseNotes.html
 /installer/bindimage.txt
 /installer/config.iss
@@ -14,6 +16,12 @@ edit-git-bash.exe
 /installer/package-versions.txt
 /mingit/LICENSE.txt
 /mingit/etc/package-versions.txt
+/mingw-w64-git-credential-manager/pkg/
+/mingw-w64-git-credential-manager/src/
+/mingw-w64-git-credential-manager/*.pkg.tar.xz
+/mingw-w64-git-credential-manager/*.src.tar.gz
+/mingw-w64-git-credential-manager/gcmw-*.zip
+/mingw-w64-git-credential-manager/v[1-9]*.zip
 /msi/GitComponents.wxs
 /msi/obj/
 /msi/package-versions.txt
@@ -28,6 +36,8 @@ edit-git-bash.exe
 /portable/root/etc/
 /portable/root/post-install.bat
 /sdk-installer/root/
+/source-zips/
+/source-zips-mingit/
 /archive/root/*
 !/archive/root/etc/hosts
 !/archive/root/etc/networks
