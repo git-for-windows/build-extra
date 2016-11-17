@@ -1178,7 +1178,9 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 				file="/var/cache/pacman/pkg/$(echo $file |
 					tr \  -)-any.pkg.tar.xz"
 				test -f $file ||
-				cp "${file##*/}" "$file" || {
+				cp "${file##*/}" "$file" ||
+				pacman -Sw --noconfirm "$(pacman -Q $pkg |
+						tr " " "=")" || {
 					echo "$file does not exist" >&2
 					exit 1
 				}
