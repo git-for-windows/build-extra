@@ -236,6 +236,8 @@ Type: dirifempty; Name: {app}\etc
 ; Delete recorded install options
 Type: files; Name: {app}\etc\install-options.txt
 Type: dirifempty; Name: {app}\etc
+Type: dirifempty; Name: {app}\{#MINGW_BITNESS}
+Type: dirifempty; Name: {app}
 
 [Code]
 #include "helpers.inc.iss"
