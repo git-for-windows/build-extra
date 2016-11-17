@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 
 * The preload-index feature [now behaves much better in conjunction with sparse checkouts](https://github.com/git-for-windows/git/pull/955).
 * When encountering a symbolic link, Git [now always tries to read it](https://github.com/git-for-windows/git/issues/958), not only when `core.symlinks = true`.
+* The regression where Git would not interpret non-ASCII characters passed from a CMD window correctly [has been fixed](https://github.com/git-for-windows/git/issues/945).
 
 ## Changes since Git for Windows v2.10.1(2) (October 13th 2016)
 
