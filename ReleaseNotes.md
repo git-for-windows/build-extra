@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 * When building with MS Visual C, [release builds are now properly optimized](https://github.com/git-for-windows/git/pull/948).
 * `git cvsexportcommit` [now also works with CVSNT](https://github.com/git-for-windows/git/pull/938).
 * Git's Perl [no longer gets confused by externally-set `PERL5LIB`](https://github.com/git-for-windows/git/issues/963).
+* The uninstaller [no longer leaves an empty `Git\mingw64` folder behind](https://github.com/git-for-windows/git/issues/909).
 
 ## Changes since Git for Windows v2.10.1(2) (October 13th 2016)
 
