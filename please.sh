@@ -927,12 +927,13 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
-prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directory> | --output=<directory>] <revision>
+prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
 	mode=installer
 	mode2=
 	output=
 	force_tag=
 	force_version=
+	prerelease-prefix=prerelease-
 	while case "$1" in
 	--force-tag)
 		force_tag=-f
@@ -945,6 +946,9 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	--force-version=*)
 		force_version="${1#*=}"
 		force_tag=-f
+		;;
+	--skip-prerelease-prefix)
+		prerelease_prefix=
 		;;
 	--installer|--portable|--mingit)
 		mode=${1#--}
@@ -1205,13 +1209,13 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 			sed -i -e "1s/.*/# Pre-release '"$pkgver"'/" \
 				-e "2s/.*/Date: '"$(today)"'/" \
 				/usr/src/build-extra/ReleaseNotes.md &&
+			version='"$prerelease_prefix${pkgver#v}"' &&
 			/usr/src/build-extra/'"$mode"'/release.sh \
-				'"$output"' "prerelease-'"${pkgver#v}"'" &&
+				'"$output"' "$version" &&
 			if test -n "'$mode2'"
 			then
 				/usr/src/build-extra/'"$mode2"'/release.sh \
-					'"$output"' \
-					"prerelease-'"${pkgver#v}"'"
+					'"$output"' "$version"
 			fi &&
 			(cd /usr/src/build-extra &&
 			 git diff -- ReleaseNotes.md | git apply -R) &&
