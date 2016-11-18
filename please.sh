@@ -936,7 +936,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	output=
 	force_tag=
 	force_version=
-	prerelease-prefix=prerelease-
+	prerelease_prefix=prerelease-
 	while case "$1" in
 	--force-tag)
 		force_tag=-f
