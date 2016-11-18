@@ -115,6 +115,9 @@ sync () { # [--force]
 
 	for sdk in "$sdk32" "$sdk64"
 	do
+		mkdir -p "$sdk/var/log" ||
+		die "Could not ensure %s/var/log/ exists\n" "$sdk"
+
 		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe -Sy ||
 		die "Cannot run pacman in %s\n" "$sdk"
 
