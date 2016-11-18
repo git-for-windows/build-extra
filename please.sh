@@ -115,6 +115,9 @@ sync () { # [--force]
 
 	for sdk in "$sdk32" "$sdk64"
 	do
+		mkdir -p "$sdk/var/log" ||
+		die "Could not ensure %s/var/log/ exists\n" "$sdk"
+
 		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe -Sy ||
 		die "Cannot run pacman in %s\n" "$sdk"
 
@@ -927,12 +930,13 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
-prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directory> | --output=<directory>] <revision>
+prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
 	mode=installer
 	mode2=
 	output=
 	force_tag=
 	force_version=
+	prerelease-prefix=prerelease-
 	while case "$1" in
 	--force-tag)
 		force_tag=-f
@@ -945,6 +949,9 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	--force-version=*)
 		force_version="${1#*=}"
 		force_tag=-f
+		;;
+	--skip-prerelease-prefix)
+		prerelease_prefix=
 		;;
 	--installer|--portable|--mingit)
 		mode=${1#--}
@@ -1066,6 +1073,10 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	require_git_src_dir
 
+	(cd "$git_src_dir/../.." &&
+	 sdk= pkgpath=$PWD ff_master) ||
+	die "Could not update mingw-w64-git\n"
+
 	skip_makepkg=
 	force_makepkg=
 	pkgprefix="$git_src_dir/../../mingw-w64"
@@ -1141,6 +1152,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			"cd \"$git_src_dir/../..\" &&"'
 			MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
+			rm -f src/git/{git-wrapper.o,*.res} &&
 			'"$extra"' \
 			makepkg-mingw -s --noconfirm '"$force_tag"' \
 				'"$force_makepkg"' \
@@ -1200,13 +1212,13 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 			sed -i -e "1s/.*/# Pre-release '"$pkgver"'/" \
 				-e "2s/.*/Date: '"$(today)"'/" \
 				/usr/src/build-extra/ReleaseNotes.md &&
+			version='"$prerelease_prefix${pkgver#v}"' &&
 			/usr/src/build-extra/'"$mode"'/release.sh \
-				'"$output"' "prerelease-'"${pkgver#v}"'" &&
+				'"$output"' "$version" &&
 			if test -n "'$mode2'"
 			then
 				/usr/src/build-extra/'"$mode2"'/release.sh \
-					'"$output"' \
-					"prerelease-'"${pkgver#v}"'"
+					'"$output"' "$version"
 			fi &&
 			(cd /usr/src/build-extra &&
 			 git diff -- ReleaseNotes.md | git apply -R) &&
