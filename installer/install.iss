@@ -1931,6 +1931,11 @@ begin
     end;
     RecordChoice(PreviousDataKey,'Performance Tweaks FSCache',Data);
     Data:='Disabled';
+    if RdbExtraOptions[GP_GCM].Checked then begin
+        Data:='Enabled';
+    end;
+    RecordChoice(PreviousDataKey,'Use Credential Manager',Data);
+    Data:='Disabled';
     if RdbExtraOptions[GP_Symlinks].Checked then begin
         Data:='Enabled';
     end;
