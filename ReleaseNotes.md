@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.10.2 (November 2nd 2016)
 
+### New Features
+
+* Performance of `git add` in large worktrees [was improved](https://github.com/git-for-windows/git/pull/971).
+
 ### Bug Fixes
 
 * The preload-index feature [now behaves much better in conjunction with sparse checkouts](https://github.com/git-for-windows/git/pull/955).
