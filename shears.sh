@@ -300,7 +300,7 @@ ensure_labeled () {
 generate_script () {
 	echo "Generating script..." >&2
 	origtodo="$(git rev-list --no-merges --cherry-pick --pretty=oneline \
-		--abbrev-commit --abbrev=7 --reverse --left-right --topo-order \
+		--abbrev-commit --reverse --left-right --topo-order \
 		$upstream..$head | \
 		sed -n "s/^>/pick /p")"
 	shorthead=$(git rev-parse --short $head)
