@@ -51,6 +51,7 @@ This package contains software from a number of other projects including Bash, z
 * Git's Perl [no longer gets confused by externally-set `PERL5LIB`](https://github.com/git-for-windows/git/issues/963).
 * The uninstaller [no longer leaves an empty `Git\mingw64` folder behind](https://github.com/git-for-windows/git/issues/909).
 * The installer [now actually records](https://github.com/git-for-windows/build-extra/commit/6da8414b8c75c76fa526bd75fec22eaefad88e09) whether the user chose to enable or disable the Git Credential Manager.
+* A certain scenario that could cause a crash in cherry-pick [no longer causes that](https://github.com/git-for-windows/git/issues/952).
 
 ## Changes since Git for Windows v2.10.1(2) (October 13th 2016)
 
