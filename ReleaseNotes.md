@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git v2.11.0](https://github.com/git/git/blob/v2.11.0/Documentation/RelNotes/2.11.0.txt).
 * Performance of `git add` in large worktrees [was improved](https://github.com/git-for-windows/git/pull/971).
 * A [new, experimental, builtin version of the difftool](https://github.com/git-for-windows/git/commit/5f3656e4b4b8ceeff40bc7fcf03aba3560bff17c) is available as [an opt-in feature](https://github.com/git-for-windows/build-extra/commit/74339bdd9fab9fbf890f079c9024ff4f1309bb6d).
+* Support [has been added](https://github.com/git-for-windows/git/commit/056b41311688e9f433fe28e6b3aa6687fa36ca70) to generate project files for Visual Studio 2010 and later.
 
 ### Bug Fixes
 
