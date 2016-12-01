@@ -18,18 +18,6 @@ test "--update" != "$1" || {
 }
 
 # IDs
-# v2.5.3.windows.1
-#id=${1:-1835755}
-# v2.6.0.windows.1
-#id=${1:-1886219}
-# v2.6.1.windows.1
-#id=${1:-1914287}
-# v2.6.2.windows.1
-#id=${1:-1984920}
-# v2.6.3.windows.1
-#id=${1:-2104213}
-# v2.6.4.windows.1
-#id=${1:-2285622}
 # v2.7.0.windows.1
 #id=${1:-2375145}
 # v2.7.0.windows.2
@@ -77,7 +65,20 @@ test "--update" != "$1" || {
 # v2.10.1.windows.2
 #id=${1:-4382260}
 # v2.10.2.windows.1
-id=${1:-4547425}
+#id=${1:-4547425}
+# v2.11.0-rc0.windows.1
+#id=${1:-4574263}
+# v2.11.0-rc0.windows.2
+#id=${1:-4637903}
+# v2.11.0-rc1.windows.1
+#id=${1:-4665420}
+# v2.11.0-rc2.windows.1
+#id=${1:-4705463}
+# v2.11.0-rc3.windows.1
+#id=${1:-4755145}
+# v2.11.0.windows.1
+id=${1:-4805052}
+# prerelease-v2.10.0.windows.1.11.geda474c
 # prerelease-v2.10.0.windows.1.11.geda474c
 
 case "$id" in
