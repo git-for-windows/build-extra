@@ -1151,8 +1151,8 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		fi
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			"cd \"$git_src_dir/../..\" &&"'
-			MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
 			rm -f src/git/{git-wrapper.o,*.res} &&
+			MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
 			'"$extra"' \
 			makepkg-mingw -s --noconfirm '"$force_tag"' \
 				'"$force_makepkg"' \
