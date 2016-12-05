@@ -22,6 +22,10 @@ do
 	--skip-files)
 		skip_files=t
 		;;
+	--window-title-version=*)
+		inno_defines="$(printf "%s\n%s" "$inno_defines" \
+			"#define WINDOW_TITLE_VERSION '${1#*=}'")"
+		;;
 	-d=*|--debug-wizard-page=*)
 		page="${1#*=}"
 		case "$page" in *Page);; *)page=${page}Page;; esac

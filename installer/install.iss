@@ -121,8 +121,13 @@ Name: {group}\Git CMD; Filename: {app}\git-cmd.exe; Parameters: "--cd-to-home"; 
 
 [Messages]
 BeveledLabel={#APP_URL}
+#ifdef WINDOW_TITLE_VERSION
+SetupAppTitle={#APP_NAME} {#WINDOW_TITLE_VERSION} Setup
+SetupWindowTitle={#APP_NAME} {#WINDOW_TITLE_VERSION} Setup
+#else
 SetupAppTitle={#APP_NAME} {#APP_VERSION} Setup
 SetupWindowTitle={#APP_NAME} {#APP_VERSION} Setup
+#endif
 
 [Registry]
 ; Aides installing third-party (credential, remote, etc) helpers
