@@ -930,13 +930,14 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
-prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
+prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
 	mode=installer
 	mode2=
 	output=
 	force_tag=
 	force_version=
 	prerelease_prefix=prerelease-
+	only_64_bit=
 	while case "$1" in
 	--force-tag)
 		force_tag=-f
@@ -959,6 +960,9 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	--installer+portable)
 		mode=installer
 		mode2=portable
+		;;
+	--only-64-bit)
+		only_64_bit=t
 		;;
 	--output=*)
 		output="--output='$(cygpath -am "${1#*=}")'" ||
@@ -984,6 +988,7 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	sdk="$sdk64"
 
 	build_extra_dir="$sdk32/usr/src/build-extra"
+	test -n "$only_64_bit" ||
 	(cd "$build_extra_dir" &&
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not update 32-bit build-extra\n"
@@ -1081,7 +1086,8 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	force_makepkg=
 	pkgprefix="$git_src_dir/../../mingw-w64"
 	pkgsuffix="${pkgver#v}-1-any.pkg.tar.xz"
-	if test -f "${pkgprefix}-i686-git-doc-man-${pkgsuffix}" &&
+	if test -n "$only_64_bit" -o \
+			-f "${pkgprefix}-i686-git-doc-man-${pkgsuffix}" &&
 		test -f "${pkgprefix}-x86_64-git-doc-man-${pkgsuffix}" &&
 		test "$(git rev-parse --verify "$1"^{commit})" = \
 			"$(git -C "$git_src_dir" rev-parse --verify \
@@ -1138,7 +1144,9 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 
 	if test -z "$skip_makepkg"
 	then
+		test -n "$only_64_bit" ||
 		install_git_32bit_prereqs
+		test -n "$only_64_bit" ||
 		require mingw-w64-i686-toolchain mingw-w64-i686-make
 		require mingw-w64-x86_64-toolchain mingw-w64-x86_64-make
 		if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
@@ -1152,7 +1160,9 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			"cd \"$git_src_dir/../..\" &&"'
 			rm -f src/git/{git-wrapper.o,*.res} &&
-			MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
+			MAKEFLAGS=-j5 \
+			MINGW_INSTALLS='"$(test -n "$only_64_bit" ||
+				echo mingw32)"'\ mingw64 \
 			'"$extra"' \
 			makepkg-mingw -s --noconfirm '"$force_tag"' \
 				'"$force_makepkg"' \
@@ -1175,6 +1185,10 @@ prerelease () { # [--installer | --portable | --mingit] [--clean-output=<directo
 	esac
 	for sdk in "$sdk32" "$sdk64"
 	do
+		test -z "$only_64_bit" ||
+		test a"$sdk" = a"$sdk64" ||
+		continue
+
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c '
 			cd "'"$git_src_dir"'/../.." &&
 			precmd="pacman --force --noconfirm -U" &&
