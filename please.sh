@@ -1227,13 +1227,14 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				-e "2s/.*/Date: '"$(today)"'/" \
 				/usr/src/build-extra/ReleaseNotes.md &&
 			version='"$prerelease_prefix${pkgver#v}"' &&
-			/usr/src/build-extra/'"$mode"'/release.sh \
-				'"$output"' "$version" &&
-			if test -n "'$mode2'"
-			then
-				/usr/src/build-extra/'"$mode2"'/release.sh \
-					'"$output"' "$version"
-			fi &&
+			for m in '"$mode $mode2"'
+			do
+				extra=
+				test installer != $m ||
+				extra=--window-title-version="'"$tag_name"'"
+				/usr/src/build-extra/'"$mode"'/release.sh \
+					'"$output"' $extra "$version" || break
+			done &&
 			(cd /usr/src/build-extra &&
 			 git diff -- ReleaseNotes.md | git apply -R) &&
 			eval "$postcmd"' ||
