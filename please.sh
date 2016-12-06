@@ -1232,7 +1232,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				extra=
 				test installer != $m ||
 				extra=--window-title-version="'"$version"'"
-				/usr/src/build-extra/'"$m"'/release.sh \
+				/usr/src/build-extra/$m/release.sh \
 					'"$output"' $extra "$version" || break
 			done &&
 			(cd /usr/src/build-extra &&
