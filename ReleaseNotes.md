@@ -38,6 +38,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Reading a large index [has been speeded up using pthreads](https://github.com/git-for-windows/git/pull/978).
 
+### Bug Fixes
+
+* Non-ASCII characters are [now shown properly again](https://github.com/git-for-windows/git/issues/981) in Git Bash.
+
 ## Changes since Git for Windows v2.10.2 (November 2nd 2016)
 
 ### New Features
