@@ -930,7 +930,7 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
-update_vs_branch () { #
+update_vs_branch () { # [--worktree=<path>]
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	while case "$1" in
 	--worktree=*)
