@@ -930,6 +930,53 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
+update_vs_branch () { #
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	while case "$1" in
+	--worktree=*)
+		git_src_dir=${1#*=}
+		test -d "$git_src_dir" ||
+		die "Worktree does not exist: %s\n" "$git_src_dir"
+		git rev-parse -q --verify e83c5163316f89bfbde7d ||
+		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 0 ||
+	die "Expected 0 argument, got $#: %s\n" "$*"
+
+	ensure_valid_login_shell 64 ||
+	die "Could not ensure valid login shell\n"
+
+	sdk="$sdk64"
+
+	build_extra_dir="$sdk64/usr/src/build-extra"
+	(cd "$build_extra_dir" &&
+	 sdk= pkgpath=$PWD ff_master) ||
+	die "Could not update build-extra\n"
+
+	require_git_src_dir
+
+	(cd "$git_src_dir" &&
+	 require_remote git-for-windows https://github.com/git-for-windows/git &&
+	 require_push_url git-for-windows ||
+	 die "Could not update remotes\n"
+
+	 if prev=$(git rev-parse -q --verify \
+		refs/remotes/git-for-windows/vs/master) &&
+		test 0 = $(git rev-list --count "$prev"..git-for-windows/master)
+	 then
+		echo "vs/master was already rebased" >&2
+		exit 0
+	 fi &&
+	 git reset --hard refs/remotes/git-for-windows/master &&
+	 make MSVC=1 vcxproj &&
+	 git push git-for-windows +HEAD:refs/heads/vs/master ||
+	 die "Could not push vs/master\n") ||
+	exit
+}
+
 prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
 	mode=installer
 	mode2=
