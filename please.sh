@@ -1379,12 +1379,14 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 
 	 if test -z "$bad"
 	 then
+		echo "Testing in pu..." >&2
 		! sh "$bisect_run" ||
 		die "%s does not fail in pu\n" "$broken_test"
 
 		bad=upstream/pu
 		for branch in next master maint
 		do
+			echo "Testing in $branch..." >&2
 			git checkout upstream/$branch ||
 			die "Could not check out %s\n" "$branch"
 
@@ -1399,6 +1401,7 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 
 		test -n "$good" ||
 		die "%s is broken even in maint\n" "$broken_test"
+		echo "Bisecting between $good and $bad" >&2
 	 fi
 
 	 git bisect start "$bad" "$good" &&
