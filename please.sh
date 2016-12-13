@@ -1367,9 +1367,11 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 		die "Could not find test %s\n" "$broken_test"
 	 fi
 	 bisect_run="$(git rev-parse --git-dir)/bisect-run.sh" &&
-	 printf "#!/bin/sh\n\n%s\n%s\n%s\n" \
+	 printf "#!/bin/sh\n\n%s\n%s\n%s%s\n%s\n" \
 		"test -f \"t/$broken_test\" || exit 0" \
-		"make -j15 || exit 125" \
+		"echo \"Running make\" >&2" \
+		"o=\"\$(make -j15 2>&1)\" || " \
+		"{ echo \"\$o\" >&2; exit 125; }" \
 		"GIT_TEST_OPTS=-i make -C t \"$broken_test\"" \
 		>"$bisect_run" &&
 	 chmod a+x "$bisect_run" ||
