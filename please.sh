@@ -1289,6 +1289,121 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	done
 }
 
+bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision>] <test>
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	bad=
+	good=
+	while case "$1" in
+	--worktree=*)
+		git_src_dir=${1#*=}
+		test -d "$git_src_dir" ||
+		die "Worktree does not exist: %s\n" "$git_src_dir"
+		git rev-parse -q --verify e83c5163316f89bfbde7d ||
+		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
+		;;
+	--bad=*)
+		bad=${1#*=}
+		;;
+	--good=*)
+		good=${1#*=}
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected 1 argument, got $#: %s\n" "$*"
+
+	if test -z "$bad"
+	then
+		test -z "$good" || die "Need --bad, too\n"
+	else
+		test -n "$good" || die "Need --good, too\n"
+	fi
+
+	broken_test="$1"
+	case "$broken_test" in
+	[0-9]*)
+		broken_test=t"$broken_test"
+		;;
+	esac
+
+	ensure_valid_login_shell 64 ||
+	die "Could not ensure valid login shell\n"
+
+	sdk="$sdk64"
+
+	build_extra_dir="$sdk64/usr/src/build-extra"
+	(cd "$build_extra_dir" &&
+	 sdk= pkgpath=$PWD ff_master) ||
+	die "Could not update build-extra\n"
+
+	require_git_src_dir
+
+	(cd "$git_src_dir" ||
+	 die "Could not cd to %s\n" "$git_src_dir"
+
+	 test ! -f "$(git rev-parse --git-path BISECT_START)" ||
+	 git bisect reset ||
+	 die "Could not reset previous bisect\n"
+
+	 if test -z "$bad"
+	 then
+		require_remote git-for-windows \
+			https://github.com/git-for-windows/git &&
+		require_remote upstream https://github.com/git/git ||
+		die "Could not update remotes\n"
+
+		git checkout upstream/pu ||
+		die "Could not check out pu\n"
+	 else
+		git checkout "$bad"^{commit} ||
+		die "Could not check out %s\n" "$bad"
+	 fi
+
+	 if ! test -f t/"$broken_test"
+	 then
+		broken_test="$(cd t && echo "$broken_test"*.sh)"
+		test -f t/"$broken_test" ||
+		die "Could not find test %s\n" "$broken_test"
+	 fi
+	 bisect_run="$(git rev-parse --git-dir)/bisect-run.sh" &&
+	 printf "#!/bin/sh\n\n%s\n%s\n%s\n" \
+		"test -f \"t/$broken_test\" || exit 0" \
+		"make -j15 || exit 125" \
+		"GIT_TEST_OPTS=-i make -C t \"$broken_test\"" \
+		>"$bisect_run" &&
+	 chmod a+x "$bisect_run" ||
+	 die "Could not write %s\n" "$bisect_run"
+
+	 if test -z "$bad"
+	 then
+		! sh "$bisect_run" ||
+		die "%s does not fail in pu\n" "$broken_test"
+
+		bad=upstream/pu
+		for branch in next master maint
+		do
+			git checkout upstream/$branch ||
+			die "Could not check out %s\n" "$branch"
+
+			if sh "$bisect_run"
+			then
+				good=upstream/$branch
+				break
+			else
+				bad=upstream/$branch
+			fi
+		done || exit
+
+		test -n "$good" ||
+		die "%s is broken even in maint\n" "$broken_test"
+	 fi
+
+	 git bisect start "$bad" "$good" &&
+	 git bisect run "$bisect_run") ||
+	exit
+}
+
 tag_git () { #
 	sdk="$sdk64" require w3m
 
