@@ -977,14 +977,41 @@ update_vs_branch () { # [--worktree=<path>]
 	exit
 }
 
+needs_upload_permissions () {
+	grep -q '^machine api\.github\.com$' "$HOME"/_netrc &&
+	grep -q '^machine uploads\.github\.com$' "$HOME"/_netrc ||
+	die "Missing GitHub entries in ~/_netrc\n"
+}
+
+# <tag> <dir-with-files>
+publish_prerelease () {
+	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
+		--repo=git "$1" \
+		"$2"/* ||
+	die "Could not upload files from %s\n" "$2"
+
+	url=https://api.github.com/repos/git-for-windows/git/releases
+	id="$(curl --netrc -s $url |
+		sed -n '/"id":/{N;/"tag_name": *"'"$1"'"/{
+			s/.*"id": *\([0-9]*\).*/\1/p;q}}')"
+	test -n "$id" ||
+	die "Could not determine ID of release for %s\n" "$1"
+
+	out="$(curl --netrc --show-error -s -XPATCH -d \
+		'{"name":"'"$1"'","body":"This is a prerelease.",
+		 "draft":false,"prerelease":true}' \
+		$url/$id)" ||
+	die "Could not edit release for %s:\n%s\n" "$1" "$out"
+}
+
 prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
-	mode=installer
-	mode2=
+	modes=
 	output=
 	force_tag=
 	force_version=
 	prerelease_prefix=prerelease-
 	only_64_bit=
+	upload=
 	while case "$1" in
 	--force-tag)
 		force_tag=-f
@@ -1002,11 +1029,10 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		prerelease_prefix=
 		;;
 	--installer|--portable|--mingit)
-		mode=${1#--}
+		modes="$modes ${1#--}"
 		;;
 	--installer+portable)
-		mode=installer
-		mode2=portable
+		modes="installer portable"
 		;;
 	--only-64-bit)
 		only_64_bit=t
@@ -1022,11 +1048,26 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		output="--output='$(cygpath -am "${1#*=}")'" ||
 		die "Directory '%s' inaccessible\n" "${1#*=}"
 		;;
+	--now)
+		rm -rf ./prerelease-now &&
+		mkdir ./prerelease-now ||
+		die "Could not make ./prerelease-now/\n"
+		output="--output='$(cygpath -am ./prerelease-now)'" ||
+		die "Directory ./prerelease-now/ is inaccessible\n"
+
+		modes="installer portable mingit"
+		force_version='%(prerelease-tag)'
+		force_tag=-f
+		upload=t
+		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
 	test $# = 1 ||
 	die "Expected 1 argument, got $#: %s\n" "$*"
+
+	test -n "$modes" ||
+	modes=installer
 
 	ensure_valid_login_shell 32 &&
 	ensure_valid_login_shell 64 ||
@@ -1064,14 +1105,16 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		*'%(infix:'*')'*)
 			tag_name="${force_version#*%(infix:}"
 			tag_name="${tag_name%%)*}"
-			tag_name="$(git describe --match "v[0-9]*" --abbrev=7 \
-				"$1" | sed -e "s|-\(g[0-9a-f]*\)$|.\1|g" -e \
+			tag_name="$(git describe --match "v[0-9]*.windows.*" \
+					--abbrev=7 "$1" |
+				sed -e "s|-\(g[0-9a-f]*\)$|.\1|g" -e \
 					"s|\.windows\.|.$tag_name.|g")"
 			force_version="$(echo "$force_version" |
 				sed "s|%(infix:[^)]*)|$tag_name|g")"
 			;;
 		*'%(base-version)'*)
-			tag_name="v$(git describe --match='v[0-9]*' HEAD |
+			tag_name="v$(git describe --match='v[0-9]*.windows.*' \
+				"$1" |
 			  sed -e 's/[A-Za-z]*//g' -e 's/[^.0-9]/./g' \
 			    -e 's/\.\.*/./g' \
 			    -e 's/^\([^.]*\.[^.]*\.[^.]*\.[^.]*\)\..*$/\1/')"
@@ -1090,6 +1133,21 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 			;;
 		*'%(counter)'*)
 			die "%(counter) must be last\n"
+			;;
+		*'%(prerelease-tag)'*)
+			tag_name="$(git describe \
+				--match='v[1-9]*.windows.[1-9]*' "$1" |
+			sed -n 's|^\(v[.0-9]*\)\.windows\.[0-9].*|\1|p')"
+			test -n "$tag_name" ||
+			die "Could not describe '%s'\n" "$1"
+			tag_name="${tag_name%.*}.$((${tag_name##*.}+1))"
+			tag_name="$tag_name".windows-prerelease.1
+			while git rev-parse -q --verify "$tag_name"
+			do
+				tag_name="${tag_name%.*}.$((${tag_name##*.}+1))"
+			done
+			force_version="$(echo "$force_version" |
+				sed "s/%(prerelease-tag)/$tag_name/g")"
 			;;
 		*'%'*)
 			die "Unknown placeholder: '%s'\n" \
@@ -1124,6 +1182,16 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	require_git_src_dir
+
+	if test -n "$upload"
+	then
+		needs_upload_permissions &&
+		(cd "$git_src_dir" &&
+		 require_remote git-for-windows \
+			https://github.com/git-for-windows/git &&
+		 require_push_url git-for-windows) ||
+		die "Need upload/push permissions\n"
+	fi
 
 	(cd "$git_src_dir/../.." &&
 	 sdk= pkgpath=$PWD ff_master) ||
@@ -1179,7 +1247,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		-e "s/^pkgver *(/disabled_&/" \
 		-e "s/^pkgrel=.*/pkgrel=1/" \
 		<"$git_src_dir/../../PKGBUILD" |
-	case "$mode" in
+	case "$modes" in
 	mingit)
 		sed -e '/^pkgname=/{N;N;s/"[^"]*-doc[^"]*"//g}'
 		;;
@@ -1222,7 +1290,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		die "Could not determine package suffix\n"
 	fi
 
-	case "$mode" in
+	case "$modes" in
 	mingit)
 		pkglist="git"
 		;;
@@ -1274,7 +1342,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				-e "2s/.*/Date: '"$(today)"'/" \
 				/usr/src/build-extra/ReleaseNotes.md &&
 			version='"$prerelease_prefix${pkgver#v}"' &&
-			for m in '"$mode $mode2"'
+			for m in '"$modes"'
 			do
 				extra=
 				test installer != $m ||
@@ -1287,6 +1355,12 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 			eval "$postcmd"' ||
 		die "Could not install '%s' in '%s'\n" "$pkglist" "$sdk"
 	done
+
+	test -z "$upload" || {
+		git -C "$git_src_dir" push git-for-windows "$tag_name" &&
+		publish_prerelease "$tag_name" ./prerelease-now
+	} ||
+	die "Could not publish %s\n" "$tag_name"
 }
 
 bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision>] <test>
@@ -1833,9 +1907,7 @@ virus_check () { #
 publish () { #
 	set_version_from_sdks_git
 
-	grep -q '^machine api\.github\.com$' "$HOME"/_netrc &&
-	grep -q '^machine uploads\.github\.com$' "$HOME"/_netrc ||
-	die "Missing GitHub entries in ~/_netrc\n"
+	needs_upload_permissions || exit
 
 	grep -q '<apikeys>' "$HOME"/AppData/Roaming/NuGet/NuGet.Config ||
 	die "Need to call \`%s setApiKey Your-API-Key\`\n" \
