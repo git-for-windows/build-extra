@@ -936,6 +936,27 @@ needs_upload_permissions () {
 	die "Missing GitHub entries in ~/_netrc\n"
 }
 
+# <tag> <dir-with-files>
+publish_prerelease () {
+	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
+		--repo=git "$1" \
+		"$2"/* ||
+	die "Could not upload files from %s\n" "$2"
+
+	url=https://api.github.com/repos/git-for-windows/git/releases
+	id="$(curl --netrc -s $url |
+		sed -n '/"id":/{N;/"tag_name": *"'"$1"'"/{
+			s/.*"id": *\([0-9]*\).*/\1/p;q}}')"
+	test -n "$id" ||
+	die "Could not determine ID of release for %s\n" "$1"
+
+	out="$(curl --netrc --show-error -s -XPATCH -d \
+		'{"name":"'"$1"'","body":"This is a prerelease.",
+		 "draft":false,"prerelease":true}' \
+		$url/$id)" ||
+	die "Could not edit release for %s:\n%s\n" "$1" "$out"
+}
+
 prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
 	modes=
 	output=
@@ -943,6 +964,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	force_version=
 	prerelease_prefix=prerelease-
 	only_64_bit=
+	upload=
 	while case "$1" in
 	--force-tag)
 		force_tag=-f
@@ -1084,6 +1106,16 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	require_git_src_dir
+
+	if test -n "$upload"
+	then
+		needs_upload_permissions &&
+		(cd "$git_src_dir" &&
+		 require_remote git-for-windows \
+			https://github.com/git-for-windows/git &&
+		 require_push_url git-for-windows) ||
+		die "Need upload/push permissions\n"
+	fi
 
 	(cd "$git_src_dir/../.." &&
 	 sdk= pkgpath=$PWD ff_master) ||
@@ -1247,6 +1279,12 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 			eval "$postcmd"' ||
 		die "Could not install '%s' in '%s'\n" "$pkglist" "$sdk"
 	done
+
+	test -z "$upload" || {
+		git -C "$git_src_dir" push git-for-windows "$tag_name" &&
+		publish_prerelease "$tag_name" ./prerelease-now
+	} ||
+	die "Could not publish %s\n" "$tag_name"
 }
 
 tag_git () { #
