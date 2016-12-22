@@ -1001,6 +1001,18 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		output="--output='$(cygpath -am "${1#*=}")'" ||
 		die "Directory '%s' inaccessible\n" "${1#*=}"
 		;;
+	--now)
+		rm -rf ./prerelease-now &&
+		mkdir ./prerelease-now ||
+		die "Could not make ./prerelease-now/\n"
+		output="--output='$(cygpath -am ./prerelease-now)'" ||
+		die "Directory ./prerelease-now/ is inaccessible\n"
+
+		modes="installer portable mingit"
+		force_version='%(prerelease-tag)'
+		force_tag=-f
+		upload=t
+		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
