@@ -931,8 +931,7 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 }
 
 prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
-	mode=installer
-	mode2=
+	modes=
 	output=
 	force_tag=
 	force_version=
@@ -955,11 +954,10 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		prerelease_prefix=
 		;;
 	--installer|--portable|--mingit)
-		mode=${1#--}
+		modes="$modes ${1#--}"
 		;;
 	--installer+portable)
-		mode=installer
-		mode2=portable
+		modes="installer portable"
 		;;
 	--only-64-bit)
 		only_64_bit=t
@@ -980,6 +978,9 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	esac; do shift; done
 	test $# = 1 ||
 	die "Expected 1 argument, got $#: %s\n" "$*"
+
+	test -n "$modes" ||
+	modes=installer
 
 	ensure_valid_login_shell 32 &&
 	ensure_valid_login_shell 64 ||
@@ -1132,7 +1133,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		-e "s/^pkgver *(/disabled_&/" \
 		-e "s/^pkgrel=.*/pkgrel=1/" \
 		<"$git_src_dir/../../PKGBUILD" |
-	case "$mode" in
+	case "$modes" in
 	mingit)
 		sed -e '/^pkgname=/{N;N;s/"[^"]*-doc[^"]*"//g}'
 		;;
@@ -1175,7 +1176,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		die "Could not determine package suffix\n"
 	fi
 
-	case "$mode" in
+	case "$modes" in
 	mingit)
 		pkglist="git"
 		;;
@@ -1227,7 +1228,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				-e "2s/.*/Date: '"$(today)"'/" \
 				/usr/src/build-extra/ReleaseNotes.md &&
 			version='"$prerelease_prefix${pkgver#v}"' &&
-			for m in '"$mode $mode2"'
+			for m in '"$modes"'
 			do
 				extra=
 				test installer != $m ||
