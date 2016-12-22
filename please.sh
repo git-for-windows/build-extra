@@ -930,6 +930,12 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
+needs_upload_permissions () {
+	grep -q '^machine api\.github\.com$' "$HOME"/_netrc &&
+	grep -q '^machine uploads\.github\.com$' "$HOME"/_netrc ||
+	die "Missing GitHub entries in ~/_netrc\n"
+}
+
 prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
 	modes=
 	output=
@@ -1667,9 +1673,7 @@ virus_check () { #
 publish () { #
 	set_version_from_sdks_git
 
-	grep -q '^machine api\.github\.com$' "$HOME"/_netrc &&
-	grep -q '^machine uploads\.github\.com$' "$HOME"/_netrc ||
-	die "Missing GitHub entries in ~/_netrc\n"
+	needs_upload_permissions || exit
 
 	grep -q '<apikeys>' "$HOME"/AppData/Roaming/NuGet/NuGet.Config ||
 	die "Need to call \`%s setApiKey Your-API-Key\`\n" \
