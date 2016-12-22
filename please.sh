@@ -1075,6 +1075,21 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		*'%(counter)'*)
 			die "%(counter) must be last\n"
 			;;
+		*'%(prerelease-tag)'*)
+			tag_name="$(git describe \
+				--match='v[1-9]*.windows.[1-9]*' "$1" |
+			sed -n 's|^\(v[.0-9]*\)\.windows\.[0-9].*|\1|p')"
+			test -n "$tag_name" ||
+			die "Could not describe '%s'\n" "$1"
+			tag_name="${tag_name%.*}.$((${tag_name##*.}+1))"
+			tag_name="$tag_name".windows-prerelease.1
+			while git rev-parse -q --verify "$tag_name"
+			do
+				tag_name="${tag_name%.*}.$((${tag_name##*.}+1))"
+			done
+			force_version="$(echo "$force_version" |
+				sed "s/%(prerelease-tag)/$tag_name/g")"
+			;;
 		*'%'*)
 			die "Unknown placeholder: '%s'\n" \
 				"$(echo "%${force_version#*%}" |
