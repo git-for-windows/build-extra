@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Non-ASCII characters are [now shown properly again](https://github.com/git-for-windows/git/issues/981) in Git Bash.
+* Implicit NTLM authentication [works again](https://github.com/git-for-windows/git/issues/987) when accessing a remote repository via HTTP/HTTPS without having to specify empty user name and password.
 
 ## Changes since Git for Windows v2.10.2 (November 2nd 2016)
 
