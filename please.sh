@@ -1348,12 +1348,15 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				test installer != $m ||
 				extra=--window-title-version="$version"
 				/usr/src/build-extra/$m/release.sh \
-					'"$output"' $extra "$version" || break
+					'"$output"' $extra "$version" || {
+					postcmd="$postcmd && exit 1"
+					break
+				}
 			done &&
 			(cd /usr/src/build-extra &&
 			 git diff -- ReleaseNotes.md | git apply -R) &&
 			eval "$postcmd"' ||
-		die "Could not install '%s' in '%s'\n" "$pkglist" "$sdk"
+		die "Could not use package '%s' in '%s'\n" "$pkglist" "$sdk"
 	done
 
 	test -z "$upload" || {
