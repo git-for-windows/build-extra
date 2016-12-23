@@ -66,7 +66,8 @@ test $# = 0 ||
 die "Usage: $0 [-f | --force] [--output=<directory>] ( --debug-wizard-page=<page> | <version> )"
 
 displayver="$(echo "${version#prerelease-}" |
-	sed -e 's/\.[^.0-9]*\./\./g' -e 's/\.rc/\./g')"
+	sed -e 's/\.[^0-9]*\.[^0-9]*\./\./g' \
+		-e 's/\.[^.0-9]*\./\./g' -e 's/\.rc/\./g')"
 case "$displayver" in
 [0-9]*) ;; # okay
 *) die "InnoSetup requires a version that begins with a digit ($displayver)";;
