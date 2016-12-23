@@ -1202,8 +1202,8 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	pkgprefix="$git_src_dir/../../mingw-w64"
 	pkgsuffix="${pkgver#v}-1-any.pkg.tar.xz"
 	if test -n "$only_64_bit" -o \
-			-f "${pkgprefix}-i686-git-doc-man-${pkgsuffix}" &&
-		test -f "${pkgprefix}-x86_64-git-doc-man-${pkgsuffix}" &&
+			-f "${pkgprefix}-i686-git-doc-html-${pkgsuffix}" &&
+		test -f "${pkgprefix}-x86_64-git-doc-html-${pkgsuffix}" &&
 		test "$(git rev-parse --verify "$1"^{commit})" = \
 			"$(git -C "$git_src_dir" rev-parse --verify \
 				"$tag_name"^{commit})"
