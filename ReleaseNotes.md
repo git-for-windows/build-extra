@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 * Non-ASCII characters are [now shown properly again](https://github.com/git-for-windows/git/issues/981) in Git Bash.
 * Implicit NTLM authentication [works again](https://github.com/git-for-windows/git/issues/987) when accessing a remote repository via HTTP/HTTPS without having to specify empty user name and password.
 * Our `poll()` emulation [now uses 64-bit tick counts](https://github.com/git-for-windows/git/pull/1003) to avoid the (very rare) wraparound issue where it could miscalculate time differences every 49 days.
+* The `--no-lock-index` option of `git status` [is now also respected also in submodules](https://github.com/git-for-windows/git/pull/1004).
 
 ## Changes since Git for Windows v2.10.2 (November 2nd 2016)
 
