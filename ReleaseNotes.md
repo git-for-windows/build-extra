@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Reading a large index [has been speeded up using pthreads](https://github.com/git-for-windows/git/pull/978).
+* The `checkout` operation [was speeded up](https://github.com/git-for-windows/git/pull/988) for the common cases.
 
 ### Bug Fixes
 
