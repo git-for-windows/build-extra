@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Reading a large index [has been speeded up using pthreads](https://github.com/git-for-windows/git/pull/978).
 * The `checkout` operation [was speeded up](https://github.com/git-for-windows/git/pull/988) for the common cases.
+* The `status` operation [was made faster](https://github.com/git-for-windows/git/pull/991) in large worktrees with many changes.
 
 ### Bug Fixes
 
