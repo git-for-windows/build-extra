@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * The `checkout` operation [was speeded up](https://github.com/git-for-windows/git/pull/988) for the common cases.
 * The `status` operation [was made faster](https://github.com/git-for-windows/git/pull/991) in large worktrees with many changes.
 * The `diff` operation saw [performance improvements](https://github.com/git-for-windows/git/pull/996) when working on a huge number of renamed files.
+* PuTTY's `plink.exe` [can now be used in `GIT_SSH_COMMAND` without jumping through hoops, too](https://github.com/git-for-windows/git/pull/1006).
 
 ### Bug Fixes
 
