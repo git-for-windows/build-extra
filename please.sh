@@ -1382,6 +1382,7 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	bad=
 	good=
+	skip_run=
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -1395,6 +1396,10 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 		;;
 	--good=*)
 		good=${1#*=}
+		;;
+	--skip-run)
+		# mostly for debugging
+		skip_run=t
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -1431,11 +1436,16 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 	(cd "$git_src_dir" ||
 	 die "Could not cd to %s\n" "$git_src_dir"
 
+	 test -n "$skip_run" ||
 	 test ! -f "$(git rev-parse --git-path BISECT_START)" ||
 	 git bisect reset ||
 	 die "Could not reset previous bisect\n"
 
-	 if test -z "$bad"
+	 if test -n "$skip_run"
+	 then
+		test -f "$(git rev-parse --git-path BISECT_RUN)" ||
+		die "No previous bisect run detected\n"
+	 elif test -z "$bad"
 	 then
 		require_remote git-for-windows \
 			https://github.com/git-for-windows/git &&
@@ -1466,7 +1476,7 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 	 chmod a+x "$bisect_run" ||
 	 die "Could not write %s\n" "$bisect_run"
 
-	 if test -z "$bad"
+	 if test -z "$bad" && test -z "$skip_run"
 	 then
 		echo "Testing in pu..." >&2
 		! sh "$bisect_run" ||
@@ -1493,8 +1503,11 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 		echo "Bisecting between $good and $bad" >&2
 	 fi
 
-	 git bisect start "$bad" "$good" &&
-	 git bisect run "$bisect_run") ||
+	 if test -z "$skip_run"
+	 then
+		git bisect start "$bad" "$good" &&
+		git bisect run "$bisect_run"
+	 fi) ||
 	exit
 }
 
