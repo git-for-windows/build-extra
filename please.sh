@@ -1366,6 +1366,11 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	die "Could not publish %s\n" "$tag_name"
 }
 
+require_commitcomment_credentials () {
+	test -n "$(git config github.commitcomment.credentials)" ||
+	die "Need credentials to publish commit comments\n"
+}
+
 add_commit_comment_on_github () { # <org/repo> <commit> <message>
 	credentials="$(git config github.commitcomment.credentials)"
 	test -n "$credentials" ||
@@ -1378,11 +1383,12 @@ add_commit_comment_on_github () { # <org/repo> <commit> <message>
 		'{"body":"'"$quoted"'"}' "$url"
 }
 
-bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision>] <test>
+bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision>] [--publish-comment] <test>
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	bad=
 	good=
 	skip_run=
+	publish_comment=
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -1400,6 +1406,10 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 	--skip-run)
 		# mostly for debugging
 		skip_run=t
+		;;
+	--publish-comment)
+		require_commitcomment_credentials
+		publish_comment=t
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -1509,6 +1519,65 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 		git bisect run "$bisect_run"
 	 fi) ||
 	exit
+
+	if test -n "$publish_comment"
+	then
+		# read full file name of the broken test
+		broken_test="$(sed -n 's/.* make -C t "\(.*\)"$/\1/p' \
+			<"$(git rev-parse --git-dir)/bisect-run.sh")"
+
+		bisect_run="$(git rev-parse --git-path BISECT_RUN)"
+		first_bad="$(sed -n \
+			'1s/^\([0-9a-f]*\) is the first bad commit$/\1/p' \
+			<"$bisect_run")"
+		skipped=
+		skipped_message=
+		if test -z "$first_bad"
+		then
+			skipped="$(sed -e '1,/^The first bad commit could be/d' \
+				-e '/^We cannot bisect more/,$d' <"$bisect_run")"
+			first_bad="$(echo "$skipped" | sed -n '$p')"
+			skipped="$(echo "$skipped" | sed '$d')"
+			case $(echo "$skipped" | wc -l) in
+			1)
+				skipped_message=" (or $skipped)"
+				;;
+			[2-9]*)
+				skipped_message=" (or any of these: $skipped)"
+				;;
+			esac
+		fi
+		git checkout "$first_bad" ||
+		die "Could not check out first bad commit: %s\n" "$first_bad"
+		make -j15 ||
+		die "Could not build %s\n" "$first_bad"
+		err="$(git rev-parse --git-path broken-test.err)"
+		if (cd t && bash "$broken_test" -i -v -x) >"$err" 2>&1
+		then
+			die "Test %s passes?\n" "$broken_test"
+		fi
+		message="$(cat <<EOF
+The [administrative script of Git for Windows](https://github.com/git-for-windows/build-extra/blob/master/please.sh) identified a problem with this commit$skipped_message while running \`$broken_test\`:
+
+\`\`\`
+`cat "$err"`
+\`\`\`
+EOF
+)"
+
+		add_commit_comment_on_github git/git "$first_bad" "$message" ||
+		die "Could not add a commit comment for %s\n" "$first_bad"
+		test -z "$skipped" || for s in $skipped
+		do
+			message="$(printf "%s %s %s" \
+				"There was a problem building Git when trying to" \
+				"bisect the failing $broken_test, see $first_bad" \
+				"for the output of the failed test.")"
+			add_commit_comment_on_github git/git "$s" "$message" ||
+			die "Could not add a commit comment for %s\n" "$first_bad"
+		done
+
+	fi
 }
 
 tag_git () { #
