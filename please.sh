@@ -1366,6 +1366,18 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	die "Could not publish %s\n" "$tag_name"
 }
 
+add_commit_comment_on_github () { # <org/repo> <commit> <message>
+	credentials="$(git config github.commitcomment.credentials)"
+	test -n "$credentials" ||
+	die "Need credentials to publish commit comments\n"
+
+	quoted="$(echo "$3" |
+		sed -e ':1;${s/[\\"]/\\&/g;s/\n/\\n/g;s/\t/\\t/g};N;b1')"
+	url="https://$credentials@api.github.com/repos/$1/commits/$2/comments"
+	curl -X POST --show-error -s -XPOST -d \
+		'{"body":"'"$quoted"'"}' "$url"
+}
+
 bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision>] <test>
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	bad=
