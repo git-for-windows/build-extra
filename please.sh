@@ -1091,8 +1091,9 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		while case "$force_version" in
 		*'%(use-existing-tag)'*)
 			tag_name="$(git for-each-ref --points-at="$1" \
-				--sort=-taggerdate --count=1 \
-				--format='%(refname:strip=2)' 'refs/tags/*')"
+				--sort=-taggerdate \
+				--format='%(refname:strip=2)' 'refs/tags/*' |
+			    sed -ne '/\.g[0-9a-f]\{7,\}$/d' -e 'p;q')"
 			if test -z "$tag_name"
 			then
 				force_version="$(echo "$force_version" |
