@@ -1090,10 +1090,6 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	then
 		while case "$force_version" in
 		*'%(use-existing-tag)'*)
-			echo "DEBUG: use existing tag for $1" >&2
-			git for-each-ref --points-at="$1" \
-				--sort=-taggerdate \
-				--format='%(refname:strip=2)' 'refs/tags/*' >&2
 			tag_name="$(git for-each-ref --points-at="$1" \
 				--sort=-taggerdate \
 				--format='%(refname:strip=2)' 'refs/tags/*' |
