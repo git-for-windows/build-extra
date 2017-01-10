@@ -52,6 +52,7 @@ This package contains software from a number of other projects including Bash, z
 * The regression of v2.11.0 where Git could no longer push to shared folders via UNC paths [is fixed](https://github.com/git-for-windows/git/issues/979).
 * A bug in the MSYS2 runtime where it performed POSIX->Windows argument conversion incorrectly [was fixed](https://github.com/git-for-windows/msys2-runtime/commit/3cf1b9c3ac4c5490bc94b00cc44682d2637d0b95).
 * The MSYS2 runtime [was prepared to access the `FAST_CWD` internal data structure in upcoming Windows versions](https://github.com/git-for-windows/msys2-runtime/commit/5fe6d81012e97a348608511450f6a63750c906b6).
+* [Fixed a bug](https://github.com/git-for-windows/git/commit/ecb88230d10382833dc961f83cd1092b8d0a2af2) in the experimental builtin difftool where it would not handle copied/renamed files properly.
 
 ## Changes since Git for Windows v2.10.2 (November 2nd 2016)
 
