@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 * The `diff` operation saw [performance improvements](https://github.com/git-for-windows/git/pull/996) when working on a huge number of renamed files.
 * PuTTY's `plink.exe` [can now be used in `GIT_SSH_COMMAND` without jumping through hoops, too](https://github.com/git-for-windows/git/pull/1006).
 * The MSYS2 runtime was [synchronized with Cygwin 2.6.1](https://github.com/git-for-windows/msys2-runtime/commit/038b376b2b02ab916eabac006ac54b1d29a4be75).
+* A bug in the MSYS2 runtime where it performed POSIX->Windows argument conversion incorrectly [was fixed](https://github.com/git-for-windows/msys2-runtime/commit/3cf1b9c3ac4c5490bc94b00cc44682d2637d0b95).
 
 ### Bug Fixes
 
