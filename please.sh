@@ -1106,10 +1106,17 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		*'%(infix:'*')'*)
 			tag_name="${force_version#*%(infix:}"
 			tag_name="${tag_name%%)*}"
-			tag_name="$(git describe --match "v[0-9]*.windows.*" \
+			match=windows
+			case "$tag_name" in
+			*=*)
+				match="${tag_name%%=*}"
+				tag_name="${tag_name#*=}"
+				;;
+			esac
+			tag_name="$(git describe --match "v[0-9]*.$match.*" \
 					--abbrev=7 "$1" |
 				sed -e "s|-\(g[0-9a-f]*\)$|.\1|g" -e \
-					"s|\.windows\.|.$tag_name.|g")"
+					"s|\.$match\.|.$tag_name.|g")"
 			force_version="$(echo "$force_version" |
 				sed "s|%(infix:[^)]*)|$tag_name|g")"
 			;;
