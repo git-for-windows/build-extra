@@ -300,9 +300,9 @@ ensure_labeled () {
 generate_script () {
 	echo "Generating script..." >&2
 	origtodo="$(git rev-list --no-merges --cherry-pick --pretty=oneline \
-		--abbrev-commit --reverse --left-right --topo-order \
-		$upstream..$head | \
-		sed -n "s/^>/pick /p")"
+		--abbrev-commit --reverse --right-only --topo-order \
+		$(test "$onto" = "$upstream" || echo ^$upstream) $onto...$head | \
+		sed "s/^/pick /")"
 	shorthead=$(git rev-parse --short $head)
 	shortonto=$(git rev-parse --short $onto)
 
@@ -310,7 +310,7 @@ generate_script () {
 	# merges, so we generate the topoligical order ourselves here
 
 	list="$(git log --format='%h %p' --topo-order --reverse \
-		$upstream..$head)"
+		$(test "$onto" = "$upstream" || echo ^$upstream) $onto..$head)"
 
 	todo=
 	if test -n "$merging"
