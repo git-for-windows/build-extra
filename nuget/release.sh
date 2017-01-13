@@ -7,7 +7,7 @@ die () {
 	exit 1
 }
 
-AUTHOR=$USERNAME
+AUTHOR=
 ID=GitForWindows
 while test $# -gt 1
 do
@@ -25,6 +25,12 @@ die "Usage: $0 [--author=<name>] [--id=<name>] <version> [<extra-package>...]"
 
 VERSION=$1
 shift
+
+if test -z "$AUTHOR"
+then
+	AUTHOR="$(git config nuget.author)"
+	test -n "$AUTHOR" || AUTHOR="$USERNAME"
+fi
 
 if test -x "$BUILDEXTRA"/nuget/nuget.exe
 then
