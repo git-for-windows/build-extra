@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * [Fixed an off-by-two bug in the POSIX emulation layer](https://github.com/git-for-windows/msys2-runtime/commit/cfaf466391f992525a66d91ebb8e33cadbc08438) that possibly affected third-party Perl scripts that load native libraries dynamically.
+* A regression in `rebase -i`, introduced into v2.11.0(2), which caused commit attribution to be mishandled after resolving conflicts, [was fixed](https://github.com/git-for-windows/git/commit/e11df2efb3072fe73153442589129d2eb8d9ea02).
 
 ## Changes since Git for Windows v2.11.0 (December 1st 2016)
 
