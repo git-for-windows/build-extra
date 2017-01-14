@@ -18,8 +18,6 @@ test "--update" != "$1" || {
 }
 
 # IDs
-# v2.7.2.windows.1
-#id=${1:-2671180}
 # v2.7.3.windows.1
 #id=${1:-2818116}
 # v2.7.4.windows.1
@@ -77,7 +75,12 @@ test "--update" != "$1" || {
 # v2.11.1.mingit-prerelease.1
 #id=${1:-5068926}
 # v2.11.0.windows.2
-id=${1:-5153384}
+#id=${1:-5153384}
+# v2.11.0.windows.3
+id=${1:-5159523}
+# prerelease-v2.10.0.windows.1.11.geda474c
+# prerelease-v2.11.0.windows.1.1
+# v2.11.1.mingit-prerelease.1
 # prerelease-v2.10.0.windows.1.11.geda474c
 # prerelease-v2.10.0.windows.1.11.geda474c
 # prerelease-v2.10.0.windows.1.11.geda474c
