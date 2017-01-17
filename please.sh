@@ -1114,7 +1114,15 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				;;
 			esac
 			tag_name="$(git describe --match "v[0-9]*.$match.*" \
-					--abbrev=7 "$1" |
+					--abbrev=7 "$1")"
+			while echo "$tag_name" |
+			    grep -q '\.g[0-9a-f]\{7,\}-[0-9]\+-g[0-9a-f]\{7,\}$'
+			do
+				git tag -d "${tag_name%-[0-9]*}"
+				tag_name="$(git describe --match \
+					"v[0-9]*.$match.*" --abbrev=7 "$1")"
+			done
+			tag_name="$(echo "$tag_name" |
 				sed -e "s|-\(g[0-9a-f]*\)$|.\1|g" -e \
 					"s|\.$match\.|.$tag_name.|g")"
 			force_version="$(echo "$force_version" |
