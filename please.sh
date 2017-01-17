@@ -1113,6 +1113,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				tag_name="${tag_name#*=}"
 				;;
 			esac
+set -x
 			tag_name="$(git describe --match "v[0-9]*.$match.*" \
 					--abbrev=7 "$1")"
 			while echo "$tag_name" |
@@ -1125,6 +1126,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 			tag_name="$(echo "$tag_name" |
 				sed -e "s|-\(g[0-9a-f]*\)$|.\1|g" -e \
 					"s|\.$match\.|.$tag_name.|g")"
+case "$tag_name" in *7851316*) die "TEST\n";; esac
 			force_version="$(echo "$force_version" |
 				sed "s|%(infix:[^)]*)|$tag_name|g")"
 			;;
