@@ -1117,7 +1117,7 @@ set -x
 			tag_name="$(git describe --match "v[0-9]*.$match.*" \
 					--abbrev=7 "$1")"
 			while echo "$tag_name" |
-			    grep -q '\.g[0-9a-f]\{7,\}-[0-9]\+-g[0-9a-f]\{7,\}$'
+			    grep -q '\.g[0-9a-f]\{7,\}-[0-9]\+\.g[0-9a-f]\{7,\}$'
 			do
 				git tag -d "${tag_name%-[0-9]*}"
 				tag_name="$(git describe --match \
