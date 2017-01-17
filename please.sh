@@ -1116,9 +1116,11 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 			desc="$(git describe --match "v[0-9]*.$match.*" \
 					--abbrev=7 "$1")"
 			while echo "$desc" |
-			    grep -q '\.g[0-9a-f]\{7,\}-[0-9]\+\.g[0-9a-f]\{7,\}$'
+			grep '\.g[0-9a-f]\{7,\}\(\.[0-9]\+\)\?-[0-9]\+\.g[0-9a-f]\{7,\}$'
 			do
-				git tag -d "${desc%-[0-9]*}"
+				git tag -d "$desc" ||
+				git tag -d "${desc%-[0-9]*}" ||
+				die "Could not delete tag %s\n" "$desc"
 				desc="$(git describe --match \
 					"v[0-9]*.$match.*" --abbrev=7 "$1")"
 			done
