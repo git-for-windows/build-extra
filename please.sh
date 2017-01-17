@@ -1114,16 +1114,16 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				;;
 			esac
 set -x
-			tag_name="$(git describe --match "v[0-9]*.$match.*" \
+			desc="$(git describe --match "v[0-9]*.$match.*" \
 					--abbrev=7 "$1")"
-			while echo "$tag_name" |
+			while echo "$desc" |
 			    grep -q '\.g[0-9a-f]\{7,\}-[0-9]\+\.g[0-9a-f]\{7,\}$'
 			do
-				git tag -d "${tag_name%-[0-9]*}"
-				tag_name="$(git describe --match \
+				git tag -d "${desc%-[0-9]*}"
+				desc="$(git describe --match \
 					"v[0-9]*.$match.*" --abbrev=7 "$1")"
 			done
-			tag_name="$(echo "$tag_name" |
+			tag_name="$(echo "$desc" |
 				sed -e "s|-\(g[0-9a-f]*\)$|.\1|g" -e \
 					"s|\.$match\.|.$tag_name.|g")"
 case "$tag_name" in *7851316*) die "TEST\n";; esac
