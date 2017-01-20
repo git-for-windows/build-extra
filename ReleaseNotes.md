@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Git GUI will [no longer set `GIT_DIR` when calling Git Bash after visualizing the commit history](https://github.com/git-for-windows/git/pull/1032).
+* When the `PATH` contains UNC entries, Git Bash will [no longer error out with a "Bad address" error message](https://github.com/git-for-windows/git/issues/1033).
 
 ## Changes since Git for Windows v2.11.0(2) (January 13th 2017)
 
