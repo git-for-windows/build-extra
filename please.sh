@@ -141,6 +141,17 @@ sync () { # [--force]
 			;;
 		esac
 
+		# A ruby upgrade (or something else) may require a re-install
+		# of the `asciidoctor` gem. We only do this for the 64-bit
+		# SDK, though, as we require asciidoctor only when building
+		# Git, whose 32-bit packages are cross-compiled in from 64-bit.
+		test "$sdk64" != "$sdk" ||
+		PATH="$sdk/usr/bin:$PATH" \
+		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			'test -n "$(gem list --local | grep "^asciidoctor ")" ||
+			 gem install asciidoctor' ||
+		die "Could not re-install asciidoctor in %s\n" "$sdk"
+
 		# git-extra rewrites some files owned by other packages,
 		# therefore it has to be (re-)installed now
 		PATH="$sdk/bin:$PATH" \
