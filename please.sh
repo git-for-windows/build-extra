@@ -1003,7 +1003,8 @@ update_vs_branch () { # [--worktree=<path>] [--remote=<remote>] [--branch=<branc
 		echo "vs/$branch was already rebased" >&2
 		exit 0
 	 fi &&
-	 git reset --hard refs/remotes/"$remote/$branch" &&
+	 git reset --hard &&
+	 git checkout --force refs/remotes/"$remote/$branch"^0 &&
 	 make MSVC=1 vcxproj &&
 	 git push "$remote" +HEAD:refs/heads/vs/"$branch" ||
 	 die "Could not push vs/$branch\n") ||
