@@ -944,8 +944,9 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
-update_vs_branch () { # [--worktree=<path>]
+update_vs_branch () { # [--worktree=<path>] [--branch=<branch>]
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	branch=master
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -953,6 +954,9 @@ update_vs_branch () { # [--worktree=<path>]
 		die "Worktree does not exist: %s\n" "$git_src_dir"
 		git rev-parse -q --verify e83c5163316f89bfbde7d ||
 		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
+		;;
+	--branch=*)
+		branch="${1#*=}"
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -978,16 +982,17 @@ update_vs_branch () { # [--worktree=<path>]
 	 die "Could not update remotes\n"
 
 	 if prev=$(git rev-parse -q --verify \
-		refs/remotes/git-for-windows/vs/master) &&
-		test 0 = $(git rev-list --count "$prev"..git-for-windows/master)
+		refs/remotes/git-for-windows/vs/"$branch") &&
+		test 0 = $(git rev-list --count \
+			"$prev"..git-for-windows/"$branch")
 	 then
-		echo "vs/master was already rebased" >&2
+		echo "vs/$branch was already rebased" >&2
 		exit 0
 	 fi &&
-	 git reset --hard refs/remotes/git-for-windows/master &&
+	 git reset --hard refs/remotes/git-for-windows/"$branch" &&
 	 make MSVC=1 vcxproj &&
-	 git push git-for-windows +HEAD:refs/heads/vs/master ||
-	 die "Could not push vs/master\n") ||
+	 git push git-for-windows +HEAD:refs/heads/vs/"$branch" ||
+	 die "Could not push vs/$branch\n") ||
 	exit
 }
 
