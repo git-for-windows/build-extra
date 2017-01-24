@@ -149,6 +149,9 @@ sync () { # [--force]
 		PATH="$sdk/usr/bin:$PATH" \
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			'test -n "$(gem list --local | grep "^asciidoctor ")" ||
+			 gem install asciidoctor || exit;
+			 export PATH=/mingw32/bin:$PATH;
+			 test -n "$(gem list --local | grep "^asciidoctor ")" ||
 			 gem install asciidoctor' ||
 		die "Could not re-install asciidoctor in %s\n" "$sdk"
 
