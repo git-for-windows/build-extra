@@ -944,8 +944,9 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	exit
 }
 
-update_vs_branch () { # [--worktree=<path>] [--branch=<branch>]
+update_vs_branch () { # [--worktree=<path>] [--remote=<remote>] [--branch=<branch>]
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	remote=git-for-windows
 	branch=master
 	while case "$1" in
 	--worktree=*)
@@ -954,6 +955,9 @@ update_vs_branch () { # [--worktree=<path>] [--branch=<branch>]
 		die "Worktree does not exist: %s\n" "$git_src_dir"
 		git rev-parse -q --verify e83c5163316f89bfbde7d ||
 		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
+		;;
+	--remote=*)
+		remote="${1#*=}"
 		;;
 	--branch=*)
 		branch="${1#*=}"
@@ -977,21 +981,31 @@ update_vs_branch () { # [--worktree=<path>] [--branch=<branch>]
 	require_git_src_dir
 
 	(cd "$git_src_dir" &&
-	 require_remote git-for-windows https://github.com/git-for-windows/git &&
-	 require_push_url git-for-windows ||
-	 die "Could not update remotes\n"
+	 case "$remote" in
+	 git-for-windows)
+		require_remote git-for-windows \
+			https://github.com/git-for-windows/git &&
+		require_push_url git-for-windows
+		;;
+	 *)
+		test -n "$(git config remote."$remote".url)" &&
+		git fetch "$remote" \
+			refs/heads/"$branch":refs/remotes/"$remote/$branch"
+		;;
+	 esac ||
+	 die "Could not update remote\n"
 
 	 if prev=$(git rev-parse -q --verify \
-		refs/remotes/git-for-windows/vs/"$branch") &&
+		refs/remotes/"$remote"/vs/"$branch") &&
 		test 0 = $(git rev-list --count \
-			"$prev"..git-for-windows/"$branch")
+			"$prev"..refs/remotes/"$remote/$branch")
 	 then
 		echo "vs/$branch was already rebased" >&2
 		exit 0
 	 fi &&
-	 git reset --hard refs/remotes/git-for-windows/"$branch" &&
+	 git reset --hard refs/remotes/"$remote/$branch" &&
 	 make MSVC=1 vcxproj &&
-	 git push git-for-windows +HEAD:refs/heads/vs/"$branch" ||
+	 git push "$remote" +HEAD:refs/heads/vs/"$branch" ||
 	 die "Could not push vs/$branch\n") ||
 	exit
 }
