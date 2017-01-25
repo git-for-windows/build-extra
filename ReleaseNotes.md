@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.11.0(3) (January 14th 2017)
 
+### New Features
+
+* Performance [was enhanced when using fscache in a massively sparse checkout](https://github.com/git-for-windows/git/pull/994).
+
 ### Bug Fixes
 
 * Git GUI will [no longer set `GIT_DIR` when calling Git Bash after visualizing the commit history](https://github.com/git-for-windows/git/pull/1032).
