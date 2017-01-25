@@ -576,8 +576,12 @@ record_rerere_train () {
 	 cp "$orig_index" "$GIT_INDEX_FILE" &&
 	 git add -u &&
 	 tree4="$(git write-tree)" &&
-	 stopped_sha="$(git rev-parse --git-path rebase-merge/stopped-sha)" &&
-	 stopped_sha="$(cat "$stopped_sha")" &&
+	 if ! stopped_sha="$(git rev-parse --git-path \
+			rebase-merge/stopped-sha)" ||
+		! stopped_sha="$(cat "$stopped_sha")"
+	 then
+		stopped_sha="$(git rev-parse -q --verify MERGE_HEAD)"
+	 fi &&
 	 base_msg="$(printf "cherry-pick %s onto %s\n\n%s\n%s\n\n\t%s" \
 		"$(git show -s --pretty=tformat:%h $stopped_sha)" \
 		"$(git show -s --pretty=tformat:%h HEAD)" \
