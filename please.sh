@@ -806,11 +806,10 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 		die "No rebase was started...\n"
 
 		orig_rerere_train=
-		rerere_train2=
-		if rerere_train="$(git rev-parse -q --verify \
-				refs/heads/rerere-train)" &&
-			rerere_train2="$(git rev-parse -q --verify \
-				refs/remotes/git-for-windows/rerere-train)"
+		if rerere_train2="$(git rev-parse -q --verify \
+				refs/remotes/git-for-windows/rerere-train)" &&
+			rerere_train="$(git rev-parse -q --verify \
+				refs/heads/rerere-train)"
 		then
 			orig_rerere_train="$rerere_train.."
 
