@@ -806,16 +806,28 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 		die "No rebase was started...\n"
 
 		orig_rerere_train=
+		rerere_train2=
 		if rerere_train="$(git rev-parse -q --verify \
-				refs/heads/rerere-train)"
+				refs/heads/rerere-train)" &&
+			rerere_train2="$(git rev-parse -q --verify \
+				refs/remotes/git-for-windows/rerere-train)"
 		then
 			orig_rerere_train="$rerere_train.."
 
-			! rerere_train2="$(git rev-parse -q --verify \
-				refs/remotes/git-for-windows/rerere-train)" ||
 			test 0 -eq $(git rev-list --count \
 				"$rerere_train2..$rerere_train") ||
-			die 'The `rerere-train` branch has unpushed changes\n'
+			if test -z "$(git merge-base \
+				"$rerere_train" "$rerere_train2")"
+			then
+				rm -r "$(git rev-parse --git-path rr-cache)" ||
+				die "Could not reset rerere cache\n"
+				git update-ref refs/heads/rerere-train \
+					"$rerere_train2" ||
+				die 'Could not reset `rerere-train` branch\n'
+			else
+				die 'The `%s` branch has unpushed changes\n' \
+					rerere-train
+			fi
 		fi
 
 		require_remote upstream https://github.com/git/git &&
@@ -824,13 +836,12 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 		require_push_url git-for-windows ||
 		die "Could not update remotes\n"
 
-		if rerere_train="$(git rev-parse -q --verify \
-			refs/remotes/git-for-windows/rerere-train)"
+		if test -n "$rerere_train2"
 		then
-			rerere_train "$orig_rerere_train$rerere_train" ||
+			rerere_train "$orig_rerere_train$rerere_train2" ||
 			die "Could not replay merge conflict resolutions\n"
 
-			git push . $rerere_train:refs/heads/rerere-train ||
+			git push . $rerere_train2:refs/heads/rerere-train ||
 			die "Could not update local 'rerere-train' branch\n"
 		fi
 	 fi &&
