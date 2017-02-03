@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Git v2.11.1](https://github.com/git/git/blob/v2.11.1/Documentation/RelNotes/2.11.1.txt).
 * Performance [was enhanced when using fscache in a massively sparse checkout](https://github.com/git-for-windows/git/pull/994).
+* Git hooks [can now be `.exe` files](https://github.com/git-for-windows/git/commit/1c6c2420ff6683d93a61fc790842ab712f2a926b).
 
 ### Bug Fixes
 
