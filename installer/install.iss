@@ -321,8 +321,10 @@ const
     GP_GCM            = 2;
     GP_Symlinks       = 3;
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     // Experimental options
     GP_BuiltinDifftool = 1;
+#endif
 
     // BindImageEx API constants.
     BIND_NO_BOUND_IMPORTS  = $00000001;
@@ -355,9 +357,11 @@ var
     ExtraOptionsPage:TWizardPage;
     RdbExtraOptions:array[GP_FSCache..GP_Symlinks] of TCheckBox;
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     // Wizard page and variables for the experimental options.
     ExperimentalOptionsPage:TWizardPage;
     RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_BuiltinDifftool] of TCheckBox;
+#endif
 
     // Wizard page and variables for the processes page.
     SessionHandle:DWORD;
@@ -749,7 +753,9 @@ var
     LblLFOnly,LblCRLFAlways,LblCRLFCommitAsIs:TLabel;
     LblMinTTY,LblConHost:TLabel;
     LblFSCache,LblGCM,LblGCMLink,LblSymlinks,LblSymlinksLink:TLabel;
+#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     LblBuiltinDifftool:TLabel;
+#endif
     BtnPlink:TButton;
     Data:String;
 begin
@@ -1288,6 +1294,7 @@ begin
 
     RdbExtraOptions[GP_Symlinks].Checked:=Data='Enabled';
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     (*
      * Create a custom page for experimental options.
      *)
@@ -1328,7 +1335,7 @@ begin
             RdbExperimentalOptions[GP_BuiltinDifftool].Checked:=False
 	else
             RdbExperimentalOptions[GP_BuiltinDifftool].Checked:=Data='Enabled';
-
+#endif
 
     (*
      * Create a custom page for finding the processes that lock a module.
@@ -1361,7 +1368,11 @@ begin
     // This button is only used by the uninstaller.
     ContinueButton:=NIL;
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     PageIDBeforeInstall:=ExperimentalOptionsPage.ID;
+#else
+    PageIDBeforeInstall:=ExtraOptionsPage.ID;
+#endif
 
 #ifdef DEBUG_WIZARD_PAGE
     DebugWizardPage:={#DEBUG_WIZARD_PAGE}.ID;
@@ -1799,6 +1810,7 @@ begin
         Configure experimental options
     }
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     if RdbExperimentalOptions[GP_BuiltinDifftool].checked then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system difftool.useBuiltin true','',SW_HIDE,ewWaitUntilTerminated, i) then
         LogError('Could not configure difftool.useBuiltin')
@@ -1806,6 +1818,7 @@ begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset difftool.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
         LogError('Could not configure difftool.useBuiltin')
     end;
+#endif
 
     {
         Modify the environment
@@ -2010,11 +2023,13 @@ begin
     RecordChoice(PreviousDataKey,'Enable Symlinks',Data);
 
     // Experimental options.
+#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     Data:='Disabled';
     if RdbExperimentalOptions[GP_BuiltinDifftool].Checked then begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Enable Builtin Difftool',Data);
+#endif
 
     Path:=ExpandConstant('{app}\etc\install-options.txt');
     if not SaveStringToFile(Path,ChosenOptions,False) then

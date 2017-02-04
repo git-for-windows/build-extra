@@ -117,6 +117,13 @@ printf "; List of files\n%s\n%s\n%s\n%s\n%s\n" \
 >file-list.iss ||
 die "Could not write to file-list.iss"
 
+case "$LIST" in
+*/libexec/git-core/git-legacy-difftool*)
+	inno_defines="$(printf "%s\n%s" "$inno_defines" \
+		"#define WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL 1")"
+	;;
+esac
+
 test -z "$LIST" ||
 echo "$LIST" |
 sed -e 's|/|\\|g' \
