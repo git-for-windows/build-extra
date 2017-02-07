@@ -933,8 +933,9 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 	exit
 }
 
-test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
+test_remote_branch () { # [--worktree=<dir>] [--bisect-and-comment] <remote-tracking-branch>
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	bisect_and_comment=
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -942,6 +943,10 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 		die "Worktree does not exist: %s\n" "$git_src_dir"
 		git rev-parse -q --verify e83c5163316f89bfbde7d ||
 		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
+		;;
+	--bisect-and-comment)
+		require_commitcomment_credentials
+		bisect_and_comment=t
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -963,7 +968,24 @@ test_remote_branch () { # [--worktree=<dir>] <remote-tracking-branch>
 	 esac &&
 	 git checkout -f "$1" &&
 	 git reset --hard &&
-	 build_and_test_64) ||
+	 if ! build_and_test_64 && test -n "$bisect_and_comment"
+	 then
+		case "$1" in
+		upstream/pu) good=upstream/next;;
+		upstream/next) good=upstream/master;;
+		upstream/master) good=upstream/maint;;
+		*) die "Cannot bisect from bad '%s'\n" "$1";;
+		esac
+		for f in $(cat "$(git rev-parse --git-dir)/failing.txt")
+		do
+			"$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
+				sh "'"$this_script_path"'" bisect_broken_test \
+					--bad="'"$1"'" --good='$good' \
+					--skip-run \
+					--worktree=. --publish-comment '$f
+		done
+		exit 1
+	 fi) ||
 	exit
 }
 
@@ -2279,6 +2301,7 @@ publish_sdk () { #
 	git --git-dir="$sdk64"/usr/src/build-extra/.git push origin "$tag"
 }
 
+this_script_path="$(cygpath -am "$0")"
 test $# -gt 0 &&
 test help != "$*" ||
 die "Usage: $0 <command>\n\nCommands:\n%s" \
