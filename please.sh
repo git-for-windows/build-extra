@@ -716,7 +716,15 @@ build_and_test_64 () {
 		: make sure that the .dll files are correctly resolved: &&
 		cd $PWD &&
 		rm -f t/test-results/*.{counts,tee} &&
-		if ! make -j5 DEVELOPER=1 -k test
+		if ! make -j5 -k DEVELOPER=1
+		then
+			echo "Re-running build (to show failures)" >&2
+			make -k DEVELOPER=1 || {
+				echo "Build failed!" >&2
+				exit 1
+			}
+		fi &&
+		if ! make -C t -j5 -k
 		then
 			cd t &&
 			failed_tests="$(cd test-results &&
