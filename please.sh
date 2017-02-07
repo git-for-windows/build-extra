@@ -732,7 +732,8 @@ build_and_test_64 () {
 				echo "No failed tests ?!?" >&2
 				exit 1
 			}
-			still_failing=
+			still_failing="$(git rev-parse --git-dir)/failing.txt"
+			rm -f "$still_failing"
 			for t in $failed_tests
 			do
 				t=${t%*.counts}
@@ -743,12 +744,12 @@ build_and_test_64 () {
 					exit 1
 				}
 				echo "Re-running $t" >&2
-				time bash $t.sh -i -v -x --tee ||
-				still_failing="$(printf "%s\\n%s" \
-					"$still_failing" $t.sh)"
+				time bash $t.sh -i -v -x ||
+				echo "$t.sh" >>"$still_failing"
 			done
-			test -z "$still_failing" || {
-				echo "Still failing:$still_failing" >&2
+			test ! -s "$still_failing" || {
+				printf "Still failing:\n\n%s\n" \
+					"$(cat "$still_failing")" >&2
 				exit 1
 			}
 		fi'
