@@ -1545,7 +1545,7 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 	 printf "#!/bin/sh\n\n%s\n%s\n%s%s\n%s\n" \
 		"test -f \"t/$broken_test\" || exit 0" \
 		"echo \"Running make\" >&2" \
-		"o=\"\$(make -j15 2>&1)\" || " \
+		"o=\"\$(make -j5 2>&1)\" || " \
 		"{ echo \"\$o\" >&2; exit 125; }" \
 		"GIT_TEST_OPTS=-i make -C t \"$broken_test\"" \
 		>"$bisect_run" &&
@@ -1615,7 +1615,7 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 		fi
 		git checkout "$first_bad" ||
 		die "Could not check out first bad commit: %s\n" "$first_bad"
-		make -j15 ||
+		make -j5 ||
 		die "Could not build %s\n" "$first_bad"
 		err="$(git rev-parse --git-path broken-test.err)"
 		if (cd t && bash "$broken_test" -i -v -x) >"$err" 2>&1
