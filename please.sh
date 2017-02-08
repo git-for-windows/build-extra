@@ -1618,7 +1618,8 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 		make -j5 ||
 		die "Could not build %s\n" "$first_bad"
 		err="$(git rev-parse --git-path broken-test.err)"
-		if (cd t && bash "$broken_test" -i -v -x) >"$err" 2>&1
+		if GIT_TEST_OPTS="-i -v -x" \
+			make -C t "$broken_test" >"$err" 2>&1
 		then
 			die "Test %s passes?\n" "$broken_test"
 		fi
