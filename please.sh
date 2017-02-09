@@ -1006,6 +1006,7 @@ update_vs_branch () { # [--worktree=<path>] [--remote=<remote>] [--branch=<branc
 		;;
 	--branch=*)
 		branch="${1#*=}"
+		branch="${branch#refs/heads/}"
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
