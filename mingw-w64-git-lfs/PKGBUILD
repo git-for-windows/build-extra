@@ -3,29 +3,31 @@
 _realname="git-lfs"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.2.0
+pkgver=1.5.5
 pkgrel=1
 pkgdesc="An open source Git extension for versioning large files"
 install=git-lfs.install
 arch=('any')
-url="https://github.com/github/git-lfs"
+url="https://github.com/git-lfs/git-lfs"
+src_zip_url="${url}/archive/v${pkgver}.zip"
 license=('MIT')
 groups=('VCS')
 
 case "$CARCH" in
 i686)
   folder="git-lfs-windows-386-$pkgver"
-  md5sum=0cea336e4c9d43314ebc692dfbbd1fc3
+  sha256sum=4e364f02dc4680519d76b6847e5f31a8d3d6e67fc68e905afe7b0a7e5716cb2c
   ;;
 x86_64)
   folder="git-lfs-windows-amd64-$pkgver"
-  md5sum=95296495a70a31dd952de15bf7102ead
+  sha256sum=7c23635f34b0b4eed55621231148ef3e0de9a46e2d629b4bba7f706a96ae77ea
   ;;
 esac
 
-source=("https://github.com/github/git-lfs/releases/download/v$pkgver/$folder.zip")
+source=("https://github.com/github/git-lfs/releases/download/v$pkgver/$folder.zip"
+	"$src_zip_url")
 
-md5sums=("$md5sum")
+sha256sums=("$sha256sum" SKIP)
 options=('!strip')
 
 package() {
