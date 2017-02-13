@@ -245,6 +245,11 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager
 		;;
+	lfs|git-lfs|mingw-w64-git-lfs)
+		package=mingw-w64-git-lfs
+		type=MINGW
+		pkgpath=/usr/src/build-extra/mingw-w64-git-lfs
+		;;
 	msys2-runtime)
 		type=MSYS
 		extra_packages="msys2-runtime-devel"
