@@ -8,7 +8,7 @@ pkgrel=1
 pkgdesc="An open source Git extension for versioning large files"
 install=git-lfs.install
 arch=('any')
-url="https://github.com/github/git-lfs"
+url="https://github.com/git-lfs/git-lfs"
 license=('MIT')
 groups=('VCS')
 
