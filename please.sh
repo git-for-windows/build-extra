@@ -986,7 +986,6 @@ test_remote_branch () { # [--worktree=<dir>] [--bisect-and-comment] <remote-trac
 			"$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
 				sh "'"$this_script_path"'" bisect_broken_test \
 					--bad="'"$1"'" --good='$good' \
-					--skip-run \
 					--worktree=. --publish-comment '$f
 		done
 		exit 1
