@@ -1627,7 +1627,19 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 			done
 			;;
 		esac &&
-		git bisect run "$bisect_run"
+		if test -f "$(git rev-parse --git-path BISECT_LOG)"
+		then
+			git bisect run "$bisect_run"
+		else
+			test 1 = $(git rev-list --count "$good..$bad") ||
+			die 'Could not start bisect between %s and %s\n' \
+				"$bad" "$good"
+			printf '%s is the first bad commit\n' \
+				"$(git rev-parse "$bad")" \
+			>"$(git rev-parse --git-path BISECT_RUN)"
+			printf 'No need to bisect: %s is the bad apple\n' \
+				"$(git rev-parse "$bad")"
+		fi
 	 fi) ||
 	exit
 
