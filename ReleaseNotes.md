@@ -34,6 +34,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.11.1 (February 3rd 2017)
 
+### New Features
+
+* Comes with v2.7.0 of the POSIX emulation layer based on the [Cygwin runtime](https://cygwin.com/ml/cygwin-announce/2017-02/msg00022.html).
+
 ### Bug Fixes
 
 * The [`stderr` output is unbuffered again](https://github.com/git-for-windows/git/commit/87ad093f001e7146e5e521914255199e49c212a7), i.e. errors are displayed immediately.
