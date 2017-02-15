@@ -1479,7 +1479,7 @@ add_commit_comment_on_github () { # <org/repo> <commit> <message>
 	die "Need credentials to publish commit comments\n"
 
 	quoted="$(echo "$3" |
-		sed -e ':1;${s/[\\"]/\\&/g;s/\n/\\n/g;s/\t/\\t/g};N;b1')"
+		sed -e ':1;${s/[\\"]/\\&/g;s/\n/\\n/g;s/\t/\\t/g;s/\x1b/<ESC>/g};N;b1')"
 	url="https://$credentials@api.github.com/repos/$1/commits/$2/comments"
 	curl -X POST --show-error -s -XPOST -d \
 		'{"body":"'"$quoted"'"}' "$url"
