@@ -1618,6 +1618,15 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 	 if test -z "$skip_run"
 	 then
 		git bisect start "$bad" "$good" &&
+		case "$bad $good" in
+		upstream/*' 'upstream/*)
+			# we know in which direction patches enter...
+			for b in $(git merge-base -a "$bad" "$good")
+			do
+				git bisect good "$b"
+			done
+			;;
+		esac &&
 		git bisect run "$bisect_run"
 	 fi) ||
 	exit
