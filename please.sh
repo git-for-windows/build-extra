@@ -162,9 +162,17 @@ sync () { # [--force]
 			'pacman -S '$force' --noconfirm git-extra' ||
 		die "Cannot update git-extra in %s\n" "$sdk"
 
-		pacnew="$(sed -ne '/starting core system upgrade/{s/.*//;x}' -e\
-			'/warning:.*installed as .*\.pacnew$/{s/.* as //;H}' -e\
-			'${x;s/^\n//;/./p}' <"$sdk"/var/log/pacman.log)" ||
+		pacnew="$(sed -ne '/starting core system upgrade/{
+			:1;
+			s/.*/WAIT/;x
+			:2;
+			n;
+			/warning:.*installed as .*\.pacnew$/{s/.* as //;H;b2}
+			/starting full system upgrade/{x;s/WAIT//;x;b2}
+			/starting core system upgrade/{x;/WAIT/{x;b2};b1}
+			${x;s/WAIT//;s/^\n//;/./p}
+			b2;
+			}' <"$sdk"/var/log/pacman.log)" ||
 		die "Could not get list of .pacnew files\n"
 		if test -n "$pacnew"
 		then
