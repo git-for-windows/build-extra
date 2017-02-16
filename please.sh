@@ -103,9 +103,11 @@ info () { #
 
 sync () { # [--force]
 	force=
+	y_opt=y
 	while case "$1" in
 	--force)
 		force=--force
+		y_opt=yy
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -118,7 +120,7 @@ sync () { # [--force]
 		mkdir -p "$sdk/var/log" ||
 		die "Could not ensure %s/var/log/ exists\n" "$sdk"
 
-		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe -Sy ||
+		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe -S$y_opt ||
 		die "Cannot run pacman in %s\n" "$sdk"
 
 		PATH="$sdk/usr/bin:$PATH" \
