@@ -725,6 +725,17 @@ require_git_src_dir () {
 
 # build_and_test_64; intended to build and test 64-bit Git in MINGW-packages
 build_and_test_64 () {
+	skip_tests=
+	while case "$1" in
+	--skip-tests)
+		skip_tests=--skip-tests
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 0 ||
+	die "Expected no argument, got $#: %s\n" "$*"
+
 	ensure_valid_login_shell 64 &&
 	GIT_CONFIG_PARAMETERS= \
 	"$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
@@ -739,7 +750,12 @@ build_and_test_64 () {
 				exit 1
 			}
 		fi &&
-		if ! make -C t -j5 -k
+		if '"$(if test -z "$skip_tests"
+			then
+				echo '! make -C t -j5 -k'
+			else
+				echo 'false'
+			fi)"'
 		then
 			cd t &&
 			failed_tests="$(cd test-results &&
@@ -948,9 +964,10 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 	exit
 }
 
-test_remote_branch () { # [--worktree=<dir>] [--bisect-and-comment] <remote-tracking-branch>
+test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] <remote-tracking-branch>
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	bisect_and_comment=
+	skip_tests=
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -958,6 +975,9 @@ test_remote_branch () { # [--worktree=<dir>] [--bisect-and-comment] <remote-trac
 		die "Worktree does not exist: %s\n" "$git_src_dir"
 		git rev-parse -q --verify e83c5163316f89bfbde7d ||
 		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
+		;;
+	--skip-tests)
+		skip_tests=--skip-tests
 		;;
 	--bisect-and-comment)
 		require_commitcomment_credentials
@@ -968,6 +988,10 @@ test_remote_branch () { # [--worktree=<dir>] [--bisect-and-comment] <remote-trac
 	esac; do shift; done
 	test $# = 1 ||
 	die "Expected 1 argument, got $#: %s\n" "$*"
+
+	test -z "$bisect_and_comment" ||
+	test -z "$skip_tests" ||
+	die "Cannot skip tests *and* bisect\n"
 
 	require_git_src_dir
 
@@ -983,7 +1007,7 @@ test_remote_branch () { # [--worktree=<dir>] [--bisect-and-comment] <remote-trac
 	 esac &&
 	 git checkout -f "$1" &&
 	 git reset --hard &&
-	 if ! build_and_test_64 && test -n "$bisect_and_comment"
+	 if ! build_and_test_64 $skip_tests && test -n "$bisect_and_comment"
 	 then
 		case "$1" in
 		upstream/pu) good=upstream/next;;
