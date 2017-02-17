@@ -1003,6 +1003,12 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 		;;
 	 upstream/*|v[1-9]*)
 		require_remote upstream https://github.com/git/git
+		case "$1" in upstream/refs/pull/[0-9]*)
+			git fetch upstream "${1#upstream/}:refs/remotes/$1" ||
+			die "Could not fetch %s from upstream\n" \
+				"${1#upstream/}"
+			;;
+		esac
 		;;
 	 esac &&
 	 git checkout -f "$1" &&
