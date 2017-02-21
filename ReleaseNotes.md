@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The [`stderr` output is unbuffered again](https://github.com/git-for-windows/git/commit/87ad093f001e7146e5e521914255199e49c212a7), i.e. errors are displayed immediately.
+* Git [can clone again](https://github.com/git-for-windows/git/issues/1036) from paths containing non-ASCII characters.
 
 ## Changes since Git for Windows v2.11.0(3) (January 14th 2017)
 
