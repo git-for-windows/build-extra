@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with v2.7.0 of the POSIX emulation layer based on the [Cygwin runtime](https://cygwin.com/ml/cygwin-announce/2017-02/msg00022.html).
+* Includes [cURL 7.53.0](https://curl.haxx.se/changes.html#7_53_0).
 
 ### Bug Fixes
 
