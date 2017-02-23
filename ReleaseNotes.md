@@ -42,7 +42,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### Bug Fixes
 
-* The [`stderr` output is unbuffered again](https://github.com/git-for-windows/git/commit/87ad093f001e7146e5e521914255199e49c212a7), i.e. errors are displayed immediately.
+* The [`stderr` output is unbuffered again](https://github.com/git-for-windows/git/commit/87ad093f001e7146e5e521914255199e49c212a7), i.e. errors are displayed immediately (this was reported [on the Git mailing list](http://public-inbox.org/git/6bc02b0a-a463-1f0c-3fee-ba27dd2482e4@kdbg.org/) as well as issues [#1064](https://github.com/git-for-windows/git/issues/1062), [#1064](https://github.com/git-for-windows/git/issues/1064), [#1068](https://github.com/git-for-windows/git/issues/1068).
 * Git [can clone again](https://github.com/git-for-windows/git/issues/1036) from paths containing non-ASCII characters.
 * We [no longer ship two different versions of `curl.exe`](https://github.com/git-for-windows/git/issues/1069).
 * Hitting Ctrl+T in Git GUI even after all files have been (un)staged [no longer throws an exception](https://github.com/git-for-windows/git/issues/1060).
