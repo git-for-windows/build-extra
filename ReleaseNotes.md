@@ -47,6 +47,7 @@ This package contains software from a number of other projects including Bash, z
 * We [no longer ship two different versions of `curl.exe`](https://github.com/git-for-windows/git/issues/1069).
 * Hitting Ctrl+T in Git GUI even after all files have been (un)staged [no longer throws an exception](https://github.com/git-for-windows/git/issues/1060).
 * A couple of Git GUI bugs regarding the list of recent repositories [have been fixed](https://github.com/patthoyts/git-gui/pull/10).
+* The `git-bash.exe` helper [now waits again for the terminal to be closed before returning](https://github.com/git-for-windows/git/issues/946).
 
 ## Changes since Git for Windows v2.11.0(3) (January 14th 2017)
 
