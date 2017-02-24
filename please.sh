@@ -451,6 +451,8 @@ pkg_build () {
 			'cd '"$pkgpath"' &&
 			 export MSYSTEM=MSYS &&
 			 export PATH=/usr/bin:/opt/bin:$PATH &&
+			 unset ORIGINAL_PATH &&
+			 . /etc/profile &&
 			 MAKEFLAGS=-j5 makepkg -s --noconfirm \
 				'"$extra_makepkg_opts"' &&
 			 makepkg --allsource' ||
