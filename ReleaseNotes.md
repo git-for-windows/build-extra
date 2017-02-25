@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * The builtin difftool is no longer opt-in, as it graduated to be officially adopted by the Git project.
 * Comes with v2.7.0 of the POSIX emulation layer based on the [Cygwin runtime](https://cygwin.com/ml/cygwin-announce/2017-02/msg00022.html).
 * Includes [cURL 7.53.1](https://curl.haxx.se/changes.html#7_53_1).
+* The Portable Git now defaults to using the included Git Credential Manager.
 
 ### Bug Fixes
 
