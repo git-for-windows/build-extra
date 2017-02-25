@@ -3,6 +3,7 @@ post_install() {
     if [ -f "${arch}/bin/git-lfs.exe" ]; then
       git config -f "${arch}/etc/gitconfig" filter.lfs.clean "git-lfs clean -- %f"
       git config -f "${arch}/etc/gitconfig" filter.lfs.smudge "git-lfs smudge -- %f"
+      git config -f "${arch}/etc/gitconfig" filter.lfs.process "git-lfs filter-process"
       git config -f "${arch}/etc/gitconfig" filter.lfs.required true
     fi
   done
