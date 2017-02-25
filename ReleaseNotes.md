@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * Hitting Ctrl+T in Git GUI even after all files have been (un)staged [no longer throws an exception](https://github.com/git-for-windows/git/issues/1060).
 * A couple of Git GUI bugs regarding the list of recent repositories [have been fixed](https://github.com/patthoyts/git-gui/pull/10).
 * The `git-bash.exe` helper [now waits again for the terminal to be closed before returning](https://github.com/git-for-windows/git/issues/946).
+* Git for Windows [no longer attempts to send empty credentials to HTTP(S) servers that handle only Basic and/or Digest authentication](https://github.com/git-for-windows/git/issues/1034).
 
 ## Changes since Git for Windows v2.11.0(3) (January 14th 2017)
 
