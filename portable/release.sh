@@ -81,10 +81,18 @@ die "Could not install bin/ redirectors"
 cp "$SCRIPT_PATH/../post-install.bat" "$SCRIPT_PATH/root/" ||
 die "Could not copy post-install script"
 
+mkdir -p "$SCRIPT_PATH/root/mingw$BITNESS/etc" &&
+cp /mingw$BITNESS/etc/gitconfig \
+	"$SCRIPT_PATH/root/mingw$BITNESS/etc/gitconfig" &&
+git config -f "$SCRIPT_PATH/root/mingw$BITNESS/etc/gitconfig" \
+	credential.helper manager ||
+die "Could not configure Git-Credential-Manager as default"
+
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/root/etc/package-versions.txt \
-	sh "$SCRIPT_PATH"/../make-file-list.sh "$@")" ||
+	sh "$SCRIPT_PATH"/../make-file-list.sh "$@" |
+	grep -v "^mingw$BITNESS/etc/gitconfig$")" ||
 die "Could not generate file list"
 
 # 7-Zip will strip absolute paths completely... therefore, we can add another
