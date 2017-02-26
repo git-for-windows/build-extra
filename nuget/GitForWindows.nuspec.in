@@ -5,7 +5,7 @@
     <version>@@VERSION@@</version>
     <title>@@TITLE@@</title>
     <authors>@@AUTHOR@@</authors>
-    <owners>@@AUTHOR@@</owners>
+    <owners>@@OWNERS@@</owners>
     <licenseUrl>https://github.com/git-for-windows/git/blob/master/COPYING</licenseUrl>
     <projectUrl>https://git-for-windows.github.io/</projectUrl>
     <iconUrl>https://avatars2.githubusercontent.com/u/4571183?v=3&amp;s=200</iconUrl>

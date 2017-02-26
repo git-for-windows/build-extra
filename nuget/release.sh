@@ -8,6 +8,7 @@ die () {
 }
 
 AUTHOR=
+OWNERS=
 ID=GitForWindows
 TITLE="Git for Windows"
 DESCRIPTION='Git for Windows focuses on offering a lightweight, native set of tools that bring the full feature set of the Git to Windows while providing appropriate user interfaces for experienced users.'
@@ -17,6 +18,7 @@ while test $# -gt 1
 do
 	case "$1" in
 	--author=*) AUTHOR=${1#--*=};;
+	--owners=*) OWNERS="${1#--*=}";;
 	--id=*) ID=${1#--*=};;
 	--mingit)
 		ID=Git-Windows-Minimal
@@ -42,6 +44,11 @@ if test -z "$AUTHOR"
 then
 	AUTHOR="$(git config nuget.author)"
 	test -n "$AUTHOR" || AUTHOR="$USERNAME"
+fi
+if test -z "$OWNERS"
+then
+	OWNERS="$(git config nuget.owners)"
+	test -n "$OWNERS" || OWNERS="$AUTHOR"
 fi
 
 if test -x "$BUILDEXTRA"/nuget/nuget.exe
@@ -77,6 +84,7 @@ VERSIONTAG="$(echo "$VERSION" | sed -e 's/^[1-9]/v&/' \
 SPECIN="$BUILDEXTRA"/nuget/GitForWindows.nuspec.in
 SPEC="$BUILDEXTRA/nuget/$ID".nuspec
 sed -e "s/@@VERSION@@/$VERSION/g" -e "s/@@AUTHOR@@/$AUTHOR/g" \
+	-e "s/@@OWNERS@@/$OWNERS/g" \
 	-e "s/@@TITLE@@/$TITLE/g" -e "s/@@EXTRATAGS@@/$EXTRATAGS/g" \
 	-e "s/@@DESCRIPTION@@/$DESCRIPTION/g" -e "s/@@SUMMARY@@/$SUMMARY/g" \
 	-e "s/@@VERSIONTAG@@/$VERSIONTAG/g" \
