@@ -1,18 +1,21 @@
 <?xml version="1.0"?>
-<package >
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
   <metadata>
     <id>@@ID@@</id>
     <version>@@VERSION@@</version>
+    <title>@@TITLE@@</title>
     <authors>@@AUTHOR@@</authors>
     <owners>@@AUTHOR@@</owners>
     <licenseUrl>https://github.com/git-for-windows/git/blob/master/COPYING</licenseUrl>
     <projectUrl>https://git-for-windows.github.io/</projectUrl>
-    <iconUrl>https://avatars2.githubusercontent.com/u/4571183</iconUrl>
+    <iconUrl>https://avatars2.githubusercontent.com/u/4571183?v=3&amp;s=200</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
-    <description>Git for Windows</description>
-    <releaseNotes>See embedded ReleaseNotes.html</releaseNotes>
-    <copyright>Copyright 2016</copyright>
-    <tags>git scm vcs command line shell</tags>
+    <description>@@DESCRIPTION@@</description>
+    <summary>@@SUMMARY@@</summary>
+    <releaseNotes>https://github.com/git-for-windows/git/releases/tag/@@VERSIONTAG@@</releaseNotes>
+    <copyright>https://git-for-windows.github.io/governance-model.html</copyright>
+    <language />
+    <tags>git scm vcs windows light-weight dvcs@@EXTRATAGS@@</tags>
   </metadata>
   <files>
     <file src="$buildextra$\nuget\ReleaseNotes.html" />
