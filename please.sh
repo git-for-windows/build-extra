@@ -966,7 +966,7 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 	exit
 }
 
-test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] <remote-tracking-branch>
+test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] <remote-tracking-branch> [<commit>]
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	bisect_and_comment=
 	skip_tests=
@@ -988,8 +988,11 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
-	test $# = 1 ||
-	die "Expected 1 argument, got $#: %s\n" "$*"
+	case $# in
+		1) branch=$1 commit=$branch ;;
+		2) branch=$1 commit=$2 ;;
+		*) die "Expected 1 or 2 arguments, got $#: %s\n" "$*" ;;
+	esac
 
 	test -z "$bisect_and_comment" ||
 	test -z "$skip_tests" ||
@@ -998,36 +1001,39 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 	require_git_src_dir
 
 	(cd "$git_src_dir" &&
-	 case "$1" in
+	 case "$branch" in
 	 git-for-windows/*|v[1-9]*.windows.[1-9]*)
 		require_remote git-for-windows \
 			https://github.com/git-for-windows/git
 		;;
 	 upstream/*|v[1-9]*)
 		require_remote upstream https://github.com/git/git
-		case "$1" in upstream/refs/pull/[0-9]*)
-			git fetch upstream "${1#upstream/}:refs/remotes/$1" ||
+		case "$branch" in upstream/refs/pull/[0-9]*)
+			git fetch upstream "${branch#upstream/}:refs/remotes/$branch" ||
 			die "Could not fetch %s from upstream\n" \
-				"${1#upstream/}"
+				"${branch#upstream/}"
 			;;
 		esac
 		;;
 	 esac &&
-	 git checkout -f "$1" &&
+	 [ "$branch" == "$commit" ] ||
+		git merge-base --is-ancestor $commit $branch ||
+		die "Commit %s is not on branch %s\n" $commit $branch &&
+	 git checkout -f "$commit" &&
 	 git reset --hard &&
 	 if ! build_and_test_64 $skip_tests && test -n "$bisect_and_comment"
 	 then
-		case "$1" in
+		case "$branch" in
 		upstream/pu) good=upstream/next;;
 		upstream/next) good=upstream/master;;
 		upstream/master) good=upstream/maint;;
-		*) die "Cannot bisect from bad '%s'\n" "$1";;
+		*) die "Cannot bisect from bad '%s'\n" "$branch";;
 		esac
 		for f in $(cat "$(git rev-parse --git-dir)/failing.txt")
 		do
 			"$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
 				sh "'"$this_script_path"'" bisect_broken_test \
-					--bad="'"$1"'" --good='$good' \
+					--bad="'"$commit"'" --good='$good' \
 					--worktree=. --publish-comment '$f
 		done
 		exit 1
