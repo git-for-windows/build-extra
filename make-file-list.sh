@@ -56,7 +56,7 @@ git-extra openssh sed awk grep findutils coreutils"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$ARCH-git-doc-html ncurses mintty vim
-		winpty less gnupg tar diffutils patch dos2unix which subversion
+		winpty less gnupg tar diffutils patch dos2unix which
 		mingw-w64-$ARCH-tk mingw-w64-$ARCH-connect git-flow docx2txt
 		mingw-w64-$ARCH-antiword ssh-pageant"
 
