@@ -229,7 +229,7 @@ mount_sdks () { #
 set_package () {
 	package="$1"
 	extra_packages=
-	extra_makepkg_opts=--nocheck
+	extra_makepkg_opts=
 	case "$package" in
 	git-extra)
 		type=MINGW
@@ -295,6 +295,13 @@ set_package () {
 	mingw-w64-curl)
 		type=MINGW
 		pkgpath=/usr/src/MINGW-packages/$package
+		;;
+	mingw-w64-curl-winssl-bin)
+		type=MINGW
+		pkgpath=/usr/src/MINGW-packages/mingw-w64-curl
+		extra_makepkg_opts="-p PKGBUILD-winssl-bin"
+		(cd "$sdk64/$pkgpath" && ./make-PKGBUILD-winssl-bin.sh) ||
+		die "Could not generate PKGBUILD-winssl-bin in %s\n" "$pkgpath"
 		;;
 	*)
 		die "Unknown package: %s\n" "$package"
@@ -413,8 +420,10 @@ pkg_build () {
 		fi
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			'MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
-				'"$extra"'makepkg-mingw -s --noconfirm &&
-			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource' ||
+				'"$extra"'makepkg-mingw -s --noconfirm \
+					'"$extra_makepkg_opts"' &&
+			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
+				'"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk/$pkgpath"
 
 		git commit -s -m "$package: new version" PKGBUILD ||
@@ -455,7 +464,7 @@ pkg_build () {
 			 . /etc/profile &&
 			 MAKEFLAGS=-j5 makepkg -s --noconfirm \
 				'"$extra_makepkg_opts"' &&
-			 makepkg --allsource' ||
+			 makepkg --allsource '"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk/$pkgpath"
 
 		if test "a$sdk32" = "a$sdk"
@@ -966,7 +975,7 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 	exit
 }
 
-test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] <remote-tracking-branch>
+test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] <remote-tracking-branch> [<commit>]
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	bisect_and_comment=
 	skip_tests=
@@ -988,8 +997,11 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
-	test $# = 1 ||
-	die "Expected 1 argument, got $#: %s\n" "$*"
+	case $# in
+		1) branch=$1 commit=$branch ;;
+		2) branch=$1 commit=$2 ;;
+		*) die "Expected 1 or 2 arguments, got $#: %s\n" "$*" ;;
+	esac
 
 	test -z "$bisect_and_comment" ||
 	test -z "$skip_tests" ||
@@ -998,36 +1010,39 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 	require_git_src_dir
 
 	(cd "$git_src_dir" &&
-	 case "$1" in
+	 case "$branch" in
 	 git-for-windows/*|v[1-9]*.windows.[1-9]*)
 		require_remote git-for-windows \
 			https://github.com/git-for-windows/git
 		;;
 	 upstream/*|v[1-9]*)
 		require_remote upstream https://github.com/git/git
-		case "$1" in upstream/refs/pull/[0-9]*)
-			git fetch upstream "${1#upstream/}:refs/remotes/$1" ||
+		case "$branch" in upstream/refs/pull/[0-9]*)
+			git fetch upstream "${branch#upstream/}:refs/remotes/$branch" ||
 			die "Could not fetch %s from upstream\n" \
-				"${1#upstream/}"
+				"${branch#upstream/}"
 			;;
 		esac
 		;;
 	 esac &&
-	 git checkout -f "$1" &&
+	 [ "$branch" == "$commit" ] ||
+		git merge-base --is-ancestor $commit $branch ||
+		die "Commit %s is not on branch %s\n" $commit $branch &&
+	 git checkout -f "$commit" &&
 	 git reset --hard &&
 	 if ! build_and_test_64 $skip_tests && test -n "$bisect_and_comment"
 	 then
-		case "$1" in
+		case "$branch" in
 		upstream/pu) good=upstream/next;;
 		upstream/next) good=upstream/master;;
 		upstream/master) good=upstream/maint;;
-		*) die "Cannot bisect from bad '%s'\n" "$1";;
+		*) die "Cannot bisect from bad '%s'\n" "$branch";;
 		esac
 		for f in $(cat "$(git rev-parse --git-dir)/failing.txt")
 		do
 			"$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
 				sh "'"$this_script_path"'" bisect_broken_test \
-					--bad="'"$1"'" --good='$good' \
+					--bad="'"$commit"'" --good='$good' \
 					--worktree=. --publish-comment '$f
 		done
 		exit 1
