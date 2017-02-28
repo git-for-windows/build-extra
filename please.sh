@@ -229,7 +229,7 @@ mount_sdks () { #
 set_package () {
 	package="$1"
 	extra_packages=
-	extra_makepkg_opts=--nocheck
+	extra_makepkg_opts=
 	case "$package" in
 	git-extra)
 		type=MINGW
@@ -413,8 +413,10 @@ pkg_build () {
 		fi
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			'MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
-				'"$extra"'makepkg-mingw -s --noconfirm &&
-			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource' ||
+				'"$extra"'makepkg-mingw -s --noconfirm \
+					'"$extra_makepkg_opts"' &&
+			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
+				'"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk/$pkgpath"
 
 		git commit -s -m "$package: new version" PKGBUILD ||
@@ -455,7 +457,7 @@ pkg_build () {
 			 . /etc/profile &&
 			 MAKEFLAGS=-j5 makepkg -s --noconfirm \
 				'"$extra_makepkg_opts"' &&
-			 makepkg --allsource' ||
+			 makepkg --allsource '"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk/$pkgpath"
 
 		if test "a$sdk32" = "a$sdk"
