@@ -300,7 +300,12 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/MINGW-packages/mingw-w64-curl
 		extra_makepkg_opts="-p PKGBUILD-winssl-bin"
-		(cd "$sdk64/$pkgpath" && ./make-PKGBUILD-winssl-bin.sh) ||
+		(cd "$sdk64/$pkgpath" &&
+		 test -f PKGBUILD-winssl-bin &&
+		 test PKGBUILD-winssl-bin -nt PKGBUILD &&
+		 test PKGBUILD-winssl-bin -nt make-PKGBUILD-winssl-bin.sh ||
+		 test ! -f make-PKGBUILD-winssl-bin.sh ||
+		 ./make-PKGBUILD-winssl-bin.sh) ||
 		die "Could not generate PKGBUILD-winssl-bin in %s\n" "$pkgpath"
 		;;
 	*)
