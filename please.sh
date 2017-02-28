@@ -2146,8 +2146,10 @@ release () { #
 		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe
 
 	"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-		"/usr/src/build-extra/nuget/release.sh '$ver'" ||
-	die "Could not make NuGet package\n"
+		"/usr/src/build-extra/nuget/release.sh '$ver'" &&
+	"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		"/usr/src/build-extra/nuget/release.sh --mingit '$ver'" ||
+	die "Could not make NuGet packages\n"
 }
 
 virus_check () { #
@@ -2231,16 +2233,19 @@ publish () { #
 		"$HOME"/Git-"$ver"-32-bit.tar.bz2 ||
 	die "Could not upload files\n"
 
-	count=0
-	while test $count -lt 5
+	for nupkg in GitForWindows Git-Windows-Minimal
 	do
-		"$sdk64/usr/src/build-extra/nuget/nuget.exe" \
-			push -NonInteractive -Verbosity detailed -Timeout 3000 \
-			"$HOME"/GitForWindows.$ver.nupkg && break
-		count=$(($count+1))
+		count=0
+		while test $count -lt 5
+		do
+			"$sdk64/usr/src/build-extra/nuget/nuget.exe" \
+				push -NonInteractive -Verbosity detailed \
+				-Timeout 3000 "$HOME"/$nupkg.$ver.nupkg && break
+			count=$(($count+1))
+		done
+		test $count -lt 5 ||
+		die "Could not upload %s\n" "$HOME"/$nupkg.$ver.nupkg
 	done
-	test $count -lt 5 ||
-	die "Could not upload %s\n" "$HOME"/GitForWindows.$ver.nupkg
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git" &&
 	nextver=v"$version" &&
