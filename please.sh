@@ -747,9 +747,13 @@ require_git_src_dir () {
 # build_and_test_64; intended to build and test 64-bit Git in MINGW-packages
 build_and_test_64 () {
 	skip_tests=
+	make_t_prefix="GIT_TEST_OPTS=--quiet "
 	while case "$1" in
 	--skip-tests)
 		skip_tests=--skip-tests
+		;;
+	--full-log)
+		make_t_prefix=
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -773,7 +777,7 @@ build_and_test_64 () {
 		fi &&
 		if '"$(if test -z "$skip_tests"
 			then
-				echo '! make -C t -j5 -k'
+				echo "! ${make_t_prefix}make -C t -j5 -k"
 			else
 				echo 'false'
 			fi)"'
@@ -807,13 +811,14 @@ build_and_test_64 () {
 		fi'
 }
 
-rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag>
+rebase () { # [--worktree=<dir>] [--test [--full-test-log]] [--redo] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag>
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	run_tests=
 	redo=
 	abort_previous=
 	continue_rebase=
 	skip_rebase=
+	full_test_log=
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -823,6 +828,7 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
 		;;
 	--test) run_tests=t;;
+	--full-test-log) full_test_log=--full-log;;
 	--redo) redo=t;;
 	--abort-previous) abort_previous=t;;
 	--continue) continue_rebase=t;;
@@ -979,16 +985,17 @@ rebase () { # [--worktree=<dir>] [--test] [--redo] [--abort-previous] [--continu
 		if test -n "$run_tests"
 		then
 			echo "Building and testing Git" >&2 &&
-			build_and_test_64
+			build_and_test_64 $full_test_log
 		fi
 	 fi) ||
 	exit
 }
 
-test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] <remote-tracking-branch> [<commit>]
+test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] [--full-log] <remote-tracking-branch> [<commit>]
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	bisect_and_comment=
 	skip_tests=
+	full_log=
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -1003,6 +1010,9 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 	--bisect-and-comment)
 		require_commitcomment_credentials
 		bisect_and_comment=t
+		;;
+	--full-log)
+		full_log=--full-log
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -1040,7 +1050,8 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 		die "Commit %s is not on branch %s\n" $commit $branch &&
 	 git checkout -f "$commit" &&
 	 git reset --hard &&
-	 if ! build_and_test_64 $skip_tests && test -n "$bisect_and_comment"
+	 if ! build_and_test_64 $skip_tests $full_log &&
+		test -n "$bisect_and_comment"
 	 then
 		case "$branch" in
 		upstream/pu) good=upstream/next;;
