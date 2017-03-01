@@ -260,6 +260,11 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/build-extra/mingw-w64-git-lfs
 		;;
+	cv2pdb|mingw-w64-cv2pdb)
+		package=mingw-w64-cv2pdb
+		type=MINGW
+		pkgpath=/usr/src/build-extra/mingw-w64-cv2pdb
+		;;
 	msys2-runtime)
 		type=MSYS
 		extra_packages="msys2-runtime-devel"
