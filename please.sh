@@ -2419,6 +2419,9 @@ die "Usage: $0 <command>\n\nCommands:\n%s" \
 command="$1"
 shift
 
+test "a$command" = "a${command#*-}" ||
+command="$(echo "$command" | tr - _)"
+
 usage="$(sed -n "s/^$command () { # \?/ /p" <"$0")"
 test -n "$usage" ||
 die "Unknown command: %s\n" "$command"
