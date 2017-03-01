@@ -52,7 +52,7 @@ build() {
   ! grep error $OUTDIR/cv2pdb/cv2pdb.log
 
   test -z "$SIGNTOOL" ||
-  "$SIGNTOOL" $OUTDIR/cv2pdb.exe
+  eval "$SIGNTOOL $OUTDIR/cv2pdb.exe"
 }
 
 package () {
