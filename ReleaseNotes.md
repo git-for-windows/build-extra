@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * In addition to the GitForWindows NuGet package, we now also publish [MinGit as a NuGet package](https://www.nuget.org/packages/Git-Windows-Minimal/).
+* Git for Windows now bundles [Git LFS](https://git-lfs.github.com/).
 
 ## Changes since Git for Windows v2.11.1 (February 3rd 2017)
 
