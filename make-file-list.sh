@@ -58,8 +58,7 @@ then
 	packages="$packages mingw-w64-$ARCH-git-doc-html ncurses mintty vim
 		winpty less gnupg tar diffutils patch dos2unix which subversion
 		mingw-w64-$ARCH-tk mingw-w64-$ARCH-connect git-flow docx2txt
-		mingw-w64-$ARCH-antiword ssh-pageant"
-
+		mingw-w64-$ARCH-antiword ssh-pageant mingw-w64-$ARCH-git-lfs"
 fi
 pacman_list $packages "$@" |
 
