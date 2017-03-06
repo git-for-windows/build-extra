@@ -1050,9 +1050,13 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 		die "Commit %s is not on branch %s\n" $commit $branch &&
 	 git checkout -f "$commit" &&
 	 git reset --hard &&
-	 if ! build_and_test_64 $skip_tests $full_log &&
-		test -n "$bisect_and_comment"
+	 if build_and_test_64 $skip_tests $full_log
 	 then
+		: everything okay
+	 elif test -z "$bisect_and_comment"
+	 then
+		exit 1
+	 else
 		case "$branch" in
 		upstream/pu) good=upstream/next;;
 		upstream/next) good=upstream/master;;
