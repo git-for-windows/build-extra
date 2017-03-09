@@ -15,7 +15,12 @@ edit-git-bash.exe
 /installer/file-list.iss
 /installer/package-versions.txt
 /mingit/LICENSE.txt
+/mingit/etc/libexec-moved.txt
 /mingit/etc/package-versions.txt
+/mingit/mingw32/bin/git*.exe
+/mingit/mingw64/bin/git*.exe
+/mingit/sorted-all
+/mingit/sorted-libexec-exes
 /mingw-w64-git-credential-manager/pkg/
 /mingw-w64-git-credential-manager/src/
 /mingw-w64-git-credential-manager/*.pkg.tar.xz

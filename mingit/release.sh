@@ -65,9 +65,29 @@ type zip ||
 pacman -Sy --noconfirm zip ||
 die "Could not install Zip"
 
+echo "$LIST" | sort >"$SCRIPT_PATH"/sorted-all &&
+pacman -Ql mingw-w64-$ARCH-git |
+sed 's|^[^ ]* /||' |
+grep "^mingw$BITNESS/libexec/git-core/.*\.exe$" |
+sort >"$SCRIPT_PATH"/sorted-libexec-exes &&
+MOVED_FILE=etc/libexec-moved.txt &&
+comm -12 "$SCRIPT_PATH"/sorted-all "$SCRIPT_PATH"/sorted-libexec-exes \
+	>"$SCRIPT_PATH"/$MOVED_FILE &&
+if test ! -s "$SCRIPT_PATH"/$MOVED_FILE
+then
+	die "Could not find any .exe files in libexec/git-core/"
+fi &&
+BIN_DIR=mingw$BITNESS/bin &&
+rm -rf "$SCRIPT_PATH"/$BIN_DIR &&
+mkdir -p "$SCRIPT_PATH"/$BIN_DIR &&
+(cd / && cp $(cat "$SCRIPT_PATH"/$MOVED_FILE) "$SCRIPT_PATH"/$BIN_DIR/) &&
+LIST="$(comm -23 "$SCRIPT_PATH"/sorted-all "$SCRIPT_PATH"/$MOVED_FILE)" ||
+die "Could not copy libexec/git-core/*.exe"
+
 test ! -f "$TARGET" || rm "$TARGET" || die "Could not remove $TARGET"
 
 echo "Creating .zip archive" &&
-(cd "$SCRIPT_PATH" && zip -9r "$TARGET" LICENSE.txt etc/package-versions.txt) &&
+(cd "$SCRIPT_PATH" &&
+ zip -9r "$TARGET" LICENSE.txt etc/package-versions.txt $MOVED_FILE $BIN_DIR/) &&
 (cd / && zip -9r "$TARGET" $LIST) &&
 echo "Success! You will find the new MinGit at \"$TARGET\"."
