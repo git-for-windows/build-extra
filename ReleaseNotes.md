@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * MinGit [no longer gets distracted](https://github.com/git-for-windows/git/issues/1086) by incompatible `libeay32.dll` versions in C:\Windows\system32.
+* Long paths between 248 and 260 characters were not handled correctly since Git for Windows v2.11.1, which [is now fixed](https://github.com/git-for-windows/git/issues/1084).
 
 ## Changes since Git for Windows v2.11.1 (February 3rd 2017)
 
