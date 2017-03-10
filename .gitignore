@@ -32,6 +32,7 @@ edit-git-bash.exe
 /msi/package-versions.txt
 /msi/wix40-binaries.zip
 /nuget/GitForWindows.nuspec
+/nuget/Git-Windows-Minimal.nuspec
 /nuget/Git-Windows-Minimal.nuspec.unmoved
 /nuget/ReleaseNotes.html
 /nuget/libexec-moved.txt
