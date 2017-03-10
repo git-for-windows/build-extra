@@ -99,6 +99,21 @@ die "Could not generate file list"
 echo "$LIST" |
 sed -e 'y/\//\\/' -e 's/.*/    <file src="&" target="tools\\&" \/>/' >>"$SPEC"
 
+test -z "$MINIMAL_GIT" || {
+	printf '    <file src="$buildextra$\\%s" target="tools\\etc" />\n' \
+		nuget\\libexec-moved.txt >>"$SPEC" &&
+	mv "$SPEC" "$SPEC".unmoved &&
+	sed -e '/tools\\mingw..\\libexec\\git-core\\git\(\|-upload-pack\).exe/d' \
+	    -e 's%\( target="tools\\mingw[36][24]\\\)libexec\\git-core\\\('"$(\
+	        pacman -Ql mingw-w64-$ARCH-git |
+	        sed -n 's|^[^ ]* /mingw../libexec/git-core/\(.*\.exe\)$|\1\\|p' |
+	        tr '\n' '|')"'\)"%\1bin\\\2"%' <"$SPEC".unmoved >"$SPEC" &&
+	git diff --no-index "$SPEC.unmoved" "$SPEC" |
+	sed -n 's/^-.* src="\([^"]*\).*/\1/p' \
+		>"$BUILDEXTRA"/nuget/libexec-moved.txt
+} ||
+die "Could not move the core Git .exe files out of libexec/git-core"
+
 sed '1,/@@FILELIST@@/d' <"$SPECIN" >>"$SPEC"
 
 nuget pack -BasePath / -Properties buildextra="$(cd "$BUILDEXTRA" && pwd -W)" \
