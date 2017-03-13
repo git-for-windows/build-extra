@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * In addition to the GitForWindows NuGet package, we now also publish [MinGit as a NuGet package](https://www.nuget.org/packages/Git-Windows-Minimal/).
 * Git for Windows now bundles [Git LFS](https://git-lfs.github.com/).
+* Comes with Git Credential Manager [v1.9.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.9.0).
 
 ### Bug Fixes
 
