@@ -37,15 +37,6 @@ pacman_list () {
 	sed 's/^[^ ]* //'
 }
 
-verify_curl_versions () {
-	local openssl_version=$(pacman -Qi mingw-w64-$ARCH-curl | grep ^Version | sed 's/^[^:]*: //')
-	local winssl_version=$(pacman -Qi mingw-w64-$ARCH-curl-winssl-bin | grep ^Version | sed 's/^[^:]*: //')
-	test "${openssl_version}" = "${winssl_version}" ||
-	die "$(printf "Error: cURL packages have different versions:\n%s\n%s" \
-		"    mingw-w64-$ARCH-curl ${openssl_version}" \
-		"    mingw-w64-$ARCH-curl-winssl-bin ${winssl_version}")"
-}
-
 # Packages that have been added after Git SDK 1.0.0 was released...
 required=
 for req in mingw-w64-$ARCH-connect git-flow unzip docx2txt \
@@ -61,10 +52,9 @@ test -z "$required" ||
 pacman -S --noconfirm $required >&2 ||
 die "Could not install required packages: $required"
 
-verify_curl_versions
-
 packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager
-git-extra openssh sed awk grep findutils coreutils"
+git-extra openssh sed awk grep findutils coreutils
+mingw-w64-$ARCH-curl-winssl-bin"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$ARCH-git-doc-html ncurses mintty vim

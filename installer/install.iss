@@ -110,8 +110,6 @@ Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: replacesameversi
 Source: {#SourcePath}\..\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore; Check: ParamIsSet('VSNOTICE')
 Source: {#SourcePath}\..\edit-git-bash.exe; Flags: dontcopy
-Source: {#MINGW_BITNESS}\bin\curl-winssl\curl.exe; DestName: curl-winssl.exe; Flags: dontcopy
-Source: {#MINGW_BITNESS}\bin\curl-winssl\libcurl-4.dll; DestName: libcurl-4-winssl.dll; Flags: dontcopy
 
 [Dirs]
 Name: "{app}\tmp"
@@ -1698,46 +1696,24 @@ begin
     end;
 end;
 
-function ExtractTemporaryFileTo(FileName,TargetFile:String):Boolean;
-var
-    SourceFile:String;
+function ReplaceFile(SourceFile,TargetFile:String):Boolean;
 begin
-    SourceFile:=ExpandConstant('{tmp}\'+FileName);
-    if FileExists(SourceFile) and not DeleteFile(SourceFile) then begin
-        LogError('Line {#__LINE__}: Unable to delete file "'+SourceFile+'".');
-        Result:=False;
-        Exit;
-    end;
-    ExtractTemporaryFile(FileName);
-    if FileExists(TargetFile) and not DeleteFile(TargetFile) then begin
+    if not DeleteFile(TargetFile) then begin
         LogError('Line {#__LINE__}: Unable to delete file "'+TargetFile+'".');
         Result:=False;
         Exit;
     end;
-    if not RenameFile(SourceFile, TargetFile) then begin
-        LogError('Line {#__LINE__}: Unable to rename file "'+SourceFile+'" to "'+TargetFile+'".');
+    if not RenameFile(SourceFile,TargetFile) then begin
+        LogError('Line {#__LINE__}: Unable to overwrite file "'+TargetFile+'" with "'+SourceFile+'".');
         Result:=False;
         Exit;
     end;
     Result:=True;
 end;
 
-procedure ReplaceCurlBinaries;
-var
-    AppDir,Bin:String;
-begin
-    AppDir:=ExpandConstant('{app}');
-    Bin:=AppDir+'\{#MINGW_BITNESS}\bin\';
-
-    if not ExtractTemporaryFileTo('curl-winssl.exe', Bin+'curl.exe') or
-       not ExtractTemporaryFileTo('libcurl-4-winssl.dll', Bin+'libcurl-4.dll') then begin
-       Log('Line {#__LINE__}: Replacing curl-openssl with curl-winssl failed.');
-    end;
-end;
-
 procedure CurStepChanged(CurStep:TSetupStep);
 var
-    AppDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
+    AppDir,BinDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
     BuiltIns,ImageNames,EnvPath:TArrayOfString;
     Count,i:Longint;
     RootKey:Integer;
@@ -1793,8 +1769,9 @@ begin
         This needs to be done before copying dlls from "/mingw64/bin" to "/mingw64/libexec/git-core"
     }
 
-    if RdbCurlVariant[GC_WinSSL].Checked then begin
-        ReplaceCurlBinaries();
+    BinDir:=AppDir+'\{#MINGW_BITNESS}\bin\';
+    if RdbCurlVariant[GC_WinSSL].Checked and (not ReplaceFile(BinDir+'curl-winssl\curl.exe',BinDir+'curl.exe') or not ReplaceFile(BinDir+'curl-winssl\libcurl-4.dll',BinDir+'libcurl-4.dll')) then begin
+        Log('Line {#__LINE__}: Replacing curl-openssl with curl-winssl failed.');
     end;
 
     {
