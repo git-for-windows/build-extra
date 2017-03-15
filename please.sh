@@ -1348,7 +1348,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		done
 		echo "Using version $force_version" >&2
 		tag_name="$force_version"
-		pkgver="$(echo "${force_version#v}" | tr - .)"
+		pkgver="$(echo "${force_version#v}" | tr +- .)"
 
 		test -n "$pkgver" &&
 		test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
