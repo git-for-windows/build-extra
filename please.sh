@@ -1811,7 +1811,7 @@ tag_git () { #
 
 	notes="$("$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 		'markdown </usr/src/build-extra/ReleaseNotes.md |
-		 w3m -dump -cols 72 -T text/html | \
+		 LC_CTYPE=C w3m -dump -cols 72 -T text/html | \
 		 sed -n "/^Changes since/,\${:1;p;n;/^Changes/q;b1}"')"
 
 	tag_message="$(printf "%s\n\n%s" \
@@ -2337,7 +2337,8 @@ publish () { #
 		"https://git-for-windows.github.io/")"
 	rendered="$(echo "$text" |
 		"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'markdown | w3m -dump -cols 72 -T text/html')"
+			'markdown |
+			 LC_CTYPE=C w3m -dump -cols 72 -T text/html')"
 	printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n%s\n" \
 		"From $version Mon Sep 17 00:00:00 2001" \
 		"From: $(git var GIT_COMMITTER_IDENT | sed -e 's/>.*/>/')" \
