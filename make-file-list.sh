@@ -24,7 +24,7 @@ pacman_list () {
 				-e '^\(.*libtre-git\)$' \
 				-e '^\(.*-tcl\|.*-tk\|.*-wineditline\)$' \
 				-e '^\(gdbm\|icu\|libdb\|libedit\|libgdbm\)$' \
-				-e '^\(ncurses\|perl\|perl-.*\)$'
+				-e '^\(perl\|perl-.*\)$'
 		fi |
 		sort |
 		uniq) &&
@@ -171,7 +171,12 @@ else
 		-e '^/usr/lib/\(awk\|coreutils\|gawk\|openssl\|ssh\)/' \
 		-e '^/usr/libexec/\(bigram\|code\|frcode\)\.exe$' \
 		-e '^/usr/share/\(cygwin\|git\)/' \
-		-e '^/usr/ssl/misc/'
+		-e '^/usr/ssl/misc/' \
+		-e '^/usr/bin/\(captoinfo\|clear\|infocmp\|infotocap\)\.exe$' \
+		-e '^/usr/bin/\(reset\|tabs\|tic\|toe\|tput\|tset\)\.exe$' \
+		-e '^/usr/bin/msys-\(formw6\|menuw6\|ncurses++w6\)\.dll$' \
+		-e '^/usr/bin/msys-\(panelw6\|ticw6\)\.dll$' \
+		-e '^/usr/\(lib\|share\)/terminfo/' -e '^/usr/share/tabset/'
 fi | sort |
 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)$)' |
 sed 's/^\///'
