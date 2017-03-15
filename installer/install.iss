@@ -307,6 +307,10 @@ const
     GS_OpenSSH        = 1;
     GS_Plink          = 2;
 
+    // Git HTTPS (cURL) options.
+    GC_OpenSSL        = 1;
+    GC_WinSSL         = 2;
+
     // Git line ending conversion options.
     GC_LFOnly         = 1;
     GC_CRLFAlways     = 2;
@@ -344,6 +348,10 @@ var
     PuTTYPage:TWizardPage;
     RdbSSH:array[GS_OpenSSH..GS_Plink] of TRadioButton;
     EdtPlink:TEdit;
+
+    // Wizard page and variables for the HTTPS implementation (cURL) settings.
+    CurlVariantPage:TWizardPage;
+    RdbCurlVariant:array[GC_OpenSSL..GC_WinSSL] of TRadioButton;
 
     // Wizard page and variables for the line ending conversion options.
     CRLFPage:TWizardPage;
@@ -749,6 +757,7 @@ var
     PrevPageID:Integer;
     LblGitBash,LblGitCmd,LblGitCmdTools,LblGitCmdToolsWarn:TLabel;
     LblOpenSSH,LblPlink:TLabel;
+    LblCurlOpenSSL,LblCurlWinSSL:TLabel;
     PuTTYSessions,EnvSSH:TArrayOfString;
     LblLFOnly,LblCRLFAlways,LblCRLFCommitAsIs:TLabel;
     LblMinTTY,LblConHost:TLabel;
@@ -978,6 +987,74 @@ begin
         end;
     end else begin
         PuTTYPage:=NIL;
+    end;
+
+    (*
+     * Create a custom page for HTTPS implementation (cURL) setting.
+     *)
+
+    CurlVariantPage:=CreateCustomPage(
+        PrevPageID
+    ,   'Choosing HTTPS transport backend'
+    ,   'Which SSL/TLS library would you like Git to use for HTTPS connections?'
+    );
+    PrevPageID:=CurlVariantPage.ID;
+
+    // 1st choice
+    RdbCurlVariant[GC_OpenSSL]:=TRadioButton.Create(CurlVariantPage);
+    with RdbCurlVariant[GC_OpenSSL] do begin
+        Parent:=CurlVariantPage.Surface;
+        Caption:='Use the OpenSSL library';
+        Left:=ScaleX(4);
+        Top:=ScaleY(8);
+        Width:=ScaleX(405);
+        Height:=ScaleY(17);
+        Font.Style:=[fsBold];
+        TabOrder:=0;
+        Checked:=True;
+    end;
+    LblCurlOpenSSL:=TLabel.Create(CurlVariantPage);
+    with LblCurlOpenSSL do begin
+        Parent:=CurlVariantPage.Surface;
+        Caption:='Server certificates will be validated using the ca-bundle.crt file.';
+        Left:=ScaleX(28);
+        Top:=ScaleY(32);
+        Width:=ScaleX(405);
+        Height:=ScaleY(47);
+    end;
+
+    // 2nd choice
+    RdbCurlVariant[GC_WinSSL]:=TRadioButton.Create(CurlVariantPage);
+    with RdbCurlVariant[GC_WinSSL] do begin
+        Parent:=CurlVariantPage.Surface;
+        Caption:='Use the native Windows Secure Channel library';
+        Left:=ScaleX(4);
+        Top:=ScaleY(76);
+        Width:=ScaleX(405);
+        Height:=ScaleY(17);
+        Font.Style:=[fsBold];
+        TabOrder:=1;
+        Checked:=False;
+    end;
+    LblCurlWinSSL:=TLabel.Create(CurlVariantPage);
+    with LblCurlWinSSL do begin
+        Parent:=CurlVariantPage.Surface;
+        Caption:='Server certificates will be validated using Windows Certificate Stores.' + #13 +
+            'This option also allows you to use your company''s internal Root CA certificates' + #13 +
+            'distributed e.g. via Active Directory Domain Services.';
+        Left:=ScaleX(28);
+        Top:=ScaleY(100);
+        Width:=ScaleX(405);
+        Height:=ScaleY(67);
+    end;
+
+    // Restore the setting chosen during a previous install.
+    Data:=ReplayChoice('CURL Option','OpenSSL');
+
+    if Data='OpenSSL' then begin
+        RdbCurlVariant[GC_OpenSSL].Checked:=True;
+    end else if Data='WinSSL' then begin
+        RdbCurlVariant[GC_WinSSL].Checked:=True;
     end;
 
     (*
@@ -1619,9 +1696,24 @@ begin
     end;
 end;
 
+function ReplaceFile(SourceFile,TargetFile:String):Boolean;
+begin
+    if not DeleteFile(TargetFile) then begin
+        LogError('Line {#__LINE__}: Unable to delete file "'+TargetFile+'".');
+        Result:=False;
+        Exit;
+    end;
+    if not RenameFile(SourceFile,TargetFile) then begin
+        LogError('Line {#__LINE__}: Unable to overwrite file "'+TargetFile+'" with "'+SourceFile+'".');
+        Result:=False;
+        Exit;
+    end;
+    Result:=True;
+end;
+
 procedure CurStepChanged(CurStep:TSetupStep);
 var
-    AppDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
+    AppDir,BinDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
     BuiltIns,ImageNames,EnvPath:TArrayOfString;
     Count,i:Longint;
     RootKey:Integer;
@@ -1670,6 +1762,16 @@ begin
         end;
     except
         Log('Line {#__LINE__}: An exception occurred while calling BindImageEx.');
+    end;
+
+    {
+        Replace curl binaries in "/mingw64/bin" with curl-winssl variants
+        This needs to be done before copying dlls from "/mingw64/bin" to "/mingw64/libexec/git-core"
+    }
+
+    BinDir:=AppDir+'\{#MINGW_BITNESS}\bin\';
+    if RdbCurlVariant[GC_WinSSL].Checked and (not ReplaceFile(BinDir+'curl-winssl\curl.exe',BinDir+'curl.exe') or not ReplaceFile(BinDir+'curl-winssl\libcurl-4.dll',BinDir+'libcurl-4.dll')) then begin
+        Log('Line {#__LINE__}: Replacing curl-openssl with curl-winssl failed.');
     end;
 
     {
@@ -1986,6 +2088,13 @@ begin
         RecordChoice(PreviousDataKey,'Plink Path',EdtPlink.Text);
     end;
     RecordChoice(PreviousDataKey,'SSH Option',Data);
+
+    // HTTPS implementation (cURL) options.
+    Data:='OpenSSL';
+    if RdbCurlVariant[GC_WinSSL].Checked then begin
+        Data:='WinSSL';
+    end;
+    RecordChoice(PreviousDataKey,'CURL Option',Data);
 
     // Line ending conversion options.
     Data:='';
