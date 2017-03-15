@@ -995,7 +995,7 @@ begin
 
     CurlVariantPage:=CreateCustomPage(
         PrevPageID
-    ,   'Choosing HTTPS implementation'
+    ,   'Choosing HTTPS transport backend'
     ,   'Which SSL/TLS library would you like Git to use for HTTPS connections?'
     );
     PrevPageID:=CurlVariantPage.ID;
@@ -1027,7 +1027,7 @@ begin
     RdbCurlVariant[GC_WinSSL]:=TRadioButton.Create(CurlVariantPage);
     with RdbCurlVariant[GC_WinSSL] do begin
         Parent:=CurlVariantPage.Surface;
-        Caption:='Use the native Windows SChannel library';
+        Caption:='Use the native Windows Secure Channel library';
         Left:=ScaleX(4);
         Top:=ScaleY(76);
         Width:=ScaleX(405);
@@ -1041,7 +1041,7 @@ begin
         Parent:=CurlVariantPage.Surface;
         Caption:='Server certificates will be validated using Windows Certificate Stores.' + #13 +
             'This option also allows you to use your company''s internal Root CA certificates' + #13 +
-            'distributed via Active Directory Domain Services.';
+            'distributed e.g. via Active Directory Domain Services.';
         Left:=ScaleX(28);
         Top:=ScaleY(100);
         Width:=ScaleX(405);
