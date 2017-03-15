@@ -42,6 +42,7 @@ A [MinGit-only v2.12.0(2)](https://github.com/git-for-windows/git/releases/tag/v
 * In addition to the GitForWindows NuGet package, we now also publish [MinGit as a NuGet package](https://www.nuget.org/packages/Git-Windows-Minimal/).
 * Git for Windows now bundles [Git LFS](https://git-lfs.github.com/).
 * Comes with Git Credential Manager [v1.9.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.9.0).
+* Git can now be configured to use [Secure Channel](https://github.com/git-for-windows/git/issues/301) to use the Windows Credential Store when fetching/pushing via HTTPS.
 
 ### Bug Fixes
 
