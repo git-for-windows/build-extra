@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 
 * MinGit [no longer gets distracted](https://github.com/git-for-windows/git/issues/1086) by incompatible `libeay32.dll` versions in C:\Windows\system32.
 * Long paths between 248 and 260 characters were not handled correctly since Git for Windows v2.11.1, which [is now fixed](https://github.com/git-for-windows/git/issues/1084).
+* The `awk.exe` shipped with MinGit [now ships a previously missing a dependency](https://github.com/git-for-windows/build-extra/commit/437b52cae9d73772f9582efbd45b63335c7a3fb8) (this fixes `git mergetool`).
 
 ## Changes since Git for Windows v2.11.1 (February 3rd 2017)
 
