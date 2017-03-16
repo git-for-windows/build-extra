@@ -107,6 +107,10 @@ do
 
 	zipname=$name-$version.zip
 
+	# Already copied?
+	test ! -f $zipdir/$zipname ||
+	continue
+
 	# Already transformed?
 	test ! -f $zipprev/$zipname ||
 	if test -n "$mingit"
@@ -135,7 +139,7 @@ do
 	then
 
 		case "$name" in
-		git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|msys2-runtime|mingw-w64-x86_64-git-credential-manager|mingw-w64-i686-git-credential-manager)
+		git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|msys2-runtime|mingw-w64-x86_64-git-credential-manager|mingw-w64-i686-git-credential-manager|mingw-w64-i686-git-lfs|mingw-w64-x86_64-git-lfs|mingw-w64-i686-curl-winssl-bin|mingw-w64-x86_64-curl-winssl-bin)
 			url="$bintray_source_url/$filename"
 			sf1_url=
 			sf2_url=
@@ -160,14 +164,32 @@ do
 					die "Multiple origins of $name: $name2"
 					;;
 				esac
-				grep "^$name2 $version$" <"$1" >/dev/null ||
-				die "Package $name2 (origin of $name) not in $1!"
+
+				# "real" package already in packages-versions?
+				! grep "^$name2 $version$" <"$1" >/dev/null ||
 				continue
+
+				filename=$name2-$version.src.tar.gz
+				zipname=$name2-$version.zip
+
+				# Already transformed?
+				test ! -f $zipprev/$zipname ||
+				if test -n "$mingit"
+				then
+					echo "Copying $zipname..." >&2
+					cp $zipprev/$zipname $zipdir/ ||
+					die "Could not copy zip: $zipprev/$zipname"
+					continue
+				else
+					mv $zipprev/$zipname $zipdir/ ||
+					die "Could not move previous zip: $zipprev/$zipname"
+					continue
+				fi
 			fi
 
 			url="$msys_source_url/$filename"
 			sf1_url="$msys_sf_source_url/$filename/download"
-			sf2_url=
+			sf2_url="$bintray_source_url/$filename"
 			;;
 		esac
 
