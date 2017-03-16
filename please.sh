@@ -763,6 +763,7 @@ build_and_test_64 () {
 		};
 	'"'"
 	test_opts=--quiet
+	no_svn_tests="NO_SVN_TESTS=1"
 	while case "$1" in
 	--skip-tests)
 		skip_tests=--skip-tests
@@ -770,6 +771,9 @@ build_and_test_64 () {
 	--full-log)
 		test_opts=
 		filter_make_test=
+		;;
+	--with-svn-tests)
+		no_svn_tests=
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -780,6 +784,8 @@ build_and_test_64 () {
 	make_t_prefix=
 	test -z "$test_opts" ||
 	make_t_prefix="GIT_TEST_OPTS=\"$test_opts\" $make_t_prefix"
+	test -z "$no_svn_tests" ||
+	make_t_prefix="$no_svn_tests $make_t_prefix"
 
 	ensure_valid_login_shell 64 &&
 	GIT_CONFIG_PARAMETERS= \
@@ -832,7 +838,7 @@ build_and_test_64 () {
 		fi'
 }
 
-rebase () { # [--worktree=<dir>] [--test [--full-test-log]] [--redo] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag>
+rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] [--redo] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag>
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	run_tests=
 	redo=
@@ -840,6 +846,7 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log]] [--redo] [--abort-pr
 	continue_rebase=
 	skip_rebase=
 	full_test_log=
+	with_svn_tests=
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -850,6 +857,7 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log]] [--redo] [--abort-pr
 		;;
 	--test) run_tests=t;;
 	--full-test-log) full_test_log=--full-log;;
+	--with-svn-tests) with_svn_tests=--with-svn-tests;;
 	--redo) redo=t;;
 	--abort-previous) abort_previous=t;;
 	--continue) continue_rebase=t;;
@@ -1006,17 +1014,18 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log]] [--redo] [--abort-pr
 		if test -n "$run_tests"
 		then
 			echo "Building and testing Git" >&2 &&
-			build_and_test_64 $full_test_log
+			build_and_test_64 $full_test_log $with_svn_tests
 		fi
 	 fi) ||
 	exit
 }
 
-test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] [--full-log] <remote-tracking-branch> [<commit>]
+test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] [--full-log] [--with-svn-tests] <remote-tracking-branch> [<commit>]
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	bisect_and_comment=
 	skip_tests=
 	full_log=
+	with_svn_tests=
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -1034,6 +1043,9 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 		;;
 	--full-log)
 		full_log=--full-log
+		;;
+	--with-svn-tests)
+		with_svn_tests=--with-svn-tests
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -1071,7 +1083,7 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 		die "Commit %s is not on branch %s\n" $commit $branch &&
 	 git checkout -f "$commit" &&
 	 git reset --hard &&
-	 if build_and_test_64 $skip_tests $full_log
+	 if build_and_test_64 $skip_tests $full_log $with_svn_tests
 	 then
 		: everything okay
 	 elif test -z "$bisect_and_comment"
