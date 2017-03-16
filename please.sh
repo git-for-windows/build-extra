@@ -747,31 +747,29 @@ require_git_src_dir () {
 # build_and_test_64; intended to build and test 64-bit Git in MINGW-packages
 build_and_test_64 () {
 	skip_tests=
-	filter_make_test=
+	filter_make_test=" | perl -ne '"'
+		s/^ok \d+ # skip/skipped:/;
+		unless (
+			/^1..[0-9]*/ or
+			/^ok [0-9]*/ or
+			/^# passed all [0-9]* test\(s\)/ or
+			/^# passed all remaining [0-9]* test\(s\)/ or
+			/^# still have [0-9]* known breakage\(s\)/
+		) {
+			s/^not ok \d+ -(.*)# TODO known breakage/known e:$1/;
+			s/^\*\*\* (.+) \*\*\*/$1/;
+			s/(.+)/    $1/ unless /^t\d{4}-|^make/;
+			print;
+		};
+	'"'"
 	make_t_prefix="GIT_TEST_OPTS=--quiet "
 	while case "$1" in
 	--skip-tests)
 		skip_tests=--skip-tests
 		;;
-	--filter-make-test)
-		filter_make_test='| perl -ne '"'"'
-			s/ok \d+ # skip/skipped:/;
-			s/not ok \d+ -(.*)# TODO known breakage/known e:$1/;
-			s/\*\*\* (.+) \*\*\*/$1/;
-			unless (
-				/^1..[0-9]*/ or
-				/^ok [0-9]*/ or
-				/^# passed all [0-9]* test\(s\)/ or
-				/^# passed all remaining [0-9]* test\(s\)/ or
-				/^# still have [0-9]* known breakage\(s\)/
-			) {
-				s/(.+)/    $1/ unless /^t\d{4}-|make/;
-				print;
-			};'"'"'
-		'
-		;;
 	--full-log)
 		make_t_prefix=
+		filter_make_test=
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -795,7 +793,8 @@ build_and_test_64 () {
 		fi &&
 		if '"$(if test -z "$skip_tests"
 			then
-				echo "! ${make_t_prefix}make -C t -j5 -k $filter_make_test"
+				printf '! %smake -C t -j5 -k%s\n' \
+					"$make_t_prefix" "$filter_make_test"
 			else
 				echo 'false'
 			fi)"'
@@ -1009,12 +1008,11 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log]] [--redo] [--abort-pr
 	exit
 }
 
-test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] [--full-log] [--filter-make-test] <remote-tracking-branch> [<commit>]
+test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] [--full-log] <remote-tracking-branch> [<commit>]
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	bisect_and_comment=
 	skip_tests=
 	full_log=
-	filter_make_test=
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -1032,9 +1030,6 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 		;;
 	--full-log)
 		full_log=--full-log
-		;;
-	--filter-make-test)
-		filter_make_test=--filter-make-test
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -1072,7 +1067,7 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 		die "Commit %s is not on branch %s\n" $commit $branch &&
 	 git checkout -f "$commit" &&
 	 git reset --hard &&
-	 if build_and_test_64 $skip_tests $full_log $filter_make_test
+	 if build_and_test_64 $skip_tests $full_log
 	 then
 		: everything okay
 	 elif test -z "$bisect_and_comment"
