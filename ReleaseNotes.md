@@ -1,5 +1,5 @@
-# Git for Windows v2.12.0(2) Release Notes
-Latest update: March 15th 2017
+# Git for Windows v2.12.0 Release Notes
+Latest update: February 25th 2017
 
 ## Introduction
 
@@ -35,7 +35,7 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.12.0 (February 25th 2017)
 
-This is a MinGit-only release.
+A [MinGit-only v2.12.0(2)](https://github.com/git-for-windows/git/releases/tag/v2.12.0.windows.2) was released in the meantime.
 
 ### New Features
 
