@@ -874,6 +874,9 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] [
 	test tt != "$skip_rebase$continue_rebase" ||
 	die "Cannot continue *and* skip\n"
 
+	# special-case master and maint: we will want full tests on those
+	case "$1" in master|maint) with_svn_tests=--with-svn-tests;; esac
+
 	sdk="$sdk64"
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
@@ -1059,6 +1062,11 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 	test -z "$bisect_and_comment" ||
 	test -z "$skip_tests" ||
 	die "Cannot skip tests *and* bisect\n"
+
+	# special-case master and maint: we will want full tests on those
+	case "$branch" in
+	upstream/master|upstream/maint) with_svn_tests=--with-svn-tests;;
+	esac
 
 	require_git_src_dir
 
