@@ -107,6 +107,10 @@ do
 
 	zipname=$name-$version.zip
 
+	# Already copied?
+	test ! -f $zipdir/$zipname ||
+	continue
+
 	# Already transformed?
 	test ! -f $zipprev/$zipname ||
 	if test -n "$mingit"
