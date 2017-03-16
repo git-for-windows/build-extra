@@ -793,6 +793,7 @@ build_and_test_64 () {
 		: make sure that the .dll files are correctly resolved: &&
 		cd $PWD &&
 		rm -f t/test-results/*.{counts,tee} &&
+		printf "\nBuilding Git...\n" >&2 &&
 		if ! make -j5 -k DEVELOPER=1
 		then
 			echo "Re-running build (to show failures)" >&2
@@ -801,6 +802,7 @@ build_and_test_64 () {
 				exit 1
 			}
 		fi &&
+		printf "\nTesting Git...\n" >&2 &&
 		if '"$(if test -z "$skip_tests"
 			then
 				printf '! %smake -C t -j5 -k%s\n' \
@@ -1098,6 +1100,7 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 	 then
 		exit 1
 	 else
+		printf "\nBisecting broken Git tests...\n" >&2 &&
 		case "$branch" in
 		upstream/pu) good=upstream/next;;
 		upstream/next) good=upstream/master;;
