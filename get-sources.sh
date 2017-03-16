@@ -185,7 +185,7 @@ do
 
 			url="$msys_source_url/$filename"
 			sf1_url="$msys_sf_source_url/$filename/download"
-			sf2_url=
+			sf2_url="$bintray_source_url/$filename"
 			;;
 		esac
 
