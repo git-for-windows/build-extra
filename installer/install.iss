@@ -2014,7 +2014,7 @@ begin
     if IsComponentSelected('ext\shellhere') then begin
         Msg:='Git Ba&sh Here';
         Cmd:='"'+AppDir+'\git-bash.exe" "--cd=%1"';
-        Ico:='"'+AppDir+'\{#MINGW_BITNESS}\share\git\git-for-windows.ico"';
+        Ico:=AppDir+'\git-bash.exe';
         if (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_shell','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_shell\command','',Cmd)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_shell','Icon',Ico)) or
@@ -2028,7 +2028,7 @@ begin
     if IsComponentSelected('ext\guihere') then begin
         Msg:='Git &GUI Here';
         Cmd:='"'+AppDir+'\cmd\git-gui.exe" "--working-dir" "%1"';
-        Ico:='"'+AppDir+'\{#MINGW_BITNESS}\share\git\git-for-windows.ico"';
+        Ico:=AppDir+'\cmd\git-gui.exe';
         if (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_gui','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_gui\command','',Cmd)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_gui','Icon',Ico)) or
