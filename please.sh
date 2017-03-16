@@ -762,13 +762,13 @@ build_and_test_64 () {
 			print;
 		};
 	'"'"
-	make_t_prefix="GIT_TEST_OPTS=--quiet "
+	test_opts=--quiet
 	while case "$1" in
 	--skip-tests)
 		skip_tests=--skip-tests
 		;;
 	--full-log)
-		make_t_prefix=
+		test_opts=
 		filter_make_test=
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
@@ -776,6 +776,10 @@ build_and_test_64 () {
 	esac; do shift; done
 	test $# = 0 ||
 	die "Expected no argument, got $#: %s\n" "$*"
+
+	make_t_prefix=
+	test -z "$test_opts" ||
+	make_t_prefix="GIT_TEST_OPTS=\"$test_opts\" $make_t_prefix"
 
 	ensure_valid_login_shell 64 &&
 	GIT_CONFIG_PARAMETERS= \
