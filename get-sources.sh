@@ -160,9 +160,27 @@ do
 					die "Multiple origins of $name: $name2"
 					;;
 				esac
-				grep "^$name2 $version$" <"$1" >/dev/null ||
-				die "Package $name2 (origin of $name) not in $1!"
+
+				# "real" package already in packages-versions?
+				! grep "^$name2 $version$" <"$1" >/dev/null ||
 				continue
+
+				filename=$name2-$version.src.tar.gz
+				zipname=$name2-$version.zip
+
+				# Already transformed?
+				test ! -f $zipprev/$zipname ||
+				if test -n "$mingit"
+				then
+					echo "Copying $zipname..." >&2
+					cp $zipprev/$zipname $zipdir/ ||
+					die "Could not copy zip: $zipprev/$zipname"
+					continue
+				else
+					mv $zipprev/$zipname $zipdir/ ||
+					die "Could not move previous zip: $zipprev/$zipname"
+					continue
+				fi
 			fi
 
 			url="$msys_source_url/$filename"
