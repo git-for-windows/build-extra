@@ -747,6 +747,21 @@ require_git_src_dir () {
 # build_and_test_64; intended to build and test 64-bit Git in MINGW-packages
 build_and_test_64 () {
 	skip_tests=
+	filter_make_test=" | perl -ne '"'
+		s/^ok \d+ # skip/skipped:/;
+		unless (
+			/^1..[0-9]*/ or
+			/^ok [0-9]*/ or
+			/^# passed all [0-9]* test\(s\)/ or
+			/^# passed all remaining [0-9]* test\(s\)/ or
+			/^# still have [0-9]* known breakage\(s\)/
+		) {
+			s/^not ok \d+ -(.*)# TODO known breakage/known e:$1/;
+			s/^\*\*\* (.+) \*\*\*/$1/;
+			s/(.+)/    $1/ unless /^t\d{4}-|^make/;
+			print;
+		};
+	'"'"
 	make_t_prefix="GIT_TEST_OPTS=--quiet "
 	while case "$1" in
 	--skip-tests)
@@ -754,6 +769,7 @@ build_and_test_64 () {
 		;;
 	--full-log)
 		make_t_prefix=
+		filter_make_test=
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -777,7 +793,8 @@ build_and_test_64 () {
 		fi &&
 		if '"$(if test -z "$skip_tests"
 			then
-				echo "! ${make_t_prefix}make -C t -j5 -k"
+				printf '! %smake -C t -j5 -k%s\n' \
+					"$make_t_prefix" "$filter_make_test"
 			else
 				echo 'false'
 			fi)"'
