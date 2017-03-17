@@ -313,6 +313,10 @@ set_package () {
 		 ./make-PKGBUILD-winssl-bin.sh) ||
 		die "Could not generate PKGBUILD-winssl-bin in %s\n" "$pkgpath"
 		;;
+	git-flow)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
