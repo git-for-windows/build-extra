@@ -95,6 +95,12 @@ LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 	grep -v "^mingw$BITNESS/etc/gitconfig$")" ||
 die "Could not generate file list"
 
+rm -rf "$SCRIPT_PATH/root/mingw$BITNESS/libexec/git-core" &&
+mkdir -p "$SCRIPT_PATH/root/mingw$BITNESS/libexec/git-core" &&
+ln $(echo "$LIST" | sed -n "s|^mingw$BITNESS/bin/[^/]*\.dll$|/&|p") \
+	"$SCRIPT_PATH/root/mingw$BITNESS/libexec/git-core/" ||
+die "Could not copy .dll files into libexec/git-core/"
+
 # 7-Zip will strip absolute paths completely... therefore, we can add another
 # root directory like this:
 
