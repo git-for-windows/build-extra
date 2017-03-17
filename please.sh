@@ -210,6 +210,21 @@ sync () { # [--force]
 	done
 }
 
+run () { # <bitness> <command> [<arg>...]
+	test 32 = "$1" || test 64 = "$1" || die "Which bitness?\n"
+
+	sdk="$(eval "echo \$sdk$1")"
+	shift
+
+	cmdline=eval
+	for arg
+	do
+		cmdline="$cmdline '$(echo "$arg" | sed -e "s/'/&\\\\&&/g")'"
+	done
+
+	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c "$cmdline"
+}
+
 killall () { # <bitness>
 	sdk="$(eval "echo \$sdk$1")"
 
