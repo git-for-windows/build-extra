@@ -48,7 +48,7 @@ esac
 VERSION=$1
 shift
 TARGET="$output_directory"/PortableGit-"$VERSION"-"$BITNESS"-bit.7z.exe
-OPTS7="-m0=lzma -mx=9 -md=64M"
+OPTS7="-m0=lzma -mx=9 -md=256M -mfb=273 -ms=256M "
 TMPPACK=/tmp.7z
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
