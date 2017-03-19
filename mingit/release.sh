@@ -65,9 +65,9 @@ die "Could not generate file list"
 
 # Make the archive
 
-type zip ||
-pacman -Sy --noconfirm zip ||
-die "Could not install Zip"
+type 7za ||
+pacman -Sy --noconfirm p7zip ||
+die "Could not install 7-Zip"
 
 echo "$LIST" | sort >"$SCRIPT_PATH"/sorted-all &&
 pacman -Ql mingw-w64-$ARCH-git |
@@ -94,7 +94,5 @@ die "Could not copy libexec/git-core/*.exe"
 test ! -f "$TARGET" || rm "$TARGET" || die "Could not remove $TARGET"
 
 echo "Creating .zip archive" &&
-(cd "$SCRIPT_PATH"/root &&
- zip -9r "$TARGET" LICENSE.txt etc/package-versions.txt $MOVED_FILE $BIN_DIR/) &&
-(cd / && zip -9r "$TARGET" $LIST) &&
+(cd / && 7za a -mx9 "$TARGET" $LIST "$SCRIPT_PATH"/root/*) &&
 echo "Success! You will find the new MinGit at \"$TARGET\"."
