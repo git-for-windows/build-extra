@@ -85,7 +85,10 @@ BIN_DIR=mingw$BITNESS/bin &&
 mkdir -p "$SCRIPT_PATH"/root/$BIN_DIR &&
 (cd / &&
  cp $(cat "$SCRIPT_PATH"/root/$MOVED_FILE) "$SCRIPT_PATH"/root/$BIN_DIR/) &&
-LIST="$(comm -23 "$SCRIPT_PATH"/sorted-all "$SCRIPT_PATH"/root/$MOVED_FILE)" ||
+sed -e 's|\(.*/\)libexec/git-core\(/.*\)|\1bin\2\n&|' \
+	<"$SCRIPT_PATH"/root/$MOVED_FILE |
+sort >"$SCRIPT_PATH"/exclude-list &&
+LIST="$(comm -23 "$SCRIPT_PATH"/sorted-all "$SCRIPT_PATH"/exclude-list)" ||
 die "Could not copy libexec/git-core/*.exe"
 
 test ! -f "$TARGET" || rm "$TARGET" || die "Could not remove $TARGET"

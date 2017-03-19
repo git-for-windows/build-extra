@@ -14,6 +14,7 @@ edit-git-bash.exe
 /installer/is-unicode.exe
 /installer/file-list.iss
 /installer/package-versions.txt
+/mingit/exclude-list
 /mingit/root/
 /mingit/sorted-all
 /mingit/sorted-libexec-exes
