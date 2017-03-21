@@ -51,6 +51,7 @@ A [MinGit-only v2.12.0(2)](https://github.com/git-for-windows/git/releases/tag/v
 * Long paths between 248 and 260 characters were not handled correctly since Git for Windows v2.11.1, which [is now fixed](https://github.com/git-for-windows/git/issues/1084).
 * The `awk.exe` shipped with MinGit [now ships a previously missing a dependency](https://github.com/git-for-windows/build-extra/commit/437b52cae9d73772f9582efbd45b63335c7a3fb8) (this fixes `git mergetool`).
 * Git for Windows does not ship with localized messages to save on bandwidth, and the gettext initialization [can be skipped when the directory with said messages is missing](https://github.com/git-for-windows/git/commit/0a416e8f3ef5314927f687f8b2e90f68bc537d80), saving us ~150ms on every `git.exe` startup.
+* A possible crash when running `git log --pickaxe-regex -S<regex>` [was fixed](https://github.com/git-for-windows/git/commit/2c6cf4e358dd1395091e1d7f9544028e6df674a7).
 
 ## Changes since Git for Windows v2.11.1 (February 3rd 2017)
 
