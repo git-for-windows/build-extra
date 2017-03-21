@@ -45,6 +45,7 @@ A [MinGit-only v2.12.0(2)](https://github.com/git-for-windows/git/releases/tag/v
 * Comes with Git Credential Manager [v1.9.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.9.0).
 * Git can now be configured to use [Secure Channel](https://github.com/git-for-windows/git/issues/301) to use the Windows Credential Store when fetching/pushing via HTTPS.
 * [Updates](https://github.com/git-for-windows/MSYS2-packages/pull/20) Git-Flow to [v1.10.2](https://github.com/petervanderdoes/gitflow-avh/blob/1.10.2/Changes.mdown#1102) (addressing [#1092](https://github.com/git-for-windows/git/issues/1092)).
+* Git for Windows' fork of the MSYS2 runtime was [rebased](https://github.com/git-for-windows/msys2-runtime/compare/5f79e89da8...a55abf375d) to a preview of the Cygwin runtime version 2.8.0 (due soon) to fix [`fork: child <n> - forked process <pid> died unexpectedly, retry 0, exit code 0xC0000142, errno 11` problems](https://cygwin.com/ml/cygwin/2017-03/msg00113.html).
 
 ### Bug Fixes
 
