@@ -54,6 +54,7 @@ A [MinGit-only v2.12.0(2)](https://github.com/git-for-windows/git/releases/tag/v
 * The `awk.exe` shipped with MinGit [now ships a previously missing a dependency](https://github.com/git-for-windows/build-extra/commit/437b52cae9d73772f9582efbd45b63335c7a3fb8) (this fixes `git mergetool`).
 * Git for Windows does not ship with localized messages to save on bandwidth, and the gettext initialization [can be skipped when the directory with said messages is missing](https://github.com/git-for-windows/git/commit/0a416e8f3ef5314927f687f8b2e90f68bc537d80), saving us ~150ms on every `git.exe` startup.
 * A possible crash when running `git log --pickaxe-regex -S<regex>` [was fixed](https://github.com/git-for-windows/git/commit/2c6cf4e358dd1395091e1d7f9544028e6df674a7).
+* The `ORIGINAL_PATH` variable, recently introduced by the MSYS2 project to allow for special "PATH modes", [is now handled in the same manner as the `PATH` variable](https://github.com/git-for-windows/msys2-runtime/commit/476605ced959f217b3820157b8101b4529fa6a0d) when jumping the Windows<->MSYS2 boundary, fixing issues when `ORIGINAL_PATH` is converted to Windows format and back again.
 
 ## Changes since Git for Windows v2.11.1 (February 3rd 2017)
 
