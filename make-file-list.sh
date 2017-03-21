@@ -176,7 +176,8 @@ else
 		-e '^/usr/bin/\(reset\|tabs\|tic\|toe\|tput\|tset\)\.exe$' \
 		-e '^/usr/bin/msys-\(formw6\|menuw6\|ncurses++w6\)\.dll$' \
 		-e '^/usr/bin/msys-\(panelw6\|ticw6\)\.dll$' \
-		-e '^/usr/\(lib\|share\)/terminfo/' -e '^/usr/share/tabset/'
+		-e '^/usr/\(lib\|share\)/terminfo/' -e '^/usr/share/tabset/' \
+		-e '^/mingw../bin/curl-winssl/curl\.exe$'
 fi | sort |
 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)$)' |
 sed 's/^\///'
