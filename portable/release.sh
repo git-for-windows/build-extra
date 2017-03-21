@@ -37,9 +37,11 @@ ARCH="$(uname -m)"
 case "$ARCH" in
 i686)
 	BITNESS=32
+	MD_ARG=128M
 	;;
 x86_64)
 	BITNESS=64
+	MD_ARG=256M
 	;;
 *)
 	die "Unhandled architecture: $ARCH"
@@ -48,7 +50,7 @@ esac
 VERSION=$1
 shift
 TARGET="$output_directory"/PortableGit-"$VERSION"-"$BITNESS"-bit.7z.exe
-OPTS7="-m0=lzma -mx=9 -md=256M -mfb=273 -ms=256M "
+OPTS7="-m0=lzma -mx=9 -md=$MD_ARG -mfb=273 -ms=256M "
 TMPPACK=/tmp.7z
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
