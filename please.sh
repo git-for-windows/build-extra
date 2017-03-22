@@ -2406,7 +2406,7 @@ publish () { #
 		"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			'markdown |
 			 LC_CTYPE=C w3m -dump -cols 72 -T text/html')"
-	printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n%s\n" \
+	printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n%s\n" \
 		"From $version Mon Sep 17 00:00:00 2001" \
 		"From: $(git var GIT_COMMITTER_IDENT | sed -e 's/>.*/>/')" \
 		"Date: $(date -R)" \
