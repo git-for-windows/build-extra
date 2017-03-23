@@ -49,7 +49,7 @@ do
 	required="$required $req"
 done
 test -z "$required" ||
-pacman -S --noconfirm $required >&2 ||
+pacman -Sy --noconfirm $required >&2 ||
 die "Could not install required packages: $required"
 
 packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager
