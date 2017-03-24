@@ -784,7 +784,7 @@ build_and_test_64 () {
 			s/(.+)/    $1/ unless /^t\d{4}-|^make/;
 			print;
 		};
-	'"'"
+	'"'; grep '^failed [^0]' t/test-results/*.counts"
 	test_opts=--quiet
 	no_svn_tests="NO_SVN_TESTS=1"
 	while case "$1" in
