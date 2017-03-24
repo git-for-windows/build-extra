@@ -183,8 +183,9 @@ grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)
 sed 's/^\///'
 
 test -z "$PACKAGE_VERSIONS_FILE" ||
-pacman -Q filesystem dash rebase util-linux unzip \
-	mingw-w64-$ARCH-xpdf >>"$PACKAGE_VERSIONS_FILE"
+pacman -Q filesystem dash rebase \
+	$(test -n "$MINIMAL_GIT" || echo util-linux unzip mingw-w64-$ARCH-xpdf) \
+	>>"$PACKAGE_VERSIONS_FILE"
 
 cat <<EOF
 etc/profile
