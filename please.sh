@@ -784,7 +784,7 @@ build_and_test_64 () {
 			s/(.+)/    $1/ unless /^t\d{4}-|^make/;
 			print;
 		};
-	'"'"
+	'"'; grep '^failed [^0]' t/test-results/*.counts"
 	test_opts=--quiet
 	no_svn_tests="NO_SVN_TESTS=1"
 	while case "$1" in
@@ -1349,7 +1349,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 			desc="$(git describe --match "v[0-9]*.$match.*" \
 					--abbrev=7 "$1")"
 			while echo "$desc" |
-			grep '\.g[0-9a-f]\{7,\}\(\.[0-9]\+\)\?-[0-9]\+[-.]g[0-9a-f]\{7,\}$'
+			grep '\.g[0-9a-f]\{7,\}\(\(\.[0-9]\+\)\?-[0-9]\+[-.]g[0-9a-f]\{7,\}\)\?$'
 			do
 				git tag -d "$desc" ||
 				git tag -d "${desc%-[0-9]*}" ||

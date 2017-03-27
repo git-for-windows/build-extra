@@ -39,17 +39,18 @@ pacman_list () {
 
 # Packages that have been added after Git SDK 1.0.0 was released...
 required=
-for req in mingw-w64-$ARCH-connect git-flow unzip docx2txt \
-	mingw-w64-$ARCH-antiword mingw-w64-$ARCH-xpdf \
-	mingw-w64-$ARCH-git-credential-manager ssh-pageant \
-	mingw-w64-$ARCH-curl-winssl-bin
+for req in mingw-w64-$ARCH-git-credential-manager \
+	$(test -n "$MINIMAL_GIT" || echo \
+		mingw-w64-$ARCH-connect git-flow unzip docx2txt \
+		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-xpdf ssh-pageant \
+		mingw-w64-$ARCH-git-lfs mingw-w64-$ARCH-curl-winssl-bin)
 do
 	test -d /var/lib/pacman/local/$req-[0-9]* ||
 	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
 	required="$required $req"
 done
 test -z "$required" ||
-pacman -S --noconfirm $required >&2 ||
+pacman -Sy --noconfirm $required >&2 ||
 die "Could not install required packages: $required"
 
 packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager
@@ -183,8 +184,9 @@ grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)
 sed 's/^\///'
 
 test -z "$PACKAGE_VERSIONS_FILE" ||
-pacman -Q filesystem dash rebase util-linux unzip \
-	mingw-w64-$ARCH-xpdf >>"$PACKAGE_VERSIONS_FILE"
+pacman -Q filesystem dash rebase \
+	$(test -n "$MINIMAL_GIT" || echo util-linux unzip mingw-w64-$ARCH-xpdf) \
+	>>"$PACKAGE_VERSIONS_FILE"
 
 cat <<EOF
 etc/profile

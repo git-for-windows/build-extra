@@ -37,6 +37,10 @@ do
 	*/raw)
 		# already raw
 		;;
+	*/t)
+		# thread view
+		URL=${URL%t}raw
+		;;
 	*)
 		URL=${URL%/}/raw
 		;;
