@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Git v2.12.2](https://github.com/git/git/blob/v2.12.2/Documentation/RelNotes/2.12.2.txt).
+* An earlier iteration of the changes speeding up the case-insensitive cache of file names was replaced by [a new iteration](https://github.com/git-for-windows/git/commit/212247dd6345c820deeae61fcdf2f10cea10525a).
 
 ## Changes since Git for Windows v2.12.0 (February 25th 2017)
 
