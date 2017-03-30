@@ -984,7 +984,7 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] [
 			exit 0
 		fi
 	 fi &&
-	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true'" &&
+	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true' 'gc.auto=false'" &&
 	 export GIT_CONFIG_PARAMETERS &&
 	 if is_rebasing
 	 then
@@ -1039,6 +1039,10 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] [
 			"(Call \`please.sh rebase --continue $1\` to " \
 			"contine, do *not* stage changes!"
 	 else
+		git gc &&
+		git prune ||
+		echo "WARNING: problems with garbage collection..." >&2
+
 		if test -n "$run_tests"
 		then
 			echo "Building and testing Git" >&2 &&
