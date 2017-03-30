@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Portable Git is now using [a custom-built SFX that is based directly on 7-Zip's SFX](https://github.com/git-for-windows/7-Zip).
+* Git LFS was upgraded to [v2.0.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.0.2).
 
 ## Changes since Git for Windows v2.12.1 (March 21st 2017)
 
