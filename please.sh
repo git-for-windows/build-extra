@@ -929,6 +929,12 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] [
 		test -z "$continue_rebase$skip_rebase" ||
 		die "No rebase was started...\n"
 
+		require_remote upstream https://github.com/git/git &&
+		require_remote git-for-windows \
+			https://github.com/git-for-windows/git &&
+		require_push_url git-for-windows ||
+		die "Could not update remotes\n"
+
 		orig_rerere_train=
 		if rerere_train2="$(git rev-parse -q --verify \
 				refs/remotes/git-for-windows/rerere-train)" &&
@@ -952,12 +958,6 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] [
 					rerere-train
 			fi
 		fi
-
-		require_remote upstream https://github.com/git/git &&
-		require_remote git-for-windows \
-			https://github.com/git-for-windows/git &&
-		require_push_url git-for-windows ||
-		die "Could not update remotes\n"
 
 		if test -n "$rerere_train2"
 		then
