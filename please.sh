@@ -984,7 +984,7 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] [
 			exit 0
 		fi
 	 fi &&
-	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true' 'gc.auto=false'" &&
+	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true' 'gc.auto=0'" &&
 	 export GIT_CONFIG_PARAMETERS &&
 	 if is_rebasing
 	 then
