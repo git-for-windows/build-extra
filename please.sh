@@ -863,7 +863,7 @@ build_and_test_64 () {
 		fi'
 }
 
-rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] [--redo] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag>
+rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] ( -- jump | [--redo] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag> )
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	run_tests=
 	redo=
@@ -879,6 +879,14 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] [
 		die "Worktree does not exist: %s\n" "$git_src_dir"
 		git rev-parse -q --verify e83c5163316f89bfbde7d ||
 		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
+		;;
+	--jump)
+		test $# = 1 ||
+		die "--jump must be the last option\n"
+
+		cd "$git_src_dir" &&
+		exec contrib/git-jump/git-jump merge ||
+		die "Could not run git jump merge\n"
 		;;
 	--test) run_tests=t;;
 	--full-test-log) full_test_log=--full-log;;
