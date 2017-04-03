@@ -12,6 +12,15 @@ storage_account="$1"; shift
 container_name="$1"; shift
 access_key="$1"; shift
 
+blob_store_url="blob.core.windows.net"
+
+get_remote_file_length () {
+	curl --silent --head -i \
+		"https://$storage_account.$blob_store_url/$container_name/$1" |
+	tr -d '\r' |
+	sed -n 's/^Content-Length: *//ip'
+}
+
 req () {
 	uploading=
 	file=
@@ -54,17 +63,7 @@ req () {
 		;;
 	remove)
 		file="$2"
-		if test -f "$file"
-		then
-			content_length="$(stat -c %s "$file")"
-		else
-			content_length="${file##*,}"
-			test -n "$content_length" || {
-				echo "Cannot determine file size of '$file'; please append ',<filesize>'" >&2
-				return 1
-			}
-			file="${file%,$content_length}"
-		fi
+		content_length="$(get_remote_file_length "$file")"
 		resource_extra=/"${file##*/}"
 
 		request_method="DELETE"
@@ -72,17 +71,7 @@ req () {
 		;;
 	lock)
 		file="$2"
-		if test -f "$file"
-		then
-			content_length="$(stat -c %s "$file")"
-		else
-			content_length="${file##*,}"
-			test -n "$content_length" || {
-				echo "Cannot determine file size of '$file'; please append ',<filesize>'" >&2
-				return 1
-			}
-			file="${file%,$content_length}"
-		fi
+		content_length="$(get_remote_file_length "$file")"
 		resource_extra=/"${file##*/}"
 
 		request_method="PUT"
@@ -95,17 +84,7 @@ req () {
 	unlock)
 		lease_id="$2"
 		file="$3"
-		if test -f "$file"
-		then
-			content_length="$(stat -c %s "$file")"
-		else
-			content_length="${file##*,}"
-			test -n "$content_length" || {
-				echo "Cannot determine file size of '$file'; please append ',<filesize>'" >&2
-				return 1
-			}
-			file="${file%,$content_length}"
-		fi
+		content_length="$(get_remote_file_length "$file")"
 		resource_extra=/"${file##*/}"
 
 		request_method="PUT"
@@ -125,7 +104,6 @@ req () {
 		;;
 	esac
 
-	blob_store_url="blob.core.windows.net"
 	authorization="SharedKey"
 
 	request_date=$(TZ=GMT date "+%a, %d %h %Y %H:%M:%S %Z")
