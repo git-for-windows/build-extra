@@ -37,7 +37,13 @@ req () {
 		x_ms_blob_type="x-ms-blob-type:BlockBlob"
 		content_length="$(stat -c %s "$file")"
 		content_length_header="Content-Length: $content_length"
-		content_type="application/x-www-form-urlencoded"
+		case "$file" in
+		*.html) content_type="text/html";;
+		*.css) content_type="text/css";;
+		*.txt|*.md) content_type="text/plain";;
+		*.exe) content_type="application/x-executable";;
+		*) content_type="application/octet-stream";;
+		esac
 		;;
 	remove)
 		file="$2"
@@ -91,6 +97,8 @@ req () {
 	authorization_header="Authorization: $authorization $storage_account:$signature"
 
 	{
+		test -z "$content_type" ||
+		echo "-H \"Content-Type: $content_type\""
 		test -z "$x_ms_blob_type" || echo "-H \"$x_ms_blob_type\""
 		echo "-H \"$x_ms_date_h\""
 		echo "-H \"$x_ms_version_h\""
