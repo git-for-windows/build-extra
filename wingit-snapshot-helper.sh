@@ -5,12 +5,17 @@ die () {
 	exit 1
 }
 
-test $# = 3 ||
-die "usage: ${0##*/} <storage-account-name> <container-name> <access-key>"
+test $# = 4 ||
+die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> <file>"
 
 storage_account="$1"
 container_name="$2"
 access_key="$3"
+file="$4"
+basename="${file##*/}"
+
+test -f "$file" ||
+die "File does not exist: '$file'"
 
 blob_store_url="blob.core.windows.net"
 authorization="SharedKey"
@@ -24,12 +29,12 @@ x_ms_blob_type="x-ms-blob-type:BlockBlob"
 x_ms_date_h="x-ms-date:$request_date"
 x_ms_version_h="x-ms-version:$storage_service_version"
 
-content_length=5603
+content_length="$(stat -c %s "$file")"
 content_length_header="Content-Length: $content_length"
 
 # Build the signature string
 canonicalized_headers="$x_ms_blob_type\n$x_ms_date_h\n$x_ms_version_h"
-canonicalized_resource="/$storage_account/$container_name/EXAMPLE.md"
+canonicalized_resource="/$storage_account/$container_name/$basename"
 
 string_to_sign="$request_method\n\n\n$content_length\n\napplication/x-www-form-urlencoded\n\n\n\n\n\n\n$canonicalized_headers\n$canonicalized_resource"
 
@@ -48,5 +53,5 @@ curl -i \
   -H "$content_length_header" \
   -H "$authorization_header" \
   -X$request_method \
-  --data-binary @README.md \
-  "https://$storage_account.$blob_store_url/$container_name/EXAMPLE.md"
+  --data-binary @"$file" \
+  "https://$storage_account.$blob_store_url/$container_name/$basename"
