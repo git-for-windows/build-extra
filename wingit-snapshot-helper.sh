@@ -6,7 +6,7 @@ die () {
 }
 
 test $# -ge 4 ||
-die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>... | remove <file>[,<filesize>]... )"
+die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>... | remove <file>[,<filesize>]... | lock <file> | unlock <lease-id> <file> )"
 
 storage_account="$1"; shift
 container_name="$1"; shift
@@ -16,9 +16,13 @@ req () {
 	uploading=
 	file=
 	x_ms_blob_type=
+	x_ms_lease_action=
+	x_ms_lease_duration=
+	x_ms_lease_id=
 	content_length=
 	content_length_header=
 	content_type=
+	resource_extra=
 	resource_trailer=
 	get_parameters=
 	string_to_sign_extra=
@@ -63,6 +67,51 @@ req () {
 		request_method="DELETE"
 		content_length_header="Content-Length: $content_length"
 		;;
+	lock)
+		file="$2"
+		if test -f "$file"
+		then
+			content_length="$(stat -c %s "$file")"
+		else
+			content_length="${file##*,}"
+			test -n "$content_length" || {
+				echo "Cannot determine file size of '$file'; please append ',<filesize>'" >&2
+				return 1
+			}
+			file="${file%,$content_length}"
+		fi
+		resource_extra=/"${file##*/}"
+
+		request_method="PUT"
+		get_parameters="?comp=lease"
+		string_to_sign_extra="\ncomp:lease"
+		x_ms_lease_action="x-ms-lease-action:acquire"
+		x_ms_lease_duration="x-ms-lease-duration:60"
+		content_length_header="Content-Length: $content_length"
+		;;
+	unlock)
+		lease_id="$2"
+		file="$3"
+		if test -f "$file"
+		then
+			content_length="$(stat -c %s "$file")"
+		else
+			content_length="${file##*,}"
+			test -n "$content_length" || {
+				echo "Cannot determine file size of '$file'; please append ',<filesize>'" >&2
+				return 1
+			}
+			file="${file%,$content_length}"
+		fi
+		resource_extra=/"${file##*/}"
+
+		request_method="PUT"
+		get_parameters="?comp=lease"
+		string_to_sign_extra="\ncomp:lease"
+		x_ms_lease_id="x-ms-lease-id:$lease_id"
+		x_ms_lease_action="x-ms-lease-action:release"
+		content_length_header="Content-Length: $content_length"
+		;;
 	list)
 		request_method="GET"
 		get_parameters="?restype=container&comp=list"
@@ -84,7 +133,7 @@ req () {
 	x_ms_version_h="x-ms-version:$storage_service_version"
 
 	# Build the signature string
-	canonicalized_headers="${x_ms_blob_type:+$x_ms_blob_type\n}$x_ms_date_h\n$x_ms_version_h"
+	canonicalized_headers="${x_ms_blob_type:+$x_ms_blob_type\n}$x_ms_date_h\n${x_ms_lease_action:+$x_ms_lease_action\n}${x_ms_lease_duration:+$x_ms_lease_duration\n}${x_ms_lease_id:+$x_ms_lease_id\n}$x_ms_version_h"
 	canonicalized_resource="/$storage_account/$container_name$resource_extra"
 
 	string_to_sign="$request_method\n\n\n$content_length\n\n$content_type\n\n\n\n\n\n\n$canonicalized_headers\n$canonicalized_resource$string_to_sign_extra"
@@ -100,6 +149,10 @@ req () {
 		test -z "$content_type" ||
 		echo "-H \"Content-Type: $content_type\""
 		test -z "$x_ms_blob_type" || echo "-H \"$x_ms_blob_type\""
+		test -z "$x_ms_lease_action" || echo "-H \"$x_ms_lease_action\""
+		test -z "$x_ms_lease_duration" ||
+		echo "-H \"$x_ms_lease_duration\""
+		test -z "$x_ms_lease_id" || echo "-H \"$x_ms_lease_id\""
 		echo "-H \"$x_ms_date_h\""
 		echo "-H \"$x_ms_version_h\""
 		test -z "$content_length_header" ||
@@ -136,6 +189,14 @@ remove)
 		req "$action" "$file" || ret=1
 	done
 	exit $ret
+	;;
+lock)
+	test $# = 1 || die "Can only 'lock' exactly one file"
+	req "$action" "$@"
+	;;
+unlock)
+	test $# = 2 || die "'unlock' requires two parameters: <leaseID> <file>"
+	req "$action" "$@"
 	;;
 *)
 	die "Unhandled action: '$action'"
