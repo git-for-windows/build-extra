@@ -6,13 +6,14 @@ die () {
 }
 
 test $# -ge 4 ||
-die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>...)"
+die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>... | remove <file>[,<filesize>]... )"
 
 storage_account="$1"; shift
 container_name="$1"; shift
 access_key="$1"; shift
 
 req () {
+	uploading=
 	file=
 	x_ms_blob_type=
 	content_length=
@@ -23,6 +24,7 @@ req () {
 	string_to_sign_extra=
 	case "$1" in
 	upload)
+		uploading=t
 		file="$2"
 		test -f "$file" || {
 			echo "File does not exist: '$file'" >&2
@@ -36,6 +38,24 @@ req () {
 		content_length="$(stat -c %s "$file")"
 		content_length_header="Content-Length: $content_length"
 		content_type="application/x-www-form-urlencoded"
+		;;
+	remove)
+		file="$2"
+		if test -f "$file"
+		then
+			content_length="$(stat -c %s "$file")"
+		else
+			content_length="${file##*,}"
+			test -n "$content_length" || {
+				echo "Cannot determine file size of '$file'; please append ',<filesize>'" >&2
+				return 1
+			}
+			file="${file%,$content_length}"
+		fi
+		resource_extra=/"${file##*/}"
+
+		request_method="DELETE"
+		content_length_header="Content-Length: $content_length"
 		;;
 	list)
 		request_method="GET"
@@ -78,7 +98,8 @@ req () {
 		echo "-H \"$content_length_header\""
 		echo "-H \"$authorization_header\""
 		echo "-X$request_method"
-		test -z "$file" || echo "--data-binary \"@$file\""
+		test -z "$uploading" || test -z "$file" ||
+		echo "--data-binary \"@$file\""
 	} |
 	curl -i -K - \
 	  "https://$storage_account.$blob_store_url/$container_name$resource_extra$get_parameters"
@@ -92,6 +113,15 @@ list)
 	;;
 upload)
 	test $# -gt 0 || die "'upload' requires arguments"
+	ret=0
+	for file
+	do
+		req "$action" "$file" || ret=1
+	done
+	exit $ret
+	;;
+remove)
+	test $# -gt 0 || die "'remove' requires arguments"
 	ret=0
 	for file
 	do
