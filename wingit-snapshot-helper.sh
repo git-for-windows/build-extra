@@ -6,7 +6,7 @@ die () {
 }
 
 test $# -ge 4 ||
-die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>... | remove <file>[,<filesize>]... | lock <file> | unlock <lease-id> <file> )"
+die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>... | upload-with-lease <lease-id> <file> | remove <file>[,<filesize>]... | lock <file> | unlock <lease-id> <file> )"
 
 storage_account="$1"; shift
 container_name="$1"; shift
@@ -29,6 +29,9 @@ req () {
 	case "$1" in
 	upload)
 		uploading=t
+		case "$2" in
+		--lease-id=*) x_ms_lease_id="x-ms-lease-id:${2#*=}"; shift;;
+		esac
 		file="$2"
 		test -f "$file" || {
 			echo "File does not exist: '$file'" >&2
@@ -180,6 +183,10 @@ upload)
 		req "$action" "$file" || ret=1
 	done
 	exit $ret
+	;;
+upload-with-lease)
+	test $# = 2 || die "'upload-with-lease' requires <lease-id> <file>"
+	req "upload" --lease-id="$1" "$2"
 	;;
 remove)
 	test $# -gt 0 || die "'remove' requires arguments"
