@@ -34,6 +34,6 @@ sha256sums=("$sha256sum" SKIP)
 options=('!strip')
 
 package() {
-  install -d -m755 $pkgdir/$MINGW_PREFIX/bin
-  install -m755 $srcdir/$folder/git-lfs.exe $pkgdir/$MINGW_PREFIX/bin/git-lfs.exe
+  install -d -m755 $pkgdir/$MINGW_PREFIX/libexec/git-core
+  install -m755 $srcdir/$folder/git-lfs.exe $pkgdir/$MINGW_PREFIX/libexec/git-core/git-lfs.exe
 }
