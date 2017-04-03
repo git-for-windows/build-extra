@@ -41,6 +41,10 @@ This package contains software from a number of other projects including Bash, z
 * Git LFS was upgraded to [v2.0.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.0.2).
 * Updated the MSYS2 runtime to [Cygwin 2.8.0](https://cygwin.com/ml/cygwin-announce/2017-04/msg00001.html).
 
+### Bug Fixes
+
+* A potential crash in `git status` with lots of files [was fixed](https://github.com/git-for-windows/git/issues/1111).
+
 ## Changes since Git for Windows v2.12.1 (March 21st 2017)
 
 ### New Features
