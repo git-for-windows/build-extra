@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * A potential crash in `git status` with lots of files [was fixed](https://github.com/git-for-windows/git/issues/1111).
+* Git LFS [now gets installed into the correct location](https://github.com/git-for-windows/build-extra/commit/5f7d44728c089694f4ef1cc3da03f15e35cd5ecc).
 
 ## Changes since Git for Windows v2.12.1 (March 21st 2017)
 
