@@ -95,6 +95,7 @@ Name: icons\desktop; Description: On the Desktop
 Name: ext; Description: Windows Explorer integration; Types: default
 Name: ext\shellhere; Description: Git Bash Here; Types: default
 Name: ext\guihere; Description: Git GUI Here; Types: default
+Name: gitlfs; Description: Git LFS (Large File Support); Types: default; Flags: disablenouninstallwarning
 Name: assoc; Description: Associate .git* configuration files with the default text editor; Types: default
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows
@@ -1839,23 +1840,28 @@ begin
                 Log('Line {#__LINE__}: Creating directory "' + ProgramData + '\Git" failed.');
             end;
         end;
-        if not FileCopy(AppDir + '\{#MINGW_BITNESS}\etc\gitconfig', ProgramData + '\Git\config', True) then begin
-            Log('Line {#__LINE__}: Creating copy "' + ProgramData + '\Git\config" failed.');
+        if not FileExists(ExpandConstant('{tmp}\programdata-config.template')) then
+            ExtractTemporaryFile('programdata-config.template');
+        if not FileCopy(ExpandConstant('{tmp}\programdata-config.template'), ProgramData + '\Git\config', True) then begin
+            Log('Line {#__LINE__}: Creating initial "' + ProgramData + '\Git\config" failed.');
         end;
     end;
     if FileExists(ProgramData+'\Git\config') then begin
-#if BITNESS=='64'
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config pack.packsizelimit)\" && if test 2g = \"$value\"; then git config -f config --unset pack.packsizelimit; fi"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
-            LogError('Unable to read/adjust packsize limit');
+            LogError('Unable to remove packsize limit from ProgramData config');
+#if BITNESS=='32'
+        if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system pack.packsizelimit 2g',AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+            LogError('Unable to limit packsize to 2GB');
 #endif
+        Cmd:=AppDir+'/';
+        StringChangeEx(Cmd,'\','/',True);
+        if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config http.sslcainfo)\" && case \"$value\" in \"'+Cmd+'\"/*|\"C:/Program Files/Git/\"*|\"c:/Program Files/Git/\"*) git config -f config --unset http.sslcainfo;; esac"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
+            LogError('Unable to delete http.sslCAInfo from ProgramData config');
         Cmd:='http.sslCAInfo "'+AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
         StringChangeEx(Cmd,'\','/',True);
-        if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config -f config '+Cmd,
-                ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
+        if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+Cmd,
+                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to configure SSL CA info: ' + Cmd);
-        if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\etc\gitconfig') then begin
-            Log('Line {#__LINE__}: Deleting template config "' + AppDir + '\{#MINGW_BITNESS}\etc\gitconfig" failed.');
-        end;
     end;
 
     {
@@ -2038,6 +2044,17 @@ begin
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui','Icon',Ico))
         then
             LogError('Line {#__LINE__}: Unable to create "Git GUI Here" shell extension.');
+    end;
+
+    {
+        Optionally disable Git LFS completely
+    }
+
+    if not IsComponentSelected('gitlfs') then begin
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --remove-section filter.lfs','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not disable Git LFS in the gitconfig.');
+        if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') then
+            LogError('Line {#__LINE__}: Unable to delete "git-lfs.exe".');
     end;
 
     {

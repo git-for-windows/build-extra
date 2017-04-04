@@ -10,10 +10,12 @@ edit-git-bash.exe
 /installer/ReleaseNotes.html
 /installer/bindimage.txt
 /installer/config.iss
+/installer/gitconfig.system
 /installer/install.log
 /installer/is-unicode.exe
 /installer/file-list.iss
 /installer/package-versions.txt
+/installer/programdata-config.template
 /mingit/exclude-list
 /mingit/root/
 /mingit/sorted-all
