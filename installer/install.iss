@@ -1846,9 +1846,11 @@ begin
         end;
     end;
     if FileExists(ProgramData+'\Git\config') then begin
-#if BITNESS=='64'
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config pack.packsizelimit)\" && if test 2g = \"$value\"; then git config -f config --unset pack.packsizelimit; fi"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
-            LogError('Unable to read/adjust packsize limit');
+            LogError('Unable to remove packsize limit from ProgramData config');
+#if BITNESS=='32'
+        if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system pack.packsizelimit 2g',AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+            LogError('Unable to limit packsize to 2GB');
 #endif
         Cmd:='http.sslCAInfo "'+AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
         StringChangeEx(Cmd,'\','/',True);
