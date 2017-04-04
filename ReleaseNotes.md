@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * Portable Git is now using [a custom-built SFX that is based directly on 7-Zip's SFX](https://github.com/git-for-windows/7-Zip).
 * Git LFS was upgraded to [v2.0.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.0.2).
 * Updated the MSYS2 runtime to [Cygwin 2.8.0](https://cygwin.com/ml/cygwin-announce/2017-04/msg00001.html).
+* Git LFS [can now be disabled in the first installer page](https://github.com/git-for-windows/build-extra/commit/16975a72fd328130ae531ce349e4a77d9d2b8fa4) (users can still enable it manually, as before, of course).
 
 ### Bug Fixes
 
