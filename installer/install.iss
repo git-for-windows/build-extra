@@ -1839,8 +1839,10 @@ begin
                 Log('Line {#__LINE__}: Creating directory "' + ProgramData + '\Git" failed.');
             end;
         end;
-        if not FileCopy(AppDir + '\{#MINGW_BITNESS}\etc\gitconfig', ProgramData + '\Git\config', True) then begin
-            Log('Line {#__LINE__}: Creating copy "' + ProgramData + '\Git\config" failed.');
+        if not FileExists(ExpandConstant('{tmp}\programdata-config.template')) then
+            ExtractTemporaryFile('programdata-config.template');
+        if not FileCopy(ExpandConstant('{tmp}\programdata-config.template'), ProgramData + '\Git\config', True) then begin
+            Log('Line {#__LINE__}: Creating initial "' + ProgramData + '\Git\config" failed.');
         end;
     end;
     if FileExists(ProgramData+'\Git\config') then begin
@@ -1853,9 +1855,6 @@ begin
         if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config -f config '+Cmd,
                 ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to configure SSL CA info: ' + Cmd);
-        if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\etc\gitconfig') then begin
-            Log('Line {#__LINE__}: Deleting template config "' + AppDir + '\{#MINGW_BITNESS}\etc\gitconfig" failed.');
-        end;
     end;
 
     {

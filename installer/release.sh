@@ -124,6 +124,50 @@ case "$LIST" in
 	;;
 esac
 
+GITCONFIG_PATH="$(echo "$LIST" | grep "^mingw$BITNESS/etc/gitconfig\$")"
+printf '' >programdata-config.template
+test -z "$GITCONFIG_PATH" || {
+	cp "/$GITCONFIG_PATH" gitconfig.system &&
+	cp "/$GITCONFIG_PATH" programdata-config.template &&
+	keys="$(git config -f gitconfig.system -l --name-only)" &&
+	for key in $keys
+	do
+		case "$key" in
+		pack.packsizelimit)
+			# remove from both, will be configured by installer
+			git config -f programdata-config.template \
+				--unset "$key" &&
+			git config -f gitconfig.system --unset "$key" ||
+			break
+			;;
+		diff.astextplain.*|filter.lfs.*|http.sslcainfo)
+			# keep in the system-wide config
+			git config -f programdata-config.template \
+				--unset "$key" ||
+			break
+			;;
+		*)
+			# move to the ProgramData template
+			git config -f gitconfig.system --unset "$key" ||
+			break
+			;;
+		esac || break
+	done &&
+	sed -i '/^\[/{:1;$d;N;/^.[^[]*$/b;s/^.*\[/[/;b1}' gitconfig.system &&
+	sed -i '/^\[/{:1;$d;N;/^.[^[]*$/b;s/^.*\[/[/;b1}' \
+		programdata-config.template ||
+	die "Could not split gitconfig"
+	LIST="$(echo "$LIST" | grep -v "^$GITCONFIG_PATH\$")"
+}
+
+printf '%s%s%s\n%s\n' \
+	'Source: {#SourcePath}\gitconfig.system; DestName: gitconfig; ' \
+	  "DestDir: {app}\\mingw$BITNESS\\etc; Flags: replacesameversion; " \
+	  'AfterInstall: DeleteFromVirtualStore' \
+	'Source: {#SourcePath}\programdata-config.template; Flags: dontcopy' \
+	>>file-list.iss ||
+die "Could not append gitconfig to file list"
+
 test -z "$LIST" ||
 echo "$LIST" |
 sed -e 's|/|\\|g' \
