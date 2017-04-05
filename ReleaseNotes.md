@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * Git LFS [now gets installed into the correct location](https://github.com/git-for-windows/build-extra/commit/5f7d44728c089694f4ef1cc3da03f15e35cd5ecc).
 * Git LFS [is now configured correctly out of the box](https://github.com/git-for-windows/build-extra/commit/115b9f5b88ff60af19628262833b42cd7b6cd852) (unless disabled).
 * The `http.sslCAInfo` config setting [is now private to the Git for Windows installation that owns the file](https://github.com/git-for-windows/git/issues/531).
+* `git difftool -d` [no longer crashes randomly](https://github.com/git-for-windows/git/issues/1124).
 
 ## Changes since Git for Windows v2.12.1 (March 21st 2017)
 
