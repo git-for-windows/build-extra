@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * Git LFS was upgraded to [v2.0.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.0.2).
 * Updated the MSYS2 runtime to [Cygwin 2.8.0](https://cygwin.com/ml/cygwin-announce/2017-04/msg00001.html).
 * Git LFS [can now be disabled in the first installer page](https://github.com/git-for-windows/build-extra/commit/16975a72fd328130ae531ce349e4a77d9d2b8fa4) (users can still enable it manually, as before, of course).
+* Comes with [Git Credential Manager](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/) v1.9.1.
 
 ### Bug Fixes
 
