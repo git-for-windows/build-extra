@@ -4,7 +4,7 @@ _realname="git-lfs"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 pkgver=2.0.2
-pkgrel=2
+pkgrel=3
 pkgdesc="An open source Git extension for versioning large files"
 install=git-lfs.install
 arch=('any')
@@ -34,6 +34,6 @@ sha256sums=("$sha256sum" SKIP)
 options=('!strip')
 
 package() {
-  install -d -m755 $pkgdir/$MINGW_PREFIX/libexec/git-core
-  install -m755 $srcdir/$folder/git-lfs.exe $pkgdir/$MINGW_PREFIX/libexec/git-core/git-lfs.exe
+  install -d -m755 $pkgdir/$MINGW_PREFIX/bin
+  install -m755 $srcdir/$folder/git-lfs.exe $pkgdir/$MINGW_PREFIX/bin/git-lfs.exe
 }

@@ -2053,7 +2053,7 @@ begin
     if not IsComponentSelected('gitlfs') then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --remove-section filter.lfs','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not disable Git LFS in the gitconfig.');
-        if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') then
+        if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') then
             LogError('Line {#__LINE__}: Unable to delete "git-lfs.exe".');
     end;
 
