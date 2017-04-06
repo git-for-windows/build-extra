@@ -38,15 +38,19 @@ req () {
 	case "$1" in
 	upload)
 		uploading=t
-		case "$2" in
-		--lease-id=*) x_ms_lease_id="x-ms-lease-id:${2#*=}"; shift;;
-		esac
+		while case "$2" in
+		--lease-id=*) x_ms_lease_id="x-ms-lease-id:${2#*=}";;
+		--filename=*) resource_extra=/"${2#*=}";;
+		-*) die "Unknown option: '$2'";;
+		*) break;;
+		esac; do shift; done
 		file="$2"
 		test -f "$file" || {
 			echo "File does not exist: '$file'" >&2
 			return 1
 		}
 
+		test -n "$resource_extra" ||
 		resource_extra=/"${file##*/}"
 
 		request_method="PUT"
