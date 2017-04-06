@@ -14,6 +14,8 @@ access_key="$1"; shift
 
 blob_store_url="blob.core.windows.net"
 
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+
 get_remote_file_length () {
 	curl --silent --head -i \
 		"https://$storage_account.$blob_store_url/$container_name/$1" |
@@ -151,6 +153,88 @@ req () {
 	  "https://$storage_account.$blob_store_url/$container_name$resource_extra$get_parameters"
 }
 
+html_preamble='<!DOCTYPE html>
+<html>
+<head>
+<title>Git for Windows snapshots</title>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<link rel="stylesheet" href="GitForWindows.css">
+<link rel="shortcut icon" href="https://git-for-windows.github.io/favicon.ico">
+</head>
+<body class="details">
+<div class="links">
+<ul>
+<li><a href="https://git-for-windows.github.io/">homepage</a></li>
+<li><a href="https://github.com/git-for-windows/git/wiki/FAQ">faq</a></li>
+<li><a href="https://git-for-windows.github.io/#contribute">contribute</a></li>
+<li><a href="https://git-for-windows.github.io/#contribute">bugs</a></li>
+<li><a href="mailto:git@vger.kernel.org">questions</a></li>
+</ul>
+</div>
+<img src="https://git-for-windows.github.io/img/gwindows_logo.png" alt="Git Logo" style="float: right; width: 170px;"/><div class="content">
+<h1><center>Git for Windows Snapshots</center></h1>
+
+'
+html_footer='
+
+</div>
+</body>
+</html>
+'
+
+print_html_item () {
+	version="$1"
+	date="$2"
+	h2_id="$3"
+	commit="$4"
+	cat <<EOF
+<h2 id="$h2_id">$date<br />(commit <a href="https://github.com/git-for-windows/git/commit/$commit">$commit</a>)</h2>
+
+<ul>
+<li>Git for Windows installer: <a href="Git-$version-64-bit.exe">64-bit</a> and <a href="Git-$version-32-bit.exe">32-bit</a>.
+<li>Portable Git (self-extracting <tt>.7z</tt> archive): <a href="PortableGit-$version-64-bit.7z.exe">64-bit</a> and <a href="PortableGit-$version-32-bit.7z.exe">32-bit</a>.
+</ul>
+EOF
+}
+
+add_snapshot () {
+	html_item="$(print_html_item "$@")"
+
+	files="Git-$1-32-bit.exe Git-$1-64-bit.exe"
+	files="$files PortableGit-$1-32-bit.7z.exe PortableGit-$1-64-bit.7z.exe"
+	for f in $files
+	do
+		test -f "$f" || die "File not found: '$f'"
+	done
+	eval req upload $files || die "Could not upload $files"
+
+	response="$(req lock index.html)" || die "Could not lock 'index.html'"
+	lease_id="$(echo "$response" |
+		tr -d '\r' |
+		sed -n 's/x-ms-lease-id: *//p')"
+	test -n "$lease_id" || die "Could not find lease ID in $response"
+
+	urlbase="https://$storage_account.$blob_store_url/$container_name"
+
+	curl --fail --head "$urlbase/GitForWindows.css" 2>/dev/null ||
+	req upload --filename=GitForWindows.css \
+		"$script_dir/ReleaseNotes.css" ||
+	die "Could not upload GitForWindows.css"
+
+	if html="$(curl --silent --fail "$urlbase/index.html")"
+	then
+		html="${html%%<h2*}$html_item${html#*</h1>}"
+	else
+		html="$html_preamble$html_item$html_footer"
+	fi
+	tmpfile=.wingit-index.$$.html
+	echo "$html" >$tmpfile
+	req upload --lease-id="$lease_id" --filename=index.html $tmpfile ||
+	die "Could not upload 'index.html'"
+	rm $tmpfile
+	req unlock "$lease_id" index.html || die "Could not unlock 'index.html'"
+}
+
 action="$1"; shift
 case "$action" in
 list)
@@ -186,6 +270,30 @@ lock)
 unlock)
 	test $# = 2 || die "'unlock' requires two parameters: <leaseID> <file>"
 	req "$action" "$@"
+	;;
+add-snapshot)
+	test $# = 1 || die "add_snapshot requires one parameter: <version>"
+	version="$1"
+	case "$version" in
+	*" "*|*"	"*)
+		die "There cannot be any whitespace in the version parameter"
+		;;
+	*.g[a-f0-9]*)
+		commit="${version##*.g}"
+		git_checkout=/usr/src/git
+		test -d "$git_checkout" || git_checkout="$HOME/git"
+		test -d "$git_checkout" || die "Could not find Git repository"
+		git -C "$git_checkout" rev-parse --verify -q "$commit" ||
+		die "No commit '$commit' in '$git_checkout'"
+		date="$(git -C "$git_checkout" show -s --format=%aD "$commit")"
+		h2_id="$(TZ=GMT date --date="$date" +%Y-%m-%d-%H:%M:%S)"
+		;;
+	*)
+		die "Could not determine commit from version '$version'"
+		;;
+	esac
+
+	add_snapshot "$version" "$date" "$h2_id" "$commit"
 	;;
 *)
 	die "Unhandled action: '$action'"
