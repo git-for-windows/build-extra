@@ -810,6 +810,11 @@ build_and_test_64 () {
 	test -z "$no_svn_tests" ||
 	make_t_prefix="$no_svn_tests $make_t_prefix"
 
+	ls //localhost/c$ >/dev/null 2>&1 || {
+		echo "Administrative shares unavailable; skipping t5580" >&2
+		export GIT_SKIP_TESTS="${GIT_SKIP_TESTS:+$GIT_SKIP_TESTS }t5580"
+	}
+
 	ensure_valid_login_shell 64 &&
 	GIT_CONFIG_PARAMETERS= \
 	"$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
