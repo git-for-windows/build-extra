@@ -205,8 +205,8 @@ add_snapshot () {
 	for f in $files
 	do
 		test -f "$f" || die "File not found: '$f'"
+		eval req upload "$f" || die "Could not upload '$f'"
 	done
-	eval req upload $files || die "Could not upload $files"
 
 	response="$(req lock index.html)" || die "Could not lock 'index.html'"
 	lease_id="$(echo "$response" |
