@@ -183,6 +183,11 @@ html_footer='
 '
 
 print_html_item () {
+	mingit=
+	test a--mingit != "a$1" || {
+		mingit=t
+		shift
+	}
 	version="$1"
 	date="$2"
 	h2_id="$3"
@@ -191,9 +196,10 @@ print_html_item () {
 <h2 id="$h2_id">$date<br />(commit <a href="https://github.com/git-for-windows/git/commit/$commit">$commit</a>)</h2>
 
 <ul>
-<li>Git for Windows installer: <a href="Git-$version-64-bit.exe">64-bit</a> and <a href="Git-$version-32-bit.exe">32-bit</a>.
-<li>Portable Git (self-extracting <tt>.7z</tt> archive): <a href="PortableGit-$version-64-bit.7z.exe">64-bit</a> and <a href="PortableGit-$version-32-bit.7z.exe">32-bit</a>.
-</ul>
+<li>Git for Windows installer: <a href="Git-$version-64-bit.exe">64-bit</a> and <a href="Git-$version-32-bit.exe">32-bit</a>.</li>
+<li>Portable Git (self-extracting <tt>.7z</tt> archive): <a href="PortableGit-$version-64-bit.7z.exe">64-bit</a> and <a href="PortableGit-$version-32-bit.7z.exe">32-bit</a>.</li>
+$(test -z "$mingit" ||
+printf '<li>MinGit: <a href="%s">64-bit</a> and <a href="%s">32-bit</a>.</li>\n' "MinGit-$version-64-bit.zip" "MinGit-$version-32-bit.zip")</ul>
 EOF
 }
 
@@ -202,6 +208,11 @@ add_snapshot () {
 
 	files="Git-$1-32-bit.exe Git-$1-64-bit.exe"
 	files="$files PortableGit-$1-32-bit.7z.exe PortableGit-$1-64-bit.7z.exe"
+	if test -f "MinGit-$1-32-bit.zip" && test -f "MinGit-$1-64-bit.zip"
+	then
+		files="$files MinGit-$1-32-bit.zip MinGit-$1-64-bit.zip"
+		html_item="$(print_html_item --mingit "$@")"
+	fi
 	for f in $files
 	do
 		test -f "$f" || die "File not found: '$f'"
