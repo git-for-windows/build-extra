@@ -280,7 +280,12 @@ add-snapshot)
 		;;
 	*.g[a-f0-9]*)
 		commit="${version##*.g}"
-		git_checkout=/usr/src/git
+		if git rev-parse --verify -q 10ca1f73c11475e222 2>/dev/null
+		then
+			git_checkout=.
+		else
+			git_checkout=/usr/src/git
+		fi
 		test -d "$git_checkout" || git_checkout="$HOME/git"
 		test -d "$git_checkout" || die "Could not find Git repository"
 		git -C "$git_checkout" rev-parse --verify -q "$commit" ||
