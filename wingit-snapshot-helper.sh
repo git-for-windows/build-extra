@@ -6,7 +6,7 @@ die () {
 }
 
 test $# -ge 4 ||
-die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>... | upload-with-lease <lease-id> <file> | remove <file>[,<filesize>]... | lock <file> | unlock <lease-id> <file> )"
+die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>... | upload-with-lease <lease-id> <file> | remove <file>[,<filesize>]... | lock <file> | unlock <lease-id> <file> | add-snapshot <version>)"
 
 storage_account="$1"; shift
 container_name="$1"; shift
