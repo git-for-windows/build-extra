@@ -290,7 +290,7 @@ add-snapshot)
 		test -d "$git_checkout" || die "Could not find Git repository"
 		git -C "$git_checkout" rev-parse --verify -q "$commit" ||
 		die "No commit '$commit' in '$git_checkout'"
-		date="$(git -C "$git_checkout" show -s --format=%aD "$commit")"
+		date="$(git -C "$git_checkout" show -s --format=%cD "$commit")"
 		h2_id="$(TZ=GMT date --date="$date" +%Y-%m-%d-%H:%M:%S)"
 		;;
 	*)
