@@ -35,6 +35,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.12.2(2) (April 5th 2017)
 
+### New Features
+
+* Comes with [cURL v7.54.0](https://curl.haxx.se/changes.html).
+
 ### Bug Fixes
 
 * As per Git LFS\' convention, [it is installed into the `bin/` directory again](https://github.com/git-for-windows/build-extra/pull/141).
