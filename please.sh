@@ -1117,6 +1117,13 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 	 git-for-windows/*|v[1-9]*.windows.[1-9]*)
 		require_remote git-for-windows \
 			https://github.com/git-for-windows/git
+		case "$branch" in git-for-windows/refs/pull/[0-9]*)
+			git fetch git-for-windows \
+			    "${branch#git-for-windows/}:refs/remotes/$branch" ||
+			die "Could not fetch %s from git-for-windows\n" \
+				"${branch#git-for-windows/}"
+			;;
+		esac
 		;;
 	 upstream/*|v[1-9]*)
 		require_remote upstream https://github.com/git/git
