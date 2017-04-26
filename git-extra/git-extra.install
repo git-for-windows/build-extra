@@ -142,6 +142,10 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 
 	! grep -qw PERL_PATH /etc/profile.d/perlbin.sh 2>/dev/null ||
 	sed -i 's/PERL_PATH/PERL_PATH_EXTRA/g' /etc/profile.d/perlbin.sh
+
+	! grep -q '^# Define default printer' /etc/profile ||
+	sed -i -e '/^# Define default printer/,/^$/d' \
+		-e 's/^\(export .* \)PRINTER /\1/' /etc/profile
 }
 
 post_upgrade () {
