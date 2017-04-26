@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 
 * As per Git LFS\' convention, [it is installed into the `bin/` directory again](https://github.com/git-for-windows/build-extra/pull/141).
 * Calling `git add` with an absolute path using different upper/lower case than recorded on disk [will now work as expected](https://github.com/git-for-windows/git/issues/735) instead of claiming that the paths are outside the repository.
+* Git for Windows [no longer tries to determine the default printer](https://github.com/git-for-windows/git/issues/1150).
 
 ## Changes since Git for Windows v2.12.2 (March 27th 2017)
 
