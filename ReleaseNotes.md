@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 * Calling `git add` with an absolute path using different upper/lower case than recorded on disk [will now work as expected](https://github.com/git-for-windows/git/issues/735) instead of claiming that the paths are outside the repository.
 * Git for Windows [no longer tries to determine the default printer](https://github.com/git-for-windows/git/issues/1150).
 * When writing the Git index file, Git for Windows [no longer has the wrong idea about the file's timestamp](https://github.com/git-for-windows/git/issues/1149).
+* On Windows, absolute paths can start with a backslash (implicitly referring to the same drive as the current directory), and now `git clone` [can use those paths, too](https://github.com/git-for-windows/git/commit/fad23e90efc).
 
 ## Changes since Git for Windows v2.12.2 (March 27th 2017)
 
