@@ -16,11 +16,11 @@ groups=('VCS')
 case "$CARCH" in
 i686)
   folder="git-lfs-windows-386-$pkgver"
-  sha256sum=b9b406be6b0a7421dfe542b9cbc3285293d860d72c27e0b3bcbd387b59ea2e19
+  sha256sum=970d6a9abbfbf37b6f5d67663403808a2ac9e519f59c5eb923d753186e7e18ca
   ;;
 x86_64)
   folder="git-lfs-windows-amd64-$pkgver"
-  sha256sum=5a1915dee7b8fdf19b56aa727c3aa5687bfc3c9f5683221690ce21600cc1e104
+  sha256sum=a40adc489a99d1b7809aab89fa78b6dee2399af6542e4b9faae552a7a248c1ce
   ;;
 esac
 
