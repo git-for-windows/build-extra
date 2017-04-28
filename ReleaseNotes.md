@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [cURL v7.54.0](https://curl.haxx.se/changes.html).
+* Comes with [Git LFS v2.1.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.1.0).
 
 ### Bug Fixes
 
