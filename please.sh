@@ -1006,6 +1006,7 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] (
 
 		test -z "$skip_rebase" ||
 		git diff HEAD | git apply -R ||
+		test -z "$(git diff HEAD)" ||
 		die "Could not skip current commit in rebase\n"
 
 		# record rerere-train, update index & continue
