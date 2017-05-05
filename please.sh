@@ -1878,6 +1878,124 @@ EOF
 	fi
 }
 
+# <coverity-token>
+init_or_update_coverity_tool () {
+	# check once per week whether there is a new version
+	coverity_tool=.git/coverity-tool
+	test ! -d $coverity_tool ||
+	test $(($(date +%s)-$(stat -c %Y $coverity_tool))) \
+		-gt $((7*24*60*60)) || return 0
+	echo "Downloading current Coverity Scan Self-Build tool" >&2
+	if test -f .git/coverity_tool.zip
+	then
+		timecond=.git/coverity_tool.zip
+	else
+		timecond="19700101 +0000"
+	fi
+	curl --form "token=$1" \
+		--form "project=git-for-windows" \
+		--time-cond "$timecond" \
+		-o .git/coverity_tool.zip.new \
+		https://scan.coverity.com/download/win64 &&
+	test -f .git/coverity_tool.zip.new || {
+		echo "Nothing downloaded; will try again in another week" >&2
+		touch $coverity_tool
+		return
+	}
+											mv -f .git/coverity_tool.zip.new .git/coverity_tool.zip ||
+	die "Could not overwrite coverity_tool.zip"
+
+	mkdir $coverity_tool.new &&
+	(cd $coverity_tool.new &&
+	 unzip ../coverity_tool.zip) ||
+	die "Could not unpack coverity_tool.zip"
+											rm -rf $coverity_tool &&
+	mv $coverity_tool.new $coverity_tool ||
+	die "Could not switch to new Coverity tool version"
+}
+
+submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
+	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	while case "$1" in
+	--worktree=*)
+		git_src_dir=${1#*=}
+		test -d "$git_src_dir" ||
+		die "Worktree does not exist: %s\n" "$git_src_dir"
+		git rev-parse -q --verify e83c5163316f89bfbde7d ||
+		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected 1 argument, got $#: %s\n" "$*"
+	branch="$1"
+
+	coverity_username="$(git config coverity.username)"
+	test -n "$coverity_username" ||
+	die "Need a username to access Coverity's services\n"
+
+	coverity_token="$(git config coverity.token)"
+	test -n "$coverity_token" ||
+	die "Need a token to access Coverity's services\n"
+
+	ensure_valid_login_shell 64 ||
+	die "Could not ensure valid login shell\n"
+
+	sdk="$sdk64"
+
+	build_extra_dir="$sdk64/usr/src/build-extra"
+	(cd "$build_extra_dir" &&
+	 sdk= pkgpath=$PWD ff_master) ||
+	die "Could not update build-extra\n"
+
+	require_git_src_dir
+
+	(cd "$git_src_dir" &&
+	 case "$branch" in
+	 git-for-windows/*|v[1-9]*.windows.[1-9]*)
+		require_remote git-for-windows \
+			https://github.com/git-for-windows/git
+		case "$branch" in git-for-windows/refs/pull/[0-9]*)
+			git fetch git-for-windows \
+			    "${branch#git-for-windows/}:refs/remotes/$branch" ||
+			die "Could not fetch %s from git-for-windows\n" \
+				"${branch#git-for-windows/}"
+			;;
+		esac
+		;;
+	 upstream/*|v[1-9]*)
+		require_remote upstream https://github.com/git/git
+		case "$branch" in upstream/refs/pull/[0-9]*)
+			git fetch upstream "${branch#upstream/}:refs/remotes/$branch" ||
+			die "Could not fetch %s from upstream\n" \
+				"${branch#upstream/}"
+			;;
+		esac
+		;;
+	 esac &&
+	 git checkout -f "$branch" &&
+	 git reset --hard &&
+	 init_or_update_coverity_tool "$coverity_token" &&
+	 coverity_bin_dir=$(echo $PWD/$coverity_tool/*/bin) &&
+	 if ! test -x "$coverity_bin_dir/cov-build.exe"
+	 then
+		die "Unusable Coverity bin/ directory: '%s'\n" \
+			"$coverity_bin_dir"
+	 fi &&
+	 PATH="$coverity_bin_dir:$PATH" &&
+	 cov-build --dir cov-int \
+		make -j15 DEVELOPER=1 CPPFLAGS=-DFLEX_ARRAY=65536 &&
+	 tar caf git-for-windows.lzma cov-int &&
+	 curl --form token="$coverity_token" \
+		--form email="$coverity_username" \
+		--form file=@git-for-windows.lzma \
+		--form version="$(git rev-parse HEAD)" \
+		--form version="$(date +%Y-%m-%s-%H-%M-%S)" \
+		https://scan.coverity.com/builds?project=git-for-windows) ||
+	die "Could not submit build to Coverity\n"
+}
+
 tag_git () { #
 	sdk="$sdk64" require w3m
 
