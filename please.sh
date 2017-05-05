@@ -2477,7 +2477,7 @@ release_sdk () { # <version>
 	sign_files "$HOME"/git-sdk-installer-"$version"-64.7z.exe \
 		"$HOME"/git-sdk-installer-"$version"-32.7z.exe
 
-	git  --git-dir="$sdk64"/usr/src/build-extra/.git \
+	git --git-dir="$sdk64"/usr/src/build-extra/.git \
 		tag -a -m "Git for Windows SDK $version" "$tag" ||
 	die "Could not tag %s\n" "$tag"
 }
