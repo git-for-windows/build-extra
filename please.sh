@@ -1976,6 +1976,7 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 	 esac &&
 	 git checkout -f "$branch" &&
 	 git reset --hard &&
+	 sed -i -e 's/^\(char strbuf_slopbuf\[\)1\]/\165536]/' strbuf.c &&
 	 init_or_update_coverity_tool "$coverity_token" &&
 	 coverity_bin_dir=$(echo $PWD/$coverity_tool/*/bin) &&
 	 if ! test -x "$coverity_bin_dir/cov-build.exe"
