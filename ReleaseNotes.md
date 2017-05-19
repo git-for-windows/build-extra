@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The documentation of Git for Windows' several config files [was improved](https://github.com/git-for-windows/git/pull/1165).
+* When interrupting Git processes in Git Bash by pressing Ctrl+C, [Git now removes `.lock` files as designed](https://github.com/git-for-windows/msys2-runtime/pull/15) ([accompanying Git PR](https://github.com/git-for-windows/git/pull/1170); this should also fix [issue #338](https://github.com/git-for-windows/git/issues/338)).
 
 ## Changes since Git for Windows v2.12.2(2) (April 5th 2017)
 
