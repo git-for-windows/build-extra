@@ -3,7 +3,7 @@
 _realname="git-lfs"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=2.1.0
+pkgver=2.1.1
 pkgrel=1
 pkgdesc="An open source Git extension for versioning large files"
 install=git-lfs.install
@@ -16,11 +16,11 @@ groups=('VCS')
 case "$CARCH" in
 i686)
   folder="git-lfs-windows-386-$pkgver"
-  sha256sum=970d6a9abbfbf37b6f5d67663403808a2ac9e519f59c5eb923d753186e7e18ca
+  sha256sum=897571c2b8aa777d011e7c5496735e9dcb2da809faa741b113169a5cb04650bd
   ;;
 x86_64)
   folder="git-lfs-windows-amd64-$pkgver"
-  sha256sum=a40adc489a99d1b7809aab89fa78b6dee2399af6542e4b9faae552a7a248c1ce
+  sha256sum=0866259d6b097f8ff379326f798a93034b61952382011671b80ecf4cc733de57
   ;;
 esac
 
