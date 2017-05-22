@@ -16,7 +16,6 @@
 #define APP_CONTACT_URL 'https://github.com/git-for-windows/git/wiki/Contact'
 #define APP_URL       'https://git-for-windows.github.io/'
 #define APP_BUILTINS  'share\git\builtins.txt'
-#define APP_BINDIMAGE 'share\git\bindimage.txt'
 
 #define PLINK_PATH_ERROR_MSG 'Please enter a valid path to a Plink executable.'
 
@@ -295,9 +294,6 @@ begin
     end;
 end;
 
-function BindImageEx(Flags:DWORD;ImageName,DllPath,SymbolPath:AnsiString;StatusRoutine:Integer):Boolean;
-external 'BindImageEx@Imagehlp.dll stdcall delayload setuponly';
-
 const
     // Git Path options.
     GP_BashOnly       = 1;
@@ -330,12 +326,6 @@ const
     // Experimental options
     GP_BuiltinDifftool = 1;
 #endif
-
-    // BindImageEx API constants.
-    BIND_NO_BOUND_IMPORTS  = $00000001;
-    BIND_NO_UPDATE         = $00000002;
-    BIND_ALL_IMAGES        = $00000004;
-    BIND_CACHE_IMPORT_DLLS = $00000008;
 
 var
     // The options chosen at install time, to be written to /etc/install-options.txt
@@ -1742,28 +1732,6 @@ begin
 
     AppDir:=ExpandConstant('{app}');
     ProgramData:=ExpandConstant('{commonappdata}');
-
-    {
-        Bind the imported function addresses
-    }
-
-    try
-        DllPath:=ExpandConstant('{app}\usr\bin;{app}\{#MINGW_BITNESS}\bin;{sys}');
-
-        // Load the list of images from a text file.
-        FileName:=AppDir+'\{#APP_BINDIMAGE}';
-        if LoadStringsFromFile(FileName,ImageNames) then begin
-            Count:=GetArrayLength(ImageNames)-1;
-            for i:=0 to Count do begin
-                FileName:=AppDir+'\'+ImageNames[i];
-                if not BindImageEx(BIND_NO_BOUND_IMPORTS or BIND_CACHE_IMPORT_DLLS,FileName,DllPath,'',0) then begin
-                    Log('Line {#__LINE__}: Error calling BindImageEx for "'+FileName+'".');
-                end;
-            end;
-        end;
-    except
-        Log('Line {#__LINE__}: An exception occurred while calling BindImageEx.');
-    end;
 
     {
         Replace curl binaries in "/mingw64/bin" with curl-winssl variants

@@ -8,7 +8,6 @@ edit-git-bash.exe
 /git-extra/git-extra-*.pkg.tar.xz
 /git-extra/git-extra-*.src.tar.gz
 /installer/ReleaseNotes.html
-/installer/bindimage.txt
 /installer/config.iss
 /installer/gitconfig.system
 /installer/install.log
