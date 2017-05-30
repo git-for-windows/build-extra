@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * When interrupting Git processes in Git Bash by pressing Ctrl+C, [Git now removes `.lock` files as designed](https://github.com/git-for-windows/msys2-runtime/pull/15) ([accompanying Git PR](https://github.com/git-for-windows/git/pull/1170); this should also fix [issue #338](https://github.com/git-for-windows/git/issues/338)).
 * `git status -uno` [now treats submodules in ignored directories correctly](https://github.com/git-for-windows/git/issues/1179).
 * The fscache feature [no longer slows down `git commit -m <message>` in large worktrees](https://github.com/git-for-windows/git/commit/bda7f0728ac55e55d79ed0786c1b5ce2ef7e6117).
+* Executing `git.exe` in Git Bash when the current working directory is a UNC path [now works as expected](https://github.com/git-for-windows/git/issues/1181).
 
 ## Changes since Git for Windows v2.12.2(2) (April 5th 2017)
 
