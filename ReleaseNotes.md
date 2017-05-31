@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSH 7.5p1](https://www.openssh.com/releasenotes.html#7.5p1).
 * Comes with [Git Flow v1.11.0](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.11.0).
 * Comes with [Git LFS v2.1.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.1.1).
+* Git [now uses the flag introduced with Windows 10 Creators Update to create symbolic links without requiring elevated privileges](https://github.com/git-for-windows/git/pull/1188) in Developer Mode.
 
 ### Bug Fixes
 
