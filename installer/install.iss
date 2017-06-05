@@ -1176,7 +1176,7 @@ begin
     with LblMinTTY do begin
         Parent:=BashTerminalPage.Surface;
         Caption:=
-            'Git Bash will use MinTTY as terminal emulator, which sports a resizable window,' + #13 +
+            'Git Bash will use MinTTY as terminal emulator, which supports a resizable window,' + #13 +
             'non-rectangular selections and a Unicode font. Windows console programs (such' + #13 +
             'as interactive Python) must be launched via `winpty` to work in MinTTY.';
         Left:=ScaleX(28);
