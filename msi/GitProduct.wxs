@@ -35,91 +35,108 @@
     <!-- Git for Windows MSI Properties -->
     <SetProperty Id="BindImagePaths" Value="[INSTALLFOLDER]usr\bin;[MingwFolder]bin;[System$(var.SixtyFourBit)Folder]" After="CostFinalize" />
 
-    <SetProperty Id="CMDLINE_CLIENVIRONMENT" Value="[CLIENVIRONMENT]" Before="AppSearch" Sequence="first">
-      CLIENVIRONMENT~="Bash" OR CLIENVIRONMENT~="CmdTools"
-    </SetProperty>
-    <Property Id="CLIENVIRONMENT" Value="Cmd">
+    <Property Id="CLIENVIRONMENT" Value="Cmd" />
+    <Property Id="COMMANDLINE_CLIENVIRONMENT" Value="Unset" />
+    <Property Id="CLIENVIRONMENTSEARCH">
       <RegistrySearch Id="CliEnvironmentSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="CliEnvironment" Type="raw" />
     </Property>
-    <SetProperty Id="CLIENVIRONMENT" Value="[CMDLINE_CLIENVIRONMENT]" After="AppSearch" Sequence="first">CMDLINE_CLIENVIRONMENT</SetProperty>
-    <SetProperty Id="CLIENVIRONMENT" Value="Bash" Action="NomalizeBashCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+    <SetProperty Id="CLIENVIRONMENT" Value="[CLIENVIRONMENTSEARCH]" Action="SetCLIENVIRONMENTUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND (CLIENVIRONMENTSEARCH~="Bash" OR CLIENVIRONMENTSEARCH~="Cmd" OR CLIENVIRONMENTSEARCH~="CmdTools")
+    </SetProperty>
+    <SetProperty Id="CLIENVIRONMENT" Value="[COMMANDLINE_CLIENVIRONMENT]" Action="SetCLIENVIRONMENTFromCommandLine" After="SetCLIENVIRONMENTUsingPreviouslyInstalledValue" Sequence="first">
+      COMMANDLINE_CLIENVIRONMENT~="Bash" OR COMMANDLINE_CLIENVIRONMENT~="Cmd" OR COMMANDLINE_CLIENVIRONMENT~="CmdTools"
+    </SetProperty>
+    <SetProperty Id="CLIENVIRONMENT" Value="Bash" Action="NomalizeCaseCLIENVIRONMENTBash" After="SetCLIENVIRONMENTFromCommandLine" Sequence="first">
       CLIENVIRONMENT~="Bash"
     </SetProperty>
-    <SetProperty Id="CLIENVIRONMENT" Value="Cmd" Action="NormalizeCmdCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+    <SetProperty Id="CLIENVIRONMENT" Value="Cmd" Action="NormalizeCaseCLIENVIRONMENTCmd" After="SetCLIENVIRONMENTFromCommandLine" Sequence="first">
       CLIENVIRONMENT~="Cmd"
     </SetProperty>
-    <SetProperty Id="CLIENVIRONMENT" Value="CmdTools" Action="NormalizeCmdToolsCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+    <SetProperty Id="CLIENVIRONMENT" Value="CmdTools" Action="NormalizeCaseCLIENVIRONMENTCmdTools" After="SetCLIENVIRONMENTFromCommandLine" Sequence="first">
       CLIENVIRONMENT~="CmdTools"
     </SetProperty>
-    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIORNMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Bash"</SetProperty>
-    <SetProperty Action="SetCmdCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Cmd"</SetProperty>
-    <SetProperty Action="SetCmdToolsCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd;[MingwFolder]bin;[INSTALLFOLDER]usr\bin" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "CmdTools"</SetProperty>
-
-    <SetProperty Id="CMDLINE_LINEENDINGS" Value="[LINEENDINGS]" Before="AppSearch" Sequence="first">
-      <![CDATA[ LINEENDINGS~="input" OR LINEENDINGS~="false" ]]>
+    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">
+      CLIENVIRONMENT = "Bash"
     </SetProperty>
-    <Property Id="LINEENDINGS" Value="true">
+    <SetProperty Action="SetCmdCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd" Before="InstallValidate" Sequence="execute">
+      CLIENVIRONMENT = "Cmd"
+    </SetProperty>
+    <SetProperty Action="SetCmdToolsCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd;[MingwFolder]bin;[INSTALLFOLDER]usr\bin" Before="InstallValidate" Sequence="execute">
+      CLIENVIRONMENT = "CmdTools"
+    </SetProperty>
+
+    <Property Id="LINEENDINGS" Value="true" />
+    <Property Id="COMMANDLINE_LINEENDINGS" Value="Unset" />
+    <Property Id="LINEENDINGSSEARCH">
       <RegistrySearch Id="LineEndingsSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="core.autocrlf" Type="raw" />
     </Property>
-    <SetProperty Id="LINEENDINGS" Value="[CMDLINE_LINEENDINGS]" After="AppSearch" Sequence="first">CMDLINE_LINEENDINGS</SetProperty>
-    <SetProperty Id="LINEENDINGS" Value="true" Action="NormalizeTrueLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
-      LINEENDINGS~="true"
+    <SetProperty Id="LINEENDINGS" Value="[LINEENDINGSSEARCH]" Action="SetLINEENDINGSUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND (LINEENDINGSSEARCH~="true" OR LINEENDINGSSEARCH~="input" OR LINEENDINGSSEARCH~="false")
     </SetProperty>
-    <SetProperty Id="LINEENDINGS" Value="input" Action="NormalizeInputLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
-      LINEENDINGS~="input"
+    <SetProperty Id="LINEENDINGS" Value="[COMMANDLINE_LINEENDINGS]" Action="SetLINEENDINGSFromCommandLine" After="SetLINEENDINGSUsingPreviouslyInstalledValue" Sequence="first">
+      COMMANDLINE_LINEENDINGS~="true" OR COMMANDLINE_LINEENDINGS~="input" OR COMMANDLINE_LINEENDINGS~="false"
     </SetProperty>
-    <SetProperty Id="LINEENDINGS" Value="false" Action="NormalizeFalseLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
-      LINEENDINGS~="false"
+    <SetProperty Id="LINEENDINGS" Value="true" Action="NormalizeCaseLINEENDINGSTrue" After="SetLINEENDINGSFromCommandLine" Sequence="first">LINEENDINGS~="true"</SetProperty>
+    <SetProperty Id="LINEENDINGS" Value="input" Action="NormalizeCaseLINEENDINGSInput" After="SetLINEENDINGSFromCommandLine" Sequence="first">LINEENDINGS~="input"</SetProperty>
+    <SetProperty Id="LINEENDINGS" Value="false" Action="NormalizeCaseLINEENDINGSFalse" After="SetLINEENDINGSFromCommandLine" Sequence="first">LINEENDINGS~="false"</SetProperty>
+    <SetProperty Id="CustomizeLineEndings" Value="Yes" Before="CostFinalize" Sequence="ui">
+        (WIX_UPGRADE_DETECTED AND LINEENDINGSSEARCH AND NOT LINEENDINGSSEARCH~="true") OR (NOT (COMMANDLINE_LINEENDINGS="Unset" OR COMMANDLINE_LINEENDINGS~="true"))
     </SetProperty>
 
-    <Property Id="CMDLINE_TERMINAL" Value="MinTTY" />
     <Property Id="TERMINAL" Value="MinTTY" />
-    <SetProperty Id="CMDLINE_TERMINAL" Value="[TERMINAL]" Before="AppSearch" Sequence="first"><![CDATA[ TERMINAL <> CMDLINE_TERMINAL AND (TERMINAL~="CmdPrompt" OR TERMINAL~="MinTTY") ]]></SetProperty>
+    <Property Id="COMMANDLINE_TERMINAL" Value="Unset" />>
     <Property Id="TERMINALSEARCH">
       <RegistrySearch Id="TerminalSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="Terminal" Type="raw" />
     </Property>
-    <SetProperty Id="TERMINAL" Value="[TERMINALSEARCH]" Action="GetUpgradeTERMINALValue" After="AppSearch" Sequence="first">TERMINALSEARCH</SetProperty>
-    <SetProperty Id="TERMINAL" Value="[CMDLINE_TERMINAL]" After="GetUpgradeTERMINALValue" Sequence="first"><![CDATA[ CMDLINE_TERMINAL <> TERMINAL ]]></SetProperty>
-    <SetProperty Id="TERMINAL" Value="MinTTY" Action="NormalizeMinTTYCasing" After="SetTERMINAL" Sequence="first">
-      TERMINAL~="MinTTY"
+    <SetProperty Id="TERMINAL" Value="[TERMINALSEARCH]" Action="SetTERMINALUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND (TERMINALSEARCH~="MinTTY" OR TERMINALSEARCH~="CmdPrompt")
     </SetProperty>
-    <SetProperty Id="TERMINAL" Value="CmdPrompt" Action="NormalizeCmdPromptCasing" After="SetTERMINAL" Sequence="first">
-      TERMINAL~="CmdPrompt"
+    <SetProperty Id="TERMINAL" Value="[COMMANDLINE_TERMINAL]" Action="SetTERMINALFromCommandLine" After="SetTERMINALUsingPreviouslyInstalledValue" Sequence="first">
+      COMMANDLINE_TERMINAL~="MinTTY" OR COMMANDLINE_TERMINAL~="CmdPrompt"
     </SetProperty>
+    <SetProperty Id="TERMINAL" Value="MinTTY" Action="NormalizeCaseTERMINALMinTTY" After="SetTERMINALFromCommandLine" Sequence="first">TERMINAL~="MinTTY"</SetProperty>
+    <SetProperty Id="TERMINAL" Value="CmdPrompt" Action="NormalizeCaseTERMINALCmdPrompt" After="SetTERMINALFromCommandLine" Sequence="first">TERMINAL~="CmdPrompt"</SetProperty>
 
-    <SetProperty Id="CMDLINE_ENABLEFSCACHE" Value="false" Before="AppSearch" Sequence="first">
-      ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0
-    </SetProperty>
-    <Property Id="ENABLEFSCACHE" Value="true">
+    <Property Id="ENABLEFSCACHE" Value="true" />
+    <Property Id="COMMANDLINE_ENABLEFSCACHE" Value="Unset" />
+    <Property Id="ENABLEFSCACHESEARCH">
       <RegistrySearch Id="EnableFsCacheSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="core.fscache" Type="raw" />
     </Property>
-    <SetProperty Id="ENABLEFSCACHE" Action="SetENABLESCACHEToTrue" Value="true" After="AppSearch" Sequence="first">
-      <![CDATA[ UILevel < 5 AND (ENABLEFSCACHE~="true" OR ENABLEFSCACHE=1) ]]>
+    <SetProperty Id="ENABLEFSCACHE" Value="[ENABLEFSCACHESEARCH]" Action="SetENABLEFSCACHEUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND (ENABLEFSCACHESEARCH~="true" OR ENABLEFSCACHESEARCH~="false" OR ENABLEFSCACHESEARCH~="yes" OR ENABLEFSCACHESEARCH~="no" OR ENABLEFSCACHESEARCH="1" OR ENABLEFSCACHESEARCH="0")
     </SetProperty>
-    <SetProperty Id="ENABLEFSCACHE" Action="SetENABLEFSCACHEToFalse" Value="false" After="AppSearch" Sequence="first">
-      <![CDATA[ UILevel < 5 AND (ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0) ]]>
+    <SetProperty Id="ENABLEFSCACHE" Value="[COMMANDLINE_ENABLEFSCACHE]" Action="SetENABLEFSCACHEFromCommandLine" After="SetENABLEFSCACHEUsingPreviouslyInstalledValue" Sequence="first">
+      COMMANDLINE_ENABLEFSCACHE~="true" OR COMMANDLINE_ENABLEFSCACHE~="false" OR COMMANDLINE_ENABLEFSCACHE~="yes" OR COMMANDLINE_ENABLEFSCACHE~="no" OR COMMANDLINE_ENABLEFSCACHE="1" OR COMMANDLINE_ENABLEFSCACHE="0"
     </SetProperty>
-    <SetProperty Id="ENABLEFSCACHE" Action="ClearENABLEFSCACHEForFullUIInstallIfFalse" Value="{}" After="AppSearch" Sequence="ui">
-      UILevel = 5 AND (CMDLINE_ENABLEFSCACHE OR ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0)
+    <SetProperty Id="ENABLEFSCACHE" Value="true" Action="NormalizeENABLEFSCACHETrue" After="SetENABLEFSCACHEFromCommandLine" Sequence="first">
+      ENABLEFSCACHE~="true" OR ENABLEFSCACHE~="yes" OR ENABLEFSCACHE="1"
+    </SetProperty>
+    <SetProperty Id="ENABLEFSCACHE" Value="false" Action="NormalizeENABLEFSCACHEFalse" After="SetENABLEFSCACHEFromCommandLine" Sequence="first">
+      ENABLEFSCACHE~="false" OR ENABLEFSCACHE~="no" OR ENABLEFSCACHE="0"
+    </SetProperty>
+    <SetProperty Id="ENABLEFSCACHE" Value="{}" Action="ClearENABLEFSCACHEIfFalseAndFullUIInstall" After="NormalizeENABLEFSCACHEFalse" Sequence="ui">
+      UILevel = 5 AND ENABLEFSCACHE="false"
     </SetProperty>
 
-    <SetProperty Id="CMDLINE_ENABLEGCM" Value="0" Before="AppSearch" Sequence="first">
-      ENABLEGCM~="false" OR ENABLEGCM=0
-    </SetProperty>
-    <Property Id="ENABLEGCM" Value="1">
+    <Property Id="ENABLEGCM" Value="1" />
+    <Property Id="COMMANDLINE_ENABLEGCM" Value="Unset" />
+    <Property Id="ENABLEGCMSEARCH">
       <RegistrySearch Id="EnableGcmSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="EnableGcm" Type="raw" />
     </Property>
-    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMTo1OnUpgradeIfPreviouslyEnabled" Value="1" After="AppSearch" Sequence="first">
-      ENABLEGCM~="true" OR ENABLEGCM="#1"
+    <SetProperty Id="ENABLEGCM" Value="[ENABLEGCMSEARCH]" Action="SetENABLEGCMUsingPreviouslyInstalledValue" After="AppSearch" Sequence="first">
+      (WIX_UPGRADE_DETECTED OR REINSTALL) AND ENABLEGCMSEARCH
     </SetProperty>
-    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMTo0FromCmdLineOrOnUpgradeIfDisabled" Value="0" After="AppSearch" Sequence="first">
-      CMDLINE_ENABLEGCM OR ENABLEGCM~="false" OR ENABLEGCM="#0"
+    <SetProperty Id="ENABLEGCM" Value="[COMMANDLINE_ENABLEGCM]" Action="SetENABLEGCMFromCommandLine" After="SetENABLEGCMUsingPreviouslyInstalledValue" Sequence="first">
+      COMMANDLINE_ENABLEGCM~="true" OR COMMANDLINE_ENABLEGCM~="false" OR COMMANDLINE_ENABLEGCM~="yes" OR COMMANDLINE_ENABLEGCM~="no" OR COMMANDLINE_ENABLEGCM="1" OR COMMANDLINE_ENABLEGCM="0"
     </SetProperty>
-    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMTo0IfNoNetFx451Plus" Value="0" After="SetWIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED" Sequence="first">
-      NOT WIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED
+    <SetProperty Id="ENABLEGCM" Value="1" Action="NormalizeENABLEGCMTrue" After="SetENABLEGCMFromCommandLine" Sequence="first">
+      ENABLEGCM~="true" OR ENABLEGCM~="yes" OR ENABLEGCM="1" OR ENABLEGCM="#1"
     </SetProperty>
-    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMToNullIfDisabledAndFullUIInstall" Value="{}" After="SetENABLEGCMTo0IfNoNetFx451Plus" Sequence="ui">
-      UILevel = 5 AND ENABLEGCM=0
+    <SetProperty Id="ENABLEGCM" Value="0" Action="NormalizeENABLEGCMIfFalseOrSetFalseIfNetFx451NotInstalled" After="SetWIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED" Sequence="first">
+      NOT WIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED OR ENABLEGCM~="false" OR ENABLEGCM~="no" OR ENABLEGCM="0" OR ENABLEGCM="#0"
+    </SetProperty>
+    <SetProperty Id="ENABLEGCM" Value="{}" Action="ClearENABLEGCMIfFalseAndFullUIInstall" After="NormalizeENABLEGCMIfFalseOrSetFalseIfNetFx451NotInstalled" Sequence="ui">
+      UILevel = 5 AND ENABLEGCM = 0
     </SetProperty>
 
     <Property Id="GITBASHHERE" Value="1" />
@@ -305,7 +322,8 @@
       <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
 
       <Publish Dialog="GitChooseEnvironmentDlg" Control="Back" Event="NewDialog" Value="InstallDirDlg">1</Publish>
-      <Publish Dialog="GitChooseEnvironmentDlg" Control="Next" Event="NewDialog" Value="GitLineEndingsDlg">1</Publish>
+      <Publish Dialog="GitChooseEnvironmentDlg" Control="Next" Event="NewDialog" Value="GitLineEndingsDlg">CustomizeLineEndings = "No"</Publish>
+      <Publish Dialog="GitChooseEnvironmentDlg" Control="Next" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">CustomizeLineEndings = "Yes"</Publish>
 
       <Publish Dialog="GitLineEndingsDlg" Control="Back" Event="NewDialog" Value="GitChooseEnvironmentDlg">1</Publish>
       <Publish Dialog="GitLineEndingsDlg" Control="Next" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">CustomizeLineEndings = "Yes"</Publish>
