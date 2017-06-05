@@ -9,8 +9,12 @@
             <RadioButton Text="!(loc.GitLineEndingsDlg_RbCustomize)" Height="30" Value="Yes" Width="310" X="0" Y="15" />
           </RadioButtonGroup>
         </Control>
-        <Control Type="PushButton" Id="Back" Width="56" Height="17" X="180" Y="243" Text="!(loc.WixUIBack)" />
-        <Control Type="PushButton" Id="Next" Width="56" Height="17" X="236" Y="243" Default="yes" Text="!(loc.WixUINext)" />
+        <Control Type="PushButton" Id="Back" Width="56" Height="17" X="180" Y="243" Text="!(loc.WixUIBack)">
+          <Publish Property="LINEENDINGS" Value="true">CustomizeLineEndings = "No"</Publish>
+        </Control>
+        <Control Type="PushButton" Id="Next" Width="56" Height="17" X="236" Y="243" Default="yes" Text="!(loc.WixUINext)">
+          <Publish Property="LINEENDINGS" Value="true">CustomizeLineEndings = "No"</Publish>
+        </Control>
         <Control Type="PushButton" Id="Cancel" Width="56" Height="17" X="304" Y="243" Cancel="yes" Text="!(loc.WixUICancel)">
           <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
         </Control>

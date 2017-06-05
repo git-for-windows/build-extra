@@ -10,11 +10,7 @@
           <Condition Action="disable">NOT WIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED</Condition>
         </Control>
         <Control Type="PushButton" Id="Back" Width="56" Height="17" X="180" Y="243" Text="!(loc.WixUIBack)" />
-        <Control Type="PushButton" Id="Next" Width="56" Height="17" X="236" Y="243" Default="yes" Text="!(loc.WixUINext)">
-          <Publish Property="ENABLEFSCACHE" Value="false"><![CDATA[ ENABLEFSCACHE <> "true" ]]></Publish>
-          <Publish Property="ENABLEFSCACHE" Value="true">ENABLEFSCACHE = "true"</Publish>
-          <Publish Property="ENABLEGCM" Value="0"><![CDATA[ ENABLEGCM <> 1 ]]></Publish>
-        </Control>
+        <Control Type="PushButton" Id="Next" Width="56" Height="17" X="236" Y="243" Default="yes" Text="!(loc.WixUINext)" />
         <Control Type="PushButton" Id="Cancel" Width="56" Height="17" X="304" Y="243" Text="!(loc.WixUICancel)" Cancel="yes">
           <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
         </Control>
