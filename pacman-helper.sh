@@ -213,6 +213,12 @@ add () { # <file>
 		fi &&
 		cp "$path" "$dir/" ||
 		die "Could not copy $path to $dir"
+
+		if test -n "$GPGKEY"
+		then
+			gpg --detach-sign --use-agent --no-armor \
+				-u $GPGKEY "$dir/$path"
+		fi
 	done
 }
 
@@ -233,10 +239,12 @@ remove () { # <package>...
 
 
 update_local_package_databases () {
+	signopt=
+	test -z "$GPGKEY" || signopt=--sign
 	for arch in $architectures
 	do
 		(cd "$(arch_dir $arch)" &&
-		 repo-add --new git-for-windows.db.tar.xz *.pkg.tar.xz)
+		 repo-add $signopt --new git-for-windows.db.tar.xz *.pkg.tar.xz)
 	done
 }
 
@@ -330,7 +338,12 @@ push () {
 				 if test -f $filename
 				 then
 					upload $basename $version $arch $filename
-				 fi) || exit
+				 fi &&
+				 if test -f $filename.sig
+				 then
+					upload $basename $version $arch \
+						$filename.sig
+				fi) || exit
 			done
 			publish $basename $version
 		done
@@ -346,6 +359,9 @@ push () {
 			filename=git-for-windows.$suffix
 			test ! -f $filename ||
 			upload package-database $next_db_version $arch $filename
+			test ! -f $filename.sig ||
+			upload package-database $next_db_version $arch \
+				$filename.sig
 		 done
 		) || exit
 	done
