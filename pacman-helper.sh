@@ -205,12 +205,14 @@ add () { # <file>
 			(cd "$dir" &&
 			 for file in "$prefix"-[0-9][0-9.]*
 			 do
+				test ! -f "$file" ||
 				rm -v "$file"
 			 done)
 		else
 			mkdir -p "$dir"
-		fi
-		cp "$path" "$dir/"
+		fi &&
+		cp "$path" "$dir/" ||
+		die "Could not copy $path to $dir"
 	done
 }
 
