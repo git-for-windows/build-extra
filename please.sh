@@ -1126,10 +1126,16 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 			;;
 		esac
 		;;
-	 upstream/*|v[1-9]*)
+	 upstream/*|v[1-9]*|upstream/v[1-9]*)
 		require_remote upstream https://github.com/git/git
-		case "$branch" in upstream/refs/pull/[0-9]*)
+		case "$branch" in
+		upstream/refs/pull/[0-9]*)
 			git fetch upstream "${branch#upstream/}:refs/remotes/$branch" ||
+			die "Could not fetch %s from upstream\n" \
+				"${branch#upstream/}"
+			;;
+		upstream/v[1-9]*)
+			git fetch upstream "refs/tags/${branch#upstream/}:refs/remotes/$branch" ||
 			die "Could not fetch %s from upstream\n" \
 				"${branch#upstream/}"
 			;;
