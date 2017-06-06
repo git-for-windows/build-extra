@@ -9,6 +9,7 @@ arch=('i686' 'x86_64')
 url="https://github.com/git-for-windows/build-extra"
 license=('GPL')
 groups=('VCS')
+depends=('git-for-windows-keyring')
 optdepends=('vim' 'filesystem')
 install='git-extra.install'
 pkgver() {
