@@ -15,7 +15,8 @@ pacman_list () {
 			pactree -u "$arg"
 		done |
 		grep -v -e '^db$' -e '^info$' -e '^heimdal$' \
-			-e '^git$' -e '^util-linux$' -e '^curl$' |
+			-e '^git$' -e '^util-linux$' -e '^curl$' \
+			-e '^git-for-windows-keyring$' |
 		if test -z "$MINIMAL_GIT"
 		then
 			cat
