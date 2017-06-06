@@ -250,6 +250,10 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/build-extra/$package
 		;;
+	git-for-windows-keyring)
+		type=MSYS
+		pkgpath=/usr/src/build-extra/$package
+		;;
 	git)
 		package=mingw-w64-git
 		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man"
