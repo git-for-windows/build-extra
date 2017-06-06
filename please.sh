@@ -248,7 +248,11 @@ set_package () {
 	case "$package" in
 	git-extra)
 		type=MINGW
-		pkgpath=/usr/src/build-extra/git-extra
+		pkgpath=/usr/src/build-extra/$package
+		;;
+	git-for-windows-keyring)
+		type=MSYS
+		pkgpath=/usr/src/build-extra/$package
 		;;
 	git)
 		package=mingw-w64-git
