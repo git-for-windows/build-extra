@@ -1101,8 +1101,8 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 	*) break;;
 	esac; do shift; done
 	case $# in
-		1) branch=$1 commit=$branch ;;
-		2) branch=$1 commit=$2 ;;
+		1) branch=$1; commit=$branch;;
+		2) branch=$1; commit=$2;;
 		*) die "Expected 1 or 2 arguments, got $#: %s\n" "$*" ;;
 	esac
 
@@ -1147,7 +1147,7 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 		;;
 	 esac &&
 	 if test "$branch" != "$commit" &&
-		git merge-base --is-ancestor $commit $branch
+		! git merge-base --is-ancestor $commit $branch
 	 then
 		echo "Commit $commit is not on branch $branch; skipping" >&2
 		exit 0
