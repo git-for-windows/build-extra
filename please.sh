@@ -1146,9 +1146,12 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 		esac
 		;;
 	 esac &&
-	 [ "$branch" == "$commit" ] ||
-		git merge-base --is-ancestor $commit $branch ||
-		die "Commit %s is not on branch %s\n" $commit $branch &&
+	 if test "$branch" != "$commit" &&
+		git merge-base --is-ancestor $commit $branch
+	 then
+		echo "Commit $commit is not on branch $branch; skipping" >&2
+		exit 0
+	 fi &&
 	 git checkout -f "$commit" &&
 	 git reset --hard &&
 	 if build_and_test_64 $skip_tests $full_log $with_svn_tests
