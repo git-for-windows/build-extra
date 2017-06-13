@@ -52,6 +52,7 @@ This package contains software from a number of other projects including Bash, z
 * The fscache feature [no longer slows down `git commit -m <message>` in large worktrees](https://github.com/git-for-windows/git/commit/bda7f0728ac55e55d79ed0786c1b5ce2ef7e6117).
 * Executing `git.exe` in Git Bash when the current working directory is a UNC path [now works as expected](https://github.com/git-for-windows/git/issues/1181).
 * Staging/unstaging multiple files in Git GUI via Ctrl+C [now works](https://github.com/git-for-windows/git/issues/1012).
+* When hitting Ctrl+T in Git GUI to stage files, but the file list is empty, Git GUI [no longer shows an exception window](https://github.com/git-for-windows/git/issues/1075).
 
 ## Changes since Git for Windows v2.12.2(2) (April 5th 2017)
 
