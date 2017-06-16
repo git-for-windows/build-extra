@@ -2470,6 +2470,9 @@ publish () { #
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not prepare build-extra for download-stats update\n"
 
+	"$sdk64/mingw64/bin/node.exe" -v ||
+	die "Could not execute node.exe\n"
+
 	echo "Preparing release message"
 	name="Git for Windows $displayver"
 	text="$(sed -n \
