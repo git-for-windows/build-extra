@@ -2215,6 +2215,59 @@ upload () { # <package>
 	die "Could not push commits in %s/%s\n" "$sdk64" "$pkgpath"
 }
 
+updpkgsums () {
+	MINGW_INSTALLS=mingw64 \
+	"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c updpkgsums
+}
+
+upgrade () { # <package>
+	grep -q '^machine api\.bintray\.com$' "$HOME"/_netrc ||
+	die "Missing BinTray entries in ~/_netrc\n"
+
+	set_package "$1"
+
+	(cd "$sdk64/$pkgpath" &&
+	 require_push_url origin &&
+	 sdk="$sdk64" ff_master) || exit
+
+	case "$1" in
+	gcm|credential-manager|git-credential-manager)
+		repo=Microsoft/Git-Credential-Manager-for-Windows
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		tag_name="$(echo "$release" |
+			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
+		zip_name="$(echo "$release" | sed -n \
+			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p')"
+		version=${tag_name#v}
+		zip_prefix=${zip_name%$version.zip}
+		src_zip_prefix=${tag_name%$version}
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" \
+		 -e 's/^\(zip_url=.*\/\)gcm.*\(\$.*\)/\1'$zip_prefix'\2/' \
+		 -e 's/^\(src_zip_url=.*\/\).*\(\$.*\)/\1'$src_zip_prefix'\2/' \
+			PKGBUILD &&
+		 updpkgsums &&
+		 srcdir2="$(unzip -l $zip_prefix$version.zip | sed -n \
+		   's/^.\{28\} *\(.*\/\)\?git-credential-manager.exe/\1/p')" &&
+		 sed -i -e 's/^\(  srcdir2=\).*/\1"${srcdir}\/'$srcdir2'"/' \
+			PKGBUILD &&
+		 git commit -s -m "Upgrade $package to $version" PKGBUILD) &&
+		build "$package" &&
+		install "$package" &&
+		upload "$package" &&
+		url=https://github.com/$repo/releases/tag/$tag_name &&
+		mention feature 'Upgraded Git Credential Manager to [version '$version']('"$url"').' &&
+		git -C "$sdk64/usr/src/build-extra" push origin HEAD
+		;;
+	*)
+		die "Unhandled package: %s\n" "$package"
+		;;
+	esac
+}
+
 set_version_from_sdks_git () {
 	version="$("$sdk64/cmd/git.exe" version)"
 	version32="$("$sdk32/cmd/git.exe" version)"
