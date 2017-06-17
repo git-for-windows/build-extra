@@ -468,6 +468,7 @@ pkg_build () {
 				'"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk/$pkgpath"
 
+		git diff-files --quiet --ignore-submodules PKGBUILD ||
 		git commit -s -m "$package: new version" PKGBUILD ||
 		die "%s: could not commit after build\n" "$sdk/$pkgpath"
 		;;
