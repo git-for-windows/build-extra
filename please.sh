@@ -2259,6 +2259,14 @@ upgrade () { # <package>
 		url=https://github.com/$repo/releases/tag/$tag_name &&
 		relnotes_feature='Upgraded Git Credential Manager to [version '$version']('"$url"').'
 		;;
+	git-extra)
+		(cd "$sdk64/$pkgpath" &&
+		 updpkgsums &&
+		 if ! git diff-files --quiet -- PKGBUILD
+		 then
+			git commit -s -m "git-extra: adjust checksums" PKGBUILD
+		 fi)
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
