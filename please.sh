@@ -2267,6 +2267,36 @@ upgrade () { # <package>
 			git commit -s -m "git-extra: adjust checksums" PKGBUILD
 		 fi)
 		;;
+	curl)
+		version="$(curl -s https://curl.haxx.se/download.html |
+		sed -n 's/.*<a href="\/download\/curl-\([1-9]*[^"]*\)\.tar\.bz2".*/\1/p')"
+		test -n "$version" ||
+		die "Could not determine newest cURL version\n"
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i 's/^\(pkgver=\).*/\1'$version/ PKGBUILD &&
+		 updpkgsums &&
+		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
+		 git commit -s -m "curl: new version ($version)" PKGBUILD) ||
+		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+
+		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
+
+		(set_package mingw-w64-$1 &&
+		 cd "$sdk64/$pkgpath" &&
+		 sed -i 's/^\(pkgver=\).*/\1'$version/ PKGBUILD &&
+		 updpkgsums &&
+		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
+		 git commit -s -m "curl: new version ($version)" PKGBUILD &&
+
+		 build "$package" &&
+		 install "$package" &&
+		 upload "$package") &&
+
+		url=https://curl.haxx.se/changes.html &&
+		url="$url$(echo "#$version" | tr . _)" &&
+		relnotes_feature='Upgraded cURL to [version '$version']('"$url"').'
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
