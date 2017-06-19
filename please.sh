@@ -2230,6 +2230,7 @@ upgrade () { # <package>
 	 require_push_url origin &&
 	 sdk="$sdk64" ff_master) || exit
 
+	relnotes_feature=
 	case "$1" in
 	gcm|credential-manager|git-credential-manager)
 		repo=Microsoft/Git-Credential-Manager-for-Windows
@@ -2255,17 +2256,23 @@ upgrade () { # <package>
 		 sed -i -e 's/^\(  srcdir2=\).*/\1"${srcdir}\/'$srcdir2'"/' \
 			PKGBUILD &&
 		 git commit -s -m "Upgrade $package to $version" PKGBUILD) &&
-		build "$package" &&
-		install "$package" &&
-		upload "$package" &&
 		url=https://github.com/$repo/releases/tag/$tag_name &&
-		mention feature 'Upgraded Git Credential Manager to [version '$version']('"$url"').' &&
-		git -C "$sdk64/usr/src/build-extra" push origin HEAD
+		relnotes_feature='Upgraded Git Credential Manager to [version '$version']('"$url"').'
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
-	esac
+	esac &&
+
+	build "$package" &&
+	install "$package" &&
+	upload "$package" &&
+
+	if test -n "$relnotes_feature"
+	then
+		mention feature "$relnotes_feature"&&
+		git -C "$sdk64/usr/src/build-extra" push origin HEAD
+	fi
 }
 
 set_version_from_sdks_git () {
