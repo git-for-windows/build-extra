@@ -2266,6 +2266,20 @@ upgrade () { # <package>
 		 if ! git diff-files --quiet -- PKGBUILD
 		 then
 			git commit -s -m "git-extra: adjust checksums" PKGBUILD
+		 fi &&
+		 if test git-extra.install.in -nt git-extra.install
+		 then
+			MINGW_INSTALLS=mingw64 \
+			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+				'makepkg-mingw --nobuild' &&
+			git checkout HEAD -- PKGBUILD &&
+			git update-index -q --refresh &&
+			if ! git diff-files --quiet -- git-extra.install
+			then
+				git commit -s -m \
+					"git-extra: regenerate .install file" \
+					git-extra.install
+			fi
 		 fi)
 		;;
 	curl)
