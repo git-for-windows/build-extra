@@ -116,6 +116,12 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	! grep -q '^# Define default printer' /etc/profile ||
 	sed -i -e '/^# Define default printer/,/^$/d' \
 		-e 's/^\(export .* \)PRINTER /\1/' /etc/profile
+
+	! grep -A3 '^ *autocmd BufReadPost \*' \
+		/usr/share/vim/vim80/defaults.vim |
+	grep -q ' exe "normal! g`\\""' ||
+	sed -i -e '/^ *autocmd BufReadPost \*/,/\\ endif$/s/^/"/' \
+		/usr/share/vim/vim80/defaults.vim
 }
 
 post_upgrade () {
