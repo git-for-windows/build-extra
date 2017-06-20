@@ -2262,6 +2262,7 @@ upgrade () { # <package>
 	git-extra)
 		(cd "$sdk64/$pkgpath" &&
 		 updpkgsums &&
+		 git update-index -q --refresh &&
 		 if ! git diff-files --quiet -- PKGBUILD
 		 then
 			git commit -s -m "git-extra: adjust checksums" PKGBUILD
