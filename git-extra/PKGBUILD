@@ -41,7 +41,7 @@ source=('inputrc'
         'astextplain'
         'git-sdk.sh')
 md5sums=('3fab57079f0322efe256e95fe29d516f'
-         'e7ad03fffc29e619e402dbd5ec9ef74c'
+         'a2d3b63eb1c88c2a2b011ccf0b219d60'
          'bfb591886b2a28af3334521e71198b74'
          '11d0e9aad647db83c56d9a89608baf11'
          'e3b411a4f2e6553e41d0c4261160dd7d'
