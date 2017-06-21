@@ -61,6 +61,62 @@ tar2zip () {
 	rm -rf $unpackdir &&
 	mkdir $unpackdir &&
 	(cd $unpackdir && tar xzf -) <"$1" &&
+	(cd $unpackdir/* &&
+	 bash -c 'source PKGBUILD &&
+		repo= &&
+		case "${source[0]}" in
+		*::git*)
+			repo="${source[0]%%::*}" &&
+			trailer="${source[0]##*#}" &&
+			case "$trailer" in
+			tag=*) rev=refs/tags/${trailer#tag=};;
+			branch=*) rev=refs/heads/${trailer#branch=};;
+			commit=*) rev=${trailer#commit=};;
+			"${source[0]}") rev=HEAD;;
+			*) echo "Unhandled trailer: $trailer" >&2; exit 1;;
+			esac &&
+			if test HEAD = $rev
+			then
+				zip=$repo.zip
+			else
+				zip=$repo-${rev##*/}.zip
+			fi &&
+			sed -i -e "s/^source=[^)]*/source=(\"$zip\"/" \
+			    -e "s/^\( *\)git am \(--[^ ]* \)\?/\1patch -p1 </" \
+			    PKGBUILD
+			;;
+		http:*|https:*)
+			sed -i "s/^\(source=(.\).*\/\([^)]*\)/\1\2/" PKGBUILD
+			;;
+		esac &&
+		case "${source[1]}" in
+		git+https:*.git)
+			test -z "$repo" || {
+				echo "Cannot handle *two* Git repos" >&2
+				exit 1
+			} &&
+			repo="${source[1]##*/}" &&
+			repo="${repo%.git}" &&
+			rev=HEAD &&
+			zip=$repo.zip &&
+			sed -i -e "s/git+https:.*$repo.git/$repo.zip/" \
+			    -e "s/^\( *\)git am \(--[^ ]* \)\?/\1patch -p1 </" \
+			    PKGBUILD
+
+			;;
+		esac &&
+		if test -n "$repo"
+		then
+			echo "Converting $repo to $zip" &&
+			if test git = $repo &&
+				! git -C $repo rev-parse -q --verify $rev
+			then
+				git -C "$repo" fetch origin $rev:$rev
+			fi &&
+			git -C "$repo" archive --prefix="$repo/" --format=zip \
+				"$rev" >"$zip" &&
+			rm -rf "$repo"
+		fi') &&
 	(cd $unpackdir && zip -9qr - .) >"$2" ||
 	die "Could not transmogrify $1 to $2"
 }
