@@ -40,6 +40,8 @@ edit-git-bash.exe
 /portable/root/bin/
 /portable/root/cmd/
 /portable/root/etc/
+/portable/root/mingw32/
+/portable/root/mingw64/
 /portable/root/post-install.bat
 /sdk-installer/root/
 /source-zips/
