@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.13.2](https://github.com/git/git/blob/v2.13.2/Documentation/RelNotes/2.13.2.txt).
 * Comes with [Git Credential Manager v1.10.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.10.1).
 * The Git Bash prompt [can now be overridden by creating the file `.config\git\git-prompt.sh`](https://github.com/git-for-windows/build-extra/pull/145).
 * Comes with [cURL v7.54.1](https://curl.haxx.se/changes.html#7_54_1).
