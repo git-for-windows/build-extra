@@ -2050,7 +2050,10 @@ tag_git () { #
 		"$(sed -n '1s/.*\(Git for Windows v[^ ]*\).*/\1/p' \
 		<"$build_extra_dir/ReleaseNotes.md")" "$notes")" &&
 	(cd "$git_src_dir" &&
-	 git tag -m "$tag_message" -a "$nextver" git-for-windows/master) ||
+	 signopt= &&
+	 if git config user.signingkey >/dev/null; then signopt=-s; fi &&
+	 git tag -m "$tag_message" -a $signopt \
+		"$nextver" git-for-windows/master) ||
 	die "Could not tag %s in %s\n" "$nextver" "$git_src_dir"
 
 	echo "Created tag $nextver" >&2
