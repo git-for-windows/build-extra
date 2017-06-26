@@ -2259,7 +2259,7 @@ upgrade () { # <package>
 			PKGBUILD &&
 		 git commit -s -m "Upgrade $package to $version" PKGBUILD) &&
 		url=https://github.com/$repo/releases/tag/$tag_name &&
-		relnotes_feature='Upgraded Git Credential Manager to [version '$version']('"$url"').'
+		relnotes_feature='Comes with [Git Credential Manager v'$version']('"$url"').'
 		;;
 	git-extra)
 		(cd "$sdk64/$pkgpath" &&
@@ -2312,7 +2312,7 @@ upgrade () { # <package>
 
 		url=https://curl.haxx.se/changes.html &&
 		url="$url$(echo "#$version" | tr . _)" &&
-		relnotes_feature='Upgraded cURL to [version '$version']('"$url"').'
+		relnotes_feature='Comes with [cURL v'$version']('"$url"').'
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
