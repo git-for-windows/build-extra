@@ -2408,6 +2408,19 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 	fi ||
 	die "Could not edit release notes\n"
 
+	# make sure that the Git version is always reported first
+	case "$*" in
+	'Comes with [Git v'*)
+		sed -i -ne '/^### New Features/{
+			p;n;
+			/^$/{p;n};
+			:1;
+			/^\* Comes with \[Git v/{G;:2;p;n;b2};
+			x;/./{G;x};n;b1;
+			}' -e p "$relnotes"
+		;;
+	esac
+
 	(cd "$sdk64"/usr/src/build-extra &&
 	 what_singular="$(echo "$what" |
 		 sed -e 's/Fixes/Fix/' -e 's/Features/Feature/')" &&
