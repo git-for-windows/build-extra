@@ -2317,6 +2317,10 @@ upgrade () { # <package>
 		url="$url$(echo "#$version" | tr . _)" &&
 		relnotes_feature='Comes with [cURL v'$version']('"$url"').'
 		;;
+	git)
+		finalize release-notes &&
+		tag_git
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
