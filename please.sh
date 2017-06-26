@@ -2482,6 +2482,20 @@ finalize () { # <what, e.g. release-notes>
 	test "$displayver" != "$(version_from_release_notes)" ||
 	die "Version %s already in the release notes\n" "$displayver"
 
+	case "$nextver" in
+	*.windows.1)
+		v=${nextver%.windows.1} &&
+		if ! grep -q "^\\* Comes with \\[Git $v\\]" \
+			"$sdk64"/usr/src/build-extra/ReleaseNotes.md
+		then
+			url=https://github.com/git/git/blob/$v &&
+			url=$url/Documentation/RelNotes/${v#v}.txt &&
+			mention feature 'Comes with [Git '$v']('$url').'
+		fi ||
+		die "Could not mention that Git was upgraded to $v\n"
+		;;
+	esac
+
 	sed -i -e "1s/.*/# Git for Windows v$displayver Release Notes/" \
 		-e "2s/.*/Latest update: $(today)/" \
 		"$sdk64"/usr/src/build-extra/ReleaseNotes.md ||
