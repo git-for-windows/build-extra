@@ -2321,6 +2321,51 @@ upgrade () { # <package>
 		finalize release-notes &&
 		tag_git
 		;;
+	lfs|git-lfs)
+		repo=git-lfs/git-lfs
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		version="$(echo "$release" |
+			sed -n 's/^  "tag_name": "v\(.*\)",\?$/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+		needle1='^  "body": ".* SHA-256 hashes.*git-lfs-windows'
+		needle2="$version\\.zip\\**\\\\r\\\\n\\([0-9a-f]*\\).*"
+		sha256_32="$(echo "$release" |
+			sed -n "s/$needle1-386-$needle2/\1/p")"
+		test 64 = $(echo -n "$sha256_32" | wc -c) ||
+		die "Could not determine SHA-256 of 32-bit %s\n" "$package"
+		sha256_64="$(echo "$release" |
+			sed -n "s/$needle1-amd64-$needle2/\1/p")"
+		test 64 = $(echo -n "$sha256_64" | wc -c) ||
+		die "Could not determine SHA-256 of 64-bit %s\n" "$package"
+		(cd "$sdk64/$pkgpath" &&
+		 url=https://github.com/$repo/releases/download/v$version/ &&
+		 zip32="git-lfs-windows-386-$version.zip" &&
+		 zip64="git-lfs-windows-amd64-$version.zip" &&
+		 curl -LO $url$zip32 &&
+		 curl -LO $url$zip64 &&
+		 printf "%s *%s\n%s *%s\n" \
+			"$sha256_32" "$zip32" "$sha256_64" "$zip64" |
+		 sha256sum -c - &&
+		 srcdir32="$(unzip -l $zip32 |
+			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs\.exe/\1/p' |
+			 sed 's/^$/./')" &&
+		 srcdir64="$(unzip -l $zip64 |
+			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs\.exe/\1/p' |
+			 sed 's/^$/./')" &&
+		 s1='s/\(folder=\)[^\n]*/\1' &&
+		 s2='s/\(sha256sum=\)[0-9a-f]*/\1'
+		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
+		 -e "/^i686)/{N;N;N;$s1$dir32/;$s2$sha256_32/}" \
+		 -e "/^x86_64)/{N;N;N;$s1$dir64/;$s2$sha256_64/}" \
+			PKGBUILD &&
+		 git commit -s -m "Upgrade $package to $version" PKGBUILD) &&
+		url=https://github.com/$repo/releases/tag/v$version &&
+		relnotes_feature='Comes with [Git LFS v'$version']('"$url"').'
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
