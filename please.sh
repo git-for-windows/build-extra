@@ -2337,6 +2337,11 @@ upgrade () { # <package>
 			sed -n "s/$needle1-386-$needle2/\1/p")"
 		test 64 = $(echo -n "$sha256_32" | wc -c) ||
 		die "Could not determine SHA-256 of 32-bit %s\n" "$package"
+
+		# Incorrect SHA-256 for 32-bit 2.2.1:
+		# see https://github.com/git-lfs/git-lfs/issues/2408
+		test 2.2.1,1142055d51a7d70b3c2fbf184db41100457f170a532b638253991821890927b5 != "$version,$sha256_32" || sha256_32=0d6347bbdf25946f14949b50f18b9929183aefe55f6b626f8a618ae53c2220bb
+
 		sha256_64="$(echo "$release" |
 			sed -n "s/$needle1-amd64-$needle2/\1/p")"
 		test 64 = $(echo -n "$sha256_64" | wc -c) ||
