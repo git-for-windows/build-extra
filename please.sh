@@ -2229,6 +2229,9 @@ updpkgsums () {
 }
 
 upgrade () { # <package>
+	test -n "$GPGKEY" ||
+	die "Need GPGKEY to upload packages\n"
+
 	grep -q '^machine api\.bintray\.com$' "$HOME"/_netrc ||
 	die "Missing BinTray entries in ~/_netrc\n"
 
