@@ -122,6 +122,9 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	grep -q ' exe "normal! g`\\""' ||
 	sed -i -e '/^ *autocmd BufReadPost \*/,/\\ endif$/s/^/"/' \
 		/usr/share/vim/vim80/defaults.vim
+
+	! grep -q '^if .*command -v getent' /etc/bash.bashrc ||
+	sed -i '/^if .*command -v getent/,/^fi/s/^/#/' /etc/bash.bashrc
 }
 
 post_upgrade () {
