@@ -2350,10 +2350,10 @@ upgrade () { # <package>
 		 printf "%s *%s\n%s *%s\n" \
 			"$sha256_32" "$zip32" "$sha256_64" "$zip64" |
 		 sha256sum -c - &&
-		 srcdir32="$(unzip -l $zip32 |
+		 dir32="$(unzip -l $zip32 |
 			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs\.exe/\1/p' |
 			 sed 's/^$/./')" &&
-		 srcdir64="$(unzip -l $zip64 |
+		 dir64="$(unzip -l $zip64 |
 			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs\.exe/\1/p' |
 			 sed 's/^$/./')" &&
 		 s1='s/\(folder=\)[^\n]*/\1' &&
