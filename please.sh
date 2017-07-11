@@ -2352,10 +2352,10 @@ upgrade () { # <package>
 		 sha256sum -c - &&
 		 dir32="$(unzip -l $zip32 |
 			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs\.exe/\1/p' |
-			 sed 's/^$/./')" &&
+			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
 		 dir64="$(unzip -l $zip64 |
 			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs\.exe/\1/p' |
-			 sed 's/^$/./')" &&
+			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
 		 s1='s/\(folder=\)[^\n]*/\1' &&
 		 s2='s/\(sha256sum=\)[0-9a-f]*/\1'
 		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
