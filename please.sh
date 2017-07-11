@@ -2357,7 +2357,7 @@ upgrade () { # <package>
 			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs\.exe/\1/p' |
 			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
 		 s1='s/\(folder=\)[^\n]*/\1' &&
-		 s2='s/\(sha256sum=\)[0-9a-f]*/\1'
+		 s2='s/\(sha256sum=\)[0-9a-f]*/\1' &&
 		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
 		 -e "/^i686)/{N;N;N;$s1$dir32/;$s2$sha256_32/}" \
 		 -e "/^x86_64)/{N;N;N;$s1$dir64/;$s2$sha256_64/}" \
