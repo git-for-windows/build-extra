@@ -2192,6 +2192,9 @@ pkg_upload () {
 }
 
 upload () { # <package>
+	test -n "$GPGKEY" ||
+	die "Need GPGKEY to upload packages\n"
+
 	set_package "$1"
 
 	grep -q '^machine api\.bintray\.com$' "$HOME"/_netrc ||
