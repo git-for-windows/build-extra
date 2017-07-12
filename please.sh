@@ -2421,9 +2421,9 @@ upgrade () { # <package>
 			die "Could not rebase '%s' to '%s'\n" "$package" "$tag"
 		 fi
 
-		 msys2_runtime_mtime=$(git log -1 --format=%at \
+		 msys2_runtime_mtime=$(git log -1 --format=%ct \
 			git-for-windows/master --) &&
-		 msys2_package_mtime=$(git -C ../.. log -1 --format=%at -- .) &&
+		 msys2_package_mtime=$(git -C ../.. log -1 --format=%ct -- .) &&
 		 test $msys2_runtime_mtime -gt $msys2_package_mtime ||
 		 die "Package '%s' already up-to-date\n\t%s: %s\n\t%s: %s\n" \
 			"$package" \
