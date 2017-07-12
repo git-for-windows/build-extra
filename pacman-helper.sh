@@ -37,7 +37,7 @@ export CURL_CA_BUNDLE
 
 mode=
 case "$1" in
-fetch|add|remove|push|files|dirs|orphans)
+fetch|add|remove|push|files|dirs|orphans|push_missing_signatures)
 	mode="$1"
 	shift
 	;;
@@ -366,6 +366,94 @@ push () {
 		) || exit
 	done
 	publish package-database $next_db_version
+}
+
+file_exists () { # arch filename
+	curl -sfI "$base_url/$1/$2" >/dev/null
+}
+
+push_missing_signatures () {
+	list="$((for arch in $architectures
+		do
+			dir="$(arch_dir $arch)"
+			package_list "$dir/git-for-windows.db.tar.xz"
+		done) |
+		sort | uniq)"
+
+	db_version="$(db_version)"
+
+	for name in $list
+	do
+		count=0
+		basename=${name%%-[0-9]*}
+		version=${name#$basename-}
+		for arch in $architectures sources
+		do
+			case "$name,$arch" in
+			mingw-w64-i686,x86_64|mingw-w64-x86_64,i686)
+				# wrong architecture
+				continue
+				;;
+			mingw-w64-i686-*,sources)
+				# sources are "included" in x86_64
+				continue
+				;;
+			mingw-w64-x86_64-*,sources)
+				# sources are "included" in x86_64
+				filename=mingw-w64${name#*_64}.src.tar.gz
+				;;
+			*,sources)
+				filename=$name.src.tar.gz
+				;;
+			mingw-w64-*)
+				filename=$name-any.pkg.tar.xz
+				;;
+			*)
+				filename=$name-$arch.pkg.tar.xz
+				;;
+			esac
+			dir="$(arch_dir $arch)" &&
+			if test ! -f "$dir"/$filename.sig ||
+				file_exists $arch $filename.sig
+			then
+				continue
+			fi &&
+			(cd "$dir" &&
+			 echo "Uploading missing $arch/$filename.sig" &&
+			 upload $basename $version $arch $filename.sig) || exit
+			count=$(($count+1))
+		done
+		test $count = 0 || {
+			echo "Re-publishing $basename $version" &&
+			publish $basename $version
+		} ||
+		die "Could not re-publish $basename $version"
+	done
+
+	count=0
+	for arch in $architectures
+	do
+		for suffix in db db.tar.xz files files.tar.xz
+		do
+			filename=git-for-windows.$suffix
+			dir="$(arch_dir $arch)"
+			if test ! -f "$dir"/$filename.sig ||
+				file_exists $arch $filename.sig
+			then
+				continue
+			fi
+			(cd "$dir" &&
+			 echo "Uploading missing $arch/$filename.sig" &&
+			 upload package-database $db_version $arch \
+				$filename.sig) || exit
+			count=$(($count+1))
+		done || exit
+	done
+	test $count = 0 || {
+		echo "Re-publishing db $db_version" &&
+		publish package-database $db_version
+	} ||
+	die "Could not re-publish db $db_version"
 }
 
 reset_fifo_files () {
