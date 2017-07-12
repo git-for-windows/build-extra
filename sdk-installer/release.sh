@@ -101,8 +101,8 @@ echo "Creating archive" &&
  echo 'GUIMode="1"' &&
  echo 'InstallPath="C:\\git-sdk-'$BITNESS'"' &&
  echo 'OverwriteMode="2"' &&
- echo 'ExecuteFile="%%T\setup-git-sdk.bat"' &&
- echo 'Delete="%%T\setup-git-sdk.bat"' &&
+ echo 'ExecuteFile="setup-git-sdk.bat"' &&
+ echo 'Delete="setup-git-sdk.bat"' &&
  echo ';!@InstallEnd@!' &&
  cat "$TMPPACK") > "$TARGET" &&
 echo "Success! You will find the new installer at \"$TARGET\"." &&
