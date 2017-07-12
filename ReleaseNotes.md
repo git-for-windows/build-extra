@@ -37,7 +37,6 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.8.1](https://cygwin.com/ml/cygwin-announce/2017-07/msg00002.html).
 * Comes with [Git LFS v2.2.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.2.1).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.8.2](https://cygwin.com/ml/cygwin-announce/2017-07/msg00044.html).
 
