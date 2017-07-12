@@ -146,6 +146,9 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	! grep -q '^# Define default printer' /etc/profile ||
 	sed -i -e '/^# Define default printer/,/^$/d' \
 		-e 's/^\(export .* \)PRINTER /\1/' /etc/profile
+
+	! grep -q '^if .*command -v getent' /etc/bash.bashrc ||
+	sed -i '/^if .*command -v getent/,/^fi/s/^/#/' /etc/bash.bashrc
 }
 
 post_upgrade () {
