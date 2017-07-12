@@ -80,8 +80,9 @@ fileList="etc/nsswitch.conf \
 	usr/bin/gpg.exe \
 	usr/bin/chmod.exe \
 	usr/bin/wc.exe \
+	usr/bin/find.exe \
 	$(dlls_for_exes /usr/bin/gpg.exe /usr/bin/curl.exe /usr/bin/chmod.exe \
-		/usr/bin/wc.exe) \
+		/usr/bin/wc.exe /usr/bin/find.exe) \
 	usr/ssl/certs/ca-bundle.crt \
 	var/lib/pacman \
 	$FAKEROOTDIR/setup-git-sdk.bat $FAKEROOTDIR/etc $FAKEROOTDIR/usr"
