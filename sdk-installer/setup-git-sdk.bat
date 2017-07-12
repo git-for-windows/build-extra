@@ -105,6 +105,25 @@
 @IF ERRORLEVEL 1 GOTO INSTALL_INFO
 
 @SET /A counter=0
+:INSTALL_MSYS2_KEYRING
+@SET /A counter+=1
+@IF %counter% GEQ 5 @(
+	@ECHO Could not install msys2-keyring
+	@PAUSE
+	@EXIT 1
+)
+
+@REM next, force update msys2-keyring
+@"%cwd%"\usr\bin\pacman -S --needed --force --noconfirm gnupg msys2-keyring
+
+@IF ERRORLEVEL 1 GOTO INSTALL_MSYS2_KEYRING
+
+@REM now, add Git for Windows' keyring
+@"%cwd%"\usr\bin\bash.exe -l -c ^
+	'/usr/bin/bash /usr/bin/pacman-key --populate git-for-windows'
+@IF ERRORLEVEL 1 PAUSE
+
+@SET /A counter=0
 :INSTALL_PACMAN
 @SET /A counter+=1
 @IF %counter% GEQ 5 @(
