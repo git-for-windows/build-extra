@@ -85,6 +85,7 @@ fileList="etc/nsswitch.conf \
 		/usr/bin/wc.exe /usr/bin/find.exe) \
 	usr/ssl/certs/ca-bundle.crt \
 	var/lib/pacman \
+	usr/share/pacman/keyrings \
 	$FAKEROOTDIR/setup-git-sdk.bat $FAKEROOTDIR/etc $FAKEROOTDIR/usr"
 
 type 7za ||
