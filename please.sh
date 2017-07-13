@@ -1601,6 +1601,16 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		test a"$sdk" = a"$sdk64" ||
 		continue
 
+		git_core="$sdk"/usr/src/build-extra/portable/root/ &&
+		if test a"$sdk" = a"$sdk64"
+		then
+			git_core="$git_core"/mingw64/libexec/git-core
+		else
+			git_core="$git_core"/mingw32/libexec/git-core
+		fi &&
+		rm -rf "$git_core" ||
+		die "Could not ensure that '%s' is cleaned\n" "$git_core"
+
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c '
 			cd "'"$git_src_dir"'/../.." &&
 			precmd="pacman --force --noconfirm -U" &&
