@@ -1354,6 +1354,13 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 
 	sdk="$sdk64"
 
+	portable_root=/usr/src/build-extra/portable/root/
+	rm -rf "$sdk$portable_root"/mingw64/libexec/git-core ||
+	die "Could not ensure that portable Git in '%s' is cleaned\n" "$sdk"
+	test -n "$only_64_bit" ||
+	rm -rf "$sdk32$portable_root"/mingw32/libexec/git-core ||
+	die "Could not ensure that portable Git in '%s' is cleaned\n" "$sdk32"
+
 	build_extra_dir="$sdk32/usr/src/build-extra"
 	test -n "$only_64_bit" ||
 	(cd "$build_extra_dir" &&
@@ -1600,16 +1607,6 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		test -z "$only_64_bit" ||
 		test a"$sdk" = a"$sdk64" ||
 		continue
-
-		git_core="$sdk"/usr/src/build-extra/portable/root/ &&
-		if test a"$sdk" = a"$sdk64"
-		then
-			git_core="$git_core"/mingw64/libexec/git-core
-		else
-			git_core="$git_core"/mingw32/libexec/git-core
-		fi &&
-		rm -rf "$git_core" ||
-		die "Could not ensure that '%s' is cleaned\n" "$git_core"
 
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c '
 			cd "'"$git_src_dir"'/../.." &&
