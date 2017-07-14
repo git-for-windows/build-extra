@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Repository-local aliases [are now resolved again in worktrees](https://github.com/git-for-windows/git/commit/6ba04141d88).
+* CamelCased aliases were broken in v2.13.3; This [has been fixed again]((https://github.com/git-for-windows/git/commit/af0c2223da0).
 
 ## Changes since Git for Windows v2.13.2 (June 26th 2017)
 
