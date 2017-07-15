@@ -128,6 +128,12 @@ sync () { # [--force]
 			-Su $force --noconfirm ||
 		die "Could not update packages in %s\n" "$sdk"
 
+		PATH="$sdk/usr/bin:$PATH" \
+		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
+			pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
+			pacman-key --populate git-for-windows' ||
+		die "Could not re-populate git-for-windows-keyring\n"
+
 		case "$(tail -c 16384 "$sdk/var/log/pacman.log" |
 			grep '\[PACMAN\] starting .* system upgrade' |
 			tail -n 1)" in
@@ -140,6 +146,13 @@ sync () { # [--force]
 				--command=usr\\bin\\sh.exe -l \
 				-c 'pacman -Su '$force' --noconfirm' ||
 			die "Cannot update packages in %s\n" "$sdk"
+
+			PATH="$sdk/usr/bin:$PATH" \
+			"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
+				pacman-key --list-keys BB3AA74136C569BB \
+					>/dev/null ||
+				pacman-key --populate git-for-windows' ||
+			die "Could not re-populate git-for-windows-keyring\n"
 			;;
 		esac
 
