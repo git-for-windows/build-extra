@@ -155,6 +155,10 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 
 	! grep -q '^if .*command -v getent' /etc/bash.bashrc ||
 	sed -i '/^if .*command -v getent/,/^fi/s/^/#/' /etc/bash.bashrc
+
+	# Ensure that Git for Windows' GPG keyring is still imported
+	pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
+	pacman-key --populate git-for-windows ||
 }
 
 post_upgrade () {
