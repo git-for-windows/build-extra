@@ -128,7 +128,7 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 
 	# Ensure that Git for Windows' GPG keyring is still imported
 	pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
-	pacman-key --populate git-for-windows ||
+	pacman-key --populate git-for-windows
 }
 
 post_upgrade () {
