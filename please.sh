@@ -302,6 +302,11 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/MINGW-packages/mingw-w64-pcre2
 		;;
+	busybox|mingw-w64-busybox)
+		package=mingw-w64-busybox
+		type=MINGW
+		pkgpath=/usr/src/MINGW-packages/mingw-w64-busybox
+		;;
 	msys2-runtime)
 		type=MSYS
 		extra_packages="msys2-runtime-devel"
