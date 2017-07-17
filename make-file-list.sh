@@ -9,24 +9,23 @@ test -n "$ARCH" &&
 test -n "$BITNESS" ||
 die "Need ARCH and BITNESS to be set"
 
+PACKAGE_EXCLUDES='db info heimdal git util-linux curl git-for-windows-keyring'
+if test -n "$MINIMAL_GIT"
+then
+	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES mingw-w64-bzip2 mingw-w64-c-ares
+		mingw-w64-libsystre mingw-w64-libtre-git
+		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
+		libedit libgdbm perl perl-.*"
+fi
+
 pacman_list () {
 	package_list=$(for arg
 		do
 			pactree -u "$arg"
 		done |
-		grep -v -e '^db$' -e '^info$' -e '^heimdal$' \
-			-e '^git$' -e '^util-linux$' -e '^curl$' \
-			-e '^git-for-windows-keyring$' |
-		if test -z "$MINIMAL_GIT"
-		then
-			cat
-		else
-			grep -v -e '^\(.*-bzip2\|.*-c-ares\|.*-libsystre\)$' \
-				-e '^\(.*libtre-git\)$' \
-				-e '^\(.*-tcl\|.*-tk\|.*-wineditline\)$' \
-				-e '^\(gdbm\|icu\|libdb\|libedit\|libgdbm\)$' \
-				-e '^\(perl\|perl-.*\)$'
-		fi |
+		grep -v "^\\($(echo $PACKAGE_EXCLUDES | sed \
+			-e 's/ /\\|/g' \
+			-e 's/mingw-w64-/&\\(i686\\|x86_64\\)-/g')\\)\$" |
 		sort |
 		uniq) &&
 	if test -n "$PACKAGE_VERSIONS_FILE"
