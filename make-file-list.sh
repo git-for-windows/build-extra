@@ -116,7 +116,7 @@ else
 		-e '^/mingw../bin/\(gettext\.sh\|gettextize\|git-cvsserver\)$' \
 		-e '^/mingw../bin/\(gitk\|git-upload-archive\.exe\)$' \
 		-e '^/mingw../bin/lib\(atomic\|charset\)-.*\.dll$' \
-		-e '^/mingw../bin/lib\(gcc_s_seh\|libgmpxx\)-.*\.dll$' \
+		-e '^/mingw../bin/lib\(gcc_s_seh\|gmpxx\)-.*\.dll$' \
 		-e '^/mingw../bin/lib\(gomp\|jansson\|minizip\)-.*\.dll$' \
 		-e '^/mingw../bin/libvtv.*\.dll$' \
 		-e '^/mingw../bin/\(.*\.def\|update-ca-trust\)$' \
