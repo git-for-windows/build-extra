@@ -125,7 +125,7 @@ else
 		-e '^/mingw../bin/\(WhoUses\|xmlwf\)\.exe$' \
 		-e '^/mingw../etc/pki' -e '^/mingw../lib/p11-kit/' \
 		-e '/git-\(add--interactive\|archimport\|citool\|cvs.*\)$' \
-		-e '/git-\(difftool.*\|git-gui.*\|instaweb\|p4\|relink\)$' \
+		-e '/git-\(difftool.*\|gui.*\|instaweb\|p4\|relink\)$' \
 		-e '/git-\(send-email\|svn\)$' \
 		-e '/mingw../libexec/git-core/git-\(imap-send\|daemon\)\.exe$' \
 		-e '/mingw../libexec/git-core/git-remote-ftp.*\.exe$' \
