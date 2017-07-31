@@ -1,0 +1,67 @@
+# Maintainer: Johannes Schindelin <johannes.schindelin@gmx.de>
+
+_realname=cv2pdb
+pkgbase="mingw-w64-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=0.38.2.g6a67422
+pkgrel=1
+pkgdesc="Converter of DWARF debug information to PDB files (mingw-w64)"
+arch=('any')
+url="https://github.com/rainers/cv2pdb"
+license=('Artistic2')
+
+options=('!strip')
+
+source=("${_realname}"::"git+https://github.com/rainers/cv2pdb#branch=master")
+
+md5sums=('SKIP')
+
+die () {
+  echo "$*" >&2
+  exit 1
+}
+
+test -n "$VS_DIR" ||
+VS_DIR="/c/Program Files (x86)/Microsoft Visual Studio 14.0"
+
+test -d "$VS_DIR" ||
+die "Need a valid VS_DIR to point to Visual Studio"
+
+case "$CARCH" in
+i686) WARCH=Win32; OUTDIR=bin/Release;;
+x86_64) WARCH=x64; OUTDIR=bin/Release_x64;;
+*) die "Unsupported architecture: $CARCH"
+esac
+
+pkgver() {
+  cd "$srcdir/cv2pdb"
+  git describe --tags HEAD | tr - . | sed 's/^v//'
+}
+
+prepare () {
+  cd "$srcdir/cv2pdb"
+  grep -q "<PlatformToolset>v140<" src/cv2pdb.vcxproj ||
+  sed -i 's/\(<PlatformToolset>\)[^<]*/\1v140/g' src/cv2pdb.vcxproj
+}
+
+build() {
+  cd "$srcdir/cv2pdb"
+
+  "$VS_DIR"/Common7/IDE/devenv.exe \
+    //Build "Release|$WARCH" src/cv2pdb_vs12.sln ||
+  ! grep error $OUTDIR/cv2pdb/cv2pdb.log
+
+  test -z "$SIGNTOOL" ||
+  eval "$SIGNTOOL $OUTDIR/cv2pdb.exe"
+}
+
+package () {
+  cd "$srcdir"/cv2pdb
+
+  install -d "${pkgdir}/${MINGW_PREFIX}/bin"
+  install -m755 $OUTDIR/cv2pdb.exe "${pkgdir}/${MINGW_PREFIX}/bin"
+
+  install -d "${pkgdir}/${MINGW_PREFIX}/share/doc/cv2pdb"
+  install -m644 CHANGES FEATURES LICENSE README \
+    "${pkgdir}/${MINGW_PREFIX}/share/doc/cv2pdb"
+}

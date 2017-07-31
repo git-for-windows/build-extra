@@ -1,0 +1,20 @@
+After building new installers, check that
+
+- the version and date are correct in the release notes!!!
+- Git Bash
+	- starts
+	- switching to a repository changes the prompt to show the branch
+	- `git log` is colorful and stops after the first page
+	- `gitk` runs and shows the history
+	- `git gui` runs and does not complain about a missing repository
+	- `git help git` opens the page and it has no verbatim `linkgit:`
+	- `curl --version` lists `IPv6` in the last line
+- Git CMD
+	- starts
+	- `git log` in a repository is colorful and stops after the first page
+	- `gitk` runs and shows the history
+	- `git gui` runs and does not complain about a missing repository
+- Git GUI
+	- starts
+	- remembers the latest repositories
+	- can open one of them

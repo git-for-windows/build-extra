@@ -1,0 +1,383 @@
+<?xml version='1.0'?>
+
+<?if $(sys.BUILDARCH)=x64 ?>
+  <?define SixtyFourBit=64 ?>
+<?else?>
+  <?define SixtyFourBit ?>
+<?endif?>
+
+<Wix xmlns='http://wixtoolset.org/schemas/v4/wxs'
+     xmlns:netfx="http://schemas.microsoft.com/wix/NetFxExtension"
+     xmlns:swid='http://wixtoolset.org/schemas/v4/wxs/tag'>
+  <Product Id='*' Name='Git for Windows' Language='1033' Manufacturer='The Git Development Community'
+           Version='$(var.Version)'
+           UpgradeCode='abbb3e1d-fea0-4b84-9585-b4dc13cbc1b4'>
+    <Package InstallScope='perMachine' Compressed='yes' Keywords='Git' />
+    <swid:Tag Regid='git-for-windows.github.io' />
+
+    <MajorUpgrade DowngradeErrorMessage='A newer version of [ProductName] is already installed.' Schedule="afterInstallInitialize" />
+    <MediaTemplate CabinetTemplate='git{0}.cab' CompressionLevel='high' EmbedCab='yes' />
+    <Icon Id='git.ico' SourceFile='git.ico' />
+
+    <!-- Add/Remove Programs Properties -->
+    <Property Id='ARPNOMODIFY' Value='1' />
+    <Property Id='ARPCONTACT' Value='https://github.com/git-for-windows/git/wiki/Contact' />
+    <Property Id='ARPURLINFOABOUT' Value='https://git-for-windows.github.io/' />
+    <Property Id='ARPPRODUCTICON' Value='git.ico' />
+    <SetProperty Id='ARPINSTALLLOCATION' Value='[INSTALLFOLDER]' After='CostFinalize' />
+
+    <!-- Other MSI specific properties -->
+    <Property Id='MSIFASTINSTALL' Value='7' />
+
+    <!-- WiX Properties -->
+    <PropertyRef Id="WIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED" />
+
+    <!-- Git for Windows MSI Properties -->
+    <SetProperty Id="BindImagePaths" Value="[INSTALLFOLDER]usr\bin;[MingwFolder]bin;[System$(var.SixtyFourBit)Folder]" After="CostFinalize" />
+
+    <SetProperty Id="CMDLINE_CLIENVIRONMENT" Value="[CLIENVIRONMENT]" Before="AppSearch" Sequence="first">
+      CLIENVIRONMENT~="Bash" OR CLIENVIRONMENT~="CmdTools"
+    </SetProperty>
+    <Property Id="CLIENVIRONMENT" Value="Cmd">
+      <RegistrySearch Id="CliEnvironmentSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="CliEnvironment" Type="raw" />
+    </Property>
+    <SetProperty Id="CLIENVIRONMENT" Value="[CMDLINE_CLIENVIRONMENT]" After="AppSearch" Sequence="first">CMDLINE_CLIENVIRONMENT</SetProperty>
+    <SetProperty Id="CLIENVIRONMENT" Value="Bash" Action="NomalizeBashCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+      CLIENVIRONMENT~="Bash"
+    </SetProperty>
+    <SetProperty Id="CLIENVIRONMENT" Value="Cmd" Action="NormalizeCmdCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+      CLIENVIRONMENT~="Cmd"
+    </SetProperty>
+    <SetProperty Id="CLIENVIRONMENT" Value="CmdTools" Action="NormalizeCmdToolsCLIENVIRONMENTCasing" After="SetCLIENVIRONMENT" Sequence="first">
+      CLIENVIRONMENT~="CmdTools"
+    </SetProperty>
+    <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIORNMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Bash"</SetProperty>
+    <SetProperty Action="SetCmdCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Cmd"</SetProperty>
+    <SetProperty Action="SetCmdToolsCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd;[MingwFolder]bin;[INSTALLFOLDER]usr\bin" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "CmdTools"</SetProperty>
+
+    <SetProperty Id="CMDLINE_LINEENDINGS" Value="[LINEENDINGS]" Before="AppSearch" Sequence="first">
+      <![CDATA[ LINEENDINGS~="input" OR LINEENDINGS~="false" ]]>
+    </SetProperty>
+    <Property Id="LINEENDINGS" Value="true">
+      <RegistrySearch Id="LineEndingsSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="core.autocrlf" Type="raw" />
+    </Property>
+    <SetProperty Id="LINEENDINGS" Value="[CMDLINE_LINEENDINGS]" After="AppSearch" Sequence="first">CMDLINE_LINEENDINGS</SetProperty>
+    <SetProperty Id="LINEENDINGS" Value="true" Action="NormalizeTrueLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
+      LINEENDINGS~="true"
+    </SetProperty>
+    <SetProperty Id="LINEENDINGS" Value="input" Action="NormalizeInputLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
+      LINEENDINGS~="input"
+    </SetProperty>
+    <SetProperty Id="LINEENDINGS" Value="false" Action="NormalizeFalseLINEENDINGSCasing" After="SetLINEENDINGS" Sequence="first">
+      LINEENDINGS~="false"
+    </SetProperty>
+
+    <Property Id="CMDLINE_TERMINAL" Value="MinTTY" />
+    <Property Id="TERMINAL" Value="MinTTY" />
+    <SetProperty Id="CMDLINE_TERMINAL" Value="[TERMINAL]" Before="AppSearch" Sequence="first"><![CDATA[ TERMINAL <> CMDLINE_TERMINAL AND (TERMINAL~="CmdPrompt" OR TERMINAL~="MinTTY") ]]></SetProperty>
+    <Property Id="TERMINALSEARCH">
+      <RegistrySearch Id="TerminalSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="Terminal" Type="raw" />
+    </Property>
+    <SetProperty Id="TERMINAL" Value="[TERMINALSEARCH]" Action="GetUpgradeTERMINALValue" After="AppSearch" Sequence="first">TERMINALSEARCH</SetProperty>
+    <SetProperty Id="TERMINAL" Value="[CMDLINE_TERMINAL]" After="GetUpgradeTERMINALValue" Sequence="first"><![CDATA[ CMDLINE_TERMINAL <> TERMINAL ]]></SetProperty>
+    <SetProperty Id="TERMINAL" Value="MinTTY" Action="NormalizeMinTTYCasing" After="SetTERMINAL" Sequence="first">
+      TERMINAL~="MinTTY"
+    </SetProperty>
+    <SetProperty Id="TERMINAL" Value="CmdPrompt" Action="NormalizeCmdPromptCasing" After="SetTERMINAL" Sequence="first">
+      TERMINAL~="CmdPrompt"
+    </SetProperty>
+
+    <SetProperty Id="CMDLINE_ENABLEFSCACHE" Value="false" Before="AppSearch" Sequence="first">
+      ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0
+    </SetProperty>
+    <Property Id="ENABLEFSCACHE" Value="true">
+      <RegistrySearch Id="EnableFsCacheSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="core.fscache" Type="raw" />
+    </Property>
+    <SetProperty Id="ENABLEFSCACHE" Action="SetENABLESCACHEToTrue" Value="true" After="AppSearch" Sequence="first">
+      <![CDATA[ UILevel < 5 AND (ENABLEFSCACHE~="true" OR ENABLEFSCACHE=1) ]]>
+    </SetProperty>
+    <SetProperty Id="ENABLEFSCACHE" Action="SetENABLEFSCACHEToFalse" Value="false" After="AppSearch" Sequence="first">
+      <![CDATA[ UILevel < 5 AND (ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0) ]]>
+    </SetProperty>
+    <SetProperty Id="ENABLEFSCACHE" Action="ClearENABLEFSCACHEForFullUIInstallIfFalse" Value="{}" After="AppSearch" Sequence="ui">
+      UILevel = 5 AND (CMDLINE_ENABLEFSCACHE OR ENABLEFSCACHE~="false" OR ENABLEFSCACHE=0)
+    </SetProperty>
+
+    <SetProperty Id="CMDLINE_ENABLEGCM" Value="0" Before="AppSearch" Sequence="first">
+      ENABLEGCM~="false" OR ENABLEGCM=0
+    </SetProperty>
+    <Property Id="ENABLEGCM" Value="1">
+      <RegistrySearch Id="EnableGcmSearch" Root="HKLM" Key="SOFTWARE\GitForWindows" Name="EnableGcm" Type="raw" />
+    </Property>
+    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMTo1OnUpgradeIfPreviouslyEnabled" Value="1" After="AppSearch" Sequence="first">
+      ENABLEGCM~="true" OR ENABLEGCM="#1"
+    </SetProperty>
+    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMTo0FromCmdLineOrOnUpgradeIfDisabled" Value="0" After="AppSearch" Sequence="first">
+      CMDLINE_ENABLEGCM OR ENABLEGCM~="false" OR ENABLEGCM="#0"
+    </SetProperty>
+    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMTo0IfNoNetFx451Plus" Value="0" After="SetWIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED" Sequence="first">
+      NOT WIX_IS_NETFRAMEWORK_451_OR_LATER_INSTALLED
+    </SetProperty>
+    <SetProperty Id="ENABLEGCM" Action="SetENABLEGCMToNullIfDisabledAndFullUIInstall" Value="{}" After="SetENABLEGCMTo0IfNoNetFx451Plus" Sequence="ui">
+      UILevel = 5 AND ENABLEGCM=0
+    </SetProperty>
+
+    <Property Id="GITBASHHERE" Value="1" />
+    <Property Id="GITGUIHERE" Value="1" />
+    <Property Id="ASSOCIATEGITFILES" Value="1" />
+    <Property Id="GITBASHHEREDESKTOPICON" Value="0" />
+    <Property Id="GITGUIHEREDESKTOPICON" Value="0" />
+
+    <Feature Id='Git'>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Root='HKLM' Key='SOFTWARE\GitForWindows' Name='InstallFolder' Value='[INSTALLFOLDER]' Type='string' />
+        <RemoveFolder Directory='GitProgramMenuFolder' On='uninstall' />
+      </Component>
+      <Component Directory="INSTALLFOLDER">
+        <RegistryValue Root="HKLM" Key="Software\GitForWindows" Name="CurrentVersion" Type="string" Value="$(var.Version)" />
+      </Component>
+      <Component Directory="INSTALLFOLDER">
+        <RegistryValue Root="HKLM" Key="SOFTWARE\GitForWindows" Name="LibexecPath" Type="string" Value="[MingwFolder]libexec\git-core" />
+      </Component>
+      <Component Directory="INSTALLFOLDER">
+        <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='CliEnvironment' Value='[CLIENVIRONMENT]' KeyPath="yes" />
+        <Environment Name="PATH" Value="[CLIENVIRONMENTPATHS]" Action="set" Part="last" System="yes" />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='core.autocrlf' Value='[LINEENDINGS]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='Terminal' Value='[TERMINAL]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='string' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='core.fscache' Value='[ENABLEFSCACHE]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='EnableGcm' Value='[ENABLEGCM]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='GitBashHere' Value='[GITBASHHERE]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='GitGuiHere' Value='[GITGUIHERE]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='AssociateGitFiles' Value='[ASSOCIATEGITFILES]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='GitBashHereDesktopIcon' Value='[GITBASHHEREDESKTOPICON]' />
+      </Component>
+      <Component Directory='INSTALLFOLDER'>
+        <RegistryValue Action='write' Type='integer' Root='HKLM' Key='SOFTWARE\GitForWindows' Name='GitGuiHereDesktopIcon' Value='[GITGUIHEREDESKTOPICON]' />
+      </Component>
+
+      <Feature Id="AssociateGitFiles" Level="3" Title="Windows Explorer Git File Associations" Description="Associate .git* configuration files with the default text editor." Absent="allow" AllowAdvertise="no" TypicalDefault="install">
+        <Condition Level="0"><![CDATA[ASSOCIATEGITFILES <> 1]]></Condition>
+        <Condition Level="1">ASSOCIATEGITFILES = 1</Condition>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitattributes" Value="txtfile" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitattributes" Name="Content Type" Value="text/plain" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitattributes" Name="PerceivedType" Value="text" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitignore" Value="txtfile" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitignore" Name="Content Type" Value="text/plain" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitignore" Name="PerceivedType" Value="text" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitmodules" Value="txtfile" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitmodules" Name="Content Type" Value="text/plain" />
+        </Component>
+        <Component Directory="INSTALLFOLDER">
+          <RegistryValue Action="write" Type="string" Root="HKLM" Key="SOFTWARE\Classes\.gitmodules" Name="PerceivedType" Value="text" />
+        </Component>
+      </Feature>
+
+      <ComponentGroupRef Id='GitComponents'/>
+    </Feature>
+
+    <CustomActionRef Id="ExecPostInstallBat" />
+    <CustomActionRef Id="WixBroadcastEnvironmentChange" />
+
+    <UIRef Id="WixUI_Common" />
+    <UIRef Id="WixUI_ErrorProgressText" />
+    <UIRef Id="GitUI" />
+  </Product>
+
+  <Fragment>
+    <Directory Id='TARGETDIR' Name='SourceDir'>
+      <Directory Id='ProgramFiles$(var.SixtyFourBit)Folder' Name='PFiles'>
+        <Directory Id='INSTALLFOLDER' Name='Git'>
+          <Directory Id='BinFolder' Name='bin' />
+        <?if $(var.SixtyFourBit)=64 ?>
+          <Directory Id='MingwFolder' Name='mingw64' />
+        <?else?>
+          <Directory Id='MingwFolder' Name='mingw32' />
+        <?endif?>
+        </Directory>
+      </Directory>
+
+      <Directory Id='ProgramMenuFolder'>
+        <Directory Id='GitProgramMenuFolder' Name='Git' />
+      </Directory>
+    </Directory>
+  </Fragment>
+
+  <Fragment>
+    <!-- WiX Variable Overrides (or new variable definitions
+
+         These can be used to override the default UI graphics, for example.
+    -->
+    <WixVariable Id='WixUIBannerBmp' Value='assets/bannerbmp.bmp' />
+    <WixVariable Id='WixUIDialogBmp' Value='assets/dlgbmp.bmp' />
+    <WixVariable Id='WixUIExclamationIco' Value='assets/exclamic.ico' />
+    <WixVariable Id='WixUIInfoIco' Value='assets/Info.ico' />
+    <WixVariable Id='WixUINewIco' Value='assets/NewFolder.ico' />
+    <WixVariable Id='WixUIUpIco' Value='assets/OneLevelUp.ico' />
+    <WixVariable Id='GitUICompleteSetupIco' Value='assets/completi.ico' />
+    <WixVariable Id='GitUICustomSetupIco' Value='assets/custicon.ico' />
+    <WixVariable Id='GitUIInstallIco' Value='assets/insticon.ico' />
+    <WixVariable Id='GitUIRemoveIco' Value='assets/removico.ico' />
+    <WixVariable Id='GitUIRepairIco' Value='assets/repairic.ico' />
+
+    <!-- Set the License file for the License Agreement Dialog -->
+    <WixVariable Id='WixUILicenseRtf' Value='gpl-2.0.rtf'/>
+
+    <UI Id='GitUI'>
+      <!-- Custom Icon and Bitmap UI resources -->
+      <Binary Id="completi" SourceFile="!(wix.GitUICompleteSetupIco)" />
+      <Binary Id="custicon" SourceFile="!(wix.GitUICustomSetupIco)" />
+      <Binary Id="insticon" SourceFile="!(wix.GitUIInstallIco)" />
+      <Binary Id="removico" SourceFile="!(wix.GitUIRemoveIco)" />
+      <Binary Id="repairic" SourceFile="!(wix.GitUIRepairIco)" />
+
+      <!-- UI Text Font Sstyles -->
+      <TextStyle Id='DlgFont8' FaceName='Tahoma' Size='8' />
+      <TextStyle Id='WixUI_Font_Normal' FaceName='Tahoma' Size='8' />
+      <TextStyle Id='DlgFontBold8' FaceName='Tahoma' Size='8' Bold='yes' />
+      <TextStyle Id="WixUI_Font_Title" FaceName="Tahoma" Size="8" Bold="yes" />
+      <TextStyle Id='VerdanaBold13' FaceName='Verdana' Size='13' Bold='yes' />
+      <TextStyle Id="WixUI_Font_Bigger" FaceName="Verdana" Size="13" Bold="yes" />
+
+      <!-- Additional Properties for UI -->
+      <Property Id="DefaultUIFont" Value="WixUI_Font_Normal" />
+
+      <!-- These dialogs are required, but are not referenced directly by other dilaogs. -->
+      <DialogRef Id="ErrorDlg" />
+      <DialogRef Id="FatalError" />
+      <DialogRef Id="CancelDlg" />
+      <DialogRef Id="FilesInUse" />
+      <DialogRef Id="MsiRMFilesInUse" />
+      <DialogRef Id="PrepareDlg" />
+      <DialogRef Id="ProgressDlg" />
+      <DialogRef Id="ResumeDlg" />
+      <DialogRef Id="UserExit" />
+      <DialogRef Id="GitMaintenanceTypeDlg"/>
+
+      <!-- WiX's UI extensibility allows you to orchestrate the flow of your installer dialogs. -->
+      <Publish Dialog="ExitDialog" Control="Finish" Event="EndDialog" Value="Return" Order="999">1</Publish>
+
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="LicenseAgreementDlg">NOT Installed AND NOT PATCH</Publish>
+      <Publish Dialog="WelcomeDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg">Installed AND PATCH</Publish>
+
+      <Publish Dialog="LicenseAgreementDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg">1</Publish>
+      <Publish Dialog="LicenseAgreementDlg" Control="Next" Event="NewDialog" Value="InstallDirDlg" Order="2">LicenseAccepted = "1"</Publish>
+
+      <Publish Dialog="InstallDirDlg" Control="Back" Event="NewDialog" Value="LicenseAgreementDlg">1</Publish>
+
+      <!-- TODO: Update event conditions to respond appropriately for various installation scenarios. -->
+      <Publish Dialog="InstallDirDlg" Control="Next" Event="SetTargetPath" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
+      <Publish Dialog="InstallDirDlg" Control="Next" Event="DoAction" Value="WixUIValidatePath" Order="2">NOT WIXUI_DONTVALIDATEPATH</Publish>
+      <Publish Dialog="InstallDirDlg" Control="Next" Event="SpawnDialog" Value="InvalidDirDlg" Order="3"><![CDATA[NOT WIXUI_DONTVALIDATEPATH AND WIXUI_INSTALLDIR_VALID<>"1"]]></Publish>
+      <Publish Dialog="InstallDirDlg" Control="Next" Event="NewDialog" Value="GitChooseEnvironmentDlg" Order="99">WIXUI_DONTVALIDATEPATH OR WIXUI_INSTALLDIR_VALID="1"</Publish>
+      <Publish Dialog="InstallDirDlg" Control="ChangeFolder" Property="_BrowseProperty" Value="[WIXUI_INSTALLDIR]" Order="1">1</Publish>
+      <Publish Dialog="InstallDirDlg" Control="ChangeFolder" Event="SpawnDialog" Value="BrowseDlg" Order="2">1</Publish>
+      <Property Id="WIXUI_INSTALLDIR" Value="INSTALLFOLDER" />
+
+      <Publish Dialog="GitChooseEnvironmentDlg" Control="Back" Event="NewDialog" Value="InstallDirDlg">1</Publish>
+      <Publish Dialog="GitChooseEnvironmentDlg" Control="Next" Event="NewDialog" Value="GitLineEndingsDlg">1</Publish>
+
+      <Publish Dialog="GitLineEndingsDlg" Control="Back" Event="NewDialog" Value="GitChooseEnvironmentDlg">1</Publish>
+      <Publish Dialog="GitLineEndingsDlg" Control="Next" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">CustomizeLineEndings = "Yes"</Publish>
+      <Publish Dialog="GitLineEndingsDlg" Control="Next" Event="NewDialog" Value="GitChooseTerminalDlg">CustomizeLineEndings = "No"</Publish>
+
+      <Publish Dialog="GitCustomizeLineEndingsDlg" Control="Back" Event="NewDialog" Value="GitLineEndingsDlg">1</Publish>
+      <Publish Dialog="GitCustomizeLineEndingsDlg" Control="Next" Event="NewDialog" Value="GitChooseTerminalDlg">1</Publish>
+
+      <Publish Dialog="GitChooseTerminalDlg" Control="Back" Event="NewDialog" Value="GitLineEndingsDlg">CustomizeLineEndings = "No"</Publish>
+      <Publish Dialog="GitChooseTerminalDlg" Control="Back" Event="NewDialog" Value="GitCustomizeLineEndingsDlg">CustomizeLineEndings = "Yes"</Publish>
+      <Publish Dialog="GitChooseTerminalDlg" Control="Next" Event="NewDialog" Value="GitAdditionalOptionsDlg">1</Publish>
+
+      <Publish Dialog="GitAdditionalOptionsDlg" Control="Back" Event="NewDialog" Value="GitChooseTerminalDlg">1</Publish>
+      <Publish Dialog="GitAdditionalOptionsDlg" Control="Next" Event="NewDialog" Value="GitShellOptionsDlg">1</Publish>
+
+      <Publish Dialog="GitShellOptionsDlg" Control="Back" Event="NewDialog" Value="GitAdditionalOptionsDlg">1</Publish>
+      <Publish Dialog="GitShellOptionsDlg" Control="Next" Event="NewDialog" Value="VerifyReadyDlg">1</Publish>
+
+      <!--TODO: Fix VerifyReadyDlg back button :: it doesn't work; obviously, the condition is not evaluating to True and I did something wrong...-->
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="GitShellOptionsDlg" Order="1">NOT Installed</Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="WelcomeDlg" Order="1">Installed AND PATCH</Publish>
+      <Publish Dialog="VerifyReadyDlg" Control="Back" Event="NewDialog" Value="GitMaintenanceTypeDlg" Order="2">Installed AND NOT PATCH</Publish>
+
+      <Publish Dialog="MaintenanceWelcomeDlg" Control="Next" Event="NewDialog" Value="GitMaintenanceTypeDlg">1</Publish>
+
+      <Publish Dialog="GitMaintenanceTypeDlg" Control="RepairButton" Event="NewDialog" Value="VerifyReadyDlg" Order="4">1</Publish>
+      <Publish Dialog="GitMaintenanceTypeDlg" Control="RemoveButton" Event="NewDialog" Value="VerifyReadyDlg" Order="4">1</Publish>
+      <Publish Dialog="GitMaintenanceTypeDlg" Control="Back" Event="NewDialog" Value="MaintenanceWelcomeDlg">1</Publish>
+
+      <InstallUISequence>
+        <Show Dialog="WelcomeDlg" After="CostFinalize" />
+      </InstallUISequence>
+
+    </UI>
+  </Fragment>
+
+  <Fragment>
+  <?if $(sys.BUILDARCH)=x64 ?>
+    <SetProperty Id="ExecConfigurePackSizeLimit" Value='"[#BashExe]" -c "value=\"$$(git config --system pack.packsizelimit)\" &amp;&amp; if test 2g = \"$value\"; then git config --system --unset pack.packsizelimit; fi"' Sequence="execute" Before="ExecConfigurePackSizeLimit"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
+    <CustomAction Id="ExecConfigurePackSizeLimit" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
+  <?endif?>
+    <SetProperty Id="ExecConfigureSslCAInfo" Value='"[#BashExe]" -c "git config --system http.sslCAinfo \"/[#ca_bundle.crt]\""' Sequence="execute" Before="ExecConfigureSslCAInfo"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
+    <CustomAction Id="ExecConfigureSslCAInfo" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
+    <SetProperty Id="ExecConfigureCoreAutoCrlf" Value='"[#GitExe]" config --system core.autocrlf [LINEENDINGS]' Sequence="execute" Before="ExecConfigureCoreAutoCrlf"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
+    <CustomAction Id="ExecConfigureCoreAutoCrlf" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
+    <SetProperty Id="ExecConfigureFsCache" Value='"[#GitExe]" config --system core.fscache [ENABLEFSCACHE]' Sequence="execute" Before="ExecConfigureFsCache"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
+    <CustomAction Id="ExecConfigureFsCache" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
+    <SetProperty Id="ExecConfigureGcm" Value='"[#GitExe]" config --system credential.helper manager' Sequence="execute" Before="ExecConfigureGcm"><![CDATA[ REMOVE <> "ALL" AND ENABLEGCM=1 ]]></SetProperty>
+    <CustomAction Id="ExecConfigureGcm" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
+    <SetProperty Id="ExecEditGitBash" Value='"[#EditGitBash]" "[#GitBash]" "SHOW_CONSOLE=1 APPEND_QUOTE=1 @@COMSPEC@@ /S /C \"\"@@EXEPATH@@\usr\bin\bash.exe\" --login -i"' Sequence="execute" Before="ExecEditGitBash"><![CDATA[ REMOVE <> "ALL" AND TERMINAL = "CmdPrompt" ]]></SetProperty>
+    <CustomAction Id="ExecEditGitBash" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="check" Impersonate="no" />
+    <SetProperty Id="DeleteEditGitBash" Value='"[System$(var.SixtyFourBit)Folder]cmd.exe" /S /C del "[#EditGitBash]"' Sequence="execute" Before="DeleteEditGitBash"><![CDATA[ REMOVE <> "ALL" AND TERMINAL = "CmdPrompt" ]]></SetProperty>
+    <CustomAction Id="DeleteEditGitBash" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
+    <!-- Schedule two "best effort" actions:
+          1. Write the command to run the post-install.bat to the transaction log
+          2. Execute the command during the installation transaction
+    -->
+    <SetProperty Id="ExecPostInstallBat" Value='"[System$(var.SixtyFourBit)Folder]cmd.exe" /c "[#PostInstallBat]"' Sequence="execute" Before="ExecPostInstallBat"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
+    <CustomAction Id="ExecPostInstallBat" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
+
+    <InstallExecuteSequence>
+    <?if $(sys.BUILDARCH)=x64 ?>
+      <Custom Action="ExecConfigurePackSizeLimit" Before="ExecConfigureSslCAInfo"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
+    <?endif?>
+      <Custom Action="ExecConfigureSslCAInfo" Before="ExecConfigureCoreAutoCrlf"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
+      <Custom Action="ExecConfigureCoreAutoCrlf" Before="ExecConfigureFsCache"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
+      <Custom Action="ExecConfigureFsCache" Before="ExecConfigureGcm"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
+      <Custom Action="ExecConfigureGcm" Before="ExecEditGitBash"><![CDATA[ REMOVE <> "ALL" AND ENABLEGCM=1 ]]></Custom>
+      <Custom Action="ExecEditGitBash" Before="DeleteEditGitBash"><![CDATA[ TERMINAL = "CmdPrompt" AND REMOVE <> "ALL" ]]></Custom>
+      <Custom Action="DeleteEditGitBash" Before="ExecPostInstallBat"><![CDATA[ TERMINAL = "CmdPrompt" AND REMOVE <> "ALL" ]]></Custom>
+      <!-- Execute the post-install.bat at the end of the installation transaction on install and repair but not removal. -->
+      <Custom Action="ExecPostInstallBat" Before="InstallFinalize"><![CDATA[ REMOVE <> "ALL" ]]></Custom>
+    </InstallExecuteSequence>
+  </Fragment>
+</Wix>

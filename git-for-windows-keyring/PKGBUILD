@@ -1,0 +1,38 @@
+# Maintainer: Johannes Schindelin <johannes.schindelin@gmx.de>
+
+pkgname=git-for-windows-keyring
+_ver_base=1.1
+pkgver=1.1.1.4474718
+pkgrel=1
+pkgdesc='Git for Windows PGP keyring'
+arch=('i686' 'x86_64')
+groups=('base')
+license=('GPL')
+install="${pkgname}.install"
+source=("git-for-windows.gpg"
+	"git-for-windows-revoked"
+	"git-for-windows-trusted")
+sha256sums=('d78a08ef89374593cb6908492372fb8dc9367bd2836051e31c0227ef8fb1efc8'
+            'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
+            '423aa5304baad07732343098f31d6de690bcfdfee44cb665ddf8ef9e685947de')
+
+pkgver() {
+  cd "$startdir"
+  if test git-for-windows-keyring/PKGBUILD = \
+    "$(git diff --name-only HEAD^.. -- .)"
+  then
+    tip_commit=HEAD^
+  else
+    tip_commit=HEAD
+  fi
+  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $tip_commit -- .)" \
+    "$(git rev-parse --short $tip_commit)"
+}
+
+package() {
+  cd "${srcdir}"
+  install -d -m755 $pkgdir/usr/share/pacman/keyrings
+  install -m644 git-for-windows.gpg $pkgdir/usr/share/pacman/keyrings
+  install -m644 git-for-windows-revoked $pkgdir/usr/share/pacman/keyrings
+  install -m644 git-for-windows-trusted $pkgdir/usr/share/pacman/keyrings
+}

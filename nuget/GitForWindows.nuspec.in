@@ -1,0 +1,29 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2011/08/nuspec.xsd">
+  <metadata>
+    <id>@@ID@@</id>
+    <version>@@VERSION@@</version>
+    <title>@@TITLE@@</title>
+    <authors>@@AUTHOR@@</authors>
+    <owners>@@OWNERS@@</owners>
+    <licenseUrl>https://github.com/git-for-windows/git/blob/master/COPYING</licenseUrl>
+    <projectUrl>https://git-for-windows.github.io/</projectUrl>
+    <iconUrl>https://avatars2.githubusercontent.com/u/4571183?v=3&amp;s=200</iconUrl>
+    <requireLicenseAcceptance>false</requireLicenseAcceptance>
+    <description>@@DESCRIPTION@@</description>
+    <summary>@@SUMMARY@@</summary>
+    <releaseNotes>https://github.com/git-for-windows/git/releases/tag/@@VERSIONTAG@@</releaseNotes>
+    <copyright>https://git-for-windows.github.io/governance-model.html</copyright>
+    <language />
+    <tags>git scm vcs windows light-weight dvcs@@EXTRATAGS@@</tags>
+  </metadata>
+  <files>
+    <file src="$buildextra$\nuget\ReleaseNotes.html" />
+    <file src="$buildextra$\LICENSE.txt" />
+    <file src="$buildextra$\ReleaseNotes.css" target="content" />
+    <file src="$buildextra$\nuget\Install.ps1" target="tools" />
+    <file src="$buildextra$\post-install.bat" target="tools" />
+    <file src="$buildextra$\nuget\package-versions.txt" target="tools\etc" />
+    @@FILELIST@@
+  </files>
+</package>
