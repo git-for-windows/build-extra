@@ -1704,7 +1704,7 @@ end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
 var
-    AppDir,BinDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
+    AppDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
     BuiltIns,ImageNames,EnvPath:TArrayOfString;
     Count,i:Longint;
     RootKey:Integer;
@@ -1732,16 +1732,6 @@ begin
 
     AppDir:=ExpandConstant('{app}');
     ProgramData:=ExpandConstant('{commonappdata}');
-
-    {
-        Replace curl binaries in "/mingw64/bin" with curl-winssl variants
-        This needs to be done before copying dlls from "/mingw64/bin" to "/mingw64/libexec/git-core"
-    }
-
-    BinDir:=AppDir+'\{#MINGW_BITNESS}\bin\';
-    if RdbCurlVariant[GC_WinSSL].Checked and (not ReplaceFile(BinDir+'curl-winssl\curl.exe',BinDir+'curl.exe') or not ReplaceFile(BinDir+'curl-winssl\libcurl-4.dll',BinDir+'libcurl-4.dll')) then begin
-        Log('Line {#__LINE__}: Replacing curl-openssl with curl-winssl failed.');
-    end;
 
     {
         Copy dlls from "/mingw64/bin" to "/mingw64/libexec/git-core" if they are
@@ -1831,6 +1821,19 @@ begin
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to configure SSL CA info: ' + Cmd);
     end;
+
+    {
+        Configure http.sslBackend according to the user's choice.
+    }
+
+    if RdbCurlVariant[GC_WinSSL].Checked then begin
+        Cmd:='schannel';
+    end else begin
+        Cmd:='openssl';
+    end;
+    if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system http.sslBackend '+Cmd,
+                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+        LogError('Unable to configure the HTTPS backend: '+Cmd);
 
     {
         Adapt core.autocrlf
