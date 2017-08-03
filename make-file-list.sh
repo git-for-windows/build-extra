@@ -66,8 +66,8 @@ required=
 for req in mingw-w64-$ARCH-git-credential-manager $SH_FOR_REBASE \
 	$(test -n "$MINIMAL_GIT" || echo \
 		mingw-w64-$ARCH-connect git-flow unzip docx2txt \
-		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-xpdf ssh-pageant \
-		mingw-w64-$ARCH-git-lfs tig)
+		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt \
+		mingw-w64-$ARCH-xpdf ssh-pageant mingw-w64-$ARCH-git-lfs tig)
 do
 	test -d /var/lib/pacman/local/$req-[0-9]* ||
 	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
@@ -84,7 +84,7 @@ then
 	packages="$packages mingw-w64-$ARCH-git-doc-html ncurses mintty vim
 		winpty less gnupg tar diffutils patch dos2unix which subversion
 		mingw-w64-$ARCH-tk mingw-w64-$ARCH-connect git-flow docx2txt
-		mingw-w64-$ARCH-antiword ssh-pageant mingw-w64-$ARCH-git-lfs tig"
+		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt ssh-pageant mingw-w64-$ARCH-git-lfs tig"
 fi
 pacman_list $packages "$@" |
 
@@ -106,7 +106,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../itcl/' \
 	-e '^/mingw../t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
 	-e '^/mingw../bin/\(autopoint\|[a-z]*-config\)$' \
-	-e '^/mingw../bin/lib\(asprintf\|gettext\|gnutlsxx\|pcre[0-9a-z]\|quadmath\|stdc++\)[^/]*\.dll$' \
+	-e '^/mingw../bin/lib\(asprintf\|gettext\|gnutlsxx\|pcre[0-9a-oq-z]\|quadmath\|stdc++\)[^/]*\.dll$' \
 	-e '^/mingw../bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\)[^/]*\.exe$' \
 	-e '^/mingw../.*/git-\(remote-testsvn\|shell\)\.exe$' \
 	-e '^/mingw../.*/git-cvsserver.*$' \
@@ -144,6 +144,7 @@ else
 		-e '^/mingw../bin/lib\(gcc_s_seh\|gmpxx\)-.*\.dll$' \
 		-e '^/mingw../bin/lib\(gomp\|jansson\|minizip\)-.*\.dll$' \
 		-e '^/mingw../bin/libvtv.*\.dll$' \
+		-e '^/mingw../bin/libpcreposix.*\.dll$' \
 		-e '^/mingw../bin/\(.*\.def\|update-ca-trust\)$' \
 		-e '^/mingw../bin/\(openssl\|p11tool\|pkcs1-conv\)\.exe$' \
 		-e '^/mingw../bin/\(psktool\|recode-.*\|sexp.*\|srp.*\)\.exe$' \
