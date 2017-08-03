@@ -91,10 +91,23 @@ GITATTRIBUTES
 	grep -q '^# Fixup git-bash in non login env' /etc/bash.bashrc ||
 	printf "\n# Fixup git-bash in non login env\nshopt -q login_shell || . /etc/profile.d/git-prompt.sh\n" >> /etc/bash.bashrc
 
-	grep -q git-for-windows etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://dl.bintray.com/$repo/pacman/$arch\nSigLevel = Optional\n' etc/pacman.conf
+	grep -q git-for-windows[^-] etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://dl.bintray.com/$repo/pacman/$arch\n' etc/pacman.conf
 
-	test i686 != $(uname -m) ||
+	! grep -A2 git-for-windows[^-] etc/pacman.conf |
+	grep -q '^SigLevel = Optional' ||
+	sed -i -e '/\[git-for-windows\]/{N;N;s/\nSigLevel = Optional//}' \
+		etc/pacman.conf
+
+	uname_m="$(uname -m)"
+	test i686 = "$uname_m" ||
+	grep -q git-for-windows-mingw32 etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i[git-for-windows-mingw32]\nServer = https://dl.bintray.com/git-for-windows/pacman/i686\n' etc/pacman.conf
+	test x86_64 = "$uname_m" ||
+	grep -q git-for-windows-mingw64 etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i[git-for-windows-mingw64]\nServer = https://dl.bintray.com/git-for-windows/pacman/x86_64\n' etc/pacman.conf
+
+	test i686 != $"uname -m" ||
 	case "$(md5sum.exe < /msys2.ico)" in
 	292ad5cd*) cp /usr/share/git/msys2-32.ico /msys2.ico;;
 	esac
