@@ -260,42 +260,48 @@ update_local_package_databases () {
 }
 
 push () {
-	update_local_package_databases
-	for arch in $architectures
-	do
-		arch_url=$base_url/$arch
-		dir="$(arch_dir $arch)"
-		mkdir -p "$dir"
-		(cd "$dir" &&
-		 echo "Getting $arch_url/git-for-windows.db.tar.xz" &&
-		 curl -L $arch_url/git-for-windows.db.tar.xz > .remote
-		) ||
-		die "Could not get remote index for $arch"
-	done
-
-	old_list="$((for arch in $architectures
-		do
-			dir="$(arch_dir $arch)"
-			test -s "$dir/.remote" &&
-			package_list "$dir/.remote"
-		done) |
-		sort | uniq)"
-	new_list="$((for arch in $architectures
-		do
-			dir="$(arch_dir $arch)"
-			package_list "$dir/git-for-windows.db.tar.xz"
-		done) |
-		sort | uniq)"
-
-	to_upload="$(printf "%s\n%s\n%s\n" "$old_list" "$old_list" "$new_list" |
-		sort | uniq -u)"
-
-	test -n "$to_upload" || test "x$old_list" != "x$new_list" || {
-		echo "Nothing to be done" >&2
-		return
-	}
-
 	db_version="$(db_version)"
+	if test -z "$db_version"
+	then
+		to_upload=
+	else
+		update_local_package_databases
+		for arch in $architectures
+		do
+			arch_url=$base_url/$arch
+			dir="$(arch_dir $arch)"
+			mkdir -p "$dir"
+			(cd "$dir" &&
+			 echo "Getting $arch_url/git-for-windows.db.tar.xz" &&
+			 curl -L $arch_url/git-for-windows.db.tar.xz > .remote
+			) ||
+			die "Could not get remote index for $arch"
+		done
+
+		old_list="$((for arch in $architectures
+			do
+				dir="$(arch_dir $arch)"
+				test -s "$dir/.remote" &&
+				package_list "$dir/.remote"
+			done) |
+			sort | uniq)"
+		new_list="$((for arch in $architectures
+			do
+				dir="$(arch_dir $arch)"
+				package_list "$dir/git-for-windows.db.tar.xz"
+			done) |
+			sort | uniq)"
+
+		to_upload="$(printf "%s\n%s\n%s\n" \
+				"$old_list" "$old_list" "$new_list" |
+			sort | uniq -u)"
+
+		test -n "$to_upload" || test "x$old_list" != "x$new_list" || {
+			echo "Nothing to be done" >&2
+			return
+		}
+	fi
+
 	next_db_version="$(next_db_version "$db_version")"
 
 	test -z "$to_upload" || {
@@ -360,6 +366,7 @@ push () {
 		done
 	}
 
+	test -z "$db_version" ||
 	delete_version package-database "$db_version"
 
 	for arch in $architectures
