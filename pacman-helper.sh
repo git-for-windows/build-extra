@@ -244,7 +244,18 @@ update_local_package_databases () {
 	for arch in $architectures
 	do
 		(cd "$(arch_dir $arch)" &&
-		 repo-add $signopt --new git-for-windows.db.tar.xz *.pkg.tar.xz)
+		 repo-add $signopt --new git-for-windows.db.tar.xz \
+			*.pkg.tar.xz &&
+		 case "$arch" in
+		 i686)
+			repo-add $signopt --new \
+				git-for-windows-mingw32.db.tar.xz \
+				mingw-w64-$arch-*.pkg.tar.xz;;
+		 x86_64)
+			repo-add $signopt --new \
+				git-for-windows-mingw64.db.tar.xz \
+				mingw-w64-$arch-*.pkg.tar.xz;;
+		 esac)
 	done
 }
 
@@ -354,14 +365,25 @@ push () {
 	for arch in $architectures
 	do
 		(cd "$(arch_dir $arch)" &&
+		 files= &&
 		 for suffix in db db.tar.xz files files.tar.xz
 		 do
 			filename=git-for-windows.$suffix
-			test ! -f $filename ||
+			test ! -f $filename || files="$files $filename"
+			test ! -f $filename.sig || files="$files $filename.sig"
+
+			case "$arch" in
+			i686) filename=git-for-windows-mingw32.$suffix;;
+			x86_64) filename=git-for-windows-mingw64.$suffix;;
+			*) continue;;
+			esac
+
+			test ! -f $filename || files="$files $filename"
+			test ! -f $filename.sig || files="$files $filename.sig"
+		 done
+		 for filename in $files
+		 do
 			upload package-database $next_db_version $arch $filename
-			test ! -f $filename.sig ||
-			upload package-database $next_db_version $arch \
-				$filename.sig
 		 done
 		) || exit
 	done
