@@ -64,6 +64,11 @@ GITATTRIBUTES
 	grep -q git-for-windows etc/pacman.conf ||
 	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://dl.bintray.com/$repo/pacman/$arch\n' etc/pacman.conf
 
+	! grep -A2 git-for-windows etc/pacman.conf |
+	grep -q '^SigLevel = Optional' ||
+	sed -i -e '/\[git-for-windows\]/{N;N;s/\nSigLevel = Optional//}' \
+		etc/pacman.conf
+
 	test i686 != $(uname -m) ||
 	case "$(md5sum.exe < /msys2.ico)" in
 	292ad5cd*) cp /usr/share/git/msys2-32.ico /msys2.ico;;
