@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [BusyBox v1.28.0pre.15857.9480dca7c](https://github.com/git-for-windows/busybox-w32/commit/9480dca7c].
+* Comes with [Git Credential Manager v1.12.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.12.0).
 
 ### Bug Fixes
 
