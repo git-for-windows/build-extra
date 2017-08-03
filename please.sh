@@ -2267,8 +2267,8 @@ upgrade () { # <package>
 	 sdk="$sdk64" ff_master) || exit
 
 	relnotes_feature=
-	case "$1" in
-	gcm|credential-manager|git-credential-manager)
+	case "$package" in
+	mingw-w64-git-credential-manager)
 		repo=Microsoft/Git-Credential-Manager-for-Windows
 		url=https://api.github.com/repos/$repo/releases/latest
 		release="$(curl --netrc -s $url)"
@@ -2348,11 +2348,11 @@ upgrade () { # <package>
 		url="$url$(echo "#$version" | tr . _)" &&
 		relnotes_feature='Comes with [cURL v'$version']('"$url"').'
 		;;
-	git)
+	mingw-w64-git)
 		finalize release-notes &&
 		tag_git
 		;;
-	lfs|git-lfs)
+	mingw-w64-git-lfs)
 		repo=git-lfs/git-lfs
 		url=https://api.github.com/repos/$repo/releases/latest
 		release="$(curl --netrc -s $url)"
