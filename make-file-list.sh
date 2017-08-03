@@ -44,7 +44,7 @@ for req in mingw-w64-$ARCH-git-credential-manager \
 	$(test -n "$MINIMAL_GIT" || echo \
 		mingw-w64-$ARCH-connect git-flow unzip docx2txt \
 		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-xpdf ssh-pageant \
-		mingw-w64-$ARCH-git-lfs mingw-w64-$ARCH-curl-winssl-bin)
+		mingw-w64-$ARCH-git-lfs)
 do
 	test -d /var/lib/pacman/local/$req-[0-9]* ||
 	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
@@ -55,8 +55,7 @@ pacman -Sy --noconfirm $required >&2 ||
 die "Could not install required packages: $required"
 
 packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager
-git-extra openssh sed awk grep findutils coreutils
-mingw-w64-$ARCH-curl-winssl-bin"
+git-extra openssh sed awk grep findutils coreutils"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$ARCH-git-doc-html ncurses mintty vim
@@ -178,8 +177,7 @@ else
 		-e '^/usr/bin/\(reset\|tabs\|tic\|toe\|tput\|tset\)\.exe$' \
 		-e '^/usr/bin/msys-\(formw6\|menuw6\|ncurses++w6\)\.dll$' \
 		-e '^/usr/bin/msys-\(panelw6\|ticw6\)\.dll$' \
-		-e '^/usr/\(lib\|share\)/terminfo/' -e '^/usr/share/tabset/' \
-		-e '^/mingw../bin/curl-winssl/curl\.exe$'
+		-e '^/usr/\(lib\|share\)/terminfo/' -e '^/usr/share/tabset/'
 fi | sort |
 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)$)' |
 sed 's/^\///'
