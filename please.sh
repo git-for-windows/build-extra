@@ -2495,6 +2495,52 @@ upgrade () { # <package>
 		) || exit
 		relnotes_feature="$(cat "$sdk64/$pkgpath/../.git/relnotes")"
 		;;
+	mingw-w64-busybox)
+		(cd "$sdk64/$pkgpath" &&
+		 if test ! -d src/busybox-w32
+		 then
+			MINGW_INSTALLS=mingw64 \
+			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+				'makepkg-mingw --nobuild'
+		 fi &&
+		 url=https://github.com/git-for-windows/busybox-w32 &&
+		 (cd src/busybox-w32 &&
+		  require_remote git-for-windows "$url" &&
+		  require_remote rmyorston \
+			https://github.com/rmyorston/busybox-w32 ||
+		  die "Could not connect remotes for '%s'\n" "$package"
+		  if test 0 -lt $(git rev-list --count \
+			git-for-windows/master..rmyorston/master)
+		  then
+			require_push_url git-for-windows &&
+			git reset --hard &&
+			git checkout git-for-windows/master &&
+			GIT_EDITOR=true \
+			"$sdk64"/usr/src/build-extra/shears.sh --merging \
+				--onto rmyorston/master merging-rebase &&
+			git push git-for-windows HEAD:master ||
+			die "Could not rebase '%s' to '%s'\n" \
+				"$package" "rmyorston/master"
+		  fi) ||
+		 die "Could not initialize/rebase '%s'\n" "$package"
+
+		 built_from_commit="$(sed -n \
+			's/^pkgver=.*\.\([0-9a-f]*\)$/\1/p' <PKGBUILD)" &&
+		 test 0 -lt $(git -C src/busybox-w32 rev-list --count \
+			"$built_from_commit"..git-for-windows/master) ||
+		 die "Package '%s' already up-to-date at commit '%s'\n" \
+			"$package" "$built_from_commit"
+
+		 MINGW_INSTALLS=mingw64 \
+		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+			'makepkg-mingw --nobuild' &&
+		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
+		 git commit -s -m "busybox: upgrade to $version" PKGBUILD &&
+		 url=$url/commit/${version##*.} &&
+		 echo "Comes with [BusyBox v$version]($url)." \
+			>../.git/relnotes) || exit
+		relnotes_feature="$(cat "$sdk64/$pkgpath/../.git/relnotes")"
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
