@@ -35,6 +35,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.13.3 (July 13th 2017)
 
+### New Features
+
+* Comes with [BusyBox v1.28.0pre.15857.9480dca7c](https://github.com/git-for-windows/busybox-w32/commit/9480dca7c].
+
 ### Bug Fixes
 
 * Repository-local aliases [are now resolved again in worktrees](https://github.com/git-for-windows/git/commit/6ba04141d88).
