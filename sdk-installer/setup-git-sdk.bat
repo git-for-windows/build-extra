@@ -189,7 +189,7 @@
 	@bash --login -c 'SHORTCUT="$HOME/Desktop/Git SDK @@BITNESS@@-bit.lnk"; test -f "$SHORTCUT" ^|^| create-shortcut.exe --icon-file /msys2.ico --work-dir / /git-bash.exe "$SHORTCUT"'
 
 	@REM now clone the Git sources, build it, and start an interactive shell
-	@bash --login -c "mkdir -p /usr/src && cd /usr/src && for project in MINGW-packages MSYS2-packages build-extra; do test ! -d $project && mkdir -p $project && (cd $project && git init && git config core.autocrlf false && git remote add origin https://github.com/git-for-windows/$project); done; if test ! -d git; then git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false https://github.com/git-for-windows/git; fi && cd git && make install"
+	@bash --login -c "mkdir -p /usr/src && cd /usr/src && for project in MINGW-packages MSYS2-packages build-extra; do test ! -d $project && mkdir -p $project && (cd $project && git init && git config core.autocrlf false && git remote add origin https://github.com/git-for-windows/$project); done; if test ! -d git; then git clone -b @@GIT_BRANCH@@ -c core.autocrlf=false --depth 1 https://github.com/git-for-windows/git; fi && cd git && make install"
 
 	@IF ERRORLEVEL 1 PAUSE
 
