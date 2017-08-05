@@ -38,7 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Git v2.14.0](https://github.com/git/git/blob/v2.14.0/Documentation/RelNotes/2.14.0.txt).
-* Comes with [BusyBox v1.28.0pre.15857.9480dca7c](https://github.com/git-for-windows/busybox-w32/commit/9480dca7c].
+* Comes with [BusyBox v1.28.0pre.15857.9480dca7c](https://github.com/git-for-windows/busybox-w32/commit/9480dca7c).
 * Comes with [Git Credential Manager v1.12.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.12.0).
 * It is now possible to switch between Secure Channel and OpenSSL for Git's HTTPS transport by [setting the `http.sslBackend` config variable to "openssl" or "schannel"](https://github.com/git-for-windows/git/commit/d81216ee4dd46ae59a388044d1266d6fa9030c19); This [is now also the method used by the installer](https://github.com/git-for-windows/build-extra/commit/7c5a23970126e3cff1e1a7a763216b2a67005593) (rather than copying `libcurl-4.dll` files around).
 * The experimental option [`--show-ignored-directory` was added to `git status`](https://github.com/git-for-windows/git/pull/1243) to show only the name of ignored directories when the option `--untracked=all` is used.
@@ -47,7 +47,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Repository-local aliases [are now resolved again in worktrees](https://github.com/git-for-windows/git/commit/6ba04141d88).
-* CamelCased aliases were broken in v2.13.3; This [has been fixed again]((https://github.com/git-for-windows/git/commit/af0c2223da0).
+* CamelCased aliases were broken in v2.13.3; This [has been fixed again](https://github.com/git-for-windows/git/commit/af0c2223da0).
 * The 32-bit Git binaries are now built against the same dependencies that are shipped with Git for Windows.
 
 ## Changes since Git for Windows v2.13.2 (June 26th 2017)
