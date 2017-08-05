@@ -2767,6 +2767,10 @@ release () { #
 				"/usr/src/build-extra/$dir/release.sh '$ver'" ||
 			die "Could not make %s in %s\n" "$dir" "$sdk"
 		done
+		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			"/usr/src/build-extra/mingit/release.sh \
+				--busybox '$ver-busybox'" ||
+		die "Could not make BusyBox-based MinGit in %s\n" "$sdk"
 	done
 
 	sign_files "$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
@@ -2844,6 +2848,8 @@ publish () { #
 			PortableGit-"$ver"-32-bit.7z.exe \
 			MinGit-"$ver"-64-bit.zip \
 			MinGit-"$ver"-32-bit.zip \
+			MinGit-"$ver"-busybox-64-bit.zip \
+			MinGit-"$ver"-busybox-32-bit.zip \
 			Git-"$ver"-64-bit.tar.bz2 \
 			Git-"$ver"-32-bit.tar.bz2) |
 		sed -n 's/\([^ ]*\) \*\(.*\)/\2 | \1/p')"
@@ -2859,6 +2865,8 @@ publish () { #
 		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe \
 		"$HOME"/MinGit-"$ver"-64-bit.zip \
 		"$HOME"/MinGit-"$ver"-32-bit.zip \
+		"$HOME"/MinGit-"$ver"-busybox-64-bit.zip \
+		"$HOME"/MinGit-"$ver"-busybox-32-bit.zip \
 		"$HOME"/Git-"$ver"-64-bit.tar.bz2 \
 		"$HOME"/Git-"$ver"-32-bit.tar.bz2 ||
 	die "Could not upload files\n"
