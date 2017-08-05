@@ -9,24 +9,41 @@ test -n "$ARCH" &&
 test -n "$BITNESS" ||
 die "Need ARCH and BITNESS to be set"
 
+SH_FOR_REBASE=dash
+PACKAGE_EXCLUDES='db info heimdal git util-linux curl git-for-windows-keyring'
+EXTRA_FILE_EXCLUDES=
+UTIL_PACKAGES="sed awk grep findutils coreutils"
+if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
+then
+	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES bash coreutils mingw-w64-busybox
+		libiconv libintl libreadline ncurses openssl
+		mingw-w64-libmetalink mingw-w64-spdylay"
+
+	EXTRA_FILE_EXCLUDES="/etc/post-install/.* /usr/bin/getfacl.exe
+		/usr/bin/msys-\(gmp\|ssl\)-.*.dll
+		/mingw$BITNESS/bin/$ARCH-w64-mingw32-deflatehd.exe
+		/mingw$BITNESS/bin/$ARCH-w64-mingw32-inflatehd.exe"
+
+	UTIL_PACKAGES=
+	SH_FOR_REBASE=mingw-w64-$ARCH-busybox
+	MINIMAL_GIT=1
+fi
+if test -n "$MINIMAL_GIT"
+then
+	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES mingw-w64-bzip2 mingw-w64-c-ares
+		mingw-w64-libsystre mingw-w64-libtre-git
+		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
+		libedit libgdbm perl perl-.*"
+fi
+
 pacman_list () {
 	package_list=$(for arg
 		do
 			pactree -u "$arg"
 		done |
-		grep -v -e '^db$' -e '^info$' -e '^heimdal$' \
-			-e '^git$' -e '^util-linux$' -e '^curl$' \
-			-e '^git-for-windows-keyring$' |
-		if test -z "$MINIMAL_GIT"
-		then
-			cat
-		else
-			grep -v -e '^\(.*-bzip2\|.*-c-ares\|.*-libsystre\)$' \
-				-e '^\(.*libtre-git\)$' \
-				-e '^\(.*-tcl\|.*-tk\|.*-wineditline\)$' \
-				-e '^\(gdbm\|icu\|libdb\|libedit\|libgdbm\)$' \
-				-e '^\(perl\|perl-.*\)$'
-		fi |
+		grep -v "^\\($(echo $PACKAGE_EXCLUDES | sed \
+			-e 's/ /\\|/g' \
+			-e 's/mingw-w64-/&\\(i686\\|x86_64\\)-/g')\\)\$" |
 		sort |
 		uniq) &&
 	if test -n "$PACKAGE_VERSIONS_FILE"
@@ -40,7 +57,7 @@ pacman_list () {
 
 # Packages that have been added after Git SDK 1.0.0 was released...
 required=
-for req in mingw-w64-$ARCH-git-credential-manager \
+for req in mingw-w64-$ARCH-git-credential-manager $SH_FOR_REBASE \
 	$(test -n "$MINIMAL_GIT" || echo \
 		mingw-w64-$ARCH-connect git-flow unzip docx2txt \
 		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-xpdf ssh-pageant \
@@ -55,7 +72,7 @@ pacman -Sy --noconfirm $required >&2 ||
 die "Could not install required packages: $required"
 
 packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager
-git-extra openssh sed awk grep findutils coreutils"
+git-extra openssh $UTIL_PACKAGES"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$ARCH-git-doc-html ncurses mintty vim
@@ -88,6 +105,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../.*/git-\(remote-testsvn\|shell\)\.exe$' \
 	-e '^/mingw../lib/tdbc' \
 	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
+	-e '^/mingw64/share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
 	-e '^/usr/bin/dumper\.exe$' \
 	-e '^/usr/share.*/magic$' \
@@ -116,7 +134,7 @@ else
 		-e '^/mingw../bin/\(gettext\.sh\|gettextize\|git-cvsserver\)$' \
 		-e '^/mingw../bin/\(gitk\|git-upload-archive\.exe\)$' \
 		-e '^/mingw../bin/lib\(atomic\|charset\)-.*\.dll$' \
-		-e '^/mingw../bin/lib\(gcc_s_seh\|libgmpxx\)-.*\.dll$' \
+		-e '^/mingw../bin/lib\(gcc_s_seh\|gmpxx\)-.*\.dll$' \
 		-e '^/mingw../bin/lib\(gomp\|jansson\|minizip\)-.*\.dll$' \
 		-e '^/mingw../bin/libvtv.*\.dll$' \
 		-e '^/mingw../bin/\(.*\.def\|update-ca-trust\)$' \
@@ -125,7 +143,7 @@ else
 		-e '^/mingw../bin/\(WhoUses\|xmlwf\)\.exe$' \
 		-e '^/mingw../etc/pki' -e '^/mingw../lib/p11-kit/' \
 		-e '/git-\(add--interactive\|archimport\|citool\|cvs.*\)$' \
-		-e '/git-\(difftool.*\|git-gui.*\|instaweb\|p4\|relink\)$' \
+		-e '/git-\(difftool.*\|gui.*\|instaweb\|p4\|relink\)$' \
 		-e '/git-\(send-email\|svn\)$' \
 		-e '/mingw../libexec/git-core/git-\(imap-send\|daemon\)\.exe$' \
 		-e '/mingw../libexec/git-core/git-remote-ftp.*\.exe$' \
@@ -177,28 +195,36 @@ else
 		-e '^/usr/bin/\(reset\|tabs\|tic\|toe\|tput\|tset\)\.exe$' \
 		-e '^/usr/bin/msys-\(formw6\|menuw6\|ncurses++w6\)\.dll$' \
 		-e '^/usr/bin/msys-\(panelw6\|ticw6\)\.dll$' \
-		-e '^/usr/\(lib\|share\)/terminfo/' -e '^/usr/share/tabset/'
+		-e '^/usr/\(lib\|share\)/terminfo/' -e '^/usr/share/tabset/' \
+		-e "^\\($(echo $EXTRA_FILE_EXCLUDES |
+			sed 's/ /\\|/g')\\)\$"
 fi | sort |
 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)$)' |
 sed 's/^\///'
 
 test -z "$PACKAGE_VERSIONS_FILE" ||
-pacman -Q filesystem dash rebase \
+pacman -Q filesystem $SH_FOR_REBASE rebase \
 	$(test -n "$MINIMAL_GIT" || echo util-linux unzip mingw-w64-$ARCH-xpdf) \
 	>>"$PACKAGE_VERSIONS_FILE"
 
 cat <<EOF
+etc/fstab
+etc/nsswitch.conf
+mingw$BITNESS/etc/gitconfig
+usr/bin/rebase.exe
+usr/bin/rebaseall
+EOF
+
+test -z "$MINIMAL_GIT_WITH_BUSYBOX" ||
+echo mingw$BITNESS/bin/busybox.exe
+
+test -n "$MINIMAL_GIT_WITH_BUSYBOX" || cat <<EOF
 etc/profile
 etc/profile.d/lang.sh
 etc/bash.bash_logout
 etc/bash.bashrc
-etc/fstab
 etc/msystem
-etc/nsswitch.conf
-mingw$BITNESS/etc/gitconfig
 usr/bin/dash.exe
-usr/bin/rebase.exe
-usr/bin/rebaseall
 usr/bin/getopt.exe
 mingw$BITNESS/etc/gitattributes
 EOF
