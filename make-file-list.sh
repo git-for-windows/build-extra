@@ -10,7 +10,8 @@ test -n "$BITNESS" ||
 die "Need ARCH and BITNESS to be set"
 
 SH_FOR_REBASE=dash
-PACKAGE_EXCLUDES='db info heimdal git util-linux curl git-for-windows-keyring'
+PACKAGE_EXCLUDES="db info heimdal git util-linux curl git-for-windows-keyring
+	mingw-w64-p11-kit"
 EXTRA_FILE_EXCLUDES=
 UTIL_PACKAGES="sed awk grep findutils coreutils"
 if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
