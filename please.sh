@@ -2317,7 +2317,8 @@ upgrade () { # <package>
 		die "Could not determine newest cURL version\n"
 
 		(cd "$sdk64/$pkgpath" &&
-		 sed -i 's/^\(pkgver=\).*/\1'$version/ PKGBUILD &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 updpkgsums &&
 		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
 		 git commit -s -m "curl: new version ($version)" PKGBUILD) ||
@@ -2327,7 +2328,8 @@ upgrade () { # <package>
 
 		(set_package mingw-w64-$1 &&
 		 cd "$sdk64/$pkgpath" &&
-		 sed -i 's/^\(pkgver=\).*/\1'$version/ PKGBUILD &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 updpkgsums &&
 		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
 		 git commit -s -m "curl: new version ($version)" PKGBUILD &&
