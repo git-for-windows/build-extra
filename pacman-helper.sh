@@ -274,7 +274,7 @@ push () {
 			mkdir -p "$dir"
 			(cd "$dir" &&
 			 echo "Getting $arch_url/git-for-windows.db.tar.xz" &&
-			 curl -L $arch_url/git-for-windows.db.tar.xz > .remote
+			 curl -Lfo .remote $arch_url/git-for-windows.db.tar.xz
 			) ||
 			die "Could not get remote index for $arch"
 		done
