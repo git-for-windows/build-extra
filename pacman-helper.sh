@@ -111,8 +111,18 @@ publish () { # <package> <version>
 		echo "publish: curl --netrc -fX POST $content_url/$1/$2/publish"
 		return
 	}
-	curl --netrc --retry 5 -fX POST "$content_url/$1/$2/publish" ||
-	die "Could not publish $2 in $1"
+	curl --netrc --connect-timeout 300 --max-time 300 \
+		--expect100-timeout 300 --speed-time 300 --retry 5 \
+		-fX POST "$content_url/$1/$2/publish" ||
+	while test $? = 7
+	do
+		echo "Timed out connecting to host, retrying in 5" >&2
+		sleep 5
+		curl --netrc --connect-timeout 300 --max-time 300 \
+			--expect100-timeout 300 --speed-time 300 --retry 5 \
+			-fX POST "$content_url/$1/$2/publish"
+	done ||
+	die "Could not publish $2 in $1 (exit code $?)"
 }
 
 
