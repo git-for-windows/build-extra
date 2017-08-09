@@ -199,11 +199,13 @@ do
 			url="$bintray_source_url/$filename"
 			sf1_url=
 			sf2_url=
+			sf3_url=
 			;;
 		mingw-w64-*)
 			url=$mingw_source_url/$filename
 			sf1_url=$mingw_sf_source_url/$filename/download
 			sf2_url=$mingw_sf_source_url/$name-$version.src.tar.gz/download
+			sf3_url="$bintray_source_url/$filename"
 			;;
 		*)
 			if test ! -d /usr/src/MSYS2-packages/$name
@@ -246,6 +248,7 @@ do
 			url="$msys_source_url/$filename"
 			sf1_url="$msys_sf_source_url/$filename/download"
 			sf2_url="$bintray_source_url/$filename"
+			sf3_url=
 			;;
 		esac
 
@@ -253,6 +256,7 @@ do
 		curl -sfLo "$dir/$filename" "$url" ||
 		curl -sfLo "$dir/$filename" "$sf1_url" ||
 		curl -sfLo "$dir/$filename" "$sf2_url" ||
+		curl -sfLo "$dir/$filename" "$sf3_url" ||
 		die "Could not download $filename from $url ($sf1_url $sf2_url)" >&2
 
 		test -s "$dir/$filename" ||
