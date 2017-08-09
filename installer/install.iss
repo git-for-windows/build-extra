@@ -1998,7 +1998,10 @@ begin
            (StringChangeEx(Cmd,'%1','%v.',false)<>1) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell\command','',Cmd)) or
-           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell','Icon',Ico)) then
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell','Icon',Ico)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\background\shell\git_shell','',Msg)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\background\shell\git_shell\command','',Cmd)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\background\shell\git_shell','Icon',Ico)) then
             LogError('Line {#__LINE__}: Unable to create "Git Bash Here" shell extension.');
     end;
 
@@ -2012,7 +2015,10 @@ begin
            (StringChangeEx(Cmd,'%1','%v.',false)<>1) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui\command','',Cmd)) or
-           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui','Icon',Ico))
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui','Icon',Ico)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\Background\shell\git_gui','',Msg)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\Background\shell\git_gui\command','',Cmd)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\Background\shell\git_gui','Icon',Ico))
         then
             LogError('Line {#__LINE__}: Unable to create "Git GUI Here" shell extension.');
     end;
