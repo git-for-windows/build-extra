@@ -351,6 +351,10 @@ set_package () {
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
+	mingw-w64-asciidoctor-extensions)
+		type=MINGW
+		pkgpath=/usr/src/MINGW-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
