@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.14.1](https://github.com/git/git/blob/v2.14.1/Documentation/RelNotes/2.14.1.txt).
 * Comes with [cURL v7.55.0](https://curl.haxx.se/changes.html#7_55_0).
 * The *Git Bash Here* context menu item [is now also available](https://github.com/git-for-windows/build-extra/pull/150) in the special [Libraries folders](https://msdn.microsoft.com/en-us/library/windows/desktop/dd758096.aspx).
 
