@@ -39,7 +39,8 @@ source=('inputrc'
         '99-post-install-cleanup.post'
         'gitattributes'
         'astextplain'
-        'git-sdk.sh')
+        'git-sdk.sh'
+        'git-update')
 md5sums=('3fab57079f0322efe256e95fe29d516f'
          'a2d3b63eb1c88c2a2b011ccf0b219d60'
          'bfb591886b2a28af3334521e71198b74'
@@ -58,7 +59,8 @@ md5sums=('3fab57079f0322efe256e95fe29d516f'
          'bdeb6046510aa1a6cd76e7f86673aa3f'
          '52c242d0c84d6934ec6a94766f8a70f0'
          'e87a5075629b58fe329094b92c1d13db'
-         '593dbce30c442529b4351650f4422b6e')
+         '593dbce30c442529b4351650f4422b6e'
+         'da5db7644f0aff6567185a5495435415')
 
 prepare() {
   test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
@@ -102,4 +104,5 @@ package() {
   install -m644 msys2-32.ico $pkgdir/usr/share/git
   install -m644 99-post-install-cleanup.post $pkgdir/etc/post-install
   install -m755 astextplain $pkgdir/usr/bin
+  install -m755 git-update $pkgdir/${MINGW_PREFIX}/libexec/git-core
 }
