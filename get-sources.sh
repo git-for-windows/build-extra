@@ -257,7 +257,7 @@ do
 		curl -sfLo "$dir/$filename" "$sf1_url" ||
 		curl -sfLo "$dir/$filename" "$sf2_url" ||
 		curl -sfLo "$dir/$filename" "$sf3_url" ||
-		die "Could not download $filename from $url ($sf1_url $sf2_url)" >&2
+		die "Could not download $filename from $url ($sf1_url $sf2_url $sf3_url)" >&2
 
 		test -s "$dir/$filename" ||
 		die "Empty file: $dir/$filename"
