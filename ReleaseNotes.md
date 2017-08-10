@@ -35,6 +35,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.14.0(2) (August 7th 2017)
 
+Note: there have been MinGit-only releases v2.12.2(3) and v2.13.1(3) with backports of the important bug fix in v2.14.1 as well as the experimental `--show-ignored-directory` option of `git status`.
+
 ### New Features
 
 * Comes with [Git v2.14.1](https://github.com/git/git/blob/v2.14.1/Documentation/RelNotes/2.14.1.txt).
