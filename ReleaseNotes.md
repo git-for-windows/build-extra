@@ -33,6 +33,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.14.1 (August 10th 2017)
+
+### New Features
+
+* Comes with [cURL v7.55.1](https://curl.haxx.se/changes.html#7_55_1).
+
 ## Changes since Git for Windows v2.14.0(2) (August 7th 2017)
 
 Note: there have been MinGit-only releases v2.12.2(3) and v2.13.1(3) with backports of the important bug fix in v2.14.1 as well as the experimental `--show-ignored-directory` option of `git status`.
