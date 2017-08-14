@@ -13,7 +13,11 @@ git_update () {
 		return;;
 	esac
 
-	bit=$(ls --color=never -d /mingw* | sed 's/\/mingw//')
+	case "$(uname -m)" in
+	x86_64) bit=64;;
+	*) bit=32;;
+	esac
+
 	releases=$(curl --silent https://api.github.com/repos/git-for-windows/git/releases/latest)
 	latest=$(echo "$releases" | grep '"tag_name": "v' | sed -E 's/.*"tag_name": "v([^"]*).*/\1/')
 	version=$(git --version | sed "s/git version //")
