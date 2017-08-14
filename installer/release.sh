@@ -103,6 +103,7 @@ else
 	echo "Generating file list to be included in the installer ..."
 	LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 		PACKAGE_VERSIONS_FILE=package-versions.txt \
+		INCLUDE_GIT_UPDATE=1 \
 		sh ../make-file-list.sh)" ||
 	die "Could not generate file list"
 fi

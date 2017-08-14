@@ -36,6 +36,11 @@ then
 		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
 		libedit libgdbm perl perl-.*"
 fi
+if test -z "$INCLUDE_GIT_UPDATE"
+then
+	EXTRA_FILE_EXCLUDES="$EXTRA_FILE_EXCLUDES
+		/mingw$BITNESS/libexec/git-core/git-update"
+fi
 
 pacman_list () {
 	package_list=$(for arg
