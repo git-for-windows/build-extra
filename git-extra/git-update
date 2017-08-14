@@ -5,39 +5,59 @@
 # when confirmation to do so is given.
 
 git_update () {
-	yn="$1"
-	case $yn in
-	-\? | --?\?) echo "Usage: git-update [options]";
-		echo "Options:";
-		echo "  -y, --yes       Automatic yes to download and install prompt";
-		return;;
-	esac
+	yn=
+	while test $# -gt 0
+	do
+		case "$1" in
+		-\?|--?\?|-h|--help) ;;
+		-y|--yes) yn=y; shift; continue;;
+		*) echo "Unknown option: $1" >&2;;
+		esac
+		printf >&2 '%s\n%s\n\t%s\n' \
+			"Usage: git-update [options]" \
+			"Options:" \
+			"-y, --yes Automatic yes to download and install prompt"
+		return 1
+	done
 
 	case "$(uname -m)" in
 	x86_64) bit=64;;
 	*) bit=32;;
 	esac
 
-	releases=$(curl --silent https://api.github.com/repos/git-for-windows/git/releases/latest)
-	latest=$(echo "$releases" | grep '"tag_name": "v' | sed -E 's/.*"tag_name": "v([^"]*).*/\1/')
+	releases_url=https://api.github.com/repos/git-for-windows/git/releases
+	releases=$(curl --silent $releases_url/latest) || return
+
+	latest=$(echo "$releases" |
+		grep '"tag_name": "v' |
+		sed -E 's/.*"tag_name": "v([^"]*).*/\1/')
 	version=$(git --version | sed "s/git version //")
-	echo "Git for Windows $version (${bit}bit)"
-	if [ "$latest" != "$version" ]
+	echo "Git for Windows $version (${bit}bit)" >&2
+	if test "$latest" = "$version"
 	then
-		echo "Update $latest is available"
-		download=$(echo "$releases" | grep '"browser_download_url": "' | grep "$bit\-bit\.exe" | sed -E 's/.*": "([^"]*).*/\1/')
-		filename=$(echo "$download" | sed -E 's/.*\/([^\/]*)$/\1/')
-		installer=$(mktemp -t gfw-install-XXXXXXXX.exe)
-		case $yn in
-		-[Yy]* | --[Yy]*) yn="y"; echo "Downloading $filename";;
-		*) read -p "Download $filename and install [N/y]? " yn;;
-		esac
-		case $yn in
-		[Yy]* ) curl -# -L -o $installer $download; start "" "$installer" /SILENT; ps | grep bash | awk '{print "kill -9 " $2 ";" }' | sh;;
-		esac
-		return
+		echo "Up to date" >&2
 	fi
-	echo "Up to date"
+
+	echo "Update $latest is available"
+	download=$(echo "$releases" |
+		grep '"browser_download_url": "' |
+		grep "$bit\-bit\.exe" |
+		sed -E 's/.*": "([^"]*).*/\1/')
+	filename=$(echo "$download" | sed -E 's/.*\/([^\/]*)$/\1/')
+	installer=$(mktemp -t gfw-install-XXXXXXXX.exe)
+	if test -z "$yn"
+	then
+		read -p "Download $filename and install [N/y]? " yn
+		case "$yn" in
+		[Yy]*) ;;
+		*) return 1;;
+		esac
+	else
+		echo "Downloading $filename" >&2
+	fi
+	curl -# -L -o $installer $download || return
+	start "" "$installer" /SILENT
+	ps | grep bash | awk '{print "kill -9 " $2 ";" }' | sh
 }
 
-git_update $*
+git_update "$@"
