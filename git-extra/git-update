@@ -1,39 +1,39 @@
 #!/bin/sh
 
-# Compares the currently installed Git for Windows against latest available release.
-# If versions differ, the bit matched installer is downloaded and run when confirmation
-# to do so is given.
+# Compares the currently installed Git for Windows against latest available
+# release.  If versions differ, the bit matched installer is downloaded and run
+# when confirmation to do so is given.
 
 git_update () {
-    yn="$1"
-    case $yn in
-        -\? | --?\?) echo "Usage: git-update [options]";
-        echo "Options:";
-        echo "  -y, --yes       Automatic yes to download and install prompt";
-        return;;
-    esac
-    bit=$(ls --color=never -d /mingw* | sed 's/\/mingw//')
-    releases=$(curl --silent https://api.github.com/repos/git-for-windows/git/releases/latest)
-    latest=$(echo "$releases" | grep '"tag_name": "v' | sed -E 's/.*"tag_name": "v([^"]*).*/\1/')
-    version=$(git --version | sed "s/git version //")
-    echo "Git for Windows $version (${bit}bit)"
-    if [ "$latest" != "$version" ]
-    then
-        echo "Update $latest is available"
-        download=$(echo "$releases" | grep '"browser_download_url": "' | grep "$bit\-bit\.exe" | sed -E 's/.*": "([^"]*).*/\1/')
-        filename=$(echo "$download" | sed -E 's/.*\/([^\/]*)$/\1/')
-        installer=$(mktemp -t gfw-install-XXXXXXXX.exe)
-        case $yn in
-            -[Yy]* | --[Yy]*) yn="y"; echo "Downloading $filename";;
-            *) read -p "Download $filename and install [N/y]? " yn;;
-        esac
-        case $yn in
-            [Yy]* ) curl -# -L -o $installer $download; start "" "$installer" /SILENT; ps | grep bash | awk '{print "kill -9 " $2 ";" }' | sh;;
-        esac
-        return
-    fi
-    echo "Up to date"
+	yn="$1"
+	case $yn in
+	-\? | --?\?) echo "Usage: git-update [options]";
+		echo "Options:";
+		echo "  -y, --yes       Automatic yes to download and install prompt";
+		return;;
+	esac
+
+	bit=$(ls --color=never -d /mingw* | sed 's/\/mingw//')
+	releases=$(curl --silent https://api.github.com/repos/git-for-windows/git/releases/latest)
+	latest=$(echo "$releases" | grep '"tag_name": "v' | sed -E 's/.*"tag_name": "v([^"]*).*/\1/')
+	version=$(git --version | sed "s/git version //")
+	echo "Git for Windows $version (${bit}bit)"
+	if [ "$latest" != "$version" ]
+	then
+		echo "Update $latest is available"
+		download=$(echo "$releases" | grep '"browser_download_url": "' | grep "$bit\-bit\.exe" | sed -E 's/.*": "([^"]*).*/\1/')
+		filename=$(echo "$download" | sed -E 's/.*\/([^\/]*)$/\1/')
+		installer=$(mktemp -t gfw-install-XXXXXXXX.exe)
+		case $yn in
+		-[Yy]* | --[Yy]*) yn="y"; echo "Downloading $filename";;
+		*) read -p "Download $filename and install [N/y]? " yn;;
+		esac
+		case $yn in
+		[Yy]* ) curl -# -L -o $installer $download; start "" "$installer" /SILENT; ps | grep bash | awk '{print "kill -9 " $2 ";" }' | sh;;
+		esac
+		return
+	fi
+	echo "Up to date"
 }
 
 git_update $*
-
