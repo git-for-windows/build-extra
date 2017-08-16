@@ -89,6 +89,7 @@ package() {
   install -d -m755 $pkgdir/usr/bin
   install -d -m755 $pkgdir/usr/share/git
   install -d -m755 $pkgdir${MINGW_PREFIX}/bin
+  install -d -m755 $pkgdir${MINGW_PREFIX}/libexec/git-core
   install -m644 inputrc $pkgdir/etc
   install -m644 vimrc $pkgdir/etc
   install -m755 vi $pkgdir/usr/bin
