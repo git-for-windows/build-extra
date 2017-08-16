@@ -415,19 +415,7 @@ require () {
 }
 
 install_git_32bit_prereqs () {
-	for prereq in mingw-w64-i686-asciidoctor-extensions
-	do
-		test ! -d "$sdk64"/var/lib/pacman/local/$prereq-[0-9]* ||
-		continue
-
-		sdk="$sdk32" require $prereq &&
-		pkg="$sdk32/var/cache/pacman/pkg/$("$sdk32/git-cmd.exe" \
-			--command=usr\\bin\\pacman.exe -Q "$prereq" |
-			sed -e 's/ /-/' -e 's/$/-any.pkg.tar.xz/')" &&
-		"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'pacman -U --noconfirm "'"$pkg"'"' ||
-		die "Could not install %s into SDK-64\n" "$prereq"
-	done
+	require mingw-w64-i686-asciidoctor-extensions
 }
 
 pkg_build () {
