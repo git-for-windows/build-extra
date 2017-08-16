@@ -120,6 +120,9 @@ sync () { # [--force]
 		mkdir -p "$sdk/var/log" ||
 		die "Could not ensure %s/var/log/ exists\n" "$sdk"
 
+		remove_obsolete_packages ||
+		die "Could not remove obsolete packages\n"
+
 		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe -S$y_opt ||
 		die "Cannot run pacman in %s\n" "$sdk"
 
@@ -406,6 +409,20 @@ update () { # <package>
 	foreach_sdk ff_master
 }
 
+remove_obsolete_packages () {
+	test "a$sdk" = "a$sdk32" &&
+	arch=i686 ||
+	arch=x86_64
+
+	for p in mingw-w64-$arch-curl-winssl-bin
+	do
+		test ! -d "$sdk"/var/lib/pacman/local/$p-[0-9]* ||
+		"$sdk"/git-cmd.exe --command=usr\\bin\\pacman.exe \
+			-R --noconfirm $p ||
+		die "Could not remove %s\n" "$p"
+	done
+}
+
 # require <metapackage> <telltale>
 require () {
 	test -d "$sdk"/var/lib/pacman/local/"${2:-$1}"-[0-9]* ||
@@ -415,19 +432,7 @@ require () {
 }
 
 install_git_32bit_prereqs () {
-	for prereq in mingw-w64-i686-asciidoctor-extensions
-	do
-		test ! -d "$sdk64"/var/lib/pacman/local/$prereq-[0-9]* ||
-		continue
-
-		sdk="$sdk32" require $prereq &&
-		pkg="$sdk32/var/cache/pacman/pkg/$("$sdk32/git-cmd.exe" \
-			--command=usr\\bin\\pacman.exe -Q "$prereq" |
-			sed -e 's/ /-/' -e 's/$/-any.pkg.tar.xz/')" &&
-		"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'pacman -U --noconfirm "'"$pkg"'"' ||
-		die "Could not install %s into SDK-64\n" "$prereq"
-	done
+	require mingw-w64-i686-asciidoctor-extensions
 }
 
 pkg_build () {

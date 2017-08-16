@@ -38,6 +38,11 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [cURL v7.55.1](https://curl.haxx.se/changes.html#7_55_1).
+* The XP-compatibility layer emulating pthreads (which is [no longer needed](https://git-for-windows.github.io/requirements.html)) [was dropped in favor of modern Windows threading APIs](https://github.com/git-for-windows/git/pull/1214); This should make threaded operations slightly faster and more robust.
+
+### Bug Fixes
+
+* It is [now possible to override `http.sslBackend` on the command-line](https://github.com/git-for-windows/git/commit/70c1ff8b0ef66321d630fe49d61ee1a9b6be6a4c).
 
 ## Changes since Git for Windows v2.14.0(2) (August 7th 2017)
 
