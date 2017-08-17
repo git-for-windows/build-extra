@@ -717,19 +717,26 @@ begin
   ShellExec('','https://github.com/git-for-windows/git/wiki/Symbolic-Links','','',SW_SHOW,ewNoWait,ExitStatus);
 end;
 
+function IsOriginalUserAdmin():Boolean;
+var
+    ResultCode:Integer;
+begin
+    if not ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c net session >"{tmp}\net-session.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode) then
+        ResultCode:=-1;
+    Result:=(ResultCode=0);
+end;
+
 function EnableSymlinksByDefault():Boolean;
 var
     ResultCode:Integer;
 begin
-    if IsAdminLoggedOn then begin
-        // The only way to tell whether non-admin users can create symbolic
-	// links is to try using a non-admin user.
-        Result:=False;
-	Exit;
+    if IsOriginalUserAdmin then begin
+        Log('Symbolic link permission detection failed: running as admin');
+	Result:=False;
+    end else begin
+        ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
+        Result:=DirExists(ExpandConstant('{tmp}\symbolic link'));
     end;
-
-    ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
-    Result:=DirExists(ExpandConstant('{tmp}\symbolic link'));
 end;
 
 function GetTextWidth(Text:String;Font:TFont):Integer;
