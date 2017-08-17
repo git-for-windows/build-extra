@@ -720,7 +720,6 @@ end;
 function EnableSymlinksByDefault():Boolean;
 var
     ResultCode:Integer;
-    Output:AnsiString;
 begin
     if IsAdminLoggedOn then begin
         // The only way to tell whether non-admin users can create symbolic
