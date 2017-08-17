@@ -331,6 +331,9 @@ var
     // The options chosen at install time, to be written to /etc/install-options.txt
     ChosenOptions:String;
 
+    // Previous Git for Windows version (if upgrading)
+    PreviousGitForWindowsVersion:String;
+
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
     RdbPath:array[GP_BashOnly..GP_CmdTools] of TRadioButton;
@@ -612,7 +615,7 @@ end;
 
 function InitializeSetup:Boolean;
 var
-    CurrentVersion,PreviousVersion,Msg:String;
+    CurrentVersion,Msg:String;
     Version:TWindowsVersion;
     ErrorCode:Integer;
 begin
@@ -634,10 +637,11 @@ begin
         Result:=True;
     end;
 #endif
+    RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousGitForWindowsVersion);
 #if APP_VERSION!='0-test'
-    if Result and not ParamIsSet('ALLOWDOWNGRADE') and RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousVersion) then begin
+    if Result and not ParamIsSet('ALLOWDOWNGRADE') then begin
         CurrentVersion:=ExpandConstant('{#APP_VERSION}');
-        if (IsDowngrade(CurrentVersion,PreviousVersion)) then begin
+        if (IsDowngrade(CurrentVersion,PreviousGitForWindowsVersion)) then begin
             if WizardSilent() and (ParamIsSet('SKIPDOWNGRADE') or ParamIsSet('VSNOTICE')) then begin
                 Msg:='Skipping downgrade from '+PreviousVersion+' to '+CurrentVersion;
                 if ParamIsSet('SKIPDOWNGRADE') or (ExpandConstant('{log}')='') then
