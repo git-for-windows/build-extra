@@ -559,42 +559,55 @@ begin
         Result:=-1;
 end;
 
-function IsDowngrade(CurrentVersion,PreviousVersion:String):Boolean;
+function VersionCompare(CurrentVersion,PreviousVersion:String):Integer;
 var
     i,j,Current,Previous:Integer;
 begin
-    Result:=False;
+    Result:=0;
     i:=1;
     j:=1;
     while True do begin
-        if j>Length(PreviousVersion) then
+        if j>Length(PreviousVersion) then begin
+	    Result:=+1;
             Exit;
+	end;
         if i>Length(CurrentVersion) then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
         Previous:=NextNumber(PreviousVersion,j);
-        if Previous<0 then
-            Exit;
         Current:=NextNumber(CurrentVersion,i);
+        if Previous<0 then begin
+            if Current>=0 then
+                Result:=+1;
+            Exit;
+	end;
         if Current<0 then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
-        if Current>Previous then
+        if Current>Previous then begin
+            Result:=+1;
             Exit;
+	end;
         if Current<Previous then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
-        if j>Length(PreviousVersion) then
+        if j>Length(PreviousVersion) then begin
+	    if i<=Length(CurrentVersion) then
+	        Result:=+1;
             Exit;
+	end;
         if i>Length(CurrentVersion) then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
         if CurrentVersion[i]<>PreviousVersion[j] then begin
-            Result:=PreviousVersion[j]='.';
+            if PreviousVersion[j]='.' then
+                Result:=-1
+            else
+                Result:=+1;
             Exit;
         end;
         if CurrentVersion[i]<>'.' then
@@ -641,7 +654,7 @@ begin
 #if APP_VERSION!='0-test'
     if Result and not ParamIsSet('ALLOWDOWNGRADE') then begin
         CurrentVersion:=ExpandConstant('{#APP_VERSION}');
-        if (IsDowngrade(CurrentVersion,PreviousGitForWindowsVersion)) then begin
+        if (VersionCompare(CurrentVersion,PreviousGitForWindowsVersion)<0) then begin
             if WizardSilent() and (ParamIsSet('SKIPDOWNGRADE') or ParamIsSet('VSNOTICE')) then begin
                 Msg:='Skipping downgrade from '+PreviousVersion+' to '+CurrentVersion;
                 if ParamIsSet('SKIPDOWNGRADE') or (ExpandConstant('{log}')='') then
