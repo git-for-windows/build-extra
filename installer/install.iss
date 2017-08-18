@@ -1376,7 +1376,7 @@ begin
     // by running `mklink` (unless started as administrator, in which case that
     // test would be meaningless).
     Data:=ReplayChoice('Enable Symlinks','Auto');
-    if Data='Auto' then begin
+    if (Data='Auto') Or ((Data='Disabled') And (VersionCompare(PreviousGitForWindowsVersion,'2.14.1')<=0)) then begin
         if EnableSymlinksByDefault() then
 	    Data:='Enabled'
 	else
