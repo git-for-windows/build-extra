@@ -331,6 +331,9 @@ var
     // The options chosen at install time, to be written to /etc/install-options.txt
     ChosenOptions:String;
 
+    // Previous Git for Windows version (if upgrading)
+    PreviousGitForWindowsVersion:String;
+
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
     RdbPath:array[GP_BashOnly..GP_CmdTools] of TRadioButton;
@@ -556,42 +559,55 @@ begin
         Result:=-1;
 end;
 
-function IsDowngrade(CurrentVersion,PreviousVersion:String):Boolean;
+function VersionCompare(CurrentVersion,PreviousVersion:String):Integer;
 var
     i,j,Current,Previous:Integer;
 begin
-    Result:=False;
+    Result:=0;
     i:=1;
     j:=1;
     while True do begin
-        if j>Length(PreviousVersion) then
+        if j>Length(PreviousVersion) then begin
+	    Result:=+1;
             Exit;
+	end;
         if i>Length(CurrentVersion) then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
         Previous:=NextNumber(PreviousVersion,j);
-        if Previous<0 then
-            Exit;
         Current:=NextNumber(CurrentVersion,i);
+        if Previous<0 then begin
+            if Current>=0 then
+                Result:=+1;
+            Exit;
+	end;
         if Current<0 then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
-        if Current>Previous then
+        if Current>Previous then begin
+            Result:=+1;
             Exit;
+	end;
         if Current<Previous then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
-        if j>Length(PreviousVersion) then
+        if j>Length(PreviousVersion) then begin
+	    if i<=Length(CurrentVersion) then
+	        Result:=+1;
             Exit;
+	end;
         if i>Length(CurrentVersion) then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
         if CurrentVersion[i]<>PreviousVersion[j] then begin
-            Result:=PreviousVersion[j]='.';
+            if PreviousVersion[j]='.' then
+                Result:=-1
+            else
+                Result:=+1;
             Exit;
         end;
         if CurrentVersion[i]<>'.' then
@@ -612,7 +628,7 @@ end;
 
 function InitializeSetup:Boolean;
 var
-    CurrentVersion,PreviousVersion,Msg:String;
+    CurrentVersion,Msg:String;
     Version:TWindowsVersion;
     ErrorCode:Integer;
 begin
@@ -634,10 +650,11 @@ begin
         Result:=True;
     end;
 #endif
+    RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousGitForWindowsVersion);
 #if APP_VERSION!='0-test'
-    if Result and not ParamIsSet('ALLOWDOWNGRADE') and RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousVersion) then begin
+    if Result and not ParamIsSet('ALLOWDOWNGRADE') then begin
         CurrentVersion:=ExpandConstant('{#APP_VERSION}');
-        if (IsDowngrade(CurrentVersion,PreviousVersion)) then begin
+        if (VersionCompare(CurrentVersion,PreviousGitForWindowsVersion)<0) then begin
             if WizardSilent() and (ParamIsSet('SKIPDOWNGRADE') or ParamIsSet('VSNOTICE')) then begin
                 Msg:='Skipping downgrade from '+PreviousVersion+' to '+CurrentVersion;
                 if ParamIsSet('SKIPDOWNGRADE') or (ExpandConstant('{log}')='') then
@@ -717,20 +734,26 @@ begin
   ShellExec('','https://github.com/git-for-windows/git/wiki/Symbolic-Links','','',SW_SHOW,ewNoWait,ExitStatus);
 end;
 
+function IsOriginalUserAdmin():Boolean;
+var
+    ResultCode:Integer;
+begin
+    if not ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c net session >"{tmp}\net-session.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode) then
+        ResultCode:=-1;
+    Result:=(ResultCode=0);
+end;
+
 function EnableSymlinksByDefault():Boolean;
 var
     ResultCode:Integer;
-    Output:AnsiString;
 begin
-    if IsAdminLoggedOn then begin
-        // The only way to tell whether non-admin users can create symbolic
-	// links is to try using a non-admin user.
-        Result:=False;
-	Exit;
+    if IsOriginalUserAdmin then begin
+        Log('Symbolic link permission detection failed: running as admin');
+	Result:=False;
+    end else begin
+        ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
+        Result:=DirExists(ExpandConstant('{tmp}\symbolic link'));
     end;
-
-    ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
-    Result:=DirExists(ExpandConstant('{tmp}\symbolic link'));
 end;
 
 function GetTextWidth(Text:String;Font:TFont):Integer;
@@ -1353,7 +1376,7 @@ begin
     // by running `mklink` (unless started as administrator, in which case that
     // test would be meaningless).
     Data:=ReplayChoice('Enable Symlinks','Auto');
-    if Data='Auto' then begin
+    if (Data='Auto') Or ((Data='Disabled') And (VersionCompare(PreviousGitForWindowsVersion,'2.14.1')<=0)) then begin
         if EnableSymlinksByDefault() then
 	    Data:='Enabled'
 	else
