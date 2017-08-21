@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [cURL v7.55.1](https://curl.haxx.se/changes.html#7_55_1).
 * The XP-compatibility layer emulating pthreads (which is [no longer needed](https://git-for-windows.github.io/requirements.html)) [was dropped in favor of modern Windows threading APIs](https://github.com/git-for-windows/git/pull/1214); This should make threaded operations slightly faster and more robust.
+* On Windows, UNC paths can [now be accessed via `file://host/share/repo.git`-style paths](https://github.com/git-for-windows/git/commit/a352941117bc8d00dfddd7a594adf095d084d844).
 
 ### Bug Fixes
 
