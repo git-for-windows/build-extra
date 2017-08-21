@@ -913,8 +913,8 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] (
 		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
 		;;
 	--jump)
-		test $# = 1 ||
-		die "--jump must be the last option\n"
+		test $# = 1 || test $# = 2 -a a"$2" = a"${2#-}" ||
+		die "%s must be the last option\n" "--jump"
 
 		cd "$git_src_dir" &&
 		exec contrib/git-jump/git-jump merge ||
