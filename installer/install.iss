@@ -656,14 +656,14 @@ begin
         CurrentVersion:=ExpandConstant('{#APP_VERSION}');
         if (VersionCompare(CurrentVersion,PreviousGitForWindowsVersion)<0) then begin
             if WizardSilent() and (ParamIsSet('SKIPDOWNGRADE') or ParamIsSet('VSNOTICE')) then begin
-                Msg:='Skipping downgrade from '+PreviousVersion+' to '+CurrentVersion;
+                Msg:='Skipping downgrade from '+PreviousGitForWindowsVersion+' to '+CurrentVersion;
                 if ParamIsSet('SKIPDOWNGRADE') or (ExpandConstant('{log}')='') then
                     LogError(Msg)
                 else
                     Log(Msg);
                 ExitEarlyWithSuccess();
             end;
-            if SuppressibleMsgBox('Git for Windows '+PreviousVersion+' is currently installed.'+#13+'Do you really want to downgrade to Git for Windows '+CurrentVersion+'?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO then
+            if SuppressibleMsgBox('Git for Windows '+PreviousGitForWindowsVersion+' is currently installed.'+#13+'Do you really want to downgrade to Git for Windows '+CurrentVersion+'?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO then
                 Result:=False;
         end;
     end;
