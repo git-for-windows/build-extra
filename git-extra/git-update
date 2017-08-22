@@ -36,6 +36,7 @@ git_update () {
 	if test "$latest" = "$version"
 	then
 		echo "Up to date" >&2
+		return
 	fi
 
 	echo "Update $latest is available"
@@ -47,7 +48,14 @@ git_update () {
 	installer=$(mktemp -t gfw-install-XXXXXXXX.exe)
 	if test -z "$yn"
 	then
-		read -p "Download $filename and install [N/y]? " yn
+		other_bashes=$(($(ps | grep bash | wc -l)-1))
+		if test $other_bashes -le 0
+		then
+			warn=
+		else
+			warn=" (killing $other_bashes other Bash)"
+		fi
+		read -p "Download $filename and install$warn [N/y]? " yn
 		case "$yn" in
 		[Yy]*) ;;
 		*) return 1;;
@@ -57,6 +65,9 @@ git_update () {
 	fi
 	curl -# -L -o $installer $download || return
 	start "" "$installer" /SILENT
+	# `ps` without `-W` will automatically only catch MSYS2 processes
+	# that link to *this* MSYS2 runtime, i.e. no processes from other Git
+	# installations (e.g. Git for Windows' SDK) will be killed.
 	ps | grep bash | awk '{print "kill -9 " $2 ";" }' | sh
 }
 
