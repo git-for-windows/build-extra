@@ -48,7 +48,14 @@ git_update () {
 	installer=$(mktemp -t gfw-install-XXXXXXXX.exe)
 	if test -z "$yn"
 	then
-		read -p "Download $filename and install [N/y]? " yn
+		other_bashes=$(($(ps | grep bash | wc -l)-1))
+		if test $other_bashes -le 0
+		then
+			warn=
+		else
+			warn=" (killing $other_bashes other Bash)"
+		fi
+		read -p "Download $filename and install$warn [N/y]? " yn
 		case "$yn" in
 		[Yy]*) ;;
 		*) return 1;;
