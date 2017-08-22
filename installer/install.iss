@@ -1699,8 +1699,9 @@ begin
     if FindFirst(ExpandConstant(Bin+'*.dll'), FindRec) then
     try
         repeat
-            if ((FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY) = 0) and
-                    not FileExists(LibExec+FindRec.Name) then begin
+            if ((FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY) = 0) then begin
+                if FileExists(LibExec+FindRec.Name) then
+                    DeleteFile(LibExec+FindRec.Name);
                 HardlinkOrCopy(LibExec+FindRec.Name,Bin+FindRec.Name);
             end;
         until
