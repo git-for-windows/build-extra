@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 
 * It is [now possible to override `http.sslBackend` on the command-line](https://github.com/git-for-windows/git/commit/70c1ff8b0ef66321d630fe49d61ee1a9b6be6a4c).
 * The installer [now detects correctly whether symbolic links can be created by regular users](https://github.com/git-for-windows/build-extra/commit/5e438f707027eb99da1b1b381672e6d7dbc063a8).
+* Git Bash [now renders non-ASCII directories nicely](https://github.com/git-for-windows/build-extra/pull/152).
 
 ## Changes since Git for Windows v2.14.0(2) (August 7th 2017)
 
