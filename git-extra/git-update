@@ -36,6 +36,7 @@ git_update () {
 	if test "$latest" = "$version"
 	then
 		echo "Up to date" >&2
+		return
 	fi
 
 	echo "Update $latest is available"
