@@ -102,6 +102,14 @@ Name: consolefont; Description: Use a TrueType font in all console windows
 [Run]
 Filename: {app}\git-bash.exe; Parameters: --cd-to-home; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked
 Filename: {app}\ReleaseNotes.html; Description: View Release Notes; Flags: shellexec skipifdoesntexist postinstall skipifsilent
+Filename: "schtasks"; \
+    Description: Daily check for available update; \
+    Parameters: "/Create /F /SC DAILY /TN ""Git for Windows Updater"" /TR ""'{app}\bin\git.exe' update"""; \
+    Flags: runhidden postinstall
+
+[UninstallRun]
+Filename: "schtasks"; \
+    Parameters: "/Delete /F /TN ""Git for Windows Updater"""; \
 
 [Files]
 ; Install files that might be in use during setup under a different name.
