@@ -118,6 +118,7 @@ Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: replacesameversi
 Source: {#SourcePath}\..\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore; Check: ParamIsSet('VSNOTICE')
 Source: {#SourcePath}\..\edit-git-bash.exe; Flags: dontcopy
+Source: {#SourcePath}\..\proxy-lookup.exe; DestDir: {app}\{#MINGW_BITNESS}\bin; Flags: replacesameversion
 
 [Dirs]
 Name: "{app}\tmp"

@@ -1,6 +1,7 @@
 *.swp
 /ReleaseNotes.html
 edit-git-bash.exe
+proxy-lookup.exe
 /cached-source-packages/
 /download-stats.ids
 /git-extra/pkg/

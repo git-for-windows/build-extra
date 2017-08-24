@@ -5,6 +5,13 @@
 # when confirmation to do so is given.
 
 git_update () {
+	proxy=$(proxy-lookup https://api.github.com | grep URL | awk '{ print $4}' | awk -F";" '{print $1}')
+	if test "$proxy" != ""
+	then
+		export https_proxy="http://$proxy"
+		echo "Using proxy server $https_proxy detected from Internet Explorer settings"
+	fi
+
 	yn=
 	while test $# -gt 0
 	do
