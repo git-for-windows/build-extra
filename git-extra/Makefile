@@ -2,7 +2,7 @@ BUILDDIR ?= .
 SRCDIR ?= .
 
 all: $(BUILDDIR)/create-shortcut.exe $(BUILDDIR)/WhoUses.exe \
-	$(BUILDDIR)/blocked-file-util.exe
+	$(BUILDDIR)/blocked-file-util.exe $(BUILDDIR)/proxy-lookup.exe
 
 $(BUILDDIR)/create-shortcut.exe: $(BUILDDIR)/create-shortcut.o
 	$(CC) $(CFLAGS) -o $@ $^ -luuid -lole32
@@ -22,8 +22,12 @@ $(BUILDDIR)/%.o: $(SRCDIR)/%.cpp
 $(BUILDDIR)/blocked-file-util.exe: $(BUILDDIR)/blocked-file-util.o
 	$(CC) $(CFLAGS) -o $@ $^
 
+$(BUILDDIR)/proxy-lookup.exe: $(BUILDDIR)/proxy-lookup.o
+	$(CC) $(CFLAGS) -o $@ $^ -lshell32 -lwinhttp
+
 clean:
 	rm $(BUILDDIR)/create-shortcut.exe $(BUILDDIR)/create-shortcut.o
 	rm $(BUILDDIR)/WhoUses.exe $(BUILDDIR)/WhoUses.o \
 		$(BUILDDIR)/SystemInfo.o
 	rm $(BUILDDIR)/blocked-file-util.exe $(BUILDDIR)/blocked-file-util.o
+	rm $(BUILDDIR)/proxy-lookup.exe $(BUILDDIR)/proxy-lookup.o
