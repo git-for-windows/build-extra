@@ -790,7 +790,7 @@ require_git_src_dir () {
 	(cd "$git_src_dir" &&
 	 git config core.autocrlf false &&
 	 rm .git/index
-	 git stash) ||
+	 git reset --hard) ||
 	die "Could not make sure Git sources are checked out LF-only\n"
 }
 
