@@ -120,6 +120,9 @@ sync () { # [--force]
 		mkdir -p "$sdk/var/log" ||
 		die "Could not ensure %s/var/log/ exists\n" "$sdk"
 
+		remove_obsolete_packages ||
+		die "Could not remove obsolete packages\n"
+
 		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe -S$y_opt ||
 		die "Cannot run pacman in %s\n" "$sdk"
 
@@ -127,6 +130,12 @@ sync () { # [--force]
 		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\pacman.exe \
 			-Su $force --noconfirm ||
 		die "Could not update packages in %s\n" "$sdk"
+
+		PATH="$sdk/usr/bin:$PATH" \
+		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
+			pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
+			pacman-key --populate git-for-windows' ||
+		die "Could not re-populate git-for-windows-keyring\n"
 
 		case "$(tail -c 16384 "$sdk/var/log/pacman.log" |
 			grep '\[PACMAN\] starting .* system upgrade' |
@@ -140,6 +149,13 @@ sync () { # [--force]
 				--command=usr\\bin\\sh.exe -l \
 				-c 'pacman -Su '$force' --noconfirm' ||
 			die "Cannot update packages in %s\n" "$sdk"
+
+			PATH="$sdk/usr/bin:$PATH" \
+			"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
+				pacman-key --list-keys BB3AA74136C569BB \
+					>/dev/null ||
+				pacman-key --populate git-for-windows' ||
+			die "Could not re-populate git-for-windows-keyring\n"
 			;;
 		esac
 
@@ -289,6 +305,11 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/MINGW-packages/mingw-w64-pcre2
 		;;
+	busybox|mingw-w64-busybox)
+		package=mingw-w64-busybox
+		type=MINGW
+		pkgpath=/usr/src/MINGW-packages/mingw-w64-busybox
+		;;
 	msys2-runtime)
 		type=MSYS
 		extra_packages="msys2-runtime-devel"
@@ -325,18 +346,6 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
-	mingw-w64-curl-winssl-bin)
-		type=MINGW
-		pkgpath=/usr/src/MINGW-packages/mingw-w64-curl
-		extra_makepkg_opts="-p PKGBUILD-winssl-bin"
-		(cd "$sdk64/$pkgpath" &&
-		 test -f PKGBUILD-winssl-bin &&
-		 test PKGBUILD-winssl-bin -nt PKGBUILD &&
-		 test PKGBUILD-winssl-bin -nt make-PKGBUILD-winssl-bin.sh ||
-		 test ! -f make-PKGBUILD-winssl-bin.sh ||
-		 ./make-PKGBUILD-winssl-bin.sh) ||
-		die "Could not generate PKGBUILD-winssl-bin in %s\n" "$pkgpath"
-		;;
 	git-flow)
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
@@ -344,6 +353,10 @@ set_package () {
 	p7zip)
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
+	mingw-w64-asciidoctor-extensions)
+		type=MINGW
+		pkgpath=/usr/src/MINGW-packages/$package
 		;;
 	*)
 		die "Unknown package: %s\n" "$package"
@@ -396,6 +409,20 @@ update () { # <package>
 	foreach_sdk ff_master
 }
 
+remove_obsolete_packages () {
+	test "a$sdk" = "a$sdk32" &&
+	arch=i686 ||
+	arch=x86_64
+
+	for p in mingw-w64-$arch-curl-winssl-bin
+	do
+		test ! -d "$sdk"/var/lib/pacman/local/$p-[0-9]* ||
+		"$sdk"/git-cmd.exe --command=usr\\bin\\pacman.exe \
+			-R --noconfirm $p ||
+		die "Could not remove %s\n" "$p"
+	done
+}
+
 # require <metapackage> <telltale>
 require () {
 	test -d "$sdk"/var/lib/pacman/local/"${2:-$1}"-[0-9]* ||
@@ -405,19 +432,7 @@ require () {
 }
 
 install_git_32bit_prereqs () {
-	for prereq in mingw-w64-i686-asciidoctor-extensions
-	do
-		test ! -d "$sdk64"/var/lib/pacman/local/$prereq-[0-9]* ||
-		continue
-
-		sdk="$sdk32" require $prereq &&
-		pkg="$sdk32/var/cache/pacman/pkg/$("$sdk32/git-cmd.exe" \
-			--command=usr\\bin\\pacman.exe -Q "$prereq" |
-			sed -e 's/ /-/' -e 's/$/-any.pkg.tar.xz/')" &&
-		"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'pacman -U --noconfirm "'"$pkg"'"' ||
-		die "Could not install %s into SDK-64\n" "$prereq"
-	done
+	require mingw-w64-i686-asciidoctor-extensions
 }
 
 pkg_build () {
@@ -468,6 +483,8 @@ pkg_build () {
 				'"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk/$pkgpath"
 
+		git update-index -q --refresh &&
+		git diff-files --quiet --ignore-submodules PKGBUILD ||
 		git commit -s -m "$package: new version" PKGBUILD ||
 		die "%s: could not commit after build\n" "$sdk/$pkgpath"
 		;;
@@ -511,6 +528,7 @@ pkg_build () {
 
 		if test "a$sdk32" = "a$sdk"
 		then
+			git update-index -q --refresh &&
 			git diff-files --quiet --ignore-submodules PKGBUILD ||
 			git commit -s -m "$package: new version" PKGBUILD ||
 			die "%s: could not commit after build\n" "$sdk/$pkgpath"
@@ -772,7 +790,7 @@ require_git_src_dir () {
 	(cd "$git_src_dir" &&
 	 git config core.autocrlf false &&
 	 rm .git/index
-	 git stash) ||
+	 git reset --hard) ||
 	die "Could not make sure Git sources are checked out LF-only\n"
 }
 
@@ -895,8 +913,8 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] (
 		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
 		;;
 	--jump)
-		test $# = 1 ||
-		die "--jump must be the last option\n"
+		test $# = 1 || test $# = 2 -a a"$2" = a"${2#-}" ||
+		die "%s must be the last option\n" "--jump"
 
 		cd "$git_src_dir" &&
 		exec contrib/git-jump/git-jump merge ||
@@ -1350,6 +1368,13 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	die "Could not ensure valid login shell\n"
 
 	sdk="$sdk64"
+
+	portable_root=/usr/src/build-extra/portable/root/
+	rm -rf "$sdk$portable_root"/mingw64/libexec/git-core ||
+	die "Could not ensure that portable Git in '%s' is cleaned\n" "$sdk"
+	test -n "$only_64_bit" ||
+	rm -rf "$sdk32$portable_root"/mingw32/libexec/git-core ||
+	die "Could not ensure that portable Git in '%s' is cleaned\n" "$sdk32"
 
 	build_extra_dir="$sdk32/usr/src/build-extra"
 	test -n "$only_64_bit" ||
@@ -2047,7 +2072,10 @@ tag_git () { #
 		"$(sed -n '1s/.*\(Git for Windows v[^ ]*\).*/\1/p' \
 		<"$build_extra_dir/ReleaseNotes.md")" "$notes")" &&
 	(cd "$git_src_dir" &&
-	 git tag -m "$tag_message" -a "$nextver" git-for-windows/master) ||
+	 signopt= &&
+	 if git config user.signingkey >/dev/null; then signopt=-s; fi &&
+	 git tag -m "$tag_message" -a $signopt \
+		"$nextver" git-for-windows/master) ||
 	die "Could not tag %s in %s\n" "$nextver" "$git_src_dir"
 
 	echo "Created tag $nextver" >&2
@@ -2186,6 +2214,9 @@ pkg_upload () {
 }
 
 upload () { # <package>
+	test -n "$GPGKEY" ||
+	die "Need GPGKEY to upload packages\n"
+
 	set_package "$1"
 
 	grep -q '^machine api\.bintray\.com$' "$HOME"/_netrc ||
@@ -2212,6 +2243,317 @@ upload () { # <package>
 		echo "The local branch in $sdk64/$pkgpath has unpushed changes" >&2
 	 fi) ||
 	die "Could not push commits in %s/%s\n" "$sdk64" "$pkgpath"
+}
+
+updpkgsums () {
+	MINGW_INSTALLS=mingw64 \
+	"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c updpkgsums
+}
+
+upgrade () { # <package>
+	test -n "$GPGKEY" ||
+	die "Need GPGKEY to upload packages\n"
+
+	grep -q '^machine api\.bintray\.com$' "$HOME"/_netrc ||
+	die "Missing BinTray entries in ~/_netrc\n"
+
+	set_package "$1"
+
+	(cd "$sdk64/$pkgpath" &&
+	 require_push_url origin &&
+	 sdk="$sdk64" ff_master) || exit
+
+	relnotes_feature=
+	case "$package" in
+	mingw-w64-git-credential-manager)
+		repo=Microsoft/Git-Credential-Manager-for-Windows
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		tag_name="$(echo "$release" |
+			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
+		zip_name="$(echo "$release" | sed -n \
+			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p')"
+		version=${tag_name#v}
+		zip_prefix=${zip_name%$version.zip}
+		src_zip_prefix=${tag_name%$version}
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" \
+		 -e 's/^\(zip_url=.*\/\)gcm.*\(\$.*\)/\1'$zip_prefix'\2/' \
+		 -e 's/^\(src_zip_url=.*\/\).*\(\$.*\)/\1'$src_zip_prefix'\2/' \
+			PKGBUILD &&
+		 updpkgsums &&
+		 srcdir2="$(unzip -l $zip_prefix$version.zip | sed -n \
+		   's/^.\{28\} *\(.*\/\)\?git-credential-manager.exe/\1/p')" &&
+		 sed -i -e 's/^\(  srcdir2=\).*/\1"${srcdir}\/'$srcdir2'"/' \
+			PKGBUILD &&
+		 git commit -s -m "Upgrade $package to $version" PKGBUILD) &&
+		url=https://github.com/$repo/releases/tag/$tag_name &&
+		relnotes_feature='Comes with [Git Credential Manager v'$version']('"$url"').'
+		;;
+	git-extra)
+		(cd "$sdk64/$pkgpath" &&
+		 updpkgsums &&
+		 git update-index -q --refresh &&
+		 if ! git diff-files --quiet -- PKGBUILD
+		 then
+			git commit -s -m "git-extra: adjust checksums" PKGBUILD
+		 fi &&
+		 if test git-extra.install.in -nt git-extra.install
+		 then
+			MINGW_INSTALLS=mingw64 \
+			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+				'makepkg-mingw --nobuild' &&
+			git checkout HEAD -- PKGBUILD &&
+			git update-index -q --refresh &&
+			if ! git diff-files --quiet -- git-extra.install
+			then
+				git commit -s -m \
+					"git-extra: regenerate .install file" \
+					git-extra.install
+			fi
+		 fi)
+		;;
+	curl)
+		version="$(curl -s https://curl.haxx.se/download.html |
+		sed -n 's/.*<a href="\/download\/curl-\([1-9]*[^"]*\)\.tar\.bz2".*/\1/p')"
+		test -n "$version" ||
+		die "Could not determine newest cURL version\n"
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 updpkgsums &&
+		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
+		 git commit -s -m "curl: new version ($version)" PKGBUILD) ||
+		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+
+		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
+
+		(set_package mingw-w64-$1 &&
+		 cd "$sdk64/$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 updpkgsums &&
+		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
+		 git commit -s -m "curl: new version ($version)" PKGBUILD &&
+
+		 build "$package" &&
+		 install "$package" &&
+		 upload "$package") &&
+
+		url=https://curl.haxx.se/changes.html &&
+		url="$url$(echo "#$version" | tr . _)" &&
+		relnotes_feature='Comes with [cURL v'$version']('"$url"').'
+		;;
+	mingw-w64-git)
+		finalize release-notes &&
+		tag_git
+		;;
+	mingw-w64-git-lfs)
+		repo=git-lfs/git-lfs
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		version="$(echo "$release" |
+			sed -n 's/^  "tag_name": "v\(.*\)",\?$/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+		needle1='^  "body": ".* SHA-256 hashes.*git-lfs-windows'
+		needle2="$version\\.zip\\**\\\\r\\\\n\\([0-9a-f]*\\).*"
+		sha256_32="$(echo "$release" |
+			sed -n "s/$needle1-386-$needle2/\1/p")"
+		test 64 = $(echo -n "$sha256_32" | wc -c) ||
+		die "Could not determine SHA-256 of 32-bit %s\n" "$package"
+
+		# Incorrect SHA-256 for 32-bit 2.2.1:
+		# see https://github.com/git-lfs/git-lfs/issues/2408
+		test 2.2.1,1142055d51a7d70b3c2fbf184db41100457f170a532b638253991821890927b5 != "$version,$sha256_32" || sha256_32=0d6347bbdf25946f14949b50f18b9929183aefe55f6b626f8a618ae53c2220bb
+
+		sha256_64="$(echo "$release" |
+			sed -n "s/$needle1-amd64-$needle2/\1/p")"
+		test 64 = $(echo -n "$sha256_64" | wc -c) ||
+		die "Could not determine SHA-256 of 64-bit %s\n" "$package"
+		(cd "$sdk64/$pkgpath" &&
+		 url=https://github.com/$repo/releases/download/v$version/ &&
+		 zip32="git-lfs-windows-386-$version.zip" &&
+		 zip64="git-lfs-windows-amd64-$version.zip" &&
+		 curl -LO $url$zip32 &&
+		 curl -LO $url$zip64 &&
+		 printf "%s *%s\n%s *%s\n" \
+			"$sha256_32" "$zip32" "$sha256_64" "$zip64" |
+		 sha256sum -c - &&
+		 dir32="$(unzip -l $zip32 |
+			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs\.exe/\1/p' |
+			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
+		 dir64="$(unzip -l $zip64 |
+			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs\.exe/\1/p' |
+			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
+		 s1='s/\(folder=\)[^\n]*/\1' &&
+		 s2='s/\(sha256sum=\)[0-9a-f]*/\1' &&
+		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
+		 -e "/^i686)/{N;N;N;$s1$dir32/;$s2$sha256_32/}" \
+		 -e "/^x86_64)/{N;N;N;$s1$dir64/;$s2$sha256_64/}" \
+			PKGBUILD &&
+		 git commit -s -m "Upgrade $package to $version" PKGBUILD) &&
+		url=https://github.com/$repo/releases/tag/v$version &&
+		relnotes_feature='Comes with [Git LFS v'$version']('"$url"').'
+		;;
+	msys2-runtime)
+		(cd "$sdk64/usr/src/MSYS2-packages/msys2-runtime" &&
+		 if test ! -d src/msys2-runtime
+		 then
+			MSYSTEM=msys PATH="$sdk64/usr/bin:$PATH" \
+			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+				'makepkg-mingw --nobuild'
+		 fi ||
+		 die "Could not initialize worktree for '%s\n" "$package"
+
+		 cd src/msys2-runtime ||
+		 die "Invalid worktree for '%s'\n" "$package"
+
+		 require_remote cygwin \
+			git://sourceware.org/git/newlib-cygwin.git &&
+		 git fetch --tags cygwin &&
+		 require_remote git-for-windows \
+			https://github.com/git-for-windows/msys2-runtime ||
+		 die "Could not connect remotes for '%s'\n" "$package"
+
+		 tag=$(git for-each-ref --sort=-taggerdate --count=1 \
+			--format='%(refname)' refs/tags/cygwin-\*-release) &&
+		 test -n "$tag" ||
+		 die "Could not determine latest tag of '%s'\n" "$package"
+
+		 version="$(echo "$tag" | sed -ne 'y/_/./' -e \
+		    's|^refs/tags/cygwin-\([1-9][.0-9]*\)-release$|\1|p')" &&
+		 test -n "$version" ||
+		 die "Invalid version '%s' for '%s'\n" "$version" "$package"
+
+		 # rebase if necessary
+		 if test 0 -lt $(git rev-list --count \
+			git-for-windows/master..$tag)
+		 then
+			require_push_url git-for-windows &&
+			git reset --hard &&
+			git checkout git-for-windows/master &&
+			GIT_EDITOR=true \
+			"$sdk64"/usr/src/build-extra/shears.sh \
+				--merging --onto "$tag" merging-rebase &&
+			git push git-for-windows HEAD:master ||
+			die "Could not rebase '%s' to '%s'\n" "$package" "$tag"
+		 fi
+
+		 msys2_runtime_mtime=$(git log -1 --format=%ct \
+			git-for-windows/master --) &&
+		 msys2_package_mtime=$(git -C ../.. log -1 --format=%ct -- .) &&
+		 test $msys2_runtime_mtime -gt $msys2_package_mtime ||
+		 die "Package '%s' already up-to-date\n\t%s: %s\n\t%s: %s\n" \
+			"$package" \
+			"Most recent source code update" \
+			"$(date --date="@$msys2_runtime_mtime")" \
+			"Most recent package update" \
+			"$(date --date="@$msys2_package_mtime")"
+
+		 cygwin_url="$(curl -s https://cygwin.com/ |
+			sed -n '/The most recent version of the Cygwin DLL is/{
+			    N;s/.*<a href="\([^"]*\)">'"$version"'<\/a>.*/\1/p
+			}')" &&
+		 test -n "$cygwin_url" ||
+		 die "Could not retrieve Cygwin mail about v%s\n" "$version"
+
+		 git reset --hard &&
+		 git checkout git-for-windows/master &&
+		 commit_url=https://github.com/git-for-windows/msys2-runtime &&
+		 commit_url=$commit_url/commit/$(git rev-parse HEAD) &&
+		 cd ../.. &&
+		 if test "$version" = "$(sed -n 's/^pkgver=//p' <PKGBUILD)"
+		 then
+			pkgrel=$(($(sed -n 's/^pkgrel=//p' <PKGBUILD)+1)) &&
+			printf 'Comes with %s%s [%s](%s).' \
+			 "[patch level $pkgrel]($commit_url) " \
+			 'MSYS2 runtime (Git for Windows flavor) based on' \
+			 "Cygwin $version" "$cygwin_url" >../.git/relnotes &&
+			sed -i "s/^\\(pkgrel=\\).*/\\1$pkgrel/" PKGBUILD
+		 else
+			printf 'Comes with %s [%s](%s).' \
+			 'MSYS2 runtime (Git for Windows flavor) based on' \
+			 "Cygwin $version" "$cygwin_url" >../.git/relnotes &&
+			sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
+				-e "s/^\\(pkgrel=\\).*/\\11/" PKGBUILD
+		 fi &&
+		 git commit -s -m "$package: update to v$version" PKGBUILD &&
+		 MSYSTEM=msys PATH="$sdk64/usr/bin:$PATH" \
+		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+			./update-patches.sh &&
+		 git commit --amend -C HEAD ||
+		 die "Could not update PKGBUILD of '%s' to version %s\n" \
+			"$package" "$version" &&
+		 git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master
+		) || exit
+		relnotes_feature="$(cat "$sdk64/$pkgpath/../.git/relnotes")"
+		;;
+	mingw-w64-busybox)
+		(cd "$sdk64/$pkgpath" &&
+		 if test ! -d src/busybox-w32
+		 then
+			MINGW_INSTALLS=mingw64 \
+			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+				'makepkg-mingw --nobuild'
+		 fi &&
+		 url=https://github.com/git-for-windows/busybox-w32 &&
+		 (cd src/busybox-w32 &&
+		  require_remote git-for-windows "$url" &&
+		  require_remote rmyorston \
+			https://github.com/rmyorston/busybox-w32 ||
+		  die "Could not connect remotes for '%s'\n" "$package"
+		  if test 0 -lt $(git rev-list --count \
+			git-for-windows/master..rmyorston/master)
+		  then
+			require_push_url git-for-windows &&
+			git reset --hard &&
+			git checkout git-for-windows/master &&
+			GIT_EDITOR=true \
+			"$sdk64"/usr/src/build-extra/shears.sh --merging \
+				--onto rmyorston/master merging-rebase &&
+			git push git-for-windows HEAD:master ||
+			die "Could not rebase '%s' to '%s'\n" \
+				"$package" "rmyorston/master"
+		  fi) ||
+		 die "Could not initialize/rebase '%s'\n" "$package"
+
+		 built_from_commit="$(sed -n \
+			's/^pkgver=.*\.\([0-9a-f]*\)$/\1/p' <PKGBUILD)" &&
+		 test 0 -lt $(git -C src/busybox-w32 rev-list --count \
+			"$built_from_commit"..git-for-windows/master) ||
+		 die "Package '%s' already up-to-date at commit '%s'\n" \
+			"$package" "$built_from_commit"
+
+		 MINGW_INSTALLS=mingw64 \
+		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+			'makepkg-mingw --nobuild' &&
+		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
+		 git commit -s -m "busybox: upgrade to $version" PKGBUILD &&
+		 url=$url/commit/${version##*.} &&
+		 echo "Comes with [BusyBox v$version]($url)." \
+			>../.git/relnotes) || exit
+		relnotes_feature="$(cat "$sdk64/$pkgpath/../.git/relnotes")"
+		;;
+	*)
+		die "Unhandled package: %s\n" "$package"
+		;;
+	esac &&
+
+	build "$package" &&
+	install "$package" &&
+	upload "$package" &&
+
+	if test -n "$relnotes_feature"
+	then
+		mention feature "$relnotes_feature"&&
+		git -C "$sdk64/usr/src/build-extra" push origin HEAD
+	fi
 }
 
 set_version_from_sdks_git () {
@@ -2292,6 +2634,19 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 	fi ||
 	die "Could not edit release notes\n"
 
+	# make sure that the Git version is always reported first
+	case "$*" in
+	'Comes with [Git v'*)
+		sed -i -ne '/^### New Features/{
+			p;n;
+			/^$/{p;n};
+			:1;
+			/^\* Comes with \[Git v/{G;:2;p;n;b2};
+			x;/./{G;x};n;b1;
+			}' -e p "$relnotes"
+		;;
+	esac
+
 	(cd "$sdk64"/usr/src/build-extra &&
 	 what_singular="$(echo "$what" |
 		 sed -e 's/Fixes/Fix/' -e 's/Features/Feature/')" &&
@@ -2349,6 +2704,20 @@ finalize () { # <what, e.g. release-notes>
 
 	test "$displayver" != "$(version_from_release_notes)" ||
 	die "Version %s already in the release notes\n" "$displayver"
+
+	case "$nextver" in
+	*.windows.1)
+		v=${nextver%.windows.1} &&
+		if ! grep -q "^\\* Comes with \\[Git $v\\]" \
+			"$sdk64"/usr/src/build-extra/ReleaseNotes.md
+		then
+			url=https://github.com/git/git/blob/$v &&
+			url=$url/Documentation/RelNotes/${v#v}.txt &&
+			mention feature 'Comes with [Git '$v']('$url').'
+		fi ||
+		die "Could not mention that Git was upgraded to $v\n"
+		;;
+	esac
 
 	sed -i -e "1s/.*/# Git for Windows v$displayver Release Notes/" \
 		-e "2s/.*/Latest update: $(today)/" \
@@ -2409,6 +2778,10 @@ release () { #
 				"/usr/src/build-extra/$dir/release.sh '$ver'" ||
 			die "Could not make %s in %s\n" "$dir" "$sdk"
 		done
+		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			"/usr/src/build-extra/mingit/release.sh \
+				--busybox '$ver-busybox'" ||
+		die "Could not make BusyBox-based MinGit in %s\n" "$sdk"
 	done
 
 	sign_files "$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
@@ -2470,6 +2843,9 @@ publish () { #
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not prepare build-extra for download-stats update\n"
 
+	"$sdk64/mingw64/bin/node.exe" -v ||
+	die "Could not execute node.exe\n"
+
 	echo "Preparing release message"
 	name="Git for Windows $displayver"
 	text="$(sed -n \
@@ -2483,6 +2859,8 @@ publish () { #
 			PortableGit-"$ver"-32-bit.7z.exe \
 			MinGit-"$ver"-64-bit.zip \
 			MinGit-"$ver"-32-bit.zip \
+			MinGit-"$ver"-busybox-64-bit.zip \
+			MinGit-"$ver"-busybox-32-bit.zip \
 			Git-"$ver"-64-bit.tar.bz2 \
 			Git-"$ver"-32-bit.tar.bz2) |
 		sed -n 's/\([^ ]*\) \*\(.*\)/\2 | \1/p')"
@@ -2498,6 +2876,8 @@ publish () { #
 		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe \
 		"$HOME"/MinGit-"$ver"-64-bit.zip \
 		"$HOME"/MinGit-"$ver"-32-bit.zip \
+		"$HOME"/MinGit-"$ver"-busybox-64-bit.zip \
+		"$HOME"/MinGit-"$ver"-busybox-32-bit.zip \
 		"$HOME"/Git-"$ver"-64-bit.tar.bz2 \
 		"$HOME"/Git-"$ver"-32-bit.tar.bz2 ||
 	die "Could not upload files\n"

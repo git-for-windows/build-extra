@@ -2,7 +2,7 @@
 
 pkgname=('git-extra')
 _ver_base=1.1
-pkgver=1.1.134.7664e71
+pkgver=1.1.171.a99a861
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('i686' 'x86_64')
@@ -14,8 +14,12 @@ optdepends=('vim' 'filesystem')
 install='git-extra.install'
 pkgver() {
   cd "$startdir"
-  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD -- .)" \
-    "$(git rev-parse --short HEAD)"
+  rev="$(git rev-list -1 HEAD -- .)"
+  test -n "$(git show . |
+    sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]/p')" ||
+  rev="$(git rev-list -1 $rev^ -- .)"
+  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $rev -- .)" \
+    "$(git rev-parse --short $rev)"
 }
 source=('inputrc'
         'vimrc'
@@ -35,26 +39,28 @@ source=('inputrc'
         '99-post-install-cleanup.post'
         'gitattributes'
         'astextplain'
-        'git-sdk.sh')
-md5sums=('3fab57079f0322efe256e95fe29d516f'
-         'e7ad03fffc29e619e402dbd5ec9ef74c'
-         'bfb591886b2a28af3334521e71198b74'
-         '11d0e9aad647db83c56d9a89608baf11'
-         'e3b411a4f2e6553e41d0c4261160dd7d'
-         'fb92ea53ef01b4f60ed04eabac81e2c7'
-         '7180794bfa88c1f687c1a7940fc62293'
-         'f0098a4ae414c44f336e52ae5fc17bce'
-         '5ab834ba300fabf88ca8c4d0d8569b8d'
-         'eb10eb010f37dfa74af52ae6d342315b'
-         'b1bf08d102890207e0aa32fd28a4eef4'
-         '97dfb0ef144c605dc6bb16fbac382f9a'
-         '3f3dff320418411107e3111be9d4b256'
-         'f86996ac59f25aff763a81695bbd8696'
-         'a8feb7ee2fa91bb179478f099444746f'
-         'bdeb6046510aa1a6cd76e7f86673aa3f'
-         '52c242d0c84d6934ec6a94766f8a70f0'
-         'e87a5075629b58fe329094b92c1d13db'
-         '593dbce30c442529b4351650f4422b6e')
+        'git-sdk.sh'
+        'git-update')
+sha256sums=('e6a17a669fe8282792b3d98a2c47718425364a0ca9a456bdbad4a69c57ec6978'
+            '36e0b6ae5fcf6361b5dad8bac815603d9211b38dfd8fdad89c01c34412529959'
+            '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
+            '694b07404618d616aa316a632090ce64f2f89df3cc62b9d949efc0c2569b016e'
+            'a9ada325a279ce460aeb663a715e4c335d8972f497d48d97ff5524053b1fb43a'
+            '197791d75a7f7e18c19e3673266d4d8a9f2620e0d046f6478cb94ad422fb21c4'
+            'aa388de88e87889efc9117d6799dc4787963c11e98da8b4e78e820e88552ec10'
+            '3e4d4f7cfcbd78d6b6344fe6acea2fc0177f7360d57d1c55344bd25d48633d6c'
+            '402c51eba82453a76f5110f4754bb1005df507a6e4532574c2b9627ff4e1dc81'
+            'd9024bab283ebb67b5d39d49ee5d2592e170abf1f92d3db34edcdd7eeed0b6b9'
+            'f8afd96004c02ce0127da5d31ce47ef476e04acc9ea29e979397c0eb2cdb6502'
+            '4678d4939642b9a5b13e2f700a6968550f8e936738879a625479df5429a60e53'
+            '255c64eecf1dbd188ef3452e73b9e099f3bb0e56bc23ff1493e4cc57f724d52f'
+            '02d38e480a1ec4227e94a5aa073945901680aa3387e3386f8b77f10426ebbc75'
+            'dcbd1b981d5b899afe30151a5f5a27ea52025ff1335f131af1b5891f62ddd55b'
+            '683ab066be19cb4defec470ebd53f165ca5dbf761fd40c13aee8abe31ba42803'
+            '2dba0f5f8133b8e8d1da8291efec140cd516e385f04b33b95e4f97fc40f628b3'
+            'f4e310c00721f8834949268167b0584b7c9323775a318574dbca960af10d7998'
+            '89b4d784e1c07d67c11a35abc7094709c216372e2099b2eb7abbc6eb7c34861f'
+            '33a49036a52442a9754240e67abeb9dc2f686e8e25e5f70d522d78a150085e0a')
 
 prepare() {
   test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
@@ -82,14 +88,15 @@ package() {
   install -d -m755 $pkgdir/etc/post-install
   install -d -m755 $pkgdir/usr/bin
   install -d -m755 $pkgdir/usr/share/git
-  install -d -m755 $pkgdir/${MINGW_PREFIX}/bin
+  install -d -m755 $pkgdir${MINGW_PREFIX}/bin
+  install -d -m755 $pkgdir${MINGW_PREFIX}/libexec/git-core
   install -m644 inputrc $pkgdir/etc
   install -m644 vimrc $pkgdir/etc
   install -m755 vi $pkgdir/usr/bin
   install -m755 notepad $pkgdir/usr/bin
   install -m755 wordpad $pkgdir/usr/bin
-  install -m755 $builddir/create-shortcut.exe $pkgdir/${MINGW_PREFIX}/bin
-  install -m755 $builddir/WhoUses.exe $pkgdir/${MINGW_PREFIX}/bin
+  install -m755 $builddir/create-shortcut.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/WhoUses.exe $pkgdir${MINGW_PREFIX}/bin
   install -m755 git-prompt.sh $pkgdir/etc/profile.d
   install -m755 aliases.sh $pkgdir/etc/profile.d
   install -m755 env.sh $pkgdir/etc/profile.d
@@ -98,4 +105,5 @@ package() {
   install -m644 msys2-32.ico $pkgdir/usr/share/git
   install -m644 99-post-install-cleanup.post $pkgdir/etc/post-install
   install -m755 astextplain $pkgdir/usr/bin
+  install -m755 git-update $pkgdir${MINGW_PREFIX}/libexec/git-core
 }

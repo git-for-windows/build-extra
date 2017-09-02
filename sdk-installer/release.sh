@@ -78,9 +78,14 @@ fileList="etc/nsswitch.conf \
 	usr/bin/pacman.exe \
 	usr/bin/curl.exe \
 	usr/bin/gpg.exe \
-	$(dlls_for_exes /usr/bin/gpg.exe /usr/bin/curl.exe)
+	usr/bin/chmod.exe \
+	usr/bin/wc.exe \
+	usr/bin/find.exe \
+	$(dlls_for_exes /usr/bin/gpg.exe /usr/bin/curl.exe /usr/bin/chmod.exe \
+		/usr/bin/wc.exe /usr/bin/find.exe) \
 	usr/ssl/certs/ca-bundle.crt \
-	var/lib/pacman
+	var/lib/pacman \
+	usr/share/pacman/keyrings \
 	$FAKEROOTDIR/setup-git-sdk.bat $FAKEROOTDIR/etc $FAKEROOTDIR/usr"
 
 type 7za ||
@@ -101,8 +106,8 @@ echo "Creating archive" &&
  echo 'GUIMode="1"' &&
  echo 'InstallPath="C:\\git-sdk-'$BITNESS'"' &&
  echo 'OverwriteMode="2"' &&
- echo 'ExecuteFile="%%T\setup-git-sdk.bat"' &&
- echo 'Delete="%%T\setup-git-sdk.bat"' &&
+ echo 'ExecuteFile="setup-git-sdk.bat"' &&
+ echo 'Delete="setup-git-sdk.bat"' &&
  echo ';!@InstallEnd@!' &&
  cat "$TMPPACK") > "$TARGET" &&
 echo "Success! You will find the new installer at \"$TARGET\"." &&

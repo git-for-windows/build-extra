@@ -331,6 +331,9 @@ var
     // The options chosen at install time, to be written to /etc/install-options.txt
     ChosenOptions:String;
 
+    // Previous Git for Windows version (if upgrading)
+    PreviousGitForWindowsVersion:String;
+
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
     RdbPath:array[GP_BashOnly..GP_CmdTools] of TRadioButton;
@@ -556,42 +559,55 @@ begin
         Result:=-1;
 end;
 
-function IsDowngrade(CurrentVersion,PreviousVersion:String):Boolean;
+function VersionCompare(CurrentVersion,PreviousVersion:String):Integer;
 var
     i,j,Current,Previous:Integer;
 begin
-    Result:=False;
+    Result:=0;
     i:=1;
     j:=1;
     while True do begin
-        if j>Length(PreviousVersion) then
+        if j>Length(PreviousVersion) then begin
+	    Result:=+1;
             Exit;
+	end;
         if i>Length(CurrentVersion) then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
         Previous:=NextNumber(PreviousVersion,j);
-        if Previous<0 then
-            Exit;
         Current:=NextNumber(CurrentVersion,i);
+        if Previous<0 then begin
+            if Current>=0 then
+                Result:=+1;
+            Exit;
+	end;
         if Current<0 then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
-        if Current>Previous then
+        if Current>Previous then begin
+            Result:=+1;
             Exit;
+	end;
         if Current<Previous then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
-        if j>Length(PreviousVersion) then
+        if j>Length(PreviousVersion) then begin
+	    if i<=Length(CurrentVersion) then
+	        Result:=+1;
             Exit;
+	end;
         if i>Length(CurrentVersion) then begin
-            Result:=True;
+            Result:=-1;
             Exit;
         end;
         if CurrentVersion[i]<>PreviousVersion[j] then begin
-            Result:=PreviousVersion[j]='.';
+            if PreviousVersion[j]='.' then
+                Result:=-1
+            else
+                Result:=+1;
             Exit;
         end;
         if CurrentVersion[i]<>'.' then
@@ -612,7 +628,7 @@ end;
 
 function InitializeSetup:Boolean;
 var
-    CurrentVersion,PreviousVersion,Msg:String;
+    CurrentVersion,Msg:String;
     Version:TWindowsVersion;
     ErrorCode:Integer;
 begin
@@ -634,19 +650,20 @@ begin
         Result:=True;
     end;
 #endif
+    RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousGitForWindowsVersion);
 #if APP_VERSION!='0-test'
-    if Result and not ParamIsSet('ALLOWDOWNGRADE') and RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousVersion) then begin
+    if Result and not ParamIsSet('ALLOWDOWNGRADE') then begin
         CurrentVersion:=ExpandConstant('{#APP_VERSION}');
-        if (IsDowngrade(CurrentVersion,PreviousVersion)) then begin
+        if (VersionCompare(CurrentVersion,PreviousGitForWindowsVersion)<0) then begin
             if WizardSilent() and (ParamIsSet('SKIPDOWNGRADE') or ParamIsSet('VSNOTICE')) then begin
-                Msg:='Skipping downgrade from '+PreviousVersion+' to '+CurrentVersion;
+                Msg:='Skipping downgrade from '+PreviousGitForWindowsVersion+' to '+CurrentVersion;
                 if ParamIsSet('SKIPDOWNGRADE') or (ExpandConstant('{log}')='') then
                     LogError(Msg)
                 else
                     Log(Msg);
                 ExitEarlyWithSuccess();
             end;
-            if SuppressibleMsgBox('Git for Windows '+PreviousVersion+' is currently installed.'+#13+'Do you really want to downgrade to Git for Windows '+CurrentVersion+'?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO then
+            if SuppressibleMsgBox('Git for Windows '+PreviousGitForWindowsVersion+' is currently installed.'+#13+'Do you really want to downgrade to Git for Windows '+CurrentVersion+'?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO then
                 Result:=False;
         end;
     end;
@@ -717,20 +734,26 @@ begin
   ShellExec('','https://github.com/git-for-windows/git/wiki/Symbolic-Links','','',SW_SHOW,ewNoWait,ExitStatus);
 end;
 
+function IsOriginalUserAdmin():Boolean;
+var
+    ResultCode:Integer;
+begin
+    if not ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c net session >"{tmp}\net-session.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode) then
+        ResultCode:=-1;
+    Result:=(ResultCode=0);
+end;
+
 function EnableSymlinksByDefault():Boolean;
 var
     ResultCode:Integer;
-    Output:AnsiString;
 begin
-    if IsAdminLoggedOn then begin
-        // The only way to tell whether non-admin users can create symbolic
-	// links is to try using a non-admin user.
-        Result:=False;
-	Exit;
+    if IsOriginalUserAdmin then begin
+        Log('Symbolic link permission detection failed: running as admin');
+	Result:=False;
+    end else begin
+        ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
+        Result:=DirExists(ExpandConstant('{tmp}\symbolic link'));
     end;
-
-    ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
-    Result:=DirExists(ExpandConstant('{tmp}\symbolic link'));
 end;
 
 function GetTextWidth(Text:String;Font:TFont):Integer;
@@ -1353,7 +1376,7 @@ begin
     // by running `mklink` (unless started as administrator, in which case that
     // test would be meaningless).
     Data:=ReplayChoice('Enable Symlinks','Auto');
-    if Data='Auto' then begin
+    if (Data='Auto') Or ((Data='Disabled') And (VersionCompare(PreviousGitForWindowsVersion,'2.14.1')<=0)) then begin
         if EnableSymlinksByDefault() then
 	    Data:='Enabled'
 	else
@@ -1676,8 +1699,9 @@ begin
     if FindFirst(ExpandConstant(Bin+'*.dll'), FindRec) then
     try
         repeat
-            if ((FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY) = 0) and
-                    not FileExists(LibExec+FindRec.Name) then begin
+            if ((FindRec.Attributes and FILE_ATTRIBUTE_DIRECTORY) = 0) then begin
+                if FileExists(LibExec+FindRec.Name) then
+                    DeleteFile(LibExec+FindRec.Name);
                 HardlinkOrCopy(LibExec+FindRec.Name,Bin+FindRec.Name);
             end;
         until
@@ -1704,7 +1728,7 @@ end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
 var
-    AppDir,BinDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
+    AppDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
     BuiltIns,ImageNames,EnvPath:TArrayOfString;
     Count,i:Longint;
     RootKey:Integer;
@@ -1732,16 +1756,6 @@ begin
 
     AppDir:=ExpandConstant('{app}');
     ProgramData:=ExpandConstant('{commonappdata}');
-
-    {
-        Replace curl binaries in "/mingw64/bin" with curl-winssl variants
-        This needs to be done before copying dlls from "/mingw64/bin" to "/mingw64/libexec/git-core"
-    }
-
-    BinDir:=AppDir+'\{#MINGW_BITNESS}\bin\';
-    if RdbCurlVariant[GC_WinSSL].Checked and (not ReplaceFile(BinDir+'curl-winssl\curl.exe',BinDir+'curl.exe') or not ReplaceFile(BinDir+'curl-winssl\libcurl-4.dll',BinDir+'libcurl-4.dll')) then begin
-        Log('Line {#__LINE__}: Replacing curl-openssl with curl-winssl failed.');
-    end;
 
     {
         Copy dlls from "/mingw64/bin" to "/mingw64/libexec/git-core" if they are
@@ -1831,6 +1845,19 @@ begin
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to configure SSL CA info: ' + Cmd);
     end;
+
+    {
+        Configure http.sslBackend according to the user's choice.
+    }
+
+    if RdbCurlVariant[GC_WinSSL].Checked then begin
+        Cmd:='schannel';
+    end else begin
+        Cmd:='openssl';
+    end;
+    if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system http.sslBackend '+Cmd,
+                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+        LogError('Unable to configure the HTTPS backend: '+Cmd);
 
     {
         Adapt core.autocrlf
@@ -1995,7 +2022,10 @@ begin
            (StringChangeEx(Cmd,'%1','%v.',false)<>1) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell\command','',Cmd)) or
-           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell','Icon',Ico)) then
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_shell','Icon',Ico)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\background\shell\git_shell','',Msg)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\background\shell\git_shell\command','',Cmd)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\background\shell\git_shell','Icon',Ico)) then
             LogError('Line {#__LINE__}: Unable to create "Git Bash Here" shell extension.');
     end;
 
@@ -2009,7 +2039,10 @@ begin
            (StringChangeEx(Cmd,'%1','%v.',false)<>1) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui','',Msg)) or
            (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui\command','',Cmd)) or
-           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui','Icon',Ico))
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\Background\shell\git_gui','Icon',Ico)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\Background\shell\git_gui','',Msg)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\Background\shell\git_gui\command','',Cmd)) or
+           (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\LibraryFolder\Background\shell\git_gui','Icon',Ico))
         then
             LogError('Line {#__LINE__}: Unable to create "Git GUI Here" shell extension.');
     end;

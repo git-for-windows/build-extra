@@ -61,10 +61,23 @@ GITATTRIBUTES
 	grep -q '^# Fixup git-bash in non login env' /etc/bash.bashrc ||
 	printf "\n# Fixup git-bash in non login env\nshopt -q login_shell || . /etc/profile.d/git-prompt.sh\n" >> /etc/bash.bashrc
 
-	grep -q git-for-windows etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://dl.bintray.com/$repo/pacman/$arch\nSigLevel = Optional\n' etc/pacman.conf
+	grep -q git-for-windows[^-] etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://dl.bintray.com/$repo/pacman/$arch\n' etc/pacman.conf
 
-	test i686 != $(uname -m) ||
+	! grep -A2 git-for-windows[^-] etc/pacman.conf |
+	grep -q '^SigLevel = Optional' ||
+	sed -i -e '/\[git-for-windows\]/{N;N;s/\nSigLevel = Optional//}' \
+		etc/pacman.conf
+
+	uname_m="$(uname -m)"
+	test i686 = "$uname_m" ||
+	grep -q git-for-windows-mingw32 etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i[git-for-windows-mingw32]\nServer = https://dl.bintray.com/git-for-windows/pacman/i686\n' etc/pacman.conf
+	test x86_64 = "$uname_m" ||
+	grep -q git-for-windows-mingw64 etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i[git-for-windows-mingw64]\nServer = https://dl.bintray.com/git-for-windows/pacman/x86_64\n' etc/pacman.conf
+
+	test i686 != $"uname -m" ||
 	case "$(md5sum.exe < /msys2.ico)" in
 	292ad5cd*) cp /usr/share/git/msys2-32.ico /msys2.ico;;
 	esac
@@ -116,6 +129,19 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	! grep -q '^# Define default printer' /etc/profile ||
 	sed -i -e '/^# Define default printer/,/^$/d' \
 		-e 's/^\(export .* \)PRINTER /\1/' /etc/profile
+
+	! grep -A3 '^ *autocmd BufReadPost \*' \
+		/usr/share/vim/vim80/defaults.vim |
+	grep -q ' exe "normal! g`\\""' ||
+	sed -i -e '/^ *autocmd BufReadPost \*/,/\\ endif$/s/^/"/' \
+		/usr/share/vim/vim80/defaults.vim
+
+	! grep -q '^if .*command -v getent' /etc/bash.bashrc ||
+	sed -i '/^if .*command -v getent/,/^fi/s/^/#/' /etc/bash.bashrc
+
+	# Ensure that Git for Windows' GPG keyring is still imported
+	pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
+	pacman-key --populate git-for-windows
 }
 
 post_upgrade () {

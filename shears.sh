@@ -585,15 +585,15 @@ setup () {
 
 	git config alias..r "!sh \"$this\"" &&
 	generate_script > "$git_dir"/SHEARS-SCRIPT &&
-	GIT_EDITOR="$(cd "$git_dir" && pwd)/SHEARS-EDITOR" &&
-	cat > "$GIT_EDITOR" << EOF &&
+	shears_editor="$(cd "$git_dir" && pwd)/SHEARS-EDITOR" &&
+	cat > "$shears_editor" << EOF &&
 #!/bin/sh
 
 exec "$this" edit "$(git var GIT_EDITOR)" "\$@"
 EOF
-	chmod +x "$GIT_EDITOR" &&
-	GIT_EDITOR="\"$GIT_EDITOR\"" &&
-	GIT_SEQUENCE_EDITOR="$GIT_EDITOR" &&
+	chmod +x "$shears_editor" &&
+	GIT_EDITOR="\"$shears_editor\"" &&
+	GIT_SEQUENCE_EDITOR="$shears_editor" &&
 	export GIT_EDITOR GIT_SEQUENCE_EDITOR
 }
 

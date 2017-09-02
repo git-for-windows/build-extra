@@ -37,7 +37,7 @@ export CURL_CA_BUNDLE
 
 mode=
 case "$1" in
-fetch|add|remove|push|files|dirs|orphans)
+fetch|add|remove|push|files|dirs|orphans|push_missing_signatures)
 	mode="$1"
 	shift
 	;;
@@ -101,7 +101,8 @@ upload () { # <package> <version> <arch> <filename>
 		return
 	}
 	echo "Uploading $1..." >&2
-	curl --netrc -fT "$4" "$content_url/$1/$2/$3/$4" ||
+	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
+		-fT "$4" "$content_url/$1/$2/$3/$4" ||
 	die "Could not upload $4 to $1/$2/$3"
 }
 
@@ -110,8 +111,18 @@ publish () { # <package> <version>
 		echo "publish: curl --netrc -fX POST $content_url/$1/$2/publish"
 		return
 	}
-	curl --netrc -fX POST "$content_url/$1/$2/publish" ||
-	die "Could not publish $2 in $1"
+	curl --netrc --connect-timeout 300 --max-time 300 \
+		--expect100-timeout 300 --speed-time 300 --retry 5 \
+		-fX POST "$content_url/$1/$2/publish" ||
+	while test $? = 7
+	do
+		echo "Timed out connecting to host, retrying in 5" >&2
+		sleep 5
+		curl --netrc --connect-timeout 300 --max-time 300 \
+			--expect100-timeout 300 --speed-time 300 --retry 5 \
+			-fX POST "$content_url/$1/$2/publish"
+	done ||
+	die "Could not publish $2 in $1 (exit code $?)"
 }
 
 
@@ -120,7 +131,7 @@ delete_version () { # <package> <version>
 		echo "delete: curl --netrc -fX DELETE $packages_url/$1/versions/$2"
 		return
 	}
-	curl --netrc -fX DELETE "$packages_url/$1/versions/$2" ||
+	curl --netrc --retry 5 -fX DELETE "$packages_url/$1/versions/$2" ||
 	die "Could not delete version $2 of $1"
 }
 
@@ -130,7 +141,7 @@ package_list () { # db.tar.xz
 }
 
 package_exists () { # package-name
-	case "$(curl --netrc -s "$packages_url/$1")" in
+	case "$(curl --netrc --retry 5 -s "$packages_url/$1")" in
 	*\"name\":\""$1"\"*)
 		return 0
 		;;
@@ -142,7 +153,7 @@ package_exists () { # package-name
 }
 
 db_version () {
-	json="$(curl --netrc -s \
+	json="$(curl --netrc --retry 5 -s \
 		"$packages_url/package-database/versions/_latest")"
 	latest="$(expr "$json" : '.*"name":"\([^"]*\)".*')"
 	test -n "$latest" ||
@@ -244,47 +255,64 @@ update_local_package_databases () {
 	for arch in $architectures
 	do
 		(cd "$(arch_dir $arch)" &&
-		 repo-add $signopt --new git-for-windows.db.tar.xz *.pkg.tar.xz)
+		 repo-add $signopt --new git-for-windows.db.tar.xz \
+			*.pkg.tar.xz &&
+		 case "$arch" in
+		 i686)
+			repo-add $signopt --new \
+				git-for-windows-mingw32.db.tar.xz \
+				mingw-w64-$arch-*.pkg.tar.xz;;
+		 x86_64)
+			repo-add $signopt --new \
+				git-for-windows-mingw64.db.tar.xz \
+				mingw-w64-$arch-*.pkg.tar.xz;;
+		 esac)
 	done
 }
 
 push () {
-	update_local_package_databases
-	for arch in $architectures
-	do
-		arch_url=$base_url/$arch
-		dir="$(arch_dir $arch)"
-		mkdir -p "$dir"
-		(cd "$dir" &&
-		 echo "Getting $arch_url/git-for-windows.db.tar.xz" &&
-		 curl -L $arch_url/git-for-windows.db.tar.xz > .remote
-		) ||
-		die "Could not get remote index for $arch"
-	done
-
-	old_list="$((for arch in $architectures
-		do
-			dir="$(arch_dir $arch)"
-			test -s "$dir/.remote" &&
-			package_list "$dir/.remote"
-		done) |
-		sort | uniq)"
-	new_list="$((for arch in $architectures
-		do
-			dir="$(arch_dir $arch)"
-			package_list "$dir/git-for-windows.db.tar.xz"
-		done) |
-		sort | uniq)"
-
-	to_upload="$(printf "%s\n%s\n%s\n" "$old_list" "$old_list" "$new_list" |
-		sort | uniq -u)"
-
-	test -n "$to_upload" || test "x$old_list" != "x$new_list" || {
-		echo "Nothing to be done" >&2
-		return
-	}
-
 	db_version="$(db_version)"
+	if test -z "$db_version"
+	then
+		to_upload=
+	else
+		update_local_package_databases
+		for arch in $architectures
+		do
+			arch_url=$base_url/$arch
+			dir="$(arch_dir $arch)"
+			mkdir -p "$dir"
+			(cd "$dir" &&
+			 echo "Getting $arch_url/git-for-windows.db.tar.xz" &&
+			 curl -Lfo .remote $arch_url/git-for-windows.db.tar.xz
+			) ||
+			die "Could not get remote index for $arch"
+		done
+
+		old_list="$((for arch in $architectures
+			do
+				dir="$(arch_dir $arch)"
+				test -s "$dir/.remote" &&
+				package_list "$dir/.remote"
+			done) |
+			sort | uniq)"
+		new_list="$((for arch in $architectures
+			do
+				dir="$(arch_dir $arch)"
+				package_list "$dir/git-for-windows.db.tar.xz"
+			done) |
+			sort | uniq)"
+
+		to_upload="$(printf "%s\n%s\n%s\n" \
+				"$old_list" "$old_list" "$new_list" |
+			sort | uniq -u)"
+
+		test -n "$to_upload" || test "x$old_list" != "x$new_list" || {
+			echo "Nothing to be done" >&2
+			return
+		}
+	fi
+
 	next_db_version="$(next_db_version "$db_version")"
 
 	test -z "$to_upload" || {
@@ -349,23 +377,123 @@ push () {
 		done
 	}
 
+	test -z "$db_version" ||
 	delete_version package-database "$db_version"
 
 	for arch in $architectures
 	do
 		(cd "$(arch_dir $arch)" &&
+		 files= &&
 		 for suffix in db db.tar.xz files files.tar.xz
 		 do
 			filename=git-for-windows.$suffix
-			test ! -f $filename ||
+			test ! -f $filename || files="$files $filename"
+			test ! -f $filename.sig || files="$files $filename.sig"
+
+			case "$arch" in
+			i686) filename=git-for-windows-mingw32.$suffix;;
+			x86_64) filename=git-for-windows-mingw64.$suffix;;
+			*) continue;;
+			esac
+
+			test ! -f $filename || files="$files $filename"
+			test ! -f $filename.sig || files="$files $filename.sig"
+		 done
+		 for filename in $files
+		 do
 			upload package-database $next_db_version $arch $filename
-			test ! -f $filename.sig ||
-			upload package-database $next_db_version $arch \
-				$filename.sig
 		 done
 		) || exit
 	done
 	publish package-database $next_db_version
+}
+
+file_exists () { # arch filename
+	curl -sfI "$base_url/$1/$2" >/dev/null
+}
+
+push_missing_signatures () {
+	list="$((for arch in $architectures
+		do
+			dir="$(arch_dir $arch)"
+			package_list "$dir/git-for-windows.db.tar.xz"
+		done) |
+		sort | uniq)"
+
+	db_version="$(db_version)"
+
+	for name in $list
+	do
+		count=0
+		basename=${name%%-[0-9]*}
+		version=${name#$basename-}
+		for arch in $architectures sources
+		do
+			case "$name,$arch" in
+			mingw-w64-i686,x86_64|mingw-w64-x86_64,i686)
+				# wrong architecture
+				continue
+				;;
+			mingw-w64-i686-*,sources)
+				# sources are "included" in x86_64
+				continue
+				;;
+			mingw-w64-x86_64-*,sources)
+				# sources are "included" in x86_64
+				filename=mingw-w64${name#*_64}.src.tar.gz
+				;;
+			*,sources)
+				filename=$name.src.tar.gz
+				;;
+			mingw-w64-*)
+				filename=$name-any.pkg.tar.xz
+				;;
+			*)
+				filename=$name-$arch.pkg.tar.xz
+				;;
+			esac
+			dir="$(arch_dir $arch)" &&
+			if test ! -f "$dir"/$filename.sig ||
+				file_exists $arch $filename.sig
+			then
+				continue
+			fi &&
+			(cd "$dir" &&
+			 echo "Uploading missing $arch/$filename.sig" &&
+			 upload $basename $version $arch $filename.sig) || exit
+			count=$(($count+1))
+		done
+		test $count = 0 || {
+			echo "Re-publishing $basename $version" &&
+			publish $basename $version
+		} ||
+		die "Could not re-publish $basename $version"
+	done
+
+	count=0
+	for arch in $architectures
+	do
+		for suffix in db db.tar.xz files files.tar.xz
+		do
+			filename=git-for-windows.$suffix
+			dir="$(arch_dir $arch)"
+			if test ! -f "$dir"/$filename.sig ||
+				file_exists $arch $filename.sig
+			then
+				continue
+			fi
+			(cd "$dir" &&
+			 echo "Uploading missing $arch/$filename.sig" &&
+			 upload package-database $db_version $arch \
+				$filename.sig) || exit
+			count=$(($count+1))
+		done || exit
+	done
+	test $count = 0 || {
+		echo "Re-publishing db $db_version" &&
+		publish package-database $db_version
+	} ||
+	die "Could not re-publish db $db_version"
 }
 
 reset_fifo_files () {

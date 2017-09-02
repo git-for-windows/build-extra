@@ -1,0 +1,74 @@
+#!/bin/sh
+
+# Compares the currently installed Git for Windows against latest available
+# release.  If versions differ, the bit matched installer is downloaded and run
+# when confirmation to do so is given.
+
+git_update () {
+	yn=
+	while test $# -gt 0
+	do
+		case "$1" in
+		-\?|--?\?|-h|--help) ;;
+		-y|--yes) yn=y; shift; continue;;
+		*) echo "Unknown option: $1" >&2;;
+		esac
+		printf >&2 '%s\n%s\n\t%s\n' \
+			"Usage: git-update [options]" \
+			"Options:" \
+			"-y, --yes Automatic yes to download and install prompt"
+		return 1
+	done
+
+	case "$(uname -m)" in
+	x86_64) bit=64;;
+	*) bit=32;;
+	esac
+
+	releases_url=https://api.github.com/repos/git-for-windows/git/releases
+	releases=$(curl --silent $releases_url/latest) || return
+
+	latest=$(echo "$releases" |
+		grep '"tag_name": "v' |
+		sed -E 's/.*"tag_name": "v([^"]*).*/\1/')
+	version=$(git --version | sed "s/git version //")
+	echo "Git for Windows $version (${bit}bit)" >&2
+	if test "$latest" = "$version"
+	then
+		echo "Up to date" >&2
+		return
+	fi
+
+	echo "Update $latest is available"
+	download=$(echo "$releases" |
+		grep '"browser_download_url": "' |
+		grep "$bit\-bit\.exe" |
+		sed -E 's/.*": "([^"]*).*/\1/')
+	filename=$(echo "$download" | sed -E 's/.*\/([^\/]*)$/\1/')
+	installer=$(mktemp -t gfw-install-XXXXXXXX.exe)
+	if test -z "$yn"
+	then
+		other_bashes=$(($(ps | grep bash | wc -l)-1))
+		if test $other_bashes -le 0
+		then
+			warn=
+		else
+			warn=" (killing $other_bashes other Bash)"
+		fi
+		read -p "Download $filename and install$warn [N/y]? " yn
+		case "$yn" in
+		[Yy]*) ;;
+		*) return 1;;
+		esac
+	else
+		echo "Downloading $filename" >&2
+	fi
+	curl -# -L -o $installer $download || return
+	start "" "$installer" /SILENT
+	# `ps` without `-W` will automatically only catch MSYS2 processes
+	# that link to *this* MSYS2 runtime, i.e. no processes from other Git
+	# installations (e.g. Git for Windows' SDK) will be killed.
+	ps | grep bash | awk '{print "kill -9 " $2 ";" }' | sh
+}
+
+git_update "$@"

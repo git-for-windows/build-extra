@@ -1,5 +1,5 @@
-# Git for Windows v2.13.1 Release Notes
-Latest update: June 13th 2017
+# Git for Windows v2.14.1 Release Notes
+Latest update: August 10th 2017
 
 ## Introduction
 
@@ -32,6 +32,84 @@ Git is licensed under the GNU General Public License version 2.
 Git for Windows also contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
+
+## Changes since Git for Windows v2.14.1 (August 10th 2017)
+
+### New Features
+
+* Comes with [cURL v7.55.1](https://curl.haxx.se/changes.html#7_55_1).
+* The XP-compatibility layer emulating pthreads (which is [no longer needed](https://git-for-windows.github.io/requirements.html)) [was dropped in favor of modern Windows threading APIs](https://github.com/git-for-windows/git/pull/1214); This should make threaded operations slightly faster and more robust.
+* On Windows, UNC paths can [now be accessed via `file://host/share/repo.git`-style paths](https://github.com/git-for-windows/git/commit/a352941117bc8d00dfddd7a594adf095d084d844).
+* Comes with [the new custom Git command `git update`](https://github.com/git-for-windows/build-extra/pull/151) to help keeping Git up-to-date on your machine.
+* Comes with [BusyBox v1.28.0pre.16298.bff40f8a8](https://github.com/git-for-windows/busybox-w32/commit/bff40f8a8).
+
+### Bug Fixes
+
+* It is [now possible to override `http.sslBackend` on the command-line](https://github.com/git-for-windows/git/commit/70c1ff8b0ef66321d630fe49d61ee1a9b6be6a4c).
+* The installer [now detects correctly whether symbolic links can be created by regular users](https://github.com/git-for-windows/build-extra/commit/5e438f707027eb99da1b1b381672e6d7dbc063a8).
+* Git Bash [now renders non-ASCII directories nicely](https://github.com/git-for-windows/build-extra/pull/152).
+* A regression that caused the fetch operation with lots of refs to be a lot slower than before [was fixed](https://github.com/git-for-windows/git/issues/1233).
+* The `git-gui.exe` and `gitk.exe` wrappers intended to be used in Git CMD [now handle command-line parameters correctly](https://github.com/git-for-windows/git/issues/1284).
+
+## Changes since Git for Windows v2.14.0(2) (August 7th 2017)
+
+Note: there have been MinGit-only releases v2.12.2(3) and v2.13.1(3) with backports of the important bug fix in v2.14.1 as well as the experimental `--show-ignored-directory` option of `git status`.
+
+### New Features
+
+* Comes with [Git v2.14.1](https://github.com/git/git/blob/v2.14.1/Documentation/RelNotes/2.14.1.txt).
+* Comes with [cURL v7.55.0](https://curl.haxx.se/changes.html#7_55_0).
+* The *Git Bash Here* context menu item [is now also available](https://github.com/git-for-windows/build-extra/pull/150) in the special [Libraries folders](https://msdn.microsoft.com/en-us/library/windows/desktop/dd758096.aspx).
+
+## Changes since Git for Windows v2.14.0 (August 6th 2017)
+
+### Bug Fixes
+
+* A regression introduced in v2.14.0 that prevented fetching via SSH [was fixed](https://github.com/git-for-windows/git/issues/1258).
+
+## Changes since Git for Windows v2.13.3 (July 13th 2017)
+
+### New Features
+
+* Comes with [Git v2.14.0](https://github.com/git/git/blob/v2.14.0/Documentation/RelNotes/2.14.0.txt).
+* Comes with [BusyBox v1.28.0pre.15857.9480dca7c](https://github.com/git-for-windows/busybox-w32/commit/9480dca7c).
+* Comes with [Git Credential Manager v1.12.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.12.0).
+* It is now possible to switch between Secure Channel and OpenSSL for Git's HTTPS transport by [setting the `http.sslBackend` config variable to "openssl" or "schannel"](https://github.com/git-for-windows/git/commit/d81216ee4dd46ae59a388044d1266d6fa9030c19); This [is now also the method used by the installer](https://github.com/git-for-windows/build-extra/commit/7c5a23970126e3cff1e1a7a763216b2a67005593) (rather than copying `libcurl-4.dll` files around).
+* The experimental option [`--show-ignored-directory` was added to `git status`](https://github.com/git-for-windows/git/pull/1243) to show only the name of ignored directories when the option `--untracked=all` is used.
+* Git for Windows releases now also include an experimental [BusyBox-based MinGit](https://github.com/git-for-windows/git/wiki/MinGit#experimental-busybox-based-mingit).
+
+### Bug Fixes
+
+* Repository-local aliases [are now resolved again in worktrees](https://github.com/git-for-windows/git/commit/6ba04141d88).
+* CamelCased aliases were broken in v2.13.3; This [has been fixed again](https://github.com/git-for-windows/git/commit/af0c2223da0).
+* The 32-bit Git binaries are now built against the same dependencies that are shipped with Git for Windows.
+
+## Changes since Git for Windows v2.13.2 (June 26th 2017)
+
+### New Features
+
+* Comes with [Git v2.13.3](https://github.com/git/git/blob/v2.13.3/Documentation/RelNotes/2.13.3.txt).
+* Comes with [Git LFS v2.2.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.2.1).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.8.2](https://cygwin.com/ml/cygwin-announce/2017-07/msg00044.html).
+
+### Bug Fixes
+
+* Git Bash [no longer tries to use the `getent` tool](https://github.com/git-for-windows/git/issues/1226) which was never shipped with Git for Windows.
+
+## Changes since Git for Windows v2.13.1(2) (June 15th 2017)
+
+### New Features
+
+* Comes with [Git v2.13.2](https://github.com/git/git/blob/v2.13.2/Documentation/RelNotes/2.13.2.txt).
+* Comes with [Git Credential Manager v1.10.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.10.1).
+* The Git Bash prompt [can now be overridden by creating the file `.config\git\git-prompt.sh`](https://github.com/git-for-windows/build-extra/pull/145).
+* Comes with [cURL v7.54.1](https://curl.haxx.se/changes.html#7_54_1).
+
+## Changes since Git for Windows v2.13.1 (June 13th 2017)
+
+### Bug Fixes
+
+* `git commit` and `git status` [no longer randomly throw segmentation faults](https://github.com/git-for-windows/git/issues/1202).
 
 ## Changes since Git for Windows v2.13.0 (May 10th 2017)
 

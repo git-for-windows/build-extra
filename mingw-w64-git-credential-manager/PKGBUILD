@@ -3,7 +3,7 @@
 _realname="git-credential-manager"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.10.0
+pkgver=1.12.0
 pkgrel=1
 _realver=$pkgver
 _realtag=$pkgver
@@ -17,13 +17,13 @@ groups=('VCS')
 
 source=("${zip_url}" "$src_zip_url")
 
-sha256sums=('6af4c533527837c59b8e8b27cc7cdbd47ab286f8e7c982980c77da0ca4ca0558'
-            '47a21ed3fdbede43d76347aa6bf58d78ffd94b1afe44dbe1c7dacd872e590711')
+sha256sums=('5776b58ec7cf2332cf86962a511a724e41e5ddd2148ce33a5e29b164deaa7d92'
+            '695e8a027ce69463adb9c0db211285c262c5c5e1f8ff32c9194d530a7af6a3b5')
 
 package() {
   builddir=build-${MINGW_CHOST}
   prefix="$pkgdir/${MINGW_PREFIX}"
-  srcdir2=${srcdir}/
+  srcdir2="${srcdir}/"
   install -d -m755 "${prefix}"/libexec/git-core
   install -m755 "$srcdir2"/*.{dll,exe} "${prefix}"/libexec/git-core
   install -d -m755 "${prefix}"/doc/git-credential-manager

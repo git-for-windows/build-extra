@@ -61,6 +61,62 @@ tar2zip () {
 	rm -rf $unpackdir &&
 	mkdir $unpackdir &&
 	(cd $unpackdir && tar xzf -) <"$1" &&
+	(cd $unpackdir/* &&
+	 bash -c 'source PKGBUILD &&
+		repo= &&
+		case "${source[0]}" in
+		*::git*)
+			repo="${source[0]%%::*}" &&
+			trailer="${source[0]##*#}" &&
+			case "$trailer" in
+			tag=*) rev=refs/tags/${trailer#tag=};;
+			branch=*) rev=refs/heads/${trailer#branch=};;
+			commit=*) rev=${trailer#commit=};;
+			"${source[0]}") rev=HEAD;;
+			*) echo "Unhandled trailer: $trailer" >&2; exit 1;;
+			esac &&
+			if test HEAD = $rev
+			then
+				zip=$repo.zip
+			else
+				zip=$repo-${rev##*/}.zip
+			fi &&
+			sed -i -e "s/^source=[^)]*/source=(\"$zip\"/" \
+			    -e "s/^\( *\)git am \(--[^ ]* \)\?/\1patch -p1 </" \
+			    PKGBUILD
+			;;
+		http:*|https:*)
+			sed -i "s/^\(source=(.\).*\/\([^)]*\)/\1\2/" PKGBUILD
+			;;
+		esac &&
+		case "${source[1]}" in
+		git+https:*.git)
+			test -z "$repo" || {
+				echo "Cannot handle *two* Git repos" >&2
+				exit 1
+			} &&
+			repo="${source[1]##*/}" &&
+			repo="${repo%.git}" &&
+			rev=HEAD &&
+			zip=$repo.zip &&
+			sed -i -e "s/git+https:.*$repo.git/$repo.zip/" \
+			    -e "s/^\( *\)git am \(--[^ ]* \)\?/\1patch -p1 </" \
+			    PKGBUILD
+
+			;;
+		esac &&
+		if test -n "$repo"
+		then
+			echo "Converting $repo to $zip" &&
+			if test git = $repo &&
+				! git -C $repo rev-parse -q --verify $rev
+			then
+				git -C "$repo" fetch origin $rev:$rev
+			fi &&
+			git -C "$repo" archive --prefix="$repo/" --format=zip \
+				"$rev" >"$zip" &&
+			rm -rf "$repo"
+		fi') &&
 	(cd $unpackdir && zip -9qr - .) >"$2" ||
 	die "Could not transmogrify $1 to $2"
 }
@@ -99,10 +155,11 @@ do
 		;;
 	esac
 
-	# Work around mismatched version uploaded in MSYS2
+	# Work around mismatched version uploaded in MSYS2/Git for Windows
 	case $name-$version in
 	dash-0.5.8-1) version=0.5.8-2;;
 	mingw-w64-*-antiword-0.37-2) version=0.37-1;;
+	mingw-w64-*-curl-7.55.0-2) version=7.55.0-1;;
 	esac
 
 	zipname=$name-$version.zip
@@ -139,15 +196,17 @@ do
 	then
 
 		case "$name" in
-		git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|msys2-runtime|mingw-w64-x86_64-git-credential-manager|mingw-w64-i686-git-credential-manager|mingw-w64-i686-git-lfs|mingw-w64-x86_64-git-lfs|mingw-w64-i686-curl-winssl-bin|mingw-w64-x86_64-curl-winssl-bin)
+		git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|msys2-runtime|mingw-w64-x86_64-git-credential-manager|mingw-w64-i686-git-credential-manager|mingw-w64-i686-git-lfs|mingw-w64-x86_64-git-lfs)
 			url="$bintray_source_url/$filename"
 			sf1_url=
 			sf2_url=
+			sf3_url=
 			;;
 		mingw-w64-*)
 			url=$mingw_source_url/$filename
 			sf1_url=$mingw_sf_source_url/$filename/download
 			sf2_url=$mingw_sf_source_url/$name-$version.src.tar.gz/download
+			sf3_url="$bintray_source_url/$filename"
 			;;
 		*)
 			if test ! -d /usr/src/MSYS2-packages/$name
@@ -190,6 +249,7 @@ do
 			url="$msys_source_url/$filename"
 			sf1_url="$msys_sf_source_url/$filename/download"
 			sf2_url="$bintray_source_url/$filename"
+			sf3_url=
 			;;
 		esac
 
@@ -197,7 +257,8 @@ do
 		curl -sfLo "$dir/$filename" "$url" ||
 		curl -sfLo "$dir/$filename" "$sf1_url" ||
 		curl -sfLo "$dir/$filename" "$sf2_url" ||
-		die "Could not download $filename from $url ($sf1_url $sf2_url)" >&2
+		curl -sfLo "$dir/$filename" "$sf3_url" ||
+		die "Could not download $filename from $url ($sf1_url $sf2_url $sf3_url)" >&2
 
 		test -s "$dir/$filename" ||
 		die "Empty file: $dir/$filename"

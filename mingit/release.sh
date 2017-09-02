@@ -18,6 +18,9 @@ while case "$1" in
 	output_directory="$(cd "${1#*=}" && pwd)" ||
 	die "Directory inaccessible: '${1#*=}'"
 	;;
+--busybox)
+	export MINIMAL_GIT_WITH_BUSYBOX=1
+	;;
 -*) die "Unknown option: %s\n" "$1";;
 *) break;;
 esac; do shift; done
