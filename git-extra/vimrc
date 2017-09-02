@@ -41,3 +41,8 @@ if has("autocmd")
 
       autocmd Syntax gitcommit setlocal textwidth=74
 endif " has("autocmd")
+
+" Fixing https://github.com/git-for-windows/git/issues/1083
+if ! empty('$GIT_PREFIX')
+	nnoremap <C-z> <NOP>
+endif
