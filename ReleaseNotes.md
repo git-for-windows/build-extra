@@ -52,6 +52,7 @@ This package contains software from a number of other projects including Bash, z
 * A regression that caused the fetch operation with lots of refs to be a lot slower than before [was fixed](https://github.com/git-for-windows/git/issues/1233).
 * The `git-gui.exe` and `gitk.exe` wrappers intended to be used in Git CMD [now handle command-line parameters correctly](https://github.com/git-for-windows/git/issues/1284).
 * The `core.longPaths` setting [is now heeded when packing refs](https://github.com/git-for-windows/git/issues/1218), and other previously forgotten Git commands.
+* Pressing Ctrl+Z in Git Bash [no longer kills Win32 processes (e.g. `git.exe`) anymore](https://github.com/git-for-windows/git/issues/1083), because POSIX job control is only available with MSYS2 processes.
 
 ## Changes since Git for Windows v2.14.0(2) (August 7th 2017)
 
