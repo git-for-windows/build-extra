@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [the new custom Git command `git update`](https://github.com/git-for-windows/build-extra/pull/151) to help keeping Git up-to-date on your machine.
 * Comes with [BusyBox v1.28.0pre.16298.bff40f8a8](https://github.com/git-for-windows/busybox-w32/commit/bff40f8a8).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.9.0](https://cygwin.com/ml/cygwin-announce/2017-09/msg00056.html).
+* Comes with [BusyBox v1.28.0pre.16353.2739df917](https://github.com/git-for-windows/busybox-w32/commit/2739df917).
 
 ### Bug Fixes
 
