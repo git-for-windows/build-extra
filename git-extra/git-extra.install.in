@@ -146,6 +146,15 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	# .bat files in /mingw{32,64}/bin are non-portable because they
 	# typically contain absolute paths
 	find /mingw*/bin/ -name \*.bat -exec rm {} \;
+
+	# absolute paths in the she-bang lines must be POSIX paths, not
+	# Windows paths, otherwise the SDK won't be portable
+	root="$(cygpath -am / | sed 's/\/$//')" &&
+	rootw="$(echo "$root" | sed "s/\//\\\\&/g")" &&
+	for s in $(grep -l "#\!$root/" $(find /mingw*/bin/ -size -17k -type f))
+	do
+		sed -i "1s/#\!$rootw/#\!/" $s || break
+	done
 }
 
 post_upgrade () {
