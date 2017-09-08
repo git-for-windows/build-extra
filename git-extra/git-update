@@ -5,6 +5,13 @@
 # when confirmation to do so is given.
 
 git_update () {
+	proxy=$(git config --get http.proxy)
+	if test -n "$proxy"
+	then
+		export https_proxy="$proxy"
+		echo "Using proxy server $https_proxy detected from git http.proxy" >&2
+	fi
+
 	yn=
 	while test $# -gt 0
 	do
@@ -39,7 +46,7 @@ git_update () {
 		return
 	fi
 
-	echo "Update $latest is available"
+	echo "Update $latest is available" >&2
 	download=$(echo "$releases" |
 		grep '"browser_download_url": "' |
 		grep "$bit\-bit\.exe" |
@@ -55,7 +62,7 @@ git_update () {
 		else
 			warn=" (killing $other_bashes other Bash)"
 		fi
-		read -p "Download $filename and install$warn [N/y]? " yn
+		read -p "Download $filename and install$warn [N/y]? " yn >&2
 		case "$yn" in
 		[Yy]*) ;;
 		*) return 1;;
