@@ -96,6 +96,10 @@ echo "Compiling edit-git-bash.exe ..."
 make -C ../ edit-git-bash.exe ||
 die "Could not build edit-git-bash.exe"
 
+# Compile proxy-lookup.exe
+make -C ../ proxy-lookup.exe ||
+die "Could not build proxy-lookup.exe."
+
 if test t = "$skip_files"
 then
 	LIST=

@@ -124,6 +124,10 @@ die "Could not generate ReleaseNotes.html."
 make -C ../ edit-git-bash.exe ||
 die "Could not build edit-git-bash.exe."
 
+# Compile proxy-lookup.exe
+make -C ../ proxy-lookup.exe ||
+die "Could not build proxy-lookup.exe."
+
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/package-versions.txt \
