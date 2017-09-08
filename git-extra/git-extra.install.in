@@ -142,6 +142,10 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	# Ensure that Git for Windows' GPG keyring is still imported
 	pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
 	pacman-key --populate git-for-windows
+
+	# .bat files in /mingw{32,64}/bin are non-portable because they
+	# typically contain absolute paths
+	find /mingw*/bin/ -name \*.bat -exec rm {} \;
 }
 
 post_upgrade () {
