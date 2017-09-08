@@ -103,7 +103,7 @@ Name: consolefont; Description: Use a TrueType font in all console windows
 Filename: {app}\git-bash.exe; Parameters: --cd-to-home; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked
 Filename: {app}\ReleaseNotes.html; Description: View Release Notes; Flags: shellexec skipifdoesntexist postinstall skipifsilent
 Filename: "schtasks"; \
-    Description: Daily check for available update; \
+    Description: Daily check for available update using git http.proxy if defined; \
     Parameters: "/Create /F /SC DAILY /TN ""Git for Windows Updater"" /TR ""'{app}\bin\git.exe' update"""; \
     Flags: runhidden postinstall
 
