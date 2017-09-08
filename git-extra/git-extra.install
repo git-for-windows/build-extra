@@ -172,6 +172,19 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	# Ensure that Git for Windows' GPG keyring is still imported
 	pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
 	pacman-key --populate git-for-windows
+
+	# .bat files in /mingw{32,64}/bin are non-portable because they
+	# typically contain absolute paths
+	find /mingw*/bin/ -name \*.bat -exec rm {} \;
+
+	# absolute paths in the she-bang lines must be POSIX paths, not
+	# Windows paths, otherwise the SDK won't be portable
+	root="$(cygpath -am / | sed 's/\/$//')" &&
+	rootw="$(echo "$root" | sed "s/\//\\\\&/g")" &&
+	for s in $(grep -l "#\!$root/" $(find /mingw*/bin/ -size -17k -type f))
+	do
+		sed -i "1s/#\!$rootw/#\!/" $s || break
+	done
 }
 
 post_upgrade () {
