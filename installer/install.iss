@@ -98,14 +98,11 @@ Name: gitlfs; Description: Git LFS (Large File Support); Types: default; Flags: 
 Name: assoc; Description: Associate .git* configuration files with the default text editor; Types: default
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows
+Name: autoupdate; Description: Check daily for Git for Windows updates
 
 [Run]
 Filename: {app}\git-bash.exe; Parameters: --cd-to-home; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked
 Filename: {app}\ReleaseNotes.html; Description: View Release Notes; Flags: shellexec skipifdoesntexist postinstall skipifsilent
-Filename: "schtasks"; Description: Daily check for available update using git http.proxy if defined; Parameters: "/Create /F /SC DAILY /TN ""Git for Windows Updater"" /TR ""'{app}\bin\git.exe' update"""; Flags: runhidden postinstall unchecked
-
-[UninstallRun]
-Filename: "schtasks"; Parameters: "/Delete /F /TN ""Git for Windows Updater"""
 
 [Files]
 ; Install files that might be in use during setup under a different name.
@@ -2063,6 +2060,15 @@ begin
     end;
 
     {
+        Install a scheduled task to try to auto-update Git for Windows
+    }
+
+    if IsComponentInstalled('autoupdate') then begin
+        if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Create /F /SC DAILY /TN "Git for Windows Updater" /TR "'+#39+'{app}\bin\git.exe'+#39+' update" >"{tmp}\schedule-autoupdate.log"'),'',SW_HIDE,ewWaitUntilTerminated,i) or (i<>0) then
+            LogError(ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater (see {tmp}\schedule-autoupdate.log).'));
+    end;
+
+    {
         Run post-install scripts to set up system environment
     }
 
@@ -2286,6 +2292,15 @@ begin
             RegWriteDWordValue(HKEY_CURRENT_USER,'Console','FontSize',0);
             RegWriteDWordValue(HKEY_CURRENT_USER,'Console','FontWeight',0);
         end;
+    end;
+
+    {
+        Remove the scheduled task to try to auto-update Git for Windows
+    }
+
+    if IsComponentInstalled('autoupdate') then begin
+        if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Delete /F /TN "Git for Windows Updater" >"{tmp}\remove-autoupdate.log"'),'',SW_HIDE,ewWaitUntilTerminated,i) or (i<>0) then
+            LogError(ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater (see "{tmp}\remove-autoupdate.log").'));
     end;
 
     {
