@@ -72,10 +72,13 @@ git_update () {
 	fi
 	curl -# -L -o $installer $download || return
 	start "" "$installer" /SILENT
+
+	# Kill all Bash processes (which will let MinTTY quit, too)"
+	#
 	# `ps` without `-W` will automatically only catch MSYS2 processes
 	# that link to *this* MSYS2 runtime, i.e. no processes from other Git
 	# installations (e.g. Git for Windows' SDK) will be killed.
-	ps | grep bash | awk '{print "kill -9 " $2 ";" }' | sh
+	ps | grep bash | awk '{print "kill -9 " $1 ";" }' | sh
 }
 
 git_update "$@"
