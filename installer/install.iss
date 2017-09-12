@@ -1549,6 +1549,7 @@ begin
             SuppressibleMsgBox('{#PLINK_PATH_ERROR_MSG}',mbError,MB_OK,IDOK);
         end;
     end else if (ProcessesPage<>NIL) and (CurPageID=ProcessesPage.ID) then begin
+        RefreshProcessList(NIL);
         // It would have been nicer to just disable the "Next" button, but the
         // WizardForm exports the button just read-only.
         for i:=0 to GetArrayLength(Processes)-1 do begin
