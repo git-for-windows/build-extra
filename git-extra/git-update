@@ -78,7 +78,7 @@ git_update () {
 	# `ps` without `-W` will automatically only catch MSYS2 processes
 	# that link to *this* MSYS2 runtime, i.e. no processes from other Git
 	# installations (e.g. Git for Windows' SDK) will be killed.
-	ps | grep bash | awk '{print "kill -9 " $1 ";" }' | sh
+	ps | grep ' /usr/bin/bash$' | awk '{print "kill -9 " $1 ";" }' | sh
 }
 
 git_update "$@"
