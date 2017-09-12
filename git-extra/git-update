@@ -4,6 +4,50 @@
 # release.  If versions differ, the bit matched installer is downloaded and run
 # when confirmation to do so is given.
 
+
+# Counts how many Bash instances are running, apart from the current one (if
+# any: `git update` might have been called from a CMD window, in which case no
+# Git Bash might be running at all).
+#
+# This is a little tricky, as the /usr/bin/sh process (as which `ps` reports the
+# process running this script) is an MSYS2 one, but the calling `git.exe`
+# process is a pure Win32 one. As a consequence, the former process' PPID will
+# be reported as 1 (!!!) and its PGID will refer to the latter, while the
+# latter's PGID will be identical to its PID and its PPID refers to the calling
+# Bash (or is 1, if `git.exe` was not called by an MSYS2 program).
+#
+# So we have to employ a little sed fu to parse `ps` output of the form:
+#
+#     PID    PPID    PGID     WINPID   TTY         UID    STIME COMMAND
+#   19864   15640   19864      27996  pty0     4853009 15:58:05 /usr/bin/bash
+#   15640       1   15640      15640  ?        4853009 15:58:05 /usr/bin/mintty
+#   28128   13048   21176      28716  pty0     4853009 16:01:08 /usr/bin/ps
+#   13048       1   21176      13048  pty0     4853009 16:01:08 /usr/bin/sh
+#   21176   19864   21176      11996  pty0     4853009 16:01:08 /mingw64/bin/git
+#
+# Essentially, we are looking for the /usr/bin/sh line (in the example, PID
+# 13048), follow its PGID to the /mingw64/bin/git line (in the example, PID
+# 21176), and record the PPID of the latter as the pid of the current Bash, if
+# any. As we do not know in which order the `sh` and the `git` line appear, we
+# have to handle both orders.
+#
+# Then, we filter the `ps` output first by dropping the line with the current
+# Bash, then finally counting the remaining lines referring to a bash process.
+
+count_other_bashes () {
+	mypid=$$ && nl='\n *' && s='  *' && p='[1-9][0-9]*' &&
+	mypid="$(ps | sed -n ":1;N;
+		s/.*$nl$mypid$s$p$s\\($p\\) .*$nl\\1$s\\($p\\) .*/\\2/p;
+		s/.*$nl\\($p\\)$s\\($p\\) .*$nl$mypid$s$p$s\\1 .*/\\2/p;
+		b1")" &&
+	ps |
+	if test -z "$mypid"; then cat; else grep -v "^ *$mypid "; fi |
+	grep ' /usr/bin/bash$' |
+	wc -l
+}
+
+# The main function of this script
+
 git_update () {
 	proxy=$(git config --get http.proxy)
 	if test -n "$proxy"
@@ -55,7 +99,7 @@ git_update () {
 	installer=$(mktemp -t gfw-install-XXXXXXXX.exe)
 	if test -z "$yn"
 	then
-		other_bashes=$(($(ps | grep bash | wc -l)-1))
+		other_bashes=$(count_other_bashes)
 		if test $other_bashes -le 0
 		then
 			warn=
