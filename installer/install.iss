@@ -1434,7 +1434,11 @@ begin
      *)
 
     ProcessesPage:=CreateCustomPage(
+#ifdef DEBUG_WIZARD_PAGE
+        PrevPageID
+#else
         wpPreparing
+#endif
     ,   'Replacing in-use files'
     ,   'The following applications use files that need to be replaced, please close them.'
     );
