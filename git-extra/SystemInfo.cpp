@@ -51,7 +51,7 @@ void SystemInfoUtils::LPCWSTR2string( LPCWSTR strW, string& str )
 
 	TCHAR* actChar = (TCHAR*)strW;
 
-	if ( actChar == _T('\0') )
+	if ( actChar == NULL )
 		return;
 
 	ULONG len = wcslen(strW) + 1;
