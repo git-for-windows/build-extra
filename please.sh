@@ -492,7 +492,7 @@ pkg_build () {
 		require msys2-devel binutils
 		if test msys2-runtime = "$package"
 		then
-			require mingw-w64-cross-gcc
+			require mingw-w64-cross-crt-git mingw-w64-cross-gcc
 			test ! -d msys2-runtime ||
 			(cd msys2-runtime && git fetch) ||
 			die "Could not fetch from origin"
