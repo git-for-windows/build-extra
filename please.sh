@@ -2252,6 +2252,37 @@ updpkgsums () {
 	"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c updpkgsums
 }
 
+maybe_init_repository () {
+	test ! -d "$1" || return 0
+
+	top_dir="${1%/*}"
+	case "$top_dir" in
+	*/MSYS2-packages|*/MINGW-packages|*/build-extra)
+		url=https://github.com/git-for-windows/"${top_dir##*/}" &&
+		if test ! -d "$top_dir"
+		then
+			git -C "${top_dir%/*}" clone $url ||
+			die "Could not clone/fetch %s into %s\n" \
+				"$url" "$top_dir"
+		else
+			test -d "$top_dir/.git" || git -C "$top_dir" init ||
+			die "Could not initialize '%s'" "$top_dir"
+
+			git -C "$top_dir" config remote.origin.url >/dev/null ||
+			git -C "$top_dir" remote add origin $url ||
+			die "Could not add remote to '%s'" "$top_dir"
+
+			git -C "$top_dir" fetch origin &&
+			git -C "$top_dir" checkout -t origin/master ||
+			die "Could not check out master in '%s'" "$top_dir"
+		fi
+		;;
+	*)
+		die "Cannot initialize '%s'\n" "$1"
+		;;
+	esac
+}
+
 upgrade () { # <package>
 	test -n "$GPGKEY" ||
 	die "Need GPGKEY to upload packages\n"
@@ -2260,6 +2291,9 @@ upgrade () { # <package>
 	die "Missing BinTray entries in ~/_netrc\n"
 
 	set_package "$1"
+
+	maybe_init_repository "$sdk64/$pkgpath"
+	test MSYS != "$type" || maybe_init_repository "$sdk32/$pkgpath"
 
 	(cd "$sdk64/$pkgpath" &&
 	 require_push_url origin &&
