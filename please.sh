@@ -2240,7 +2240,9 @@ upload () { # <package>
 	 then
 		git push origin HEAD
 	 else
-		echo "The local branch in $sdk64/$pkgpath has unpushed changes" >&2
+		printf "The local branch '%s' in '%s' has unpushed changes\n" \
+			"$(git rev-parse --symbolic-full-name HEAD)" \
+			"$sdk64/$pkgpath" >&2
 	 fi) ||
 	die "Could not push commits in %s/%s\n" "$sdk64" "$pkgpath"
 }
