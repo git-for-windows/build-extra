@@ -2234,11 +2234,11 @@ upload () { # <package>
 	# SDK where the package was built (MinGW) or it agrees with the 32-bit
 	# SDK's build product (MSYS2).
 	(cd "$sdk64/$pkgpath" &&
-	 test -z "$(git rev-list @{u}..)" ||
+	 test -z "$(git rev-list refs/remotes/origin/master..)" ||
 	 if test refs/heads/master = \
 		"$(git rev-parse --symbolic-full-name HEAD)"
 	 then
-		git -c push.default=simple push
+		git push origin HEAD
 	 else
 		echo "The local branch in $sdk64/$pkgpath has unpushed changes" >&2
 	 fi) ||
