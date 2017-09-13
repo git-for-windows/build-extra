@@ -2231,7 +2231,7 @@ upload () { # <package>
 	die "Could not upload %s\n" "$package"
 
 	# Here, we exploit the fact that the 64-bit SDK is either the only
-	# SDK where the package was built (MinGW) or it agrees with thw 32-bit
+	# SDK where the package was built (MinGW) or it agrees with the 32-bit
 	# SDK's build product (MSYS2).
 	(cd "$sdk64/$pkgpath" &&
 	 test -z "$(git rev-list @{u}..)" ||
