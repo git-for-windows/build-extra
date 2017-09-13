@@ -2443,7 +2443,7 @@ upgrade () { # <package>
 		 then
 			MSYSTEM=msys PATH="$sdk64/usr/bin:$PATH" \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-				'makepkg-mingw --nobuild'
+				'makepkg -s --nobuild'
 		 fi ||
 		 die "Could not initialize worktree for '%s\n" "$package"
 
