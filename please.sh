@@ -2292,6 +2292,19 @@ upgrade () { # <package>
 
 	set_package "$1"
 
+	case "$package" in
+	msys2-runtime)
+		require_not_in_use "$sdk32" "usr/bin/msys-2.0.dll"
+		require_not_in_use "$sdk64" "usr/bin/msys-2.0.dll"
+		;;
+	bash)
+		require_not_in_use "$sdk32" "usr/bin/sh.exe"
+		require_not_in_use "$sdk32" "usr/bin/bash.exe"
+		require_not_in_use "$sdk64" "usr/bin/sh.exe"
+		require_not_in_use "$sdk64" "usr/bin/bash.exe"
+		;;
+	esac
+
 	maybe_init_repository "$sdk64/$pkgpath"
 	test MSYS != "$type" || maybe_init_repository "$sdk32/$pkgpath"
 
