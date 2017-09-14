@@ -2523,7 +2523,7 @@ upgrade () { # <package>
 		 then
 			pkgrel=$(($(sed -n 's/^pkgrel=//p' <PKGBUILD)+1)) &&
 			printf 'Comes with %s%s [%s](%s).' \
-			 "[patch level $pkgrel]($commit_url) " \
+			 "[patch level $pkgrel]($commit_url) of the " \
 			 'MSYS2 runtime (Git for Windows flavor) based on' \
 			 "Cygwin $version" "$cygwin_url" >../.git/relnotes &&
 			sed -i "s/^\\(pkgrel=\\).*/\\1$pkgrel/" PKGBUILD
