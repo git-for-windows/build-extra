@@ -2605,7 +2605,10 @@ upgrade () { # <package>
 		mention feature "$relnotes_feature"&&
 		if test -n "$DEBUG_CI"
 		then
-			set +x &&
+			set -x &&
+			echo "HOME: $HOME" &&
+			ls -l ~/.ssh/known_hosts &&
+			cat ~/.ssh/known_hosts &&
 			git -C "$sdk64/usr/src/build-extra" status &&
 			git -C "$sdk64/usr/src/build-extra" remote -v
 		fi &&
