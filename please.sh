@@ -2603,29 +2603,7 @@ upgrade () { # <package>
 	if test -n "$relnotes_feature"
 	then
 		mention feature "$relnotes_feature"&&
-		if test -n "$DEBUG_CI"
-		then
-			set -x &&
-			echo "HOME: $HOME" &&
-			ls -l ~/.ssh/known_hosts &&
-			cat ~/.ssh/known_hosts &&
-			git -C "$sdk64/usr/src/build-extra" status &&
-			git -C "$sdk64/usr/src/build-extra" show HEAD &&
-			git -C "$sdk64/usr/src/build-extra" remote -v
-		fi &&
 		git -C "$sdk64/usr/src/build-extra" push origin HEAD
-	else
-		if test -n "$DEBUG_CI"
-		then
-			set -x &&
-			mention feature "DEBUG TEST"&&
-			echo "HOME: $HOME" &&
-			ls -l ~/.ssh/known_hosts &&
-			cat ~/.ssh/known_hosts &&
-			git -C "$sdk64/usr/src/build-extra" status &&
-			git -C "$sdk64/usr/src/build-extra" remote -v &&
-			git -C "$sdk64/usr/src/build-extra" push origin HEAD
-		fi
 	fi
 }
 
