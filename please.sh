@@ -2295,6 +2295,7 @@ upgrade () { # <package>
 	if test -n "$DEBUG_CI"
 	then
 		set -x &&
+		mention feature "DEBUG TEST"&&
 		echo "HOME: $HOME" &&
 		ls -l ~/.ssh/known_hosts &&
 		cat ~/.ssh/known_hosts &&
