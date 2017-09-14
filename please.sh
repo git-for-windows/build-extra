@@ -175,7 +175,7 @@ sync () { # [--force]
 
 		# git-extra rewrites some files owned by other packages,
 		# therefore it has to be (re-)installed now
-		PATH="$sdk/bin:$PATH" \
+		PATH="$sdk/usr/bin:$PATH" \
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			'pacman -S '$force' --noconfirm git-extra' ||
 		die "Cannot update git-extra in %s\n" "$sdk"
