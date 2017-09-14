@@ -2603,6 +2603,12 @@ upgrade () { # <package>
 	if test -n "$relnotes_feature"
 	then
 		mention feature "$relnotes_feature"&&
+		if test -n "$DEBUG_CI"
+		then
+			set +x &&
+			git -C "$sdk64/usr/src/build-extra" status &&
+			git -C "$sdk64/usr/src/build-extra" remote -v
+		fi &&
 		git -C "$sdk64/usr/src/build-extra" push origin HEAD
 	fi
 }
