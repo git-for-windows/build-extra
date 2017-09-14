@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [BusyBox v1.28.0pre.16353.2739df917](https://github.com/git-for-windows/busybox-w32/commit/2739df917).
 * The Git installer now offers [an option to keep Git up-to-date](https://github.com/git-for-windows/build-extra/pull/155).
 * As is common elsewhere, Ctrl+Left and Ctrl+Right [now move word-wise in Git Bash](https://github.com/git-for-windows/build-extra/pull/156), too.
+* Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/874e2c8efeed9084cd065cf9ea5c0951f5afca02) MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.9.0](https://cygwin.com/ml/cygwin-announce/2017-09/msg00056.html).
 
 ### Bug Fixes
 
