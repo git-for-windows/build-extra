@@ -64,8 +64,10 @@ sdk64="$(sdk_path 64)"
 sdk32="$(sdk_path 32)"
 
 in_use () { # <sdk> <path>
-	test -n "$($1/mingw??/bin/WhoUses.exe -m "$1$2" |
-		grep '^[^-P]')"
+	test -n "$(case "$1" in
+		"$sdk32") "$1/mingw32/bin/WhoUses.exe" -m "$1$2";;
+		*) "$1/mingw64/bin/WhoUses.exe" -m "$1$2";;
+		esac | grep '^[^-P]')"
 }
 
 # require_not_in_use <sdk> <path>
