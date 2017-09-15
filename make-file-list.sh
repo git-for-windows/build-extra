@@ -109,6 +109,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../bin/lib\(asprintf\|gettext\|gnutlsxx\|pcre[0-9a-z]\|quadmath\|stdc++\)[^/]*\.dll$' \
 	-e '^/mingw../bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\)[^/]*\.exe$' \
 	-e '^/mingw../.*/git-\(remote-testsvn\|shell\)\.exe$' \
+	-e '^/mingw../.*/git-cvsserver.*$' \
 	-e '^/mingw../lib/tdbc' \
 	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
 	-e '^/mingw../share/nghttp2/' \
@@ -137,7 +138,7 @@ else
 		-e '^/git-\(bash\|cmd\)\.exe$' \
 		-e '^/mingw../bin/\(certtool\.exe\|create-shortcut\.exe\)$' \
 		-e '^/mingw../bin/\(curl\.exe\|envsubst\.exe\|gettext\.exe\)$' \
-		-e '^/mingw../bin/\(gettext\.sh\|gettextize\|git-cvsserver\)$' \
+		-e '^/mingw../bin/\(gettext\.sh\|gettextize\)$' \
 		-e '^/mingw../bin/\(gitk\|git-upload-archive\.exe\)$' \
 		-e '^/mingw../bin/lib\(atomic\|charset\)-.*\.dll$' \
 		-e '^/mingw../bin/lib\(gcc_s_seh\|gmpxx\)-.*\.dll$' \
