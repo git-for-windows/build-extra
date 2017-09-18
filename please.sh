@@ -1540,7 +1540,8 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		git tag -f -a -m "Prerelease of $1" "$tag_name" "$1" ||
 		die "Could not create tag '%s'\n" "$tag_name"
 
-		git push --force file:///"$git_src_dir" "refs/tags/$tag_name" ||
+		git push --force "$(cygpath -au "$git_src_dir")" \
+			"refs/tags/$tag_name" ||
 		die "Could not push tag '%s' to '%s'\n" \
 			"$tag_name" "$git_src_dir"
 
@@ -1557,7 +1558,8 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		git tag -a -m "Prerelease of $1" "$tag_name" "$1" ||
 		die "Could not create tag '%s'\n" "$tag_name"
 
-		git push file:///"$git_src_dir" "refs/tags/$tag_name" ||
+		git push "$(cygpath -au "$git_src_dir")" \
+			"refs/tags/$tag_name" ||
 		die "Could not push tag '%s' to '%s'\n" \
 			"$tag_name" "$git_src_dir"
 	fi
