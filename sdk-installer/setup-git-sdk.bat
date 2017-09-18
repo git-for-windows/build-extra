@@ -157,7 +157,7 @@
 	mingw-w64-@@ARCH@@-curl mingw-w64-@@ARCH@@-expat ^
 	mingw-w64-@@ARCH@@-openssl mingw-w64-@@ARCH@@-tcl ^
 	mingw-w64-@@ARCH@@-pcre mingw-w64-@@ARCH@@-connect ^
-	git-flow ssh-pageant
+	git-flow ssh-pageant tig
 
 @IF ERRORLEVEL 1 GOTO INSTALL_REST
 
