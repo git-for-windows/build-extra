@@ -47,6 +47,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/874e2c8efeed9084cd065cf9ea5c0951f5afca02) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.9.0](https://cygwin.com/ml/cygwin-announce/2017-09/msg00056.html).
 * Comes with [Git LFS v2.3.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.3.0).
 * The `vs/master` branch [can now be built in Visual Studio 2017](https://github.com/git-for-windows/git/pull/1302), too
+* As [requested](https://github.com/git-for-windows/git/issues/1294) by the same user who implemented [the change](https://github.com/git-for-windows/build-extra/pull/157), Git for Windows now comes with [`tig`](https://github.com/jonas/tig), a text-mode interface for Git.
 
 ### Bug Fixes
 
