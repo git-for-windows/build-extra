@@ -39,7 +39,7 @@ count_other_bashes () {
 	mypid="$(ps | sed -n ":1;N;
 		s/.*$nl$mypid$s$p$s\\($p\\) .*$nl\\1$s\\($p\\) .*/\\2/p;
 		s/.*$nl\\($p\\)$s\\($p\\) .*$nl$mypid$s$p$s\\1 .*/\\2/p;
-		b1")" &&
+		b1")"
 	ps |
 	if test -z "$mypid"; then cat; else grep -v "^ *$mypid "; fi |
 	grep ' /usr/bin/bash$' |
