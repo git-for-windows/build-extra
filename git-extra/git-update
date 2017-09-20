@@ -113,7 +113,7 @@ git_update () {
 		fi
 		if test -n "$use_gui"
 		then
-			git gui--askyesno \
+			git gui--askyesno --title "Git Update Available" \
 				"Download and install $filename$warn?" ||
 			return 1
 		else
