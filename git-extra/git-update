@@ -57,11 +57,13 @@ git_update () {
 	fi
 
 	yn=
+	use_gui=
 	while test $# -gt 0
 	do
 		case "$1" in
 		-\?|--?\?|-h|--help) ;;
 		-y|--yes) yn=y; shift; continue;;
+		-g|--gui) use_gui=t; shift; continue;;
 		*) echo "Unknown option: $1" >&2;;
 		esac
 		printf >&2 '%s\n%s\n\t%s\n' \
@@ -106,11 +108,19 @@ git_update () {
 		else
 			warn=" (killing $other_bashes other Bash)"
 		fi
-		read -p "Download $filename and install$warn [N/y]? " yn >&2
-		case "$yn" in
-		[Yy]*) ;;
-		*) return 1;;
-		esac
+		if test -n "$use_gui"
+		then
+			git gui--askyesno \
+				"Download $filename and install$warn?" ||
+			return 1
+		else
+			read -p "Download $filename and install$warn [N/y]? " \
+				yn >&2
+			case "$yn" in
+			[Yy]*) ;;
+			*) return 1;;
+			esac
+		fi
 	else
 		echo "Downloading $filename" >&2
 	fi
