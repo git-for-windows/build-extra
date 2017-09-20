@@ -114,7 +114,7 @@ git_update () {
 		if test -n "$use_gui"
 		then
 			git gui--askyesno \
-				"Download $filename and install$warn?" ||
+				"Download and install $filename$warn?" ||
 			return 1
 		else
 			read -p "Download $filename and install$warn [N/y]? " \
