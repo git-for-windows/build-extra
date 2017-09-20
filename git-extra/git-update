@@ -105,8 +105,11 @@ git_update () {
 		if test $other_bashes -le 0
 		then
 			warn=
+		elif test $other_bash -eq 1
+		then
+			warn=" (killing one Git Bash)"
 		else
-			warn=" (killing $other_bashes other Bash)"
+			warn=" (killing $other_bashes Git Bash instances)"
 		fi
 		if test -n "$use_gui"
 		then
