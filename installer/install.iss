@@ -2069,7 +2069,7 @@ begin
     }
 
     if IsComponentInstalled('autoupdate') or ParamIsSet('VSNOTICE') then begin
-        if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Create /F /SC DAILY /TN "Git for Windows Updater" /TR "'+#39+'{app}\bin\git.exe'+#39+' update" >"{tmp}\schedule-autoupdate.log"'),'',SW_HIDE,ewWaitUntilTerminated,i) or (i<>0) then
+        if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Create /F /SC DAILY /TN "Git for Windows Updater" /TR "'+#39+'{app}\git-bash.exe'+#39+' --hide --no-needs-console --command=cmd\git.exe update --gui" >"{tmp}\schedule-autoupdate.log"'),'',SW_HIDE,ewWaitUntilTerminated,i) or (i<>0) then
             LogError(ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater (see {tmp}\schedule-autoupdate.log).'));
     end;
 
