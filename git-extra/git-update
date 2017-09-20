@@ -98,6 +98,7 @@ git_update () {
 		grep "$bit\-bit\.exe" |
 		sed -E 's/.*": "([^"]*).*/\1/')
 	filename=$(echo "$download" | sed -E 's/.*\/([^\/]*)$/\1/')
+	name="$(echo "$releases" | sed -n 's/^  "name": "\(.*\)",$/\1/p')"
 	installer=$(mktemp -t gfw-install-XXXXXXXX.exe)
 	if test -z "$yn"
 	then
@@ -114,10 +115,10 @@ git_update () {
 		if test -n "$use_gui"
 		then
 			git gui--askyesno --title "Git Update Available" \
-				"Download and install $filename$warn?" ||
+				"Download and install $name$warn?" ||
 			return 1
 		else
-			read -p "Download $filename and install$warn [N/y]? " \
+			read -p "Download and install $name$warn [N/y]? " \
 				yn >&2
 			case "$yn" in
 			[Yy]*) ;;
