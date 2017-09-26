@@ -58,6 +58,7 @@ This package contains software from a number of other projects including Bash, z
 * The `git-gui.exe` and `gitk.exe` wrappers intended to be used in Git CMD [now handle command-line parameters correctly](https://github.com/git-for-windows/git/issues/1284).
 * The `core.longPaths` setting [is now heeded when packing refs](https://github.com/git-for-windows/git/issues/1218), and other previously forgotten Git commands.
 * Pressing Ctrl+Z in Git Bash [no longer kills Win32 processes (e.g. `git.exe`) anymore](https://github.com/git-for-windows/git/issues/1083), because POSIX job control is only available with MSYS2 processes.
+* Git for Windows [now sets `core.fsyncObjectFiles = true` by default](https://github.com/git-for-windows/git/commit/b5915c6ae881518927b9fa0b3c4df4d3edd37f23) which makes it a lot more fault-tolerant, say, when power is lost.
 
 ## Changes since Git for Windows v2.14.0(2) (August 7th 2017)
 
