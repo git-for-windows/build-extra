@@ -26,8 +26,8 @@ do
 		inno_defines="$(printf "%s\n%s" "$inno_defines" \
 			"#define WINDOW_TITLE_VERSION '${1#*=}'")"
 		;;
-	-d=*|--debug-wizard-page=*)
-		page="${1#*=}"
+	-d=*|--debug-wizard-page=*|-d)
+		case "$1" in *=*) page="${1#*=}";; *) shift; page="$1";; esac
 		case "$page" in *Page);; *)page=${page}Page;; esac
 		test_installer=t
 		if ! grep "^ *$page:TWizardPage;$" install.iss >/dev/null
