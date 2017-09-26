@@ -19,9 +19,9 @@
 #
 # Example usage (regular Git for Windows workflow)
 #
-# git fetch junio
+# git fetch upstream
 # BASE="$(git rev-parse ":/Start the merging-rebase")"
-# shears.sh --merging --onto junio/master $BASE
+# shears.sh --merging --onto upstream/master $BASE
 #
 # Usage: shears [options] ( <upstream> | merging-rebase )
 # options:

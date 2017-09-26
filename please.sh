@@ -2724,7 +2724,7 @@ finalize () { # <what, e.g. release-notes>
 	update git &&
 	dir_option="--git-dir=$sdk64/$pkgpath"/src/git/.git &&
 	git "$dir_option" fetch --tags git-for-windows &&
-	git "$dir_option" fetch --tags junio ||
+	git "$dir_option" fetch --tags upstream ||
 	die "Could not update Git\n"
 
 	ver="$(git "$dir_option" \
