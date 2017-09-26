@@ -60,6 +60,7 @@ This package contains software from a number of other projects including Bash, z
 * Pressing Ctrl+Z in Git Bash [no longer kills Win32 processes (e.g. `git.exe`) anymore](https://github.com/git-for-windows/git/issues/1083), because POSIX job control is only available with MSYS2 processes.
 * Git for Windows [now sets `core.fsyncObjectFiles = true` by default](https://github.com/git-for-windows/git/commit/b5915c6ae881518927b9fa0b3c4df4d3edd37f23) which makes it a lot more fault-tolerant, say, when power is lost.
 * A bug has been fixed where Git for Windows [could run into an infinite loop trying to rename a file](https://github.com/git-for-windows/git/issues/1299).
+* Before installing Git for Windows, we already verified that no Git Bash instance is active (which would prevent files from being overwritten). We [now also verify that no `git.exe` processes are active, either](https://github.com/git-for-windows/build-extra/commit/1b93b50cf08c6cbd3200a66603d28fbd269c2f6a).
 
 ## Changes since Git for Windows v2.14.0(2) (August 7th 2017)
 
