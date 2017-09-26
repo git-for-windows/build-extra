@@ -209,7 +209,8 @@ do
 			sf3_url="$bintray_source_url/$filename"
 			;;
 		*)
-			if test ! -d /usr/src/MSYS2-packages/$name
+			if test crypt != $name &&
+				test ! -d /usr/src/MSYS2-packages/$name
 			then
 				name2="$(cd /usr/src/MSYS2-packages/ &&
 					grep -l "^pkgname=.*[ '\")]$name[ '\")]" \
