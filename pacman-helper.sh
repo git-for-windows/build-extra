@@ -484,8 +484,15 @@ push_missing_signatures () {
 				;;
 			esac
 			dir="$(arch_dir $arch)" &&
-			if test ! -f "$dir"/$filename.sig ||
-				file_exists $arch $filename.sig
+			test -f "$dir"/$filename.sig ||
+			if test -n "$GPGKEY"
+			then
+				gpg --detach-sign --use-agent --no-armor \
+					-u $GPGKEY "$dir/$filename"
+			else
+				die "Missing: $dir/$filename.sig"
+			fi
+			if file_exists $arch $filename.sig
 			then
 				continue
 			fi &&
@@ -508,8 +515,15 @@ push_missing_signatures () {
 		do
 			filename=git-for-windows.$suffix
 			dir="$(arch_dir $arch)"
-			if test ! -f "$dir"/$filename.sig ||
-				file_exists $arch $filename.sig
+			test -f "$dir"/$filename.sig ||
+			if test -n "$GPGKEY"
+			then
+				gpg --detach-sign --use-agent --no-armor \
+					-u $GPGKEY "$dir/$filename"
+			else
+				die "Missing: $dir/$filename.sig"
+			fi
+			if file_exists $arch $filename.sig
 			then
 				continue
 			fi
