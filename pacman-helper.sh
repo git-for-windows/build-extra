@@ -455,6 +455,9 @@ push_missing_signatures () {
 
 	db_version="$(db_version)"
 
+	signopt=
+	test -z "$GPGKEY" || signopt=--sign
+
 	for name in $list
 	do
 		count=0
@@ -545,6 +548,69 @@ push_missing_signatures () {
 		publish package-database $db_version
 	} ||
 	die "Could not re-publish db $db_version"
+
+	count=0
+	for arch in $architectures
+	do
+		cd "$(arch_dir "$arch")" ||
+		die "Could not cd to $arch/"
+
+		for name in $list
+		do
+			case "$name,$arch" in
+			mingw-w64-i686*,x86_64|mingw-w64-x86_64*,i686)
+				# wrong architecture; skip
+				continue
+				;;
+			mingw-w64-i686*)
+				filename=$name-any.pkg.tar.xz
+				out="$(tar Oxf git-for-windows-mingw32.db \
+					$name/desc)" ||
+				die "Could not look for $name in $arch/mingw"
+
+				test "a" = "a${out##*PGPSIG*}" || {
+					count=$(($count+1))
+					repo-add $signopt \
+					    git-for-windows-mingw32.db.tar.xz \
+					    $filename ||
+					die "Could not add $name in $arch/mingw"
+				}
+				;;
+			mingw-w64-x86_64*)
+				filename=$name-any.pkg.tar.xz
+				out="$(tar Oxf git-for-windows-mingw64.db \
+					$name/desc)" ||
+				die "Could not look for $name in $arch/mingw"
+
+				test "a" = "a${out##*PGPSIG*}" || {
+					count=$(($count+1))
+					repo-add $signopt \
+					    git-for-windows-mingw64.db.tar.xz \
+					    $filename ||
+					die "Could not add $name in $arch/mingw"
+				}
+				;;
+			*)
+				filename=$name-$arch.pkg.tar.xz
+				;;
+			esac
+
+			out="$(tar Oxf git-for-windows.db $name/desc)" ||
+			die "Could not look for $name in $arch"
+
+			test "a" = "a${out##*PGPSIG*}" || {
+				count=$(($count+1))
+				repo-add $signopt git-for-windows.db.tar.xz \
+					$filename ||
+				die "Could not add $name in $arch"
+				echo "$name is missing sig in $arch"
+			}
+		done
+	done
+
+	test 0 = $count ||
+	push_next_db_version "$db_version" ||
+	die "Could not push next db_version"
 }
 
 reset_fifo_files () {
