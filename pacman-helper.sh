@@ -142,7 +142,7 @@ fetch () {
 				-sfLO $base_url/sources/$filename.sig ||
 			 die "Could not get $filename.sig")
 		 done
-		)
+		) || exit
 	done
 }
 
