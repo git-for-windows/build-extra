@@ -89,11 +89,34 @@ fetch () {
 			test -f $filename ||
 			curl --cacert /usr/ssl/certs/ca-bundle.crt \
 				-sfLO $base_url/$arch/$filename ||
-			exit
+			die "Could not get $filename"
 			test -f $filename.sig ||
 			curl --cacert /usr/ssl/certs/ca-bundle.crt \
 				-sfLO $base_url/$arch/$filename.sig ||
-			exit
+			die "Could not get $filename.sig"
+			test x86_64 = "$arch" || continue
+			(cd "$(arch_dir sources)" ||
+			 die "Could not cd to sources/"
+			 case "$name" in
+			 libcurl-[1-9]*|libcurl-devel-[1-9]*|mingw-w64-x86_64-git-doc-html-[1-9]*|mingw-w64-x86_64-git-doc-man-[1-9]*|msys2-runtime-devel-[1-9]*)
+				# extra package's source included elsewhere
+				continue
+				;;
+			 mingw-w64-x86_64-*)
+				filename=mingw-w64${name#*_64}.src.tar.gz
+				;;
+			 *)
+				filename=$name.src.tar.gz
+				;;
+			 esac
+			 test -f $filename ||
+			 curl --cacert /usr/ssl/certs/ca-bundle.crt \
+				-sfLO $base_url/sources/$filename ||
+			 die "Could not get $filename"
+			 test -f $filename.sig ||
+			 curl --cacert /usr/ssl/certs/ca-bundle.crt \
+				-sfLO $base_url/sources/$filename.sig ||
+			 die "Could not get $filename.sig")
 		 done
 		)
 	done
