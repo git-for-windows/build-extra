@@ -23,7 +23,8 @@
 # - 'orphans' removes any package that became an orphan.
 
 die () {
-	printf "$*" >&2
+	format="$1\\n"; shift
+	printf "$format" "$@" >&2
 	exit 1
 }
 
