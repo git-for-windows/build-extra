@@ -77,7 +77,30 @@ fetch () {
 		(cd "$dir" &&
 		 curl -sfO $arch_url/git-for-windows.db.tar.xz ||
 		 continue
-		 for name in $(package_list git-for-windows.db.tar.xz)
+
+		 list=$(package_list git-for-windows.db.tar.xz) ||
+		 die "Cannot extract package list in $arch"
+		 list="$(echo "$list" | tr '\n' ' ')"
+
+		 # first, remove stale files
+		 for file in *.pkg.tar.xz
+		 do
+			case " $list " in
+			*" ${file%-*.pkg.tar.xz} "*)
+				;; # okay, included
+			*)
+				echo "Removing stale $file in $arch" >&2
+				rm $file ||
+				die "Could not remove $file in $arch"
+				test ! -f $file.sig ||
+				rm $file.sig ||
+				die "Could not remove $file.sig in $arch"
+				;;
+			esac
+		 done
+
+		 # now make sure all of the current packages are cached locally
+		 for name in $list
 		 do
 			case "$name" in
 			mingw-w64-*)
