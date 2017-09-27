@@ -457,12 +457,16 @@ push_missing_signatures () {
 		for arch in $architectures sources
 		do
 			case "$name,$arch" in
-			mingw-w64-i686,x86_64|mingw-w64-x86_64,i686)
+			mingw-w64-i686-*,x86_64|mingw-w64-x86_64-*,i686)
 				# wrong architecture
 				continue
 				;;
 			mingw-w64-i686-*,sources)
 				# sources are "included" in x86_64
+				continue
+				;;
+			libcurl*,sources|mingw-w64-*-git-doc*,sources|msys2-runtime-devel*,sources)
+				# extra package's source included elsewhere
 				continue
 				;;
 			mingw-w64-x86_64-*,sources)
