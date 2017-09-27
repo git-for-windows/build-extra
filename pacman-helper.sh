@@ -271,7 +271,17 @@ remove () { # <package>...
 		do
 			(cd "$(arch_dir $arch)" &&
 			 rm $package-*.pkg.tar.xz &&
-			 repo-remove git-for-windows.db.tar.xz $package)
+			 repo-remove git-for-windows.db.tar.xz $package &&
+			 case "$package,$arch" in
+			 mingw-w64-i686-*,i686)
+				repo-remove git-for-windows-mingw32.db.tar.xz \
+					$package
+				;;
+			 mingw-w64-x86_64-*,x86_64)
+				repo-remove git-for-windows-mingw64.db.tar.xz \
+					$package
+				;;
+			 esac)
 		done
 	done
 }
