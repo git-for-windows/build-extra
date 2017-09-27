@@ -90,6 +90,10 @@ fetch () {
 			curl --cacert /usr/ssl/certs/ca-bundle.crt \
 				-sfLO $base_url/$arch/$filename ||
 			exit
+			test -f $filename.sig ||
+			curl --cacert /usr/ssl/certs/ca-bundle.crt \
+				-sfLO $base_url/$arch/$filename.sig ||
+			exit
 		 done
 		)
 	done
