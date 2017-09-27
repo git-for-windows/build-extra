@@ -298,6 +298,41 @@ update_local_package_databases () {
 	done
 }
 
+push_next_db_version () {
+	db_version="$1"
+	next_db_version="$(next_db_version "$db_version")"
+
+	test -z "$db_version" ||
+	delete_version package-database "$db_version"
+
+	for arch in $architectures
+	do
+		(cd "$(arch_dir $arch)" &&
+		 files= &&
+		 for suffix in db db.tar.xz files files.tar.xz
+		 do
+			filename=git-for-windows.$suffix
+			test ! -f $filename || files="$files $filename"
+			test ! -f $filename.sig || files="$files $filename.sig"
+
+			case "$arch" in
+			i686) filename=git-for-windows-mingw32.$suffix;;
+			x86_64) filename=git-for-windows-mingw64.$suffix;;
+			*) continue;;
+			esac
+
+			test ! -f $filename || files="$files $filename"
+			test ! -f $filename.sig || files="$files $filename.sig"
+		 done
+		 for filename in $files
+		 do
+			upload package-database $next_db_version $arch $filename
+		 done
+		) || exit
+	done
+	publish package-database $next_db_version
+}
+
 push () {
 	db_version="$(db_version)"
 	if test -z "$db_version"
@@ -340,8 +375,6 @@ push () {
 			return
 		}
 	fi
-
-	next_db_version="$(next_db_version "$db_version")"
 
 	test -z "$to_upload" || {
 		to_upload_basenames="$(echo "$to_upload" |
@@ -405,35 +438,7 @@ push () {
 		done
 	}
 
-	test -z "$db_version" ||
-	delete_version package-database "$db_version"
-
-	for arch in $architectures
-	do
-		(cd "$(arch_dir $arch)" &&
-		 files= &&
-		 for suffix in db db.tar.xz files files.tar.xz
-		 do
-			filename=git-for-windows.$suffix
-			test ! -f $filename || files="$files $filename"
-			test ! -f $filename.sig || files="$files $filename.sig"
-
-			case "$arch" in
-			i686) filename=git-for-windows-mingw32.$suffix;;
-			x86_64) filename=git-for-windows-mingw64.$suffix;;
-			*) continue;;
-			esac
-
-			test ! -f $filename || files="$files $filename"
-			test ! -f $filename.sig || files="$files $filename.sig"
-		 done
-		 for filename in $files
-		 do
-			upload package-database $next_db_version $arch $filename
-		 done
-		) || exit
-	done
-	publish package-database $next_db_version
+	push_next_db_version "$db_version"
 }
 
 file_exists () { # arch filename
