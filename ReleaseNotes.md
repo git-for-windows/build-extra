@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Git LFS v2.3.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.3.1).
+* Comes with [BusyBox v1.28.0pre.16437.eca51309a](https://github.com/git-for-windows/busybox-w32/commit/eca51309a).
 
 ## Changes since Git for Windows v2.14.1 (August 10th 2017)
 
