@@ -2553,7 +2553,7 @@ upgrade () { # <package>
 		 then
 			MINGW_INSTALLS=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-				'makepkg-mingw --nobuild'
+				'makepkg-mingw --nobuild && git stash'
 		 fi &&
 		 url=https://github.com/git-for-windows/busybox-w32 &&
 		 (cd src/busybox-w32 &&
