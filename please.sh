@@ -2199,8 +2199,10 @@ install () { # <package>
 	foreach_sdk pkg_install
 
 	test mingw-w64-git != "$package" || {
-		set_package git-extra
-		foreach_sdk pkg_install
+		"$sdk32/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			'pacman -S --noconfirm git-extra' &&
+		"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			'pacman -S --noconfirm git-extra'
 	}
 }
 
