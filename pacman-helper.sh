@@ -78,6 +78,16 @@ fetch () {
 		 curl -sfO $arch_url/git-for-windows.db.tar.xz ||
 		 continue
 
+		 if test i686 = "$arch"
+		 then
+			curl -sfO $arch_url/git-for-windows-mingw32.db.tar.xz ||
+			die "Could not download mingw32 db"
+		 elif test x86_64 = "$arch"
+		 then
+			curl -sfO $arch_url/git-for-windows-mingw64.db.tar.xz ||
+			die "Could not download mingw64 db"
+		 fi
+
 		 list=$(package_list git-for-windows.db.tar.xz) ||
 		 die "Cannot extract package list in $arch"
 		 list="$(echo "$list" | tr '\n' ' ')"
