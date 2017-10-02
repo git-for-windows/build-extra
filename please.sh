@@ -2817,6 +2817,16 @@ release () { #
 
 	set_version_from_sdks_git
 
+	# if builtins are still original hard-links, reinstall git-extra
+	cmp "$sdk32"/mingw32/bin/git-receive-pack.exe \
+		"$sdk32"/mingw32/bin/git.exe 2>/dev/null &&
+	"$sdk32/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		'pacman -S --noconfirm git-extra'
+	cmp "$sdk64"/mingw64/bin/git-receive-pack.exe \
+		"$sdk64"/mingw64/bin/git.exe 2>/dev/null &&
+	"$sdk75/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		'pacman -S --noconfirm git-extra'
+
 	echo "Releasing Git for Windows $displayver" >&2
 
 	test "$displayver" = "$(version_from_release_notes)" ||
