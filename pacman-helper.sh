@@ -597,7 +597,8 @@ push_missing_signatures () {
 				;;
 			mingw-w64-i686*)
 				filename=$name-any.pkg.tar.xz
-				out="$(tar Oxf git-for-windows-mingw32.db \
+				out="$(tar Oxf \
+					git-for-windows-mingw32.db.tar.xz \
 					$name/desc)" ||
 				die "Could not look for $name in $arch/mingw"
 
@@ -611,7 +612,8 @@ push_missing_signatures () {
 				;;
 			mingw-w64-x86_64*)
 				filename=$name-any.pkg.tar.xz
-				out="$(tar Oxf git-for-windows-mingw64.db \
+				out="$(tar Oxf \
+					git-for-windows-mingw64.db.tar.xz \
 					$name/desc)" ||
 				die "Could not look for $name in $arch/mingw"
 
@@ -628,7 +630,7 @@ push_missing_signatures () {
 				;;
 			esac
 
-			out="$(tar Oxf git-for-windows.db $name/desc)" ||
+			out="$(tar Oxf git-for-windows.db.tar.xz $name/desc)" ||
 			die "Could not look for $name in $arch"
 
 			test "a" = "a${out##*PGPSIG*}" || {
