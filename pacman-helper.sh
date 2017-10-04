@@ -95,6 +95,9 @@ fetch () {
 		 # first, remove stale files
 		 for file in *.pkg.tar.xz
 		 do
+			test '*.pkg.tar.xz' !=  "$file" ||
+			break # no .pkg.tar.xz files...
+
 			case " $list " in
 			*" ${file%-*.pkg.tar.xz} "*)
 				;; # okay, included
@@ -129,6 +132,10 @@ fetch () {
 				-sfLO $base_url/$arch/$filename.sig ||
 			die "Could not get $filename.sig"
 			test x86_64 = "$arch" || continue
+
+			mkdir -p "$(arch_dir sources)" ||
+			die "Could not create $(arch_dir sources)"
+
 			(cd "$(arch_dir sources)" ||
 			 die "Could not cd to sources/"
 			 case "$name" in
