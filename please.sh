@@ -2614,6 +2614,33 @@ upgrade () { # <package>
 			>../.git/relnotes) || exit
 		relnotes_feature="$(cat "$sdk64/$pkgpath/../.git/relnotes")"
 		;;
+	openssh)
+		#url="https://mirrors.sonic.net/pub/OpenBSD/OpenSSH/portable/"
+		#version="$(curl -s "$url?C=M;O=D" |
+		#	sed -n '/"openssh-\([1-9]*[^"]*\)\.tar\.gz"/{
+		#		s/.*"openssh-\([^"]*\)\.tar\.gz".*/\1/p;q}')"
+		url=https://www.openssh.com
+		newest="$(curl -s $url/releasenotes.html |
+			sed -n '/OpenSSH [1-9].*href=.txt\/.*[0-9]p[1-9]/{
+			  s/.*href=.\(txt\/[^ ]*\). .*>\([1-9][^<]*\).*/\1 \2/p
+			  q
+			}')"
+		version=${newest#* }
+		test -n "$version" ||
+		die "Could not determine newest cURL version\n"
+		url=$url/${newest% *}
+		relnotes_feature='Comes with [OpenSSH v'$version']('"$url"').'
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 updpkgsums &&
+		 git commit -s -m "openssh: new version ($version)" PKGBUILD) ||
+		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+
+		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
+		die "Could not update $sdk32/$pkgpath"
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
