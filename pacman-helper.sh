@@ -623,9 +623,17 @@ push_missing_signatures () {
 
 	for arch in $architectures
 	do
-		for suffix in db db.tar.xz files files.tar.xz
+		if test i686 = "$arch"
+		then
+			s=-mingw32
+		else
+			s=-mingw64
+		fi
+
+		for suffix in .db .db.tar.xz .files .files.tar.xz \
+			$s.db $s.db.tar.xz $s.files $s.files.tar.xz
 		do
-			filename=git-for-windows.$suffix
+			filename=git-for-windows$suffix
 			dir="$(arch_dir $arch)"
 			test -f "$dir"/$filename.sig ||
 			if test -n "$GPGKEY"
