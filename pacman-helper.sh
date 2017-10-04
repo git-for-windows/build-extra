@@ -68,6 +68,15 @@ arch_dir () { # <architecture>
 	echo "$mirror/$1"
 }
 
+arch_to_mingw () { # <arch>
+	if test i686 = "$arch"
+	then
+		echo mingw32
+	else
+		echo mingw64
+	fi
+}
+
 fetch () {
 	for arch in $architectures
 	do
@@ -78,15 +87,9 @@ fetch () {
 		 curl -sfO $arch_url/git-for-windows.db.tar.xz ||
 		 continue
 
-		 if test i686 = "$arch"
-		 then
-			curl -sfO $arch_url/git-for-windows-mingw32.db.tar.xz ||
-			die "Could not download mingw32 db"
-		 elif test x86_64 = "$arch"
-		 then
-			curl -sfO $arch_url/git-for-windows-mingw64.db.tar.xz ||
-			die "Could not download mingw64 db"
-		 fi
+		 s=$(arch_to_mingw "$arch")
+		 curl -sfO $arch_url/git-for-windows-$s.db.tar.xz ||
+		 die "Could not download $s db"
 
 		 list=$(package_list git-for-windows.db.tar.xz) ||
 		 die "Cannot extract package list in $arch"
@@ -312,13 +315,10 @@ remove () { # <package>...
 			(cd "$(arch_dir $arch)" &&
 			 rm $package-*.pkg.tar.xz &&
 			 repo-remove git-for-windows.db.tar.xz $package &&
-			 case "$package,$arch" in
-			 mingw-w64-i686-*,i686)
-				repo-remove git-for-windows-mingw32.db.tar.xz \
-					$package
-				;;
-			 mingw-w64-x86_64-*,x86_64)
-				repo-remove git-for-windows-mingw64.db.tar.xz \
+			 case "$package" in
+			 mingw-w64-$arch-*)
+				s=$(arch_to_mingw "$arch")
+				repo-remove git-for-windows-$s.db.tar.xz \
 					$package
 				;;
 			 esac)
@@ -335,16 +335,9 @@ update_local_package_databases () {
 		(cd "$(arch_dir $arch)" &&
 		 repo-add $signopt --new git-for-windows.db.tar.xz \
 			*.pkg.tar.xz &&
-		 case "$arch" in
-		 i686)
-			repo-add $signopt --new \
-				git-for-windows-mingw32.db.tar.xz \
-				mingw-w64-$arch-*.pkg.tar.xz;;
-		 x86_64)
-			repo-add $signopt --new \
-				git-for-windows-mingw64.db.tar.xz \
-				mingw-w64-$arch-*.pkg.tar.xz;;
-		 esac)
+		 repo-add $signopt --new \
+		 git-for-windows-$(arch_to_mingw "$arch").db.tar.xz \
+		 mingw-w64-$arch-*.pkg.tar.xz)
 	done
 }
 
@@ -365,12 +358,7 @@ push_next_db_version () {
 			test ! -f $filename || files="$files $filename"
 			test ! -f $filename.sig || files="$files $filename.sig"
 
-			case "$arch" in
-			i686) filename=git-for-windows-mingw32.$suffix;;
-			x86_64) filename=git-for-windows-mingw64.$suffix;;
-			*) continue;;
-			esac
-
+			filename=git-for-windows-$(arch_to_mingw $arch).$suffix
 			test ! -f $filename || files="$files $filename"
 			test ! -f $filename.sig || files="$files $filename.sig"
 		 done
@@ -580,33 +568,16 @@ push_missing_signatures () {
 				# wrong architecture; skip
 				continue
 				;;
-			mingw-w64-i686*)
+			mingw-w64-$arch-*)
 				filename=$name-any.pkg.tar.xz
-				out="$(tar Oxf \
-					git-for-windows-mingw32.db.tar.xz \
-					$name/desc)" ||
+				s=$(arch_to_mingw $arch)
+				dbname=git-for-windows-$s.db.tar.xz 
+				out="$(tar Oxf $dbname $name/desc)" ||
 				die "Could not look for $name in $arch/mingw"
 
 				test "a" = "a${out##*PGPSIG*}" || {
 					count=$(($count+1))
-					repo-add $signopt \
-					    git-for-windows-mingw32.db.tar.xz \
-					    $filename ||
-					die "Could not add $name in $arch/mingw"
-				}
-				;;
-			mingw-w64-x86_64*)
-				filename=$name-any.pkg.tar.xz
-				out="$(tar Oxf \
-					git-for-windows-mingw64.db.tar.xz \
-					$name/desc)" ||
-				die "Could not look for $name in $arch/mingw"
-
-				test "a" = "a${out##*PGPSIG*}" || {
-					count=$(($count+1))
-					repo-add $signopt \
-					    git-for-windows-mingw64.db.tar.xz \
-					    $filename ||
+					repo-add $signopt $dbname $filename ||
 					die "Could not add $name in $arch/mingw"
 				}
 				;;
@@ -630,13 +601,7 @@ push_missing_signatures () {
 
 	for arch in $architectures
 	do
-		if test i686 = "$arch"
-		then
-			s=-mingw32
-		else
-			s=-mingw64
-		fi
-
+		s=-$(arch_to_mingw "$arch")
 		for suffix in .db .db.tar.xz .files .files.tar.xz \
 			$s.db $s.db.tar.xz $s.files $s.files.tar.xz
 		do
