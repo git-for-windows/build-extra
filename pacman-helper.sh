@@ -68,6 +68,15 @@ arch_dir () { # <architecture>
 	echo "$mirror/$1"
 }
 
+arch_to_mingw () { # <arch>
+	if test i686 = "$arch"
+	then
+		echo mingw32
+	else
+		echo mingw64
+	fi
+}
+
 fetch () {
 	for arch in $architectures
 	do
@@ -77,16 +86,24 @@ fetch () {
 		(cd "$dir" &&
 		 curl -sfO $arch_url/git-for-windows.db.tar.xz ||
 		 continue
+		 curl -sfO $arch_url/git-for-windows.db.tar.xz.sig ||
+		 die "Could not fetch git-for-windows.sig in $arch"
 
-		 if test i686 = "$arch"
-		 then
-			curl -sfO $arch_url/git-for-windows-mingw32.db.tar.xz ||
-			die "Could not download mingw32 db"
-		 elif test x86_64 = "$arch"
-		 then
-			curl -sfO $arch_url/git-for-windows-mingw64.db.tar.xz ||
-			die "Could not download mingw64 db"
-		 fi
+		 curl -sfO $arch_url/git-for-windows.files.tar.xz ||
+		 die "Could not fetch git-for-windows.files in $arch"
+		 curl -sfO $arch_url/git-for-windows.files.tar.xz.sig ||
+		 die "Could not fetch git-for-windows.files.sig in $arch"
+
+		 s=$(arch_to_mingw "$arch")
+		 curl -sfO $arch_url/git-for-windows-$s.db.tar.xz ||
+		 die "Could not download $s db"
+		 curl -sfO $arch_url/git-for-windows-$s.db.tar.xz.sig ||
+		 die "Could not download $s db.sig"
+
+		 curl -sfO $arch_url/git-for-windows-$s.files.tar.xz ||
+		 die "Could not download $s files"
+		 curl -sfO $arch_url/git-for-windows-$s.files.tar.xz.sig ||
+		 die "Could not download $s files.sig"
 
 		 list=$(package_list git-for-windows.db.tar.xz) ||
 		 die "Cannot extract package list in $arch"
@@ -95,6 +112,9 @@ fetch () {
 		 # first, remove stale files
 		 for file in *.pkg.tar.xz
 		 do
+			test '*.pkg.tar.xz' !=  "$file" ||
+			break # no .pkg.tar.xz files...
+
 			case " $list " in
 			*" ${file%-*.pkg.tar.xz} "*)
 				;; # okay, included
@@ -129,6 +149,10 @@ fetch () {
 				-sfLO $base_url/$arch/$filename.sig ||
 			die "Could not get $filename.sig"
 			test x86_64 = "$arch" || continue
+
+			mkdir -p "$(arch_dir sources)" ||
+			die "Could not create $(arch_dir sources)"
+
 			(cd "$(arch_dir sources)" ||
 			 die "Could not cd to sources/"
 			 case "$name" in
@@ -162,6 +186,12 @@ upload () { # <package> <version> <arch> <filename>
 		return
 	}
 	echo "Uploading $1..." >&2
+	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
+		-fT "$4" "$content_url/$1/$2/$3/$4" ||
+	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
+		-fT "$4" "$content_url/$1/$2/$3/$4" ||
+	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
+		-fT "$4" "$content_url/$1/$2/$3/$4" ||
 	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
 		-fT "$4" "$content_url/$1/$2/$3/$4" ||
 	die "Could not upload $4 to $1/$2/$3"
@@ -305,13 +335,10 @@ remove () { # <package>...
 			(cd "$(arch_dir $arch)" &&
 			 rm $package-*.pkg.tar.xz &&
 			 repo-remove git-for-windows.db.tar.xz $package &&
-			 case "$package,$arch" in
-			 mingw-w64-i686-*,i686)
-				repo-remove git-for-windows-mingw32.db.tar.xz \
-					$package
-				;;
-			 mingw-w64-x86_64-*,x86_64)
-				repo-remove git-for-windows-mingw64.db.tar.xz \
+			 case "$package" in
+			 mingw-w64-$arch-*)
+				s=$(arch_to_mingw "$arch")
+				repo-remove git-for-windows-$s.db.tar.xz \
 					$package
 				;;
 			 esac)
@@ -328,16 +355,9 @@ update_local_package_databases () {
 		(cd "$(arch_dir $arch)" &&
 		 repo-add $signopt --new git-for-windows.db.tar.xz \
 			*.pkg.tar.xz &&
-		 case "$arch" in
-		 i686)
-			repo-add $signopt --new \
-				git-for-windows-mingw32.db.tar.xz \
-				mingw-w64-$arch-*.pkg.tar.xz;;
-		 x86_64)
-			repo-add $signopt --new \
-				git-for-windows-mingw64.db.tar.xz \
-				mingw-w64-$arch-*.pkg.tar.xz;;
-		 esac)
+		 repo-add $signopt --new \
+		 git-for-windows-$(arch_to_mingw "$arch").db.tar.xz \
+		 mingw-w64-$arch-*.pkg.tar.xz)
 	done
 }
 
@@ -358,12 +378,7 @@ push_next_db_version () {
 			test ! -f $filename || files="$files $filename"
 			test ! -f $filename.sig || files="$files $filename.sig"
 
-			case "$arch" in
-			i686) filename=git-for-windows-mingw32.$suffix;;
-			x86_64) filename=git-for-windows-mingw64.$suffix;;
-			*) continue;;
-			esac
-
+			filename=git-for-windows-$(arch_to_mingw $arch).$suffix
 			test ! -f $filename || files="$files $filename"
 			test ! -f $filename.sig || files="$files $filename.sig"
 		 done
@@ -563,40 +578,23 @@ push_missing_signatures () {
 	count=0
 	for arch in $architectures
 	do
-		for suffix in db db.tar.xz files files.tar.xz
-		do
-			filename=git-for-windows.$suffix
-			dir="$(arch_dir $arch)"
-			test -f "$dir"/$filename.sig ||
-			if test -n "$GPGKEY"
-			then
-				gpg --detach-sign --use-agent --no-armor \
-					-u $GPGKEY "$dir/$filename"
-			else
-				die "Missing: $dir/$filename.sig"
-			fi
-			if file_exists $arch $filename.sig
-			then
-				continue
-			fi
-			(cd "$dir" &&
-			 echo "Uploading missing $arch/$filename.sig" &&
-			 upload package-database $db_version $arch \
-				$filename.sig) || exit
-			count=$(($count+1))
-		done || exit
-	done
-	test $count = 0 || {
-		echo "Re-publishing db $db_version" &&
-		publish package-database $db_version
-	} ||
-	die "Could not re-publish db $db_version"
-
-	count=0
-	for arch in $architectures
-	do
 		cd "$(arch_dir "$arch")" ||
 		die "Could not cd to $arch/"
+
+		list2=" $(echo "$list" | tr '\n' ' ') "
+		mingw_dbname=git-for-windows-$(arch_to_mingw $arch).db.tar.xz
+		for name in $(package_list $mingw_dbname)
+		do
+			case "$list2" in
+			*" $name "*) ;; # okay, it's also in the full db
+			*)
+				repo-remove $signopt $mingw_dbname \
+					${name%%-[0-9]*} ||
+				die "Could not remove $name from $mingw_dbname"
+				count=$(($count+1))
+				;;
+			esac
+		done
 
 		for name in $list
 		do
@@ -605,33 +603,16 @@ push_missing_signatures () {
 				# wrong architecture; skip
 				continue
 				;;
-			mingw-w64-i686*)
+			mingw-w64-$arch-*)
 				filename=$name-any.pkg.tar.xz
-				out="$(tar Oxf \
-					git-for-windows-mingw32.db.tar.xz \
-					$name/desc)" ||
+				s=$(arch_to_mingw $arch)
+				dbname=git-for-windows-$s.db.tar.xz 
+				out="$(tar Oxf $dbname $name/desc)" ||
 				die "Could not look for $name in $arch/mingw"
 
 				test "a" = "a${out##*PGPSIG*}" || {
 					count=$(($count+1))
-					repo-add $signopt \
-					    git-for-windows-mingw32.db.tar.xz \
-					    $filename ||
-					die "Could not add $name in $arch/mingw"
-				}
-				;;
-			mingw-w64-x86_64*)
-				filename=$name-any.pkg.tar.xz
-				out="$(tar Oxf \
-					git-for-windows-mingw64.db.tar.xz \
-					$name/desc)" ||
-				die "Could not look for $name in $arch/mingw"
-
-				test "a" = "a${out##*PGPSIG*}" || {
-					count=$(($count+1))
-					repo-add $signopt \
-					    git-for-windows-mingw64.db.tar.xz \
-					    $filename ||
+					repo-add $signopt $dbname $filename ||
 					die "Could not add $name in $arch/mingw"
 				}
 				;;
@@ -651,6 +632,34 @@ push_missing_signatures () {
 				echo "$name is missing sig in $arch"
 			}
 		done
+	done
+
+	for arch in $architectures
+	do
+		s=-$(arch_to_mingw "$arch")
+		for suffix in .db .db.tar.xz .files .files.tar.xz \
+			$s.db $s.db.tar.xz $s.files $s.files.tar.xz
+		do
+			filename=git-for-windows$suffix
+			dir="$(arch_dir $arch)"
+			test -f "$dir"/$filename.sig ||
+			if test -n "$GPGKEY"
+			then
+				gpg --detach-sign --use-agent --no-armor \
+					-u $GPGKEY "$dir/$filename"
+			else
+				die "Missing: $dir/$filename.sig"
+			fi
+			if file_exists $arch $filename.sig
+			then
+				continue
+			fi
+			(cd "$dir" &&
+			 echo "Uploading missing $arch/$filename.sig" &&
+			 upload package-database $db_version $arch \
+				$filename.sig) || exit
+			count=$(($count+1))
+		done || exit
 	done
 
 	test 0 = $count ||
