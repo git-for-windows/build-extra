@@ -586,13 +586,7 @@ push_missing_signatures () {
 			count=$(($count+1))
 		done || exit
 	done
-	test $count = 0 || {
-		echo "Re-publishing db $db_version" &&
-		publish package-database $db_version
-	} ||
-	die "Could not re-publish db $db_version"
 
-	count=0
 	for arch in $architectures
 	do
 		cd "$(arch_dir "$arch")" ||
