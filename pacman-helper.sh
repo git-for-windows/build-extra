@@ -561,6 +561,21 @@ push_missing_signatures () {
 		cd "$(arch_dir "$arch")" ||
 		die "Could not cd to $arch/"
 
+		list2=" $(echo "$list" | tr '\n' ' ') "
+		mingw_dbname=git-for-windows-$(arch_to_mingw $arch).db.tar.xz
+		for name in $(package_list $mingw_dbname)
+		do
+			case "$list2" in
+			*" $name "*) ;; # okay, it's also in the full db
+			*)
+				repo-remove $signopt $mingw_dbname \
+					${name%%-[0-9]*} ||
+				die "Could not remove $name from $mingw_dbname"
+				count=$(($count+1))
+				;;
+			esac
+		done
+
 		for name in $list
 		do
 			case "$name,$arch" in
