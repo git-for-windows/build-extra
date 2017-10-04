@@ -606,7 +606,7 @@ push_missing_signatures () {
 			mingw-w64-$arch-*)
 				filename=$name-any.pkg.tar.xz
 				s=$(arch_to_mingw $arch)
-				dbname=git-for-windows-$s.db.tar.xz 
+				dbname=git-for-windows-$s.db.tar.xz
 				out="$(tar Oxf $dbname $name/desc)" ||
 				die "Could not look for $name in $arch/mingw"
 
