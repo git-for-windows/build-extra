@@ -86,16 +86,24 @@ fetch () {
 		(cd "$dir" &&
 		 curl -sfO $arch_url/git-for-windows.db.tar.xz ||
 		 continue
+		 curl -sfO $arch_url/git-for-windows.db.tar.xz.sig ||
+		 die "Could not fetch git-for-windows.sig in $arch"
 
 		 curl -sfO $arch_url/git-for-windows.files.tar.xz ||
 		 die "Could not fetch git-for-windows.files in $arch"
+		 curl -sfO $arch_url/git-for-windows.files.tar.xz.sig ||
+		 die "Could not fetch git-for-windows.files.sig in $arch"
 
 		 s=$(arch_to_mingw "$arch")
 		 curl -sfO $arch_url/git-for-windows-$s.db.tar.xz ||
 		 die "Could not download $s db"
+		 curl -sfO $arch_url/git-for-windows-$s.db.tar.xz.sig ||
+		 die "Could not download $s db.sig"
 
 		 curl -sfO $arch_url/git-for-windows-$s.files.tar.xz ||
 		 die "Could not download $s files"
+		 curl -sfO $arch_url/git-for-windows-$s.files.tar.xz.sig ||
+		 die "Could not download $s files.sig"
 
 		 list=$(package_list git-for-windows.db.tar.xz) ||
 		 die "Cannot extract package list in $arch"
