@@ -188,6 +188,12 @@ upload () { # <package> <version> <arch> <filename>
 	echo "Uploading $1..." >&2
 	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
 		-fT "$4" "$content_url/$1/$2/$3/$4" ||
+	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
+		-fT "$4" "$content_url/$1/$2/$3/$4" ||
+	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
+		-fT "$4" "$content_url/$1/$2/$3/$4" ||
+	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
+		-fT "$4" "$content_url/$1/$2/$3/$4" ||
 	die "Could not upload $4 to $1/$2/$3"
 }
 
