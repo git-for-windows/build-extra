@@ -563,32 +563,6 @@ push_missing_signatures () {
 	count=0
 	for arch in $architectures
 	do
-		for suffix in db db.tar.xz files files.tar.xz
-		do
-			filename=git-for-windows.$suffix
-			dir="$(arch_dir $arch)"
-			test -f "$dir"/$filename.sig ||
-			if test -n "$GPGKEY"
-			then
-				gpg --detach-sign --use-agent --no-armor \
-					-u $GPGKEY "$dir/$filename"
-			else
-				die "Missing: $dir/$filename.sig"
-			fi
-			if file_exists $arch $filename.sig
-			then
-				continue
-			fi
-			(cd "$dir" &&
-			 echo "Uploading missing $arch/$filename.sig" &&
-			 upload package-database $db_version $arch \
-				$filename.sig) || exit
-			count=$(($count+1))
-		done || exit
-	done
-
-	for arch in $architectures
-	do
 		cd "$(arch_dir "$arch")" ||
 		die "Could not cd to $arch/"
 
@@ -645,6 +619,32 @@ push_missing_signatures () {
 				echo "$name is missing sig in $arch"
 			}
 		done
+	done
+
+	for arch in $architectures
+	do
+		for suffix in db db.tar.xz files files.tar.xz
+		do
+			filename=git-for-windows.$suffix
+			dir="$(arch_dir $arch)"
+			test -f "$dir"/$filename.sig ||
+			if test -n "$GPGKEY"
+			then
+				gpg --detach-sign --use-agent --no-armor \
+					-u $GPGKEY "$dir/$filename"
+			else
+				die "Missing: $dir/$filename.sig"
+			fi
+			if file_exists $arch $filename.sig
+			then
+				continue
+			fi
+			(cd "$dir" &&
+			 echo "Uploading missing $arch/$filename.sig" &&
+			 upload package-database $db_version $arch \
+				$filename.sig) || exit
+			count=$(($count+1))
+		done || exit
 	done
 
 	test 0 = $count ||
