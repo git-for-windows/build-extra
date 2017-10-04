@@ -2289,6 +2289,19 @@ maybe_init_repository () {
 	esac
 }
 
+# <key-id>
+ensure_gpg_key () {
+	for sdk in "$sdk32" "$sdk64"
+	do
+		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			'gpg --list-key '"$1"' >/dev/null 2>&1 ||
+			 gpg --recv-keys '"$1"' &&
+			 gpg --lsign-key '"$1" ||
+		die "Could not ensure key '%s' to be installed into '%s'\n" \
+			"$1" "$sdk"
+	done
+}
+
 upgrade () { # <package>
 	test -n "$GPGKEY" ||
 	die "Need GPGKEY to upload packages\n"
@@ -2375,6 +2388,8 @@ upgrade () { # <package>
 		sed -n 's/.*<a href="\/download\/curl-\([1-9]*[^"]*\)\.tar\.bz2".*/\1/p')"
 		test -n "$version" ||
 		die "Could not determine newest cURL version\n"
+
+		ensure_gpg_key B71E12C2 || exit
 
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
