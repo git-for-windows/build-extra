@@ -2294,9 +2294,9 @@ ensure_gpg_key () {
 	for sdk in "$sdk32" "$sdk64"
 	do
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'gpg --list-key '"$1"' >/dev/null 2>&1 ||
+			'gpg --list-key '"$1"' >/dev/null 2>&1 || {
 			 gpg --recv-keys '"$1"' &&
-			 gpg --lsign-key '"$1" ||
+			 gpg --lsign-key '"$1; }" ||
 		die "Could not ensure key '%s' to be installed into '%s'\n" \
 			"$1" "$sdk"
 	done
