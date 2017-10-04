@@ -2403,6 +2403,9 @@ upgrade () { # <package>
 
 		(set_package mingw-w64-$1 &&
 		 cd "$sdk64/$pkgpath" &&
+		 require_push_url origin &&
+		 sdk="$sdk64" ff_master || exit
+
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 updpkgsums &&
