@@ -2652,6 +2652,7 @@ upgrade () { # <package>
 
 	if test -n "$relnotes_feature"
 	then
+		git -C "$sdk64/usr/src/build-extra" pull origin master &&
 		mention feature "$relnotes_feature"&&
 		git -C "$sdk64/usr/src/build-extra" push origin HEAD
 	fi
