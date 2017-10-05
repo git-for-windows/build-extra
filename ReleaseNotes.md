@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git LFS v2.3.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.3.2).
 * Comes with [cURL v7.56.0](https://curl.haxx.se/changes.html#7_56_0).
 * Comes with [OpenSSH v7.6p1](https://www.openssh.com/txt/release-7.6).
+* Comes with [patch level 3](https://github.com/git-for-windows/msys2-runtime/commit/bcbd8d5669616a572604b84271fa304361007e3e) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.9.0](https://cygwin.com/ml/cygwin-announce/2017-09/msg00056.html).
 
 ## Changes since Git for Windows v2.14.1 (August 10th 2017)
 
