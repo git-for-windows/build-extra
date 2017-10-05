@@ -43,6 +43,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSH v7.6p1](https://www.openssh.com/txt/release-7.6).
 * Comes with [patch level 3](https://github.com/git-for-windows/msys2-runtime/commit/bcbd8d5669616a572604b84271fa304361007e3e) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.9.0](https://cygwin.com/ml/cygwin-announce/2017-09/msg00056.html).
 
+### Bug Fixes
+
+* A [bug](https://github.com/git-for-windows/git/issues/1312) which caused the console window to be closed when executing certain Bash scripts [was fixed](https://github.com/git-for-windows/MSYS2-packages/commit/e9d0a2be2720007c2a734866ebbb4c15e503003c).
+
 ## Changes since Git for Windows v2.14.1 (August 10th 2017)
 
 ### New Features
