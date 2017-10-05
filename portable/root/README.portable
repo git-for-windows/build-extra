@@ -54,7 +54,7 @@ variable temporarily:
 
 Adjust the 'gitdir' according to your setup.  As long as you do not
 close the command window, you can now simply type "git" or "gitk" to
-really call "c:\portablegit\cmd\git.cmd" or "c:\portablegit\cmd\gitk.cmd".
+really call "c:\portablegit\cmd\git.exe" or "c:\portablegit\cmd\gitk.exe".
 
 By default, git-cmd and git-bash use the directory they were started from as
 the working directory when run. You can override this by passing --cd-to-home
