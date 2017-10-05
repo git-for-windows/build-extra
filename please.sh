@@ -2981,7 +2981,7 @@ publish () { #
 		sed -e ':1;${s/[\\"]/\\&/g;s/\n/\\n/g};N;b1')"
 
 	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
-		--repo=git "v$version" \
+		--gentle --repo=git "v$version" \
 		"$HOME"/Git-"$ver"-64-bit.exe \
 		"$HOME"/Git-"$ver"-32-bit.exe \
 		"$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
@@ -2996,6 +2996,11 @@ publish () { #
 
 	for nupkg in GitForWindows Git-Windows-Minimal
 	do
+		test "$nupkg $ver" != \
+			"$("$sdk64/usr/src/build-extra/nuget/nuget.exe" \
+				list "$nupkg")" ||
+		continue
+
 		count=0
 		while test $count -lt 5
 		do
