@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * A [bug](https://github.com/git-for-windows/git/issues/1312) which caused the console window to be closed when executing certain Bash scripts [was fixed](https://github.com/git-for-windows/MSYS2-packages/commit/e9d0a2be2720007c2a734866ebbb4c15e503003c).
+* A crash when calling `kill <pid>` for a non-existing process [was fixed](https://github.com/git-for-windows/git/issues/1316).
 
 ## Changes since Git for Windows v2.14.1 (August 10th 2017)
 
