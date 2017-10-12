@@ -2455,8 +2455,11 @@ upgrade () { # [--directory=<artifacts-directory>] <package>
 		then
 			echo "$nextver" >"$artifactsdir/nextver" &&
 			git -C "$git_src_dir" bundle create \
-				"$artifactsdir/nextver.bundle" \
-				git-for-windows/master..$nextver
+				"$artifactsdir/git.bundle" \
+				git-for-windows/master..$nextver &&
+			git -C "$sdk64/usr/src/build-extra" bundle create \
+				"$artifactsdir/build-extra.bundle" \
+				-1 master
 		fi
 		;;
 	mingw-w64-git-lfs)
