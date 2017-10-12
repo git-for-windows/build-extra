@@ -2302,7 +2302,34 @@ ensure_gpg_key () {
 	done
 }
 
-upgrade () { # <package>
+pkg_copy_artifacts () {
+	test -n "$artifactsdir" || return
+	files="$(pkg_files --for-upload)" || exit
+	cp $files "$artifactsdir/"
+}
+
+upgrade () { # [--directory=<artifacts-directory>] <package>
+	artifactsdir=
+	while case "$1" in
+	--directory=*)
+		artifactsdir="$(cygpath -am "${1#*=}")" || exit
+		test -d "$artifactsdir" ||
+		mkdir "$artifactsdir" ||
+		die "Could not create artifacts directory: %s\n" "$artifactsdir"
+		;;
+	--directory)
+		shift
+		artifactsdir="$(cygpath -am "$1")" || exit
+		test -d "$artifactsdir" ||
+		mkdir "$artifactsdir" ||
+		die "Could not create artifacts directory: %s\n" "$artifactsdir"
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected 1 argument, got $#: %s\n" "$*"
+
 	test -n "$GPGKEY" ||
 	die "Need GPGKEY to upload packages\n"
 
@@ -2414,7 +2441,8 @@ upgrade () { # <package>
 
 		 build "$package" &&
 		 install "$package" &&
-		 upload "$package") &&
+		 upload "$package" &&
+		 sdk="$sdk64" pkg_copy_artifacts) &&
 
 		url=https://curl.haxx.se/changes.html &&
 		url="$url$(echo "#$version" | tr . _)" &&
@@ -2422,7 +2450,14 @@ upgrade () { # <package>
 		;;
 	mingw-w64-git)
 		finalize release-notes &&
-		tag_git
+		tag_git &&
+		if test -n "$artifactsdir"
+		then
+			echo "$nextver" >"$artifactsdir/nextver" &&
+			git -C "$git_src_dir" bundle create \
+				"$artifactsdir/nextver.bundle" \
+				git-for-windows/master..$nextver
+		fi
 		;;
 	mingw-w64-git-lfs)
 		repo=git-lfs/git-lfs
@@ -2649,6 +2684,7 @@ upgrade () { # <package>
 	build "$package" &&
 	install "$package" &&
 	upload "$package" &&
+	foreach_sdk pkg_copy_artifacts &&
 
 	if test -n "$relnotes_feature"
 	then
