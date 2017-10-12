@@ -39,6 +39,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Git LFS v2.3.3](https://github.com/git-lfs/git-lfs/releases/tag/v2.3.3).
 
+### Bug Fixes
+
+* [Re-enabled some SSHv1 ciphers](https://github.com/git-for-windows/build-extra/commit/b46fba6f44b3680210b19ef5fc9ce22ca1dcda55) since some sites (e.g. Visual Studio Team Services) rely on them for the time being.
+
 ## Changes since Git for Windows v2.14.2 (September 26th 2017)
 
 ### New Features
