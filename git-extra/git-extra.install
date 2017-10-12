@@ -185,6 +185,12 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	do
 		sed -i "1s/#\!$rootw/#\!/" $s || break
 	done
+
+	# Re-enable at least AES256-cbc and AES128-cbc, as they are still used
+	# e.g. in VSTS
+	grep -q '^Ciphers .*aes256-cbc,aes192-cbc' /etc/ssh/ssh_config ||
+	sed -i -e '/^[# ]*Ciphers /{s/^# *//;s/$/,aes256-cbc,aes192-cbc/}' \
+		/etc/ssh/ssh_config
 }
 
 post_upgrade () {
