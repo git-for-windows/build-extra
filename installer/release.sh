@@ -176,10 +176,11 @@ sed -e 's|/|\\|g' \
 	-e 's|^\(.*\)\\\([^\\]*\)$|Source: \1\\\2; DestDir: {app}\\\1; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore|' \
 	>> file-list.iss
 
-printf "%s\n%s\n%s%s" \
+printf "%s\n%s\n%s\n%s%s" \
 	"#define APP_VERSION '$displayver'" \
 	"#define FILENAME_VERSION '$version'" \
 	"#define BITNESS '$BITNESS'" \
+	"#define SOURCE_DIR '$(cygpath -aw /)'" \
 	"$inno_defines" \
 	>config.iss
 

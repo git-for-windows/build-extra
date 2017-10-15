@@ -37,7 +37,11 @@ OutputDir={#GetEnv('USERPROFILE')}
 #endif
 #endif
 SolidCompression=yes
+#ifdef SOURCE_DIR
+SourceDir={#SOURCE_DIR}
+#else
 SourceDir={#SourcePath}\..\..\..\..
+#endif
 #if BITNESS=='64'
 ArchitecturesInstallIn64BitMode=x64
 #endif
