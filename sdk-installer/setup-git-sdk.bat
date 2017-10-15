@@ -17,7 +17,7 @@
 @SET initialrebase=false
 @FOR /F "tokens=4 delims=.[XP " %%i IN ('ver') DO @SET ver=%%i
 @IF 10 LEQ %ver% @(
-	@SET initialrebase=false
+	@SET initialrebase=true
 )
 
 @IF %initialrebase% == true @(
