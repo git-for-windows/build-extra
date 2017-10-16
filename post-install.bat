@@ -18,7 +18,7 @@
 	@REM We need to rebase just to make sure that it still works even with
 	@REM 32-bit Windows 10
 	@FOR /F "tokens=4 delims=.[XP " %%i IN ('ver') DO @SET ver=%%i
-	@IF 10 LEQ %ver @(
+	@IF 10 LEQ %ver% @(
 		@REM We copy `rebase.exe` because it links to `msys-2.0.dll`
 		@REM (and @REM thus prevents modifying it). It is okay to
 		@REM execute `rebase.exe`, though, because the DLL base address

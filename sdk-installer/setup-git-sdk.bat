@@ -16,8 +16,8 @@
 @REM need to rebase just to make sure that it still works even with Windows 10
 @SET initialrebase=false
 @FOR /F "tokens=4 delims=.[XP " %%i IN ('ver') DO @SET ver=%%i
-@IF 10 LEQ %ver @(
-	@SET initialrebase=false
+@IF 10 LEQ %ver% @(
+	@SET initialrebase=true
 )
 
 @IF %initialrebase% == true @(
