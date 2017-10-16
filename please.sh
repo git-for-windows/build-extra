@@ -2703,9 +2703,11 @@ upgrade () { # [--directory=<artifacts-directory>] <package>
 
 	if test -n "$relnotes_feature"
 	then
-		git -C "$sdk64/usr/src/build-extra" pull origin master &&
-		mention feature "$relnotes_feature"&&
-		git -C "$sdk64/usr/src/build-extra" push origin HEAD
+		(cd "$sdk64/usr/src/build-extra" &&
+		 git pull origin master &&
+		 mention feature "$relnotes_feature"&&
+		 git push origin HEAD &&
+		 create_bundle_artifact)
 	fi
 }
 
