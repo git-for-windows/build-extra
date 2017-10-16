@@ -2302,14 +2302,27 @@ ensure_gpg_key () {
 	done
 }
 
+create_bundle_artifact () {
+	test -n "$artifactsdir" || return
+	upstream_master="$(git rev-parse --verify -q git-for-windows/master)" ||
+	upstream_master="$(git rev-parse --verify -q origin/master)" ||
+	return
+	repo_name=$(git rev-parse --show-toplevel) &&
+	repo_name=${repo_name##*/} &&
+	git bundle create "$artifactsdir"/$repo_name.bundle \
+		$upstream_master.."$(git symbolic-ref --short HEAD)"
+}
+
 pkg_copy_artifacts () {
 	test -n "$artifactsdir" || return
 	files="$(pkg_files --for-upload)" || exit
-	cp $files "$artifactsdir/"
+	cp $files "$artifactsdir/" &&
+	create_bundle_artifact
 }
 
-upgrade () { # [--directory=<artifacts-directory>] <package>
+upgrade () { # [--directory=<artifacts-directory>] [--no-upload] <package>
 	artifactsdir=
+	skip_upload=
 	while case "$1" in
 	--directory=*)
 		artifactsdir="$(cygpath -am "${1#*=}")" || exit
@@ -2323,6 +2336,9 @@ upgrade () { # [--directory=<artifacts-directory>] <package>
 		test -d "$artifactsdir" ||
 		mkdir "$artifactsdir" ||
 		die "Could not create artifacts directory: %s\n" "$artifactsdir"
+		;;
+	--no-upload)
+		skip_upload=t
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -2441,7 +2457,7 @@ upgrade () { # [--directory=<artifacts-directory>] <package>
 
 		 build "$package" &&
 		 install "$package" &&
-		 upload "$package" &&
+		 if test -z "$skip_upload"; then upload "$package"; fi &&
 		 sdk="$sdk64" pkg_copy_artifacts) &&
 
 		url=https://curl.haxx.se/changes.html &&
@@ -2686,14 +2702,16 @@ upgrade () { # [--directory=<artifacts-directory>] <package>
 
 	build "$package" &&
 	install "$package" &&
-	upload "$package" &&
+	if test -z "$skip_upload"; then upload "$package"; fi &&
 	foreach_sdk pkg_copy_artifacts &&
 
 	if test -n "$relnotes_feature"
 	then
-		git -C "$sdk64/usr/src/build-extra" pull origin master &&
-		mention feature "$relnotes_feature"&&
-		git -C "$sdk64/usr/src/build-extra" push origin HEAD
+		(cd "$sdk64/usr/src/build-extra" &&
+		 git pull origin master &&
+		 mention feature "$relnotes_feature"&&
+		 if test -z "$skip_upload"; then git push origin HEAD; fi &&
+		 create_bundle_artifact)
 	fi
 }
 
