@@ -2914,7 +2914,28 @@ sign_files () {
 	fi
 }
 
-release () { #
+release () { # [--directory=<artifacts-directory>]
+	artifactsdir=
+	while case "$1" in
+	--directory=*)
+		artifactsdir="$(cygpath -am "${1#*=}")" || exit
+		test -d "$artifactsdir" ||
+		mkdir "$artifactsdir" ||
+		die "Could not create artifacts directory: %s\n" "$artifactsdir"
+		;;
+	--directory)
+		shift
+		artifactsdir="$(cygpath -am "$1")" || exit
+		test -d "$artifactsdir" ||
+		mkdir "$artifactsdir" ||
+		die "Could not create artifacts directory: %s\n" "$artifactsdir"
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 0 ||
+	die "Expected no argument, got $#: %s\n" "$*"
+
 	up_to_date usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
@@ -2961,6 +2982,26 @@ release () { #
 	"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 		"/usr/src/build-extra/nuget/release.sh --mingit '$ver'" ||
 	die "Could not make NuGet packages\n"
+
+	if test -n "$artifactsdir"
+	then
+		(cd "$HOME" &&
+		 cp Git-"$ver"-{32,64}-bit.exe \
+			Git-"$ver"-64-bit.exe \
+			Git-"$ver"-32-bit.exe \
+			PortableGit-"$ver"-64-bit.7z.exe \
+			PortableGit-"$ver"-32-bit.7z.exe \
+			MinGit-"$ver"-64-bit.zip \
+			MinGit-"$ver"-32-bit.zip \
+			MinGit-"$ver"-busybox-64-bit.zip \
+			MinGit-"$ver"-busybox-32-bit.zip \
+			Git-"$ver"-64-bit.tar.bz2 \
+			Git-"$ver"-32-bit.tar.bz2 \
+			GitForWindows.$ver.nupkg \
+			Git-Windows-Minimal.$ver.nupkg \
+			"$artifactsdir/") ||
+		die "Could not copy artifacts to '%s'\n" "$artifactsdir"
+	fi
 }
 
 virus_check () { #
