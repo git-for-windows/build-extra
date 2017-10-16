@@ -368,7 +368,7 @@ set_package () {
 
 # foreach_sdk <function> [<args>]
 foreach_sdk () {
-	# No uncommitted changes?
+	# Run function in 32-bit/64-bit SDKs (only 64-bit for MINGW packages)
 	for sdk in "$sdk32" "$sdk64"
 	do
 		# MINGW packages are compiled in the 64-bit SDK only
