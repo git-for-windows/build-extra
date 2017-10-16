@@ -2302,10 +2302,22 @@ ensure_gpg_key () {
 	done
 }
 
+create_bundle_artifact () {
+	test -n "$artifactsdir" || return
+	upstream_master="$(git rev-parse --verify -q git-for-windows/master)" ||
+	upstream_master="$(git rev-parse --verify -q origin/master)" ||
+	return
+	repo_name=$(git rev-parse --show-toplevel) &&
+	repo_name=${repo_name##*/} &&
+	git bundle create "$artifactsdir"/$repo_name.bundle \
+		$upstream_master.."$(git symbolic-ref --short HEAD)"
+}
+
 pkg_copy_artifacts () {
 	test -n "$artifactsdir" || return
 	files="$(pkg_files --for-upload)" || exit
-	cp $files "$artifactsdir/"
+	cp $files "$artifactsdir/" &&
+	create_bundle_artifact
 }
 
 upgrade () { # [--directory=<artifacts-directory>] <package>
