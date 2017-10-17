@@ -1,0 +1,9 @@
+diff --git i/a.odt w/a.odt
+index a72dc23..8bcde7b 100644
+--- i/a.odt
++++ w/a.odt
+@@ -1,3 +1,3 @@
+ 
+-Hello world
++Hello dude
+ 

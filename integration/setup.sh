@@ -1,0 +1,5 @@
+. sharness/sharness.sh
+
+DIR_TEST=$SHARNESS_TEST_DIRECTORY/${0%%-*}
+
+SHARNESS_TEST_EXTENSION="bash"
