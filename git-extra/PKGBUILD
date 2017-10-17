@@ -41,14 +41,15 @@ source=('inputrc'
         'gitattributes'
         'astextplain'
         'git-sdk.sh'
-        'git-update')
+        'git-update'
+        'blocked-file-util.c')
 sha256sums=('9efaf8dccc08c7cddc58cb589bab5aac5c0894661175a344ca02b2aa849382bd'
             '36e0b6ae5fcf6361b5dad8bac815603d9211b38dfd8fdad89c01c34412529959'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
             '694b07404618d616aa316a632090ce64f2f89df3cc62b9d949efc0c2569b016e'
             'a9ada325a279ce460aeb663a715e4c335d8972f497d48d97ff5524053b1fb43a'
             '197791d75a7f7e18c19e3673266d4d8a9f2620e0d046f6478cb94ad422fb21c4'
-            'aa388de88e87889efc9117d6799dc4787963c11e98da8b4e78e820e88552ec10'
+            '46c72ffceb848adfc5e08599ec70c6bf9553067a2e9b704cdfe100493bc2f6f9'
             '04d78fa3a17460034892496d65acd68a5b07937955eedf822f047fe56505cf27'
             '402c51eba82453a76f5110f4754bb1005df507a6e4532574c2b9627ff4e1dc81'
             'd9024bab283ebb67b5d39d49ee5d2592e170abf1f92d3db34edcdd7eeed0b6b9'
@@ -61,7 +62,8 @@ sha256sums=('9efaf8dccc08c7cddc58cb589bab5aac5c0894661175a344ca02b2aa849382bd'
             '2ba208565776f4f807cc6e3cb248c0b4f5e969cce895f1c3d7f092eed7b3e772'
             '3246e9fc85ae51eb5306f99fffc21166056539e5b222a47d7b88f062b2b711d0'
             '89b4d784e1c07d67c11a35abc7094709c216372e2099b2eb7abbc6eb7c34861f'
-            'f0dbf110ec6ec3d1fba2b6b848bd482515509949b48963f0155e17f23275db33')
+            'f0dbf110ec6ec3d1fba2b6b848bd482515509949b48963f0155e17f23275db33'
+            'ebd1d20aa94be11c6b9bec7d33614d32016343d282c4716d0561ab41407c99bf')
 
 prepare() {
   test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
@@ -98,6 +100,7 @@ package() {
   install -m755 wordpad $pkgdir/usr/bin
   install -m755 $builddir/create-shortcut.exe $pkgdir${MINGW_PREFIX}/bin
   install -m755 $builddir/WhoUses.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/blocked-file-util.exe $pkgdir${MINGW_PREFIX}/bin
   install -m755 git-prompt.sh $pkgdir/etc/profile.d
   install -m755 aliases.sh $pkgdir/etc/profile.d
   install -m755 env.sh $pkgdir/etc/profile.d
