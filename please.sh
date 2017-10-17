@@ -2309,8 +2309,13 @@ create_bundle_artifact () {
 	return
 	repo_name=$(git rev-parse --show-toplevel) &&
 	repo_name=${repo_name##*/} &&
-	git bundle create "$artifactsdir"/$repo_name.bundle \
-		$upstream_master.."$(git symbolic-ref --short HEAD)"
+	range="$upstream_master..$(git symbolic-ref --short HEAD)" &&
+	if test 0 -lt $(git rev-list --count "$range")
+	then
+		git bundle create "$artifactsdir"/$repo_name.bundle "$range"
+	else
+		echo "Range $range is empty" >"$artifactsdir/$repo_name.empty"
+	fi
 }
 
 pkg_copy_artifacts () {
