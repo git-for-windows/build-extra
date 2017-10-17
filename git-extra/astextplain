@@ -8,6 +8,9 @@ fi
 
 # XXX output encoding (UTF-8) hardcoded
 case "$1" in
+	*.ods | *.ODS | *.odf |*.ODF | *.odt | *.ODT)
+		odt2txt "$1" || cat "$1"
+		;;
 	*.doc | *.DOC | *.dot | *.DOT)
 		antiword -m UTF-8 "$1" | sed "s/\^M$//" || cat "$1"
 		;;
