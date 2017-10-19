@@ -274,13 +274,13 @@ set_package () {
 		;;
 	git)
 		package=mingw-w64-git
-		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man"
+		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man mingw-w64-git-test-artifacts"
 		type=MINGW
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
 	mingw-w64-git)
 		type=MINGW
-		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man"
+		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man mingw-w64-git-test-artifacts"
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
 	mingw-w64-git-credential-manager)
