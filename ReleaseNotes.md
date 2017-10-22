@@ -40,6 +40,10 @@ This package contains software from a number of other projects including Bash, z
 * Git for Windows [now ships with a diff helper for OpenOffice documents](https://github.com/git-for-windows/build-extra/pull/148).
 * Comes with [Git LFS v2.3.4](https://github.com/git-lfs/git-lfs/releases/tag/v2.3.4).
 
+### Bug Fixes
+
+* Git for Windows [now handles worktrees at the top-level of a UNC share correctly](https://github.com/git-for-windows/git/issues/1320).
+
 ## Changes since Git for Windows v2.14.2(2) (October 5th 2017)
 
 ### New Features
