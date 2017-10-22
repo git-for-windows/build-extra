@@ -1,0 +1,14 @@
+environment:
+    DEPLOY_PROVIDER: bintray
+    BINTRAY_ACCOUNT: alexpux
+    BINTRAY_REPOSITORY: msys2
+    PACMAN_REPOSITORY_NAME: ci.msys
+
+build_script:
+    - C:\msys64\usr\bin\pacman --noconfirm --sync --refresh --refresh --sysupgrade --sysupgrade
+
+test_script:
+    - git submodule init
+    - cd integration
+    - C:\msys64\usr\bin\bash t0001-odt2txt.sh
+
