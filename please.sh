@@ -2116,6 +2116,10 @@ pkg_files () {
 
 	for p in $package $extra_packages
 	do
+		test mingw-w64-git-test-artifacts != "$p" ||
+		test "--for-upload" = "$1" ||
+		continue
+
 		case "$p" in
 		mingw-w64-*)
 			suffix=-${p#mingw-w64-}-$pkgver-any.pkg.tar.xz
