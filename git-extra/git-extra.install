@@ -44,9 +44,9 @@ GITCONFIG
 *.RTF	diff=astextplain
 *.ods	diff=astextplain
 *.ODS	diff=astextplain
-*odf	diff=astextplain
+*.odf	diff=astextplain
 *.ODF	diff=astextplain
-*odt	diff=astextplain
+*.odt	diff=astextplain
 *.ODT	diff=astextplain
 
 GITATTRIBUTES

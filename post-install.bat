@@ -11,13 +11,14 @@
 @REM <percent>~fI Expands <percent>I to a fully qualified path name.
 @FOR /F "delims=" %%D IN ("%~dp0") DO @CD %%~fD
 
+@FOR /F "tokens=4 delims=.[XP " %%i IN ('ver') DO @SET ver=%%i
+
 @REM If this is a 32-bit Git for Windows, adjust the DLL address ranges.
 @REM We cannot use %PROCESSOR_ARCHITECTURE% for this test because it is
 @REM allowed to install a 32-bit Git for Windows into a 64-bit system.
 @IF EXIST mingw32\bin\git.exe @(
 	@REM We need to rebase just to make sure that it still works even with
 	@REM 32-bit Windows 10
-	@FOR /F "tokens=4 delims=.[XP " %%i IN ('ver') DO @SET ver=%%i
 	@IF 10 LEQ %ver% @(
 		@REM We copy `rebase.exe` because it links to `msys-2.0.dll`
 		@REM (and @REM thus prevents modifying it). It is okay to
@@ -37,6 +38,7 @@
 	usr\bin\dash.exe -c '/usr/bin/dash usr/bin/rebaseall -p'
 )
 
+@echo "running post-install"
 @REM Run the post-install scripts
 @usr\bin\bash.exe --norc -c "export PATH=/usr/bin:$PATH; export SYSCONFDIR=/etc; for p in $(export LC_COLLATE=C; echo /etc/post-install/*.post); do test -e \"$p\" && . \"$p\"; done"
 
