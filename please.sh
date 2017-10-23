@@ -3023,10 +3023,11 @@ release () { # [--directory=<artifacts-directory>]
 
 	if test -n "$artifactsdir"
 	then
-		(cd "$HOME" &&
-		 cp Git-"$ver"-{32,64}-bit.exe \
+		(cd "$USERPROFILE" && cp \
 			Git-"$ver"-64-bit.exe \
 			Git-"$ver"-32-bit.exe \
+			"$artifactsdir/") &&
+		(cd "$HOME" && cp \
 			PortableGit-"$ver"-64-bit.7z.exe \
 			PortableGit-"$ver"-32-bit.7z.exe \
 			MinGit-"$ver"-64-bit.zip \
