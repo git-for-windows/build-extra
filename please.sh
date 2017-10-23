@@ -572,14 +572,26 @@ up_to_date () {
 	fi
 }
 
-build () { # <package>
+build () { # [--force] <package>
+	force=
+	while case "$1" in
+	-f|--force)
+		force=--force
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected 1 argument, got $#: %s\n" "$*"
+
 	set_package "$1"
+	extra_makepkg_opts="$extra_makepkg_opts $force"
 
 	test MINGW = "$type" ||
 	up_to_date "$pkgpath" ||
 	die "%s: not up-to-date\n" "$pkgpath"
 
-	foreach_sdk pkg_build
+	foreach_sdk pkg_build $force
 }
 
 # require_remote <nickname> <url>
@@ -2044,7 +2056,18 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 	die "Could not submit build to Coverity\n"
 }
 
-tag_git () { #
+tag_git () { # [--force]
+	force=
+	while case "$1" in
+	-f|--force)
+		force=--force
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 0 ||
+	die "Expected no argument, got $#: %s\n" "$*"
+
 	sdk="$sdk64" require w3m
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
@@ -2078,7 +2101,7 @@ tag_git () { #
 	(cd "$git_src_dir" &&
 	 signopt= &&
 	 if git config user.signingkey >/dev/null; then signopt=-s; fi &&
-	 git tag -m "$tag_message" -a $signopt \
+	 git tag -m "$tag_message" -a $signopt $force \
 		"$nextver" git-for-windows/master) ||
 	die "Could not tag %s in %s\n" "$nextver" "$git_src_dir"
 
@@ -2329,9 +2352,11 @@ pkg_copy_artifacts () {
 	create_bundle_artifact
 }
 
-upgrade () { # [--directory=<artifacts-directory>] [--no-upload] <package>
+# --force overwrites existing an Git tag, or existing package files
+upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] <package>
 	artifactsdir=
 	skip_upload=
+	force=
 	while case "$1" in
 	--directory=*)
 		artifactsdir="$(cygpath -am "${1#*=}")" || exit
@@ -2348,6 +2373,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] <package>
 		;;
 	--no-upload)
 		skip_upload=t
+		;;
+	-f|--force)
+		force=--force
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -2464,7 +2492,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] <package>
 		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
 		 git commit -s -m "curl: new version ($version)" PKGBUILD &&
 
-		 build "$package" &&
+		 build $force "$package" &&
 		 install "$package" &&
 		 if test -z "$skip_upload"; then upload "$package"; fi &&
 		 sdk="$sdk64" pkg_copy_artifacts) &&
@@ -2475,7 +2503,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] <package>
 		;;
 	mingw-w64-git)
 		finalize release-notes &&
-		tag_git &&
+		tag_git $force &&
 		if test -n "$artifactsdir"
 		then
 			echo "$nextver" >"$artifactsdir/nextver" &&
@@ -2709,7 +2737,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] <package>
 		;;
 	esac &&
 
-	build "$package" &&
+	build $force "$package" &&
 	install "$package" &&
 	if test -z "$skip_upload"; then upload "$package"; fi &&
 	foreach_sdk pkg_copy_artifacts &&
