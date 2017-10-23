@@ -75,7 +75,8 @@ x86_64)
 esac
 
 # Generate release notes for NuGet
-"$BUILDEXTRA"/render-release-notes.sh --css "$BUILDEXTRA"/nuget/content/ ||
+"$BUILDEXTRA"/render-release-notes.sh --output "$BUILDEXTRA"/nuget/ \
+	--css content ||
 die "Could not generate ReleaseNotes.html."
 
 VERSIONTAG="$(echo "$VERSION" | sed -e 's/^[1-9]/v&/' \
