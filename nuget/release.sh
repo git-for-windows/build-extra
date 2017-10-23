@@ -116,5 +116,5 @@ die "Could not move the core Git .exe files out of libexec/git-core"
 
 sed '1,/@@FILELIST@@/d' <"$SPECIN" >>"$SPEC"
 
-nuget pack -BasePath / -Properties buildextra="$(cd "$BUILDEXTRA" && pwd -W)" \
+nuget pack -BasePath / -Properties buildextra="$(cygpath -aw "$BUILDEXTRA")" \
 	-OutputDirectory "$HOME" -Verbosity detailed "$SPEC"
