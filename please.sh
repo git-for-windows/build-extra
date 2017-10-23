@@ -2088,6 +2088,7 @@ tag_git () { # [--force]
 		<"$build_extra_dir/ReleaseNotes.md")"
 	! git --git-dir="$git_src_dir" rev-parse --verify \
 		refs/tags/"$nextver" >/dev/null 2>&1 ||
+	test -n "$force" ||
 	die "Already tagged: %s\n" "$nextver"
 
 	notes="$("$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
