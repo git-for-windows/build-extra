@@ -186,13 +186,13 @@ upload () { # <package> <version> <arch> <filename>
 		return
 	}
 	echo "Uploading $1..." >&2
-	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
+	curl --netrc -m 1800 --connect-timeout 300 --retry 5 \
 		-fT "$4" "$content_url/$1/$2/$3/$4" ||
-	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
+	curl --netrc -m 1800 --connect-timeout 300 --retry 5 \
 		-fT "$4" "$content_url/$1/$2/$3/$4" ||
-	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
+	curl --netrc -m 1800 --connect-timeout 300 --retry 5 \
 		-fT "$4" "$content_url/$1/$2/$3/$4" ||
-	curl --netrc -m 300 --connect-timeout 300 --retry 5 \
+	curl --netrc -m 1800 --connect-timeout 300 --retry 5 \
 		-fT "$4" "$content_url/$1/$2/$3/$4" ||
 	die "Could not upload $4 to $1/$2/$3"
 }
@@ -202,14 +202,14 @@ publish () { # <package> <version>
 		echo "publish: curl --netrc -fX POST $content_url/$1/$2/publish"
 		return
 	}
-	curl --netrc --connect-timeout 300 --max-time 300 \
+	curl --netrc --connect-timeout 300 --max-time 1800 \
 		--expect100-timeout 300 --speed-time 300 --retry 5 \
 		-fX POST "$content_url/$1/$2/publish" ||
 	while test $? = 7
 	do
 		echo "Timed out connecting to host, retrying in 5" >&2
 		sleep 5
-		curl --netrc --connect-timeout 300 --max-time 300 \
+		curl --netrc --connect-timeout 300 --max-time 1800 \
 			--expect100-timeout 300 --speed-time 300 --retry 5 \
 			-fX POST "$content_url/$1/$2/publish"
 	done ||
