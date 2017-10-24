@@ -3143,6 +3143,7 @@ publish () { #
 		do
 			"$sdk64/usr/src/build-extra/nuget/nuget.exe" \
 				push -NonInteractive -Verbosity detailed \
+				-Source https://www.nuget.org/api/v2/package \
 				-Timeout 3000 "$HOME"/$nupkg.$ver.nupkg && break
 			count=$(($count+1))
 		done
