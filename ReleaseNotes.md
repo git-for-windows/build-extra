@@ -1,5 +1,5 @@
-# Git for Windows v2.14.2(3) Release Notes
-Latest update: October 12th 2017
+# Git for Windows v2.14.3 Release Notes
+Latest update: October 23rd 2017
 
 ## Introduction
 
@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.14.3](https://github.com/git/git/blob/v2.14.3/Documentation/RelNotes/2.14.3.txt).
 * Git for Windows [now ships with a diff helper for OpenOffice documents](https://github.com/git-for-windows/build-extra/pull/148).
 * Comes with [Git LFS v2.3.4](https://github.com/git-lfs/git-lfs/releases/tag/v2.3.4).
 * Comes with [cURL v7.56.1](https://curl.haxx.se/changes.html#7_56_1).
