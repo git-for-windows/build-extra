@@ -186,13 +186,13 @@ upload () { # <package> <version> <arch> <filename>
 		return
 	}
 	echo "Uploading $1..." >&2
-	curl --netrc -m 1800 --connect-timeout 300 --retry 5 \
+	curl --netrc -m 1800 --connect-timeout 300 \
 		-fT "$4" "$content_url/$1/$2/$3/$4" ||
-	curl --netrc -m 1800 --connect-timeout 300 --retry 5 \
+	curl --netrc -m 1800 --connect-timeout 300 \
 		-fT "$4" "$content_url/$1/$2/$3/$4" ||
-	curl --netrc -m 1800 --connect-timeout 300 --retry 5 \
+	curl --netrc -m 1800 --connect-timeout 300 \
 		-fT "$4" "$content_url/$1/$2/$3/$4" ||
-	curl --netrc -m 1800 --connect-timeout 300 --retry 5 \
+	curl --netrc -m 1800 --connect-timeout 300 \
 		-fT "$4" "$content_url/$1/$2/$3/$4" ||
 	die "Could not upload $4 to $1/$2/$3"
 }
@@ -203,14 +203,14 @@ publish () { # <package> <version>
 		return
 	}
 	curl --netrc --connect-timeout 300 --max-time 1800 \
-		--expect100-timeout 300 --speed-time 300 --retry 5 \
+		--expect100-timeout 300 --speed-time 300 \
 		-fX POST "$content_url/$1/$2/publish" ||
 	while test $? = 7
 	do
 		echo "Timed out connecting to host, retrying in 5" >&2
 		sleep 5
 		curl --netrc --connect-timeout 300 --max-time 1800 \
-			--expect100-timeout 300 --speed-time 300 --retry 5 \
+			--expect100-timeout 300 --speed-time 300 \
 			-fX POST "$content_url/$1/$2/publish"
 	done ||
 	die "Could not publish $2 in $1 (exit code $?)"
@@ -222,7 +222,10 @@ delete_version () { # <package> <version>
 		echo "delete: curl --netrc -fX DELETE $packages_url/$1/versions/$2"
 		return
 	}
-	curl --netrc --retry 5 -fX DELETE "$packages_url/$1/versions/$2" ||
+	curl --netrc -fX DELETE "$packages_url/$1/versions/$2" ||
+	curl --netrc -fX DELETE "$packages_url/$1/versions/$2" ||
+	curl --netrc -fX DELETE "$packages_url/$1/versions/$2" ||
+	curl --netrc -fX DELETE "$packages_url/$1/versions/$2" ||
 	die "Could not delete version $2 of $1"
 }
 
@@ -232,7 +235,7 @@ package_list () { # db.tar.xz
 }
 
 package_exists () { # package-name
-	case "$(curl --netrc --retry 5 -s "$packages_url/$1")" in
+	case "$(curl --netrc -s "$packages_url/$1")" in
 	*\"name\":\""$1"\"*)
 		return 0
 		;;
@@ -244,7 +247,7 @@ package_exists () { # package-name
 }
 
 db_version () {
-	json="$(curl --netrc --retry 5 -s \
+	json="$(curl --netrc -s \
 		"$packages_url/package-database/versions/_latest")"
 	latest="$(expr "$json" : '.*"name":"\([^"]*\)".*')"
 	test -n "$latest" ||
