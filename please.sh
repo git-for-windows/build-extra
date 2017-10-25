@@ -3095,6 +3095,9 @@ publish () { #
 	"$sdk64/mingw64/bin/node.exe" -v ||
 	die "Could not execute node.exe\n"
 
+	# Required to render the release notes for the announcement mail
+	sdk="$sdk64" require w3m
+
 	echo "Preparing release message"
 	name="Git for Windows $displayver"
 	text="$(sed -n \
