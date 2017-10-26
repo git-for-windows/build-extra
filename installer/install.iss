@@ -1759,17 +1759,23 @@ end;
 procedure InstallAutoUpdater;
 var
     Res:Longint;
+    LogPath,ErrPath:String;
 begin
-    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Create /F /SC DAILY /TN "Git for Windows Updater" /TR "'+#39+'{app}\git-bash.exe'+#39+' --hide --no-needs-console --command=cmd\git.exe update --gui" >"{tmp}\schedule-autoupdate.log"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
-        LogError(ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater (see {tmp}\schedule-autoupdate.log).'));
+    LogPath:=ExpandConstant('{tmp}\remove-autoupdate.log');
+    ErrPath:=ExpandConstant('{tmp}\remove-autoupdate.err');
+    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Create /F /SC DAILY /TN "Git for Windows Updater" /TR "'+#39+'{app}\git-bash.exe'+#39+' --hide --no-needs-console --command=cmd\git.exe update --gui" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
+        LogError(ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater (see "'+LogPath+'" and "'+ErrPath+'").'));
 end;
 
 procedure UninstallAutoUpdater;
 var
     Res:Longint;
+    LogPath,ErrPath:String;
 begin
-    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Delete /F /TN "Git for Windows Updater" >"{tmp}\remove-autoupdate.log"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
-        LogError(ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater (see "{tmp}\remove-autoupdate.log").'));
+    LogPath:=ExpandConstant('{tmp}\remove-autoupdate.log');
+    ErrPath:=ExpandConstant('{tmp}\remove-autoupdate.err');
+    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Delete /F /TN "Git for Windows Updater" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
+        LogError(ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater (see "'+LogPath+'" and "'+ErrPath+'").'));
 end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
