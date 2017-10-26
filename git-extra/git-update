@@ -128,11 +128,16 @@ git_update () {
 	latest=$(echo "$releases" |
 		grep '"tag_name": "v' |
 		sed -E 's/.*"tag_name": "v([^"]*).*/\1/')
+	# Did we ask about this version already?
+	recently_seen="$(git config --global winUpdater.recentlySeenVersion)"
+	test "x$recently_seen" != "x$latest" || return
+
 	version=$(git --version | sed "s/git version //")
 	echo "Git for Windows $version (${bit}bit)" >&2
 	if test "$latest" = "$version"
 	then
 		echo "Up to date" >&2
+		git config --global winUpdater.recentlySeenVersion "$latest"
 		return
 	fi
 	case "$version" in
@@ -168,14 +173,20 @@ git_update () {
 		if test -n "$use_gui"
 		then
 			git gui--askyesno --title "Git Update Available" \
-				"Download and install $name$warn?" ||
-			return 1
+				"Download and install $name$warn?" || {
+				git config --global \
+					winUpdater.recentlySeenVersion "$latest"
+				return 1
+			}
 		else
 			read -p "Download and install $name$warn [N/y]? " \
 				yn >&2
 			case "$yn" in
 			[Yy]*) ;;
-			*) return 1;;
+			*)
+				git config --global \
+					winUpdater.recentlySeenVersion "$latest"
+				return 1;;
 			esac
 		fi
 	else
