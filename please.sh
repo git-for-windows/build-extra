@@ -1698,6 +1698,15 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		die "Could not use package '%s' in '%s'\n" "$pkglist" "$sdk"
 	done
 
+	case " $modes " in
+	*" portable "*)
+		sign_files "$outputdir"/PortableGit-"$version"-64-bit.7z.exe &&
+		{ test -n "$only_64_bit" || sign_files \
+			"$outputdir"/PortableGit-"$version"-32-bit.7z.exe; } ||
+		die "Could not code-sign portable Git(s)\n"
+		;;
+	esac
+
 	test -z "$upload" || {
 		git -C "$git_src_dir" push git-for-windows "$tag_name" &&
 		publish_prerelease "$tag_name" "$outputdir"
