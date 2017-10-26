@@ -1756,6 +1756,59 @@ begin
     Result:=True;
 end;
 
+procedure InstallAutoUpdater;
+var
+    Res:Longint;
+    LogPath,ErrPath,AppPath,XMLPath,Start:String;
+begin
+    Start:=GetDateTimeString('yyyy-mm-dd','-',':')+'T'+GetDateTimeString('hh:nn:ss','-',':');
+    XMLPath:=ExpandConstant('{tmp}\auto-updater.xml');
+    AppPath:=ExpandConstant('{app}');
+    SaveStringToFile(XMLPath,
+        '<?xml version="1.0" encoding="UTF-16"?>'+
+        '<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">'+
+        '  <Settings>'+
+        '    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>'+
+        '    <RunOnlyIfNetworkAvailable>true</RunOnlyIfNetworkAvailable>'+
+        '    <StartWhenAvailable>true</StartWhenAvailable>'+
+        '    <IdleSettings>'+
+        '      <StopOnIdleEnd>false</StopOnIdleEnd>'+
+        '      <RestartOnIdle>false</RestartOnIdle>'+
+        '    </IdleSettings>'+
+        '  </Settings>'+
+        '  <Triggers>'+
+        '    <CalendarTrigger>'+
+        '      <StartBoundary>'+Start+'</StartBoundary>'+
+        '      <ExecutionTimeLimit>PT4H</ExecutionTimeLimit>'+
+        '      <ScheduleByDay>'+
+        '        <DaysInterval>1</DaysInterval>'+
+        '      </ScheduleByDay>'+
+        '    </CalendarTrigger>'+
+        '  </Triggers>'+
+        '  <Actions Context="Author">'+
+        '    <Exec>'+
+        '      <Command>"'+AppPath+'\git-bash.exe"</Command>'+
+        '      <Arguments>--hide --no-needs-console --command=cmd\git.exe update --gui</Arguments>'+
+        '    </Exec>'+
+        '  </Actions>'+
+        '</Task>',False);
+    LogPath:=ExpandConstant('{tmp}\remove-autoupdate.log');
+    ErrPath:=ExpandConstant('{tmp}\remove-autoupdate.err');
+    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Create /F /TN "Git for Windows Updater" /XML "'+XMLPath+'" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
+        LogError(ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater (output: '+ReadFileAsString(LogPath)+', errors: '+ReadFileAsString(ErrPath)+').'));
+end;
+
+procedure UninstallAutoUpdater;
+var
+    Res:Longint;
+    LogPath,ErrPath:String;
+begin
+    LogPath:=ExpandConstant('{tmp}\remove-autoupdate.log');
+    ErrPath:=ExpandConstant('{tmp}\remove-autoupdate.err');
+    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Delete /F /TN "Git for Windows Updater" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
+        LogError(ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater (output: '+ReadFileAsString(LogPath)+', errors: '+ReadFileAsString(ErrPath)+').'));
+end;
+
 procedure CurStepChanged(CurStep:TSetupStep);
 var
     AppDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
@@ -2092,10 +2145,8 @@ begin
         Install a scheduled task to try to auto-update Git for Windows
     }
 
-    if IsComponentInstalled('autoupdate') then begin
-        if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Create /F /SC DAILY /TN "Git for Windows Updater" /TR "'+#39+'{app}\git-bash.exe'+#39+' --hide --no-needs-console --command=cmd\git.exe update --gui" >"{tmp}\schedule-autoupdate.log"'),'',SW_HIDE,ewWaitUntilTerminated,i) or (i<>0) then
-            LogError(ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater (see {tmp}\schedule-autoupdate.log).'));
-    end;
+    if IsComponentInstalled('autoupdate') then
+        InstallAutoUpdater();
 
     {
         Run post-install scripts to set up system environment
@@ -2327,10 +2378,8 @@ begin
         Remove the scheduled task to try to auto-update Git for Windows
     }
 
-    if IsComponentInstalled('autoupdate') then begin
-        if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Delete /F /TN "Git for Windows Updater" >"{tmp}\remove-autoupdate.log"'),'',SW_HIDE,ewWaitUntilTerminated,i) or (i<>0) then
-            LogError(ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater (see "{tmp}\remove-autoupdate.log").'));
-    end;
+    if IsComponentInstalled('autoupdate') then
+        UninstallAutoUpdater();
 
     {
         Modify the environment
