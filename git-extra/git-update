@@ -5,6 +5,50 @@
 # when confirmation to do so is given.
 
 
+# Compare version strings
+# Prints -1, 0 or 1 to stdout
+
+version_compare () {
+	a="$1"
+	b="$2"
+
+	while true
+	do
+		test -n "$b" || { echo 1; return; }
+		test -n "$a" || { echo -1; return; }
+
+		# Get the first numbers (if any)
+		a1="$(expr "$a" : '^\([0-9]*\)')"; a="${a#$a1}"
+		b1="$(expr "$b" : '^\([0-9]*\)')"; b="${b#$b1}"
+
+		if test -z "$b1"
+		then
+			test -z "$a1" || { echo 1; return; }
+			a1=0
+			b1=0
+		fi
+		test -n "$a1" || { echo -1; return; }
+		test $a1 -le $b1 || { echo 1; return; }
+		test $b1 -le $a1 || { echo -1; return; }
+
+		# Get the next character
+		a1="$(expr "$a" : '^\(.\)')"; a="${a#$a1}"
+		b1="$(expr "$b" : '^\(.\)')"; b="${b#$b1}"
+
+		test "x$a1" = "x$b1" || {
+			if test . = "$b1"
+			then
+				echo -1
+			else
+				echo 1
+			fi
+			return
+		}
+
+		test . = "$a1" || { echo 0; return; }
+	done
+}
+
 # Counts how many Bash instances are running, apart from the current one (if
 # any: `git update` might have been called from a CMD window, in which case no
 # Git Bash might be running at all).
@@ -91,6 +135,15 @@ git_update () {
 		echo "Up to date" >&2
 		return
 	fi
+	case "$version" in
+	*.rc[1-9]*)
+		# Do not downgrade from -rc versions to the latest stable one
+		if test 0 -lt "$(version_compare "$version" "$latest")"
+		then
+			return
+		fi
+		;;
+	esac
 
 	echo "Update $latest is available" >&2
 	download=$(echo "$releases" |
