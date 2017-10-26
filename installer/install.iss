@@ -1759,11 +1759,42 @@ end;
 procedure InstallAutoUpdater;
 var
     Res:Longint;
-    LogPath,ErrPath:String;
+    LogPath,ErrPath,AppPath,XMLPath,Start:String;
 begin
+    Start:=GetDateTimeString('yyyy-mm-dd','-',':')+'T'+GetDateTimeString('hh:nn:ss','-',':');
+    XMLPath:=ExpandConstant('{tmp}\auto-updater.xml');
+    AppPath:=ExpandConstant('{app}');
+    SaveStringToFile(XMLPath,
+        '<?xml version="1.0" encoding="UTF-16"?>'+
+        '<Task version="1.2" xmlns="http://schemas.microsoft.com/windows/2004/02/mit/task">'+
+        '  <Settings>'+
+        '    <MultipleInstancesPolicy>IgnoreNew</MultipleInstancesPolicy>'+
+        '    <RunOnlyIfNetworkAvailable>true</RunOnlyIfNetworkAvailable>'+
+        '    <StartWhenAvailable>true</StartWhenAvailable>'+
+        '    <IdleSettings>'+
+        '      <StopOnIdleEnd>false</StopOnIdleEnd>'+
+        '      <RestartOnIdle>false</RestartOnIdle>'+
+        '    </IdleSettings>'+
+        '  </Settings>'+
+        '  <Triggers>'+
+        '    <CalendarTrigger>'+
+        '      <StartBoundary>'+Start+'</StartBoundary>'+
+        '      <ExecutionTimeLimit>PT4H</ExecutionTimeLimit>'+
+        '      <ScheduleByDay>'+
+        '        <DaysInterval>1</DaysInterval>'+
+        '      </ScheduleByDay>'+
+        '    </CalendarTrigger>'+
+        '  </Triggers>'+
+        '  <Actions Context="Author">'+
+        '    <Exec>'+
+        '      <Command>"'+AppPath+'\git-bash.exe"</Command>'+
+        '      <Arguments>--hide --no-needs-console --command=cmd\git.exe update --gui</Arguments>'+
+        '    </Exec>'+
+        '  </Actions>'+
+        '</Task>',False);
     LogPath:=ExpandConstant('{tmp}\remove-autoupdate.log');
     ErrPath:=ExpandConstant('{tmp}\remove-autoupdate.err');
-    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Create /F /SC DAILY /TN "Git for Windows Updater" /TR "'+#39+'{app}\git-bash.exe'+#39+' --hide --no-needs-console --command=cmd\git.exe update --gui" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
+    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Create /F /TN "Git for Windows Updater" /XML "'+XMLPath+'" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
         LogError(ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater (output: '+ReadFileAsString(LogPath)+', errors: '+ReadFileAsString(ErrPath)+').'));
 end;
 
