@@ -1315,6 +1315,7 @@ publish_prerelease () {
 prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
 	modes=
 	output=
+	outputdir="$HOME"
 	force_tag=
 	force_version=
 	prerelease_prefix=prerelease-
@@ -1346,22 +1347,25 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		only_64_bit=t
 		;;
 	--output=*)
-		output="--output='$(cygpath -am "${1#*=}")'" ||
+		outputdir="${1#*=}" &&
+		output="--output='$(cygpath -am "$outputdir")'" ||
 		die "Directory '%s' inaccessible\n" "${1#*=}"
 		;;
 	--clean-output=*)
-		rm -rf "${1#*=}" &&
-		mkdir -p "${1#*=}" ||
-		die "Could not make directory '%s'\n" "${1#*=}"
+		outputdir="${1#*=}" &&
+		rm -rf "$outputdir" &&
+		mkdir -p "$outputdir" ||
+		die "Could not make directory '%s'\n" "$outputdir"
 		output="--output='$(cygpath -am "${1#*=}")'" ||
-		die "Directory '%s' inaccessible\n" "${1#*=}"
+		die "Directory '%s' inaccessible\n" "$outputdir"
 		;;
 	--now)
-		rm -rf ./prerelease-now &&
-		mkdir ./prerelease-now ||
+		outputdir=./prerelease-now &&
+		rm -rf "$outputdir" &&
+		mkdir "$outputdir" ||
 		die "Could not make ./prerelease-now/\n"
-		output="--output='$(cygpath -am ./prerelease-now)'" ||
-		die "Directory ./prerelease-now/ is inaccessible\n"
+		output="--output='$(cygpath -am "$outputdir")'" ||
+		die "Directory "$outputdir"/ is inaccessible\n"
 
 		modes="installer portable mingit"
 		force_version='%(prerelease-tag)'
@@ -1696,7 +1700,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 
 	test -z "$upload" || {
 		git -C "$git_src_dir" push git-for-windows "$tag_name" &&
-		publish_prerelease "$tag_name" ./prerelease-now
+		publish_prerelease "$tag_name" "$outputdir"
 	} ||
 	die "Could not publish %s\n" "$tag_name"
 }
