@@ -1502,9 +1502,29 @@ begin
 end;
 
 function ShouldSkipPage(PageID:Integer):Boolean;
+var
+    AppDir,Msg,Cmd,LogPath:String;
+    Res:Longint;
 begin
     if (ProcessesPage<>NIL) and (PageID=ProcessesPage.ID) then begin
         // This page is only reached forward (by pressing "Next", never by pressing "Back").
+        if (ParamIsSet('SKIPIFINUSE') or ParamIsSet('VSNOTICE')) then begin
+            AppDir:=ExpandConstant('{app}');
+            if DirExists(AppDir) then begin
+                if not FileExists(ExpandConstant('{tmp}\blocked-file-util.exe')) then
+                    ExtractTemporaryFile('blocked-file-util.exe');
+		LogPath:=ExpandConstant('{tmp}\blocking-pids.log');
+		Cmd:='/C ""'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'" 2>"'+LogPath+'""';
+                if not Exec(ExpandConstant('{sys}\cmd.exe'),Cmd,'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then begin
+                    Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+ReadFileAsString(LogPath);
+                    if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
+                        LogError(Msg)
+                    else
+                        Log(Msg);
+                    ExitEarlyWithSuccess();
+                end;
+            end;
+        end;
         RefreshProcessList(NIL);
         Result:=(GetArrayLength(Processes)=0);
     end else begin
