@@ -1700,6 +1700,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 
 	case " $modes " in
 	*" portable "*)
+		version="$prerelease_prefix${pkgver#v}" &&
 		sign_files "$outputdir"/PortableGit-"$version"-64-bit.7z.exe &&
 		{ test -n "$only_64_bit" || sign_files \
 			"$outputdir"/PortableGit-"$version"-32-bit.7z.exe; } ||
