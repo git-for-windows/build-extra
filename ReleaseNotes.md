@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * The auto-updater tried to run at a precise time, and did not run when the computer was switched off at that time. [Now it runs as soon after the scheduled time as possible](https://github.com/git-for-windows/build-extra/commit/459b6e85c).
 * The auto-updater [no longer suggests to downgrade from Release Candidates](https://github.com/git-for-windows/build-extra/commit/1418ee7e8).
 * When the auto-updater asked the user whether they want to upgrade to a certain version, and the user declined, [the auto-updater will not bother the user about said version again](https://github.com/git-for-windows/build-extra/commit/c0f7634af).
+* The installer, when run with /SKIPIFINUSE=1, [now detects whether *any* executable in Git for Windows' installation is run](https://github.com/git-for-windows/build-extra/commit/db3521c140154b3923e304e4271176958da1f048)
 
 ## Changes since Git for Windows v2.14.2(3) (October 12th 2017)
 
