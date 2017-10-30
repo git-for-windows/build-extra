@@ -35,6 +35,11 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.14.3 (October 23rd 2017)
 
+### New Features
+
+* Comes with [Git v2.15.0](https://github.com/git/git/blob/v2.15.0/Documentation/RelNotes/2.15.0.txt).
+
+
 ### Bug Fixes
 
 * The auto-updater tried to run at a precise time, and did not run when the computer was switched off at that time. [Now it runs as soon after the scheduled time as possible](https://github.com/git-for-windows/build-extra/commit/459b6e85c).
