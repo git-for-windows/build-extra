@@ -51,3 +51,4 @@ edit-git-bash.exe
 !/archive/root/etc/networks
 !/archive/root/etc/protocols
 !/archive/root/etc/services
+/versions/cached-files/
