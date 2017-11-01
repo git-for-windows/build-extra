@@ -48,14 +48,13 @@ export CHERE_INVOKING=1
 unset ORIGINAL_PATH
 
 sdk_path () { # <bitness>
-	result="$(git config windows.sdk"$1".path)" && test -n "$result" ||
-	result="C:/git-sdk-$1"
-
-	test -e "$result" ||
-	die "%s\n\n%s\n%s\n" \
-		"Could not determine location of Git for Windows SDK $1-bit" \
-		"Default location: C:/git-sdk-$1" \
-		"Config variable to override: windows.sdk$1.path"
+	result="$(git config windows.sdk"$1".path)" && test -n "$result" || {
+		result="C:/git-sdk-$1" && test -e "$result" ||
+		die "%s\n\n\t%s\n%s\n" \
+			"No $1-bit Git for Windows SDK found at location:" \
+			"C:/git-sdk-$1" \
+			"Config variable to override: windows.sdk$1.path"
+	}
 
 	echo "$result"
 }
