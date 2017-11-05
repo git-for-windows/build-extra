@@ -99,6 +99,7 @@ Name: ext; Description: Windows Explorer integration; Types: default
 Name: ext\shellhere; Description: Git Bash Here; Types: default
 Name: ext\guihere; Description: Git GUI Here; Types: default
 Name: gitlfs; Description: Git LFS (Large File Support); Types: default; Flags: disablenouninstallwarning
+Name: nano; Description: Use nano as default editor for git;
 Name: assoc; Description: Associate .git* configuration files with the default text editor; Types: default
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows
@@ -2159,6 +2160,15 @@ begin
             LogError('Could not disable Git LFS in the gitconfig.');
         if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') then
             LogError('Line {#__LINE__}: Unable to delete "git-lfs.exe".');
+    end;
+
+    {
+        Set nano as default editor
+    }
+
+    if IsComponentSelected('nano') then begin
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor nano.exe','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set nano as core.editor in the gitconfig.');
     end;
 
     {
