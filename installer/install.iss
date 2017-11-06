@@ -99,7 +99,6 @@ Name: ext; Description: Windows Explorer integration; Types: default
 Name: ext\shellhere; Description: Git Bash Here; Types: default
 Name: ext\guihere; Description: Git GUI Here; Types: default
 Name: gitlfs; Description: Git LFS (Large File Support); Types: default; Flags: disablenouninstallwarning
-Name: nano; Description: Use nano as default editor for git;
 Name: assoc; Description: Associate .git* configuration files with the default text editor; Types: default
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows
@@ -301,6 +300,10 @@ begin
 end;
 
 const
+    // Git Editor options.
+    GE_VIM            = 1;
+    GE_Nano           = 2;
+
     // Git Path options.
     GP_BashOnly       = 1;
     GP_Cmd            = 2;
@@ -339,6 +342,10 @@ var
 
     // Previous Git for Windows version (if upgrading)
     PreviousGitForWindowsVersion:String;
+
+    // Wizard page and variables for the Editor options.
+    EditorPage:TWizardPage;
+    RdbEditor:array[GE_VIM..GE_Nano] of TRadioButton;
 
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
@@ -746,6 +753,27 @@ begin
         Result:=0;
 end;
 
+procedure OpenNanoHomepage(Sender:TObject);
+var
+  ExitStatus:Integer;
+begin
+  ShellExec('','https://www.nano-editor.org/dist/v2.8/nano.html','','',SW_SHOW,ewNoWait,ExitStatus);
+end;
+
+procedure OpenVIMHomepage(Sender:TObject);
+var
+  ExitStatus:Integer;
+begin
+  ShellExec('','http://www.vim.org/','','',SW_SHOW,ewNoWait,ExitStatus);
+end;
+
+procedure OpenExitVIMPost(Sender:TObject);
+var
+  ExitStatus:Integer;
+begin
+  ShellExec('','https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/','','',SW_SHOW,ewNoWait,ExitStatus);
+end;
+
 procedure OpenGCMHomepage(Sender:TObject);
 var
   ExitStatus:Integer;
@@ -795,6 +823,7 @@ end;
 procedure InitializeWizard;
 var
     PrevPageID:Integer;
+    LblNano,LblNanoNew,LblNanoLink,lblVIM,lblVIMLink,lblExitVIMLink:TLabel;
     LblGitBash,LblGitCmd,LblGitCmdTools,LblGitCmdToolsWarn:TLabel;
     LblOpenSSH,LblPlink:TLabel;
     LblCurlOpenSSL,LblCurlWinSSL:TLabel;
@@ -812,6 +841,122 @@ begin
     ChosenOptions:='';
 
     PrevPageID:=wpSelectProgramGroup;
+
+    (*
+     * Create a custom page for configuring the default Git editor.
+     *)
+
+    EditorPage:=CreateCustomPage(
+        PrevPageID
+    ,   'Choosing the default editor used by Git'
+    ,   'Which editor would you like Git to use?'
+    );
+    PrevPageID:=EditorPage.ID;
+
+    // 1st choice
+    RdbEditor[GE_Nano]:=TRadioButton.Create(EditorPage);
+    with RdbEditor[GE_Nano] do begin
+        Parent:=EditorPage.Surface;
+        Caption:='Use the Nano editor by default';
+        Left:=ScaleX(4);
+        Top:=ScaleY(8);
+        Width:=ScaleX(405);
+        Height:=ScaleY(17);
+        Font.Style:=[fsBold];
+        TabOrder:=0;
+    end;
+    LblNano:=TLabel.Create(EditorPage);
+    with LblNano do begin
+        Parent:=EditorPage.Surface;
+        Caption:=
+            '(NEW!) GNU nano is a small and friendly text editor running in the console'+#13+'window. This is the recommended option.';
+        Left:=ScaleX(28);
+        Top:=ScaleY(32);
+        Width:=ScaleX(405);
+        Height:=ScaleY(26);
+    end;
+    LblNanoNew:=TLabel.Create(EditorPage);
+    with LblNanoNew do begin
+        Parent:=EditorPage.Surface;
+        Caption:='(NEW!)';
+        Left:=ScaleX(28);
+        Top:=ScaleY(32);
+        Width:=ScaleX(405);
+        Height:=ScaleY(13);
+        Font.Color:=clRed;
+    end;
+    LblNanoLink:=TLabel.Create(EditorPage);
+    with LblNanoLink do begin
+        Parent:=EditorPage.Surface;
+        Caption:='GNU nano';
+        Left:=GetTextWidth('(NEW!) ',LblNano.Font)+ScaleX(28);
+        Top:=ScaleY(32);
+        Width:=ScaleX(405);
+        Height:=ScaleY(13);
+        Font.Color:=clBlue;
+        Font.Style:=[fsUnderline];
+        Cursor:=crHand;
+        OnClick:=@OpenNanoHomepage;
+    end;
+
+    // 2nd choice
+    RdbEditor[GE_VIM]:=TRadioButton.Create(EditorPage);
+    with RdbEditor[GE_VIM] do begin
+        Parent:=EditorPage.Surface;
+        Caption:='Use Vim (the ubiquitous text editor) as Git'+#39+'s default editor';
+        Left:=ScaleX(4);
+        Top:=ScaleY(76);
+        Width:=ScaleX(405);
+        Height:=ScaleY(17);
+        Font.Style:=[fsBold];
+        TabOrder:=1;
+        Checked:=True;
+    end;
+    LblVIM:=TLabel.Create(EditorPage);
+    with LblVIM do begin
+        Parent:=EditorPage.Surface;
+        Caption:=
+            'The Vim editor, while powerful, can be hard to use. It is the default editor of'+#13+'Git for Windows only for historical reasons.';
+        Left:=ScaleX(28);
+        Top:=ScaleY(100);
+        Width:=ScaleX(405);
+        Height:=ScaleY(26);
+    end;
+    LblVIMLink:=TLabel.Create(EditorPage);
+    with LblVIMLink do begin
+        Parent:=EditorPage.Surface;
+        Caption:='Vim editor';
+        Left:=GetTextWidth('The ',LblVIM.Font)+ScaleX(28);
+        Top:=ScaleY(100);
+        Width:=ScaleX(405);
+        Height:=ScaleY(13);
+        Font.Color:=clBlue;
+        Font.Style:=[fsUnderline];
+        Cursor:=crHand;
+        OnClick:=@OpenVIMHomepage;
+    end;
+    LblExitVIMLink:=TLabel.Create(EditorPage);
+    with LblExitVIMLink do begin
+        Parent:=EditorPage.Surface;
+        Caption:='can be hard to use';
+        Left:=GetTextWidth('The Vim editor, while powerful, ',LblVIM.Font)+ScaleX(28);
+        Top:=ScaleY(100);
+        Width:=ScaleX(405);
+        Height:=ScaleY(13);
+        Font.Color:=clBlue;
+        Font.Style:=[fsUnderline];
+        Cursor:=crHand;
+        OnClick:=@OpenExitVIMPost;
+    end;
+
+    // Restore the setting chosen during a previous install.
+    Data:=ReplayChoice('Editor Option','VIM');
+
+    if Data='Nano' then begin
+        RdbEditor[GE_Nano].Checked:=True;
+    end else if Data='VIM' then begin
+        RdbEditor[GE_VIM].Checked:=True;
+    end;
 
     (*
      * Create a custom page for modifying the environment.
@@ -2166,7 +2311,7 @@ begin
         Set nano as default editor
     }
 
-    if IsComponentSelected('nano') then begin
+    if RdbEditor[GE_Nano].Checked then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor nano.exe','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set nano as core.editor in the gitconfig.');
     end;
@@ -2206,6 +2351,15 @@ procedure RegisterPreviousData(PreviousDataKey:Integer);
 var
     Data,Path:String;
 begin
+    // Git Editor options.
+    Data:='';
+    if RdbEditor[GE_Nano].Checked then begin
+        Data:='Nano';
+    end else if RdbEditor[GE_VIM].Checked then begin
+        Data:='VIM';
+    end;
+    RecordChoice(PreviousDataKey,'Editor Option',Data);
+
     // Git Path options.
     Data:='';
     if RdbPath[GP_BashOnly].Checked then begin
