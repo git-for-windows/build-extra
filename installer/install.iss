@@ -378,6 +378,11 @@ var
     RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_BuiltinDifftool] of TCheckBox;
 #endif
 
+    // Mapping controls to hyperlinks
+    HyperlinkSource:array of TObject;
+    HyperlinkTarget:array of String;
+    HyperlinkCount:Integer;
+
     // Wizard page and variables for the processes page.
     SessionHandle:DWORD;
     Processes:ProcessList;
@@ -753,6 +758,19 @@ begin
         Result:=0;
 end;
 
+procedure OpenHyperlink(Sender:TObject);
+var
+  i,ExitStatus:Integer;
+begin
+  for i:=0 to (HyperlinkCount-1) do begin
+      if (HyperlinkSource[i]=Sender) then begin
+          ShellExec('',HyperlinkTarget[i],'','',SW_SHOW,ewNoWait,ExitStatus);
+          exit;
+      end;
+  end;
+  LogError('Missing hyperlink!');
+end;
+
 procedure OpenNanoHomepage(Sender:TObject);
 var
   ExitStatus:Integer;
@@ -818,6 +836,145 @@ begin
     DummyBitmap.Canvas.Font.Assign(Font);
     Result:=DummyBitmap.Canvas.TextWidth(Text);
     DummyBitmap.Free();
+end;
+
+function CreatePage(var PrevPageID:Integer;const Caption,Description:String;var TabOrder,Top,Left:Integer):TWizardPage;
+begin
+    Result:=CreateCustomPage(PrevPageID,Caption,Description);
+    PrevPageID:=Result.ID;
+    TabOrder:=0;
+    Top:=8;
+    Left:=4;
+end;
+
+function SubString(S:String;Start,Count:Integer):String;
+begin
+    Result:=S;
+    if (Start>1) then
+        Delete(Result,1,Start-1);
+    if (Count>=0) then
+        SetLength(Result,Count);
+end;
+
+{
+    Find the position of the next of the three specified tokens (if any).
+    Returns 0 if none were found.
+}
+
+function Pos3(S,Token1,Token2,Token3:String;var ResultPos:Integer):String;
+var
+    i:Integer;
+begin
+    ResultPos:=Pos(Token1,S);
+    if (ResultPos>0) then
+        Result:=Token1;
+    i:=Pos(Token2,S);
+    if (i>0) and ((ResultPos=0) or (i<ResultPos)) then begin
+        ResultPos:=i;
+        Result:=Token2;
+    end;
+    i:=Pos(Token3,S);
+    if (i>0) and ((ResultPos=0) or (i<ResultPos)) then begin
+        ResultPos:=i;
+        Result:=Token3;
+    end;
+end;
+
+{
+    Description can contain pseudo tags <RED>...</RED> and <A HREF=...>...</A>
+    (which cannot be mixed). It is currently not allowed to have line breaks
+    (i.e. #13) in those tags.
+}
+
+function CreateRadioButton(Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TRadioButton;
+var
+    RadioLabel,SubLabel:TLabel;
+    Untagged,RowPrefix,Link:String;
+    RowStart,RowCount,i:Integer;
+begin
+    Result:=TRadioButton.Create(Page);
+    Result.Parent:=Page.Surface;
+    Result.Caption:=Caption;
+    Result.Left:=ScaleX(Left);
+    Result.Top:=ScaleY(Top);
+    Result.Width:=ScaleX(405);
+    Result.Height:=ScaleY(17);
+    Result.Font.Style:=[fsBold];
+    Result.TabOrder:=TabOrder;
+    TabOrder:=TabOrder+1;
+    Top:=Top+24;
+    Untagged:='';
+    RadioLabel:=TLabel.Create(Page);
+    RadioLabel.Parent:=Page.Surface;
+    RadioLabel.Caption:=Untagged;
+    RadioLabel.Top:=ScaleY(Top);
+    RadioLabel.Left:=ScaleX(Left+24);
+    RadioLabel.Width:=ScaleX(405);
+    RadioLabel.Height:=ScaleY(13);
+    RowPrefix:='';
+    RowCount:=1;
+    while True do begin
+        case Pos3(Description,#13,'<RED>','<A HREF=',i) of
+            '': begin
+                Untagged:=Untagged+Description;
+                RadioLabel.Caption:=Untagged;
+                RadioLabel.Height:=ScaleY(13*RowCount);
+                Top:=Top+13+18;
+                Exit;
+            end;
+            ''+#13: begin
+                Untagged:=Untagged+SubString(Description,1,i);
+                Description:=SubString(Description,i+1,-1);
+                RowCount:=RowCount+1;
+                RowPrefix:='';
+                Top:=Top+13;
+            end;
+            '<RED>': begin
+                Untagged:=Untagged+SubString(Description,1,i-1);
+                RowPrefix:=RowPrefix+SubString(Description,1,i-1);
+                Description:=SubString(Description,i+5,-1);
+                i:=Pos('</RED>',Description);
+                SubLabeL:=TLabel.Create(Page);
+                SubLabel.Parent:=Page.Surface;
+                SubLabel.Caption:=SubString(Description,1,i-1);
+                SubLabel.Top:=ScaleY(Top);
+                SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                SubLabel.Width:=ScaleX(405);
+                SubLabel.Height:=ScaleY(13);
+                SubLabel.Font.Color:=clRed;
+                Untagged:=Untagged+SubString(Description,1,i-1);
+                RowPrefix:=RowPrefix+SubString(Description,1,i-1);
+                Description:=SubString(Description,i+6,-1);
+            end;
+            '<A HREF=': begin
+                Untagged:=Untagged+SubString(Description,1,i-1);
+                RowPrefix:=RowPrefix+SubString(Description,1,i-1);
+                Description:=SubString(Description,i+8,-1);
+                i:=Pos('>',Description);
+                HyperlinkCount:=HyperlinkCount+1;
+                SetArrayLength(HyperlinkSource,HyperlinkCount);
+                SetArrayLength(HyperlinkTarget,HyperlinkCount);
+                HyperlinkTarget[HyperlinkCount-1]:=SubString(Description,1,i-1);
+                Description:=SubString(Description,i+1,-1);
+                i:=Pos('</A>',Description);
+                SubLabeL:=TLabel.Create(Page);
+                HyperlinkSource[HyperlinkCount-1]:=SubLabel;
+                SubLabel.Parent:=Page.Surface;
+                SubLabel.Caption:=SubString(Description,1,i-1);
+                SubLabel.Top:=ScaleY(Top);
+                SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                SubLabel.Width:=ScaleX(405);
+                SubLabel.Height:=ScaleY(13);
+                SubLabel.Font.Color:=clBlue;
+                SubLabel.Font.Style:=[fsUnderline];
+                SubLabel.Cursor:=crHand;
+                SubLabel.OnClick:=@OpenHyperlink;
+                Untagged:=Untagged+SubString(Description,1,i-1);
+                RowPrefix:=RowPrefix+SubString(Description,1,i-1);
+                Description:=SubString(Description,i+4,-1);
+            end;
+        end;
+    end;
 end;
 
 procedure InitializeWizard;
