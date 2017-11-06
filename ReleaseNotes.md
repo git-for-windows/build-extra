@@ -37,7 +37,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Operations in massively-sparse worktrees [are now much faster of `core.fscache = true`](https://github.com/git-for-windows/git/pull/1344).
+* Operations in massively-sparse worktrees [are now much faster if `core.fscache = true`](https://github.com/git-for-windows/git/pull/1344).
 * It is [now possible to configure `nano`](https://github.com/git-for-windows/build-extra/pull/161) as Git's default editor [instead of `vim`](https://www.xkcd.com/378/).
 
 ## Changes since Git for Windows v2.14.3 (October 23rd 2017)
