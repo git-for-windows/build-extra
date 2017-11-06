@@ -890,20 +890,30 @@ end;
     (which cannot be mixed).
 }
 
-function CreateRadioButton(Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TRadioButton;
+function CreateRadioButtonOrCheckBox(CreateRadioButton:Boolean;Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TButtonControl;
 var
+    RadioButton:TRadioButton;
+    CheckBox:TCheckBox;
     RadioLabel,SubLabel:TLabel;
     Untagged,RowPrefix,Link:String;
     RowStart,RowCount,i,j:Integer;
 begin
-    Result:=TRadioButton.Create(Page);
+    if (CreateRadioButton) then begin
+        RadioButton:=TRadioButton.Create(Page);
+        RadioButton.Caption:=Caption;
+        RadioButton.Font.Style:=[fsBold];
+        Result:=RadioButton;
+    end else begin
+        CheckBox:=TCheckBox.Create(Page);
+        CheckBox.Caption:=Caption;
+        CheckBox.Font.Style:=[fsBold];
+        Result:=CheckBox;
+    end;
     Result.Parent:=Page.Surface;
-    Result.Caption:=Caption;
     Result.Left:=ScaleX(Left);
     Result.Top:=ScaleY(Top);
     Result.Width:=ScaleX(405);
     Result.Height:=ScaleY(17);
-    Result.Font.Style:=[fsBold];
     Result.TabOrder:=TabOrder;
     TabOrder:=TabOrder+1;
     Top:=Top+24;
@@ -1024,6 +1034,16 @@ begin
             end;
         end;
     end;
+end;
+
+function CreateRadioButton(Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TRadioButton;
+begin
+    Result:=TRadioButton(CreateRadioButtonOrCheckBox(True,Page,Caption,Description,TabOrder,Top,Left));
+end;
+
+function CreateCheckBox(Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TCheckBox;
+begin
+    Result:=TCheckBox(CreateRadioButtonOrCheckBox(False,Page,Caption,Description,TabOrder,Top,Left));
 end;
 
 procedure InitializeWizard;
