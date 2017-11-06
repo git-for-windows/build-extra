@@ -303,6 +303,7 @@ const
     // Git Editor options.
     GE_VIM            = 1;
     GE_Nano           = 2;
+    GE_NotepadPlusPlus = 3;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -345,7 +346,9 @@ var
 
     // Wizard page and variables for the Editor options.
     EditorPage:TWizardPage;
-    RdbEditor:array[GE_VIM..GE_Nano] of TRadioButton;
+    RdbEditor:array[GE_VIM..GE_NotepadPlusPlus] of TRadioButton;
+
+    NotepadPlusPlusPath:String;
 
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
@@ -1070,10 +1073,21 @@ begin
     // 2nd choice
     RdbEditor[GE_VIM]:=CreateRadioButton(EditorPage,'Use Vim (the ubiquitous text editor) as Git'+#39+'s default editor','The <A HREF=http://www.vim.org/>Vim editor</A>, while powerful, <A HREF=https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/>can be hard to use</A>. It is the default editor of'+#13+'Git for Windows only for historical reasons.',TabOrder,Top,Left);
 
+    // 3rd choice
+    RdbEditor[GE_NotepadPlusPlus]:=CreateRadioButton(EditorPage,'Use Notepad++ as Git'+#39+'s default editor','<RED>(NEW!)</RED> <A HREF=https://notepad-plus-plus.org/>Notepad++</A> is a popular GUI editor that can be used by Git.',TabOrder,Top,Left);
+
+    RdbEditor[GE_NotepadPlusPlus].Enabled:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\notepad++.exe','',NotepadPlusPlusPath);
+
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Editor Option','VIM') of
         'Nano': RdbEditor[GE_Nano].Checked:=True;
         'VIM': RdbEditor[GE_VIM].Checked:=True;
+	'Notepad++': begin
+            if RdbEditor[GE_NotepadPlusPlus].Enabled then
+                RdbEditor[GE_NotepadPlusPlus].Checked:=True
+            else
+                RdbEditor[GE_VIM].Checked:=True;
+        end;
     else
         RdbEditor[GE_VIM].Checked:=True;
     end;
@@ -1993,7 +2007,10 @@ begin
 
     if RdbEditor[GE_Nano].Checked then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor nano.exe','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not set nano as core.editor in the gitconfig.');
+            LogError('Could not set GNU nano as core.editor in the gitconfig.');
+    end else if (RdbEditor[GE_NotepadPlusPlus].Checked) and (NotepadPlusPlusPath<>'') then begin
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+NotepadPlusPlusPath+#39+' -multiInst -notabbar -nosession -noPlugin"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set Notepad++ as core.editor in the gitconfig.');
     end;
 
     {
@@ -2037,6 +2054,8 @@ begin
         Data:='Nano';
     end else if RdbEditor[GE_VIM].Checked then begin
         Data:='VIM';
+    end else if RdbEditor[GE_NotepadPlusPlus].Checked then begin
+        Data:='Notepad++';
     end;
     RecordChoice(PreviousDataKey,'Editor Option',Data);
 
