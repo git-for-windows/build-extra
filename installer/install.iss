@@ -1071,11 +1071,10 @@ begin
     RdbEditor[GE_VIM]:=CreateRadioButton(EditorPage,'Use Vim (the ubiquitous text editor) as Git'+#39+'s default editor','The <A HREF=http://www.vim.org/>Vim editor</A>, while powerful, <A HREF=https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/>can be hard to use</A>. It is the default editor of'+#13+'Git for Windows only for historical reasons.',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
-    Data:=ReplayChoice('Editor Option','VIM');
-
-    if Data='Nano' then begin
-        RdbEditor[GE_Nano].Checked:=True;
-    end else if Data='VIM' then begin
+    case ReplayChoice('Editor Option','VIM') of
+        'Nano': RdbEditor[GE_Nano].Checked:=True;
+        'VIM': RdbEditor[GE_VIM].Checked:=True;
+    else
         RdbEditor[GE_VIM].Checked:=True;
     end;
 
@@ -1095,14 +1094,12 @@ begin
     RdbPath[GP_CmdTools]:=CreateRadioButton(PathPage,'Use Git and optional Unix tools from the Windows Command Prompt','Both Git and the optional Unix tools will be added to your PATH.'+#13+'<RED>Warning: This will override Windows tools like "find" and "sort". Only'+#13+'use this option if you understand the implications.</RED>',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
-    Data:=ReplayChoice('Path Option','Cmd');
-
-    if Data='BashOnly' then begin
-        RdbPath[GP_BashOnly].Checked:=True;
-    end else if Data='Cmd' then begin
+    case ReplayChoice('Path Option','Cmd') of
+        'BashOnly': RdbPath[GP_BashOnly].Checked:=True;
+        'Cmd': RdbPath[GP_Cmd].Checked:=True;
+        'CmdTools': RdbPath[GP_CmdTools].Checked:=True;
+    else
         RdbPath[GP_Cmd].Checked:=True;
-    end else if Data='CmdTools' then begin
-        RdbPath[GP_CmdTools].Checked:=True;
     end;
 
     (*
@@ -1154,12 +1151,11 @@ begin
 	Top:=Top+30;
 
         // Restore the setting chosen during a previous install.
-        Data:=ReplayChoice('SSH Option','OpenSSH');
-
-        if Data='OpenSSH' then begin
+        case ReplayChoice('SSH Option','OpenSSH') of
+            'OpenSSH': RdbSSH[GS_OpenSSH].Checked:=True;
+            'Plink': RdbSSH[GS_Plink].Checked:=True;
+	else
             RdbSSH[GS_OpenSSH].Checked:=True;
-        end else if Data='Plink' then begin
-            RdbSSH[GS_Plink].Checked:=True;
         end;
     end else begin
         PuTTYPage:=NIL;
@@ -1178,12 +1174,11 @@ begin
     RdbCurlVariant[GC_WinSSL]:=CreateRadioButton(CurlVariantPage,'Use the native Windows Secure Channel library','Server certificates will be validated using Windows Certificate Stores.'+#13+'This option also allows you to use your company''s internal Root CA certificates'+#13+'distributed e.g. via Active Directory Domain Services.',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
-    Data:=ReplayChoice('CURL Option','OpenSSL');
-
-    if Data='OpenSSL' then begin
+    case ReplayChoice('CURL Option','OpenSSL') of
+        'OpenSSL': RdbCurlVariant[GC_OpenSSL].Checked:=True;
+        'WinSSL': RdbCurlVariant[GC_WinSSL].Checked:=True;
+    else
         RdbCurlVariant[GC_OpenSSL].Checked:=True;
-    end else if Data='WinSSL' then begin
-        RdbCurlVariant[GC_WinSSL].Checked:=True;
     end;
 
     (*
@@ -1202,14 +1197,12 @@ begin
     RdbCRLF[GC_CRLFCommitAsIs]:=CreateRadioButton(CRLFPage,'Checkout as-is, commit as-is','Git will not perform any conversions when checking out or committing'+#13+'text files. Choosing this option is not recommended for cross-platform'+#13+'projects ("core.autocrlf" is set to "false").',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
-    Data:=ReplayChoice('CRLF Option','CRLFAlways');
-
-    if Data='LFOnly' then begin
-        RdbCRLF[GC_LFOnly].Checked:=True;
-    end else if Data='CRLFAlways' then begin
+    case ReplayChoice('CRLF Option','CRLFAlways') of
+        'LFOnly': RdbCRLF[GC_LFOnly].Checked:=True;
+        'CRLFAlways': RdbCRLF[GC_CRLFAlways].Checked:=True;
+        'CRLFCommitAsIs': RdbCRLF[GC_CRLFCommitAsIs].Checked:=True;
+    else
         RdbCRLF[GC_CRLFAlways].Checked:=True;
-    end else if Data='CRLFCommitAsIs' then begin
-        RdbCRLF[GC_CRLFCommitAsIs].Checked:=True;
     end;
 
     (*
@@ -1225,12 +1218,11 @@ begin
     RdbBashTerminal[GB_ConHost]:=CreateRadioButton(BashTerminalPage,'Use Windows'' default console window','Git will use the default console window of Windows ("cmd.exe"), which works well'+#13+'with Win32 console programs such as interactive Python or node.js, but has a'+#13+'very limited default scroll-back, needs to be configured to use a Unicode font in'+#13+'order to display non-ASCII characters correctly, and prior to Windows 10 its'+#13+'window was not freely resizable and it only allowed rectangular text selections.',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
-    Data:=ReplayChoice('Bash Terminal Option','MinTTY');
-
-    if Data='MinTTY' then begin
+    case ReplayChoice('Bash Terminal Option','MinTTY') of
+        'MinTTY': RdbBashTerminal[GB_MinTTY].Checked:=True;
+        'ConHost': RdbBashTerminal[GB_ConHost].Checked:=True;
+    else
         RdbBashTerminal[GB_MinTTY].Checked:=True;
-    end else if Data='ConHost' then begin
-        RdbBashTerminal[GB_ConHost].Checked:=True;
     end;
 
     (*
@@ -1243,11 +1235,7 @@ begin
     RdbExtraOptions[GP_FSCache]:=CreateCheckBox(ExtraOptionsPage,'Enable file system caching','File system data will be read in bulk and cached in memory for certain'+#13+'operations ("core.fscache" is set to "true"). This provides a significant'+#13+'performance boost.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install.
-    Data:=ReplayChoice('Performance Tweaks FSCache','Enabled');
-
-    if Data='Enabled' then begin
-        RdbExtraOptions[GP_FSCache].Checked:=True;
-    end;
+    RdbExtraOptions[GP_FSCache].Checked:=ReplayChoice('Performance Tweaks FSCache','Enabled')<>'Disabled';
 
     // 2nd option
     RdbExtraOptions[GP_GCM]:=CreateCheckBox(ExtraOptionsPage,'Enable Git Credential Manager','The <A HREF=https://github.com/Microsoft/Git-Credential-Manager-for-Windows>Git Credential Manager for Windows</A> provides secure Git credential storage'+#13+'for Windows, most notably multi-factor authentication support for Visual Studio'+#13+'Team Services and GitHub. (requires .NET framework v4.5.1 or or later).',TabOrder,Top,Left);
@@ -1258,9 +1246,7 @@ begin
         RdbExtraOptions[GP_GCM].Checked:=False;
         RdbExtraOptions[GP_GCM].Enabled:=False;
     end else begin
-        Data:=ReplayChoice('Use Credential Manager','Enabled');
-
-        RdbExtraOptions[GP_GCM].Checked:=Data='Enabled';
+        RdbExtraOptions[GP_GCM].Checked:=ReplayChoice('Use Credential Manager','Enabled')<>'Disabled';
     end;
 
     // 3rd option
@@ -1277,7 +1263,7 @@ begin
 	    Data:='Disabled';
     end;
 
-    RdbExtraOptions[GP_Symlinks].Checked:=Data='Enabled';
+    RdbExtraOptions[GP_Symlinks].Checked:=Data<>'Disabled';
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     (*
@@ -1290,11 +1276,7 @@ begin
     RdbExperimentalOptions[GP_BuiltinDifftool]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, builtin difftool','Use the experimental builtin difftool (fast, but only lightly tested).',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
-    Data:=ReplayChoice('Enable Builtin Difftool','Auto');
-    if Data='Auto' then
-            RdbExperimentalOptions[GP_BuiltinDifftool].Checked:=False
-	else
-            RdbExperimentalOptions[GP_BuiltinDifftool].Checked:=Data='Enabled';
+    RdbExperimentalOptions[GP_BuiltinDifftool].Checked:=ReplayChoice('Enable Builtin Difftool','Auto')='Enabled';
 #endif
 
     (*
