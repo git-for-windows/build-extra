@@ -1048,18 +1048,8 @@ end;
 
 procedure InitializeWizard;
 var
-    PrevPageID:Integer;
-    LblNano,LblNanoNew,LblNanoLink,lblVIM,lblVIMLink,lblExitVIMLink:TLabel;
-    LblGitBash,LblGitCmd,LblGitCmdTools,LblGitCmdToolsWarn:TLabel;
-    LblOpenSSH,LblPlink:TLabel;
-    LblCurlOpenSSL,LblCurlWinSSL:TLabel;
+    PrevPageID,TabOrder,Top,Left:Integer;
     PuTTYSessions,EnvSSH:TArrayOfString;
-    LblLFOnly,LblCRLFAlways,LblCRLFCommitAsIs:TLabel;
-    LblMinTTY,LblConHost:TLabel;
-    LblFSCache,LblGCM,LblGCMLink,LblSymlinks,LblSymlinksLink:TLabel;
-#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
-    LblBuiltinDifftool:TLabel;
-#endif
     BtnPlink:TButton;
     Data:String;
 begin
@@ -1072,108 +1062,13 @@ begin
      * Create a custom page for configuring the default Git editor.
      *)
 
-    EditorPage:=CreateCustomPage(
-        PrevPageID
-    ,   'Choosing the default editor used by Git'
-    ,   'Which editor would you like Git to use?'
-    );
-    PrevPageID:=EditorPage.ID;
+    EditorPage:=CreatePage(PrevPageID,'Choosing the default editor used by Git','Which editor would you like Git to use?',TabOrder,Top,Left);
 
     // 1st choice
-    RdbEditor[GE_Nano]:=TRadioButton.Create(EditorPage);
-    with RdbEditor[GE_Nano] do begin
-        Parent:=EditorPage.Surface;
-        Caption:='Use the Nano editor by default';
-        Left:=ScaleX(4);
-        Top:=ScaleY(8);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=0;
-    end;
-    LblNano:=TLabel.Create(EditorPage);
-    with LblNano do begin
-        Parent:=EditorPage.Surface;
-        Caption:=
-            '(NEW!) GNU nano is a small and friendly text editor running in the console'+#13+'window. This is the recommended option.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(32);
-        Width:=ScaleX(405);
-        Height:=ScaleY(26);
-    end;
-    LblNanoNew:=TLabel.Create(EditorPage);
-    with LblNanoNew do begin
-        Parent:=EditorPage.Surface;
-        Caption:='(NEW!)';
-        Left:=ScaleX(28);
-        Top:=ScaleY(32);
-        Width:=ScaleX(405);
-        Height:=ScaleY(13);
-        Font.Color:=clRed;
-    end;
-    LblNanoLink:=TLabel.Create(EditorPage);
-    with LblNanoLink do begin
-        Parent:=EditorPage.Surface;
-        Caption:='GNU nano';
-        Left:=GetTextWidth('(NEW!) ',LblNano.Font)+ScaleX(28);
-        Top:=ScaleY(32);
-        Width:=ScaleX(405);
-        Height:=ScaleY(13);
-        Font.Color:=clBlue;
-        Font.Style:=[fsUnderline];
-        Cursor:=crHand;
-        OnClick:=@OpenNanoHomepage;
-    end;
+    RdbEditor[GE_Nano]:=CreateRadioButton(EditorPage,'Use the Nano editor by default','<RED>(NEW!)</RED> <A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window. This is the recommended option.',TabOrder,Top,Left);
 
     // 2nd choice
-    RdbEditor[GE_VIM]:=TRadioButton.Create(EditorPage);
-    with RdbEditor[GE_VIM] do begin
-        Parent:=EditorPage.Surface;
-        Caption:='Use Vim (the ubiquitous text editor) as Git'+#39+'s default editor';
-        Left:=ScaleX(4);
-        Top:=ScaleY(76);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=1;
-        Checked:=True;
-    end;
-    LblVIM:=TLabel.Create(EditorPage);
-    with LblVIM do begin
-        Parent:=EditorPage.Surface;
-        Caption:=
-            'The Vim editor, while powerful, can be hard to use. It is the default editor of'+#13+'Git for Windows only for historical reasons.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(100);
-        Width:=ScaleX(405);
-        Height:=ScaleY(26);
-    end;
-    LblVIMLink:=TLabel.Create(EditorPage);
-    with LblVIMLink do begin
-        Parent:=EditorPage.Surface;
-        Caption:='Vim editor';
-        Left:=GetTextWidth('The ',LblVIM.Font)+ScaleX(28);
-        Top:=ScaleY(100);
-        Width:=ScaleX(405);
-        Height:=ScaleY(13);
-        Font.Color:=clBlue;
-        Font.Style:=[fsUnderline];
-        Cursor:=crHand;
-        OnClick:=@OpenVIMHomepage;
-    end;
-    LblExitVIMLink:=TLabel.Create(EditorPage);
-    with LblExitVIMLink do begin
-        Parent:=EditorPage.Surface;
-        Caption:='can be hard to use';
-        Left:=GetTextWidth('The Vim editor, while powerful, ',LblVIM.Font)+ScaleX(28);
-        Top:=ScaleY(100);
-        Width:=ScaleX(405);
-        Height:=ScaleY(13);
-        Font.Color:=clBlue;
-        Font.Style:=[fsUnderline];
-        Cursor:=crHand;
-        OnClick:=@OpenExitVIMPost;
-    end;
+    RdbEditor[GE_VIM]:=CreateRadioButton(EditorPage,'Use Vim (the ubiquitous text editor) as Git'+#39+'s default editor','The <A HREF=http://www.vim.org/>Vim editor</A>, while powerful, <A HREF=https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/>can be hard to use</A>. It is the default editor of'+#13+'Git for Windows only for historical reasons.',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
     Data:=ReplayChoice('Editor Option','VIM');
@@ -1188,97 +1083,16 @@ begin
      * Create a custom page for modifying the environment.
      *)
 
-    PathPage:=CreateCustomPage(
-        PrevPageID
-    ,   'Adjusting your PATH environment'
-    ,   'How would you like to use Git from the command line?'
-    );
-    PrevPageID:=PathPage.ID;
+    PathPage:=CreatePage(PrevPageID,'Adjusting your PATH environment','How would you like to use Git from the command line?',TabOrder,Top,Left);
 
     // 1st choice
-    RdbPath[GP_BashOnly]:=TRadioButton.Create(PathPage);
-    with RdbPath[GP_BashOnly] do begin
-        Parent:=PathPage.Surface;
-        Caption:='Use Git from Git Bash only';
-        Left:=ScaleX(4);
-        Top:=ScaleY(8);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=0;
-    end;
-    LblGitBash:=TLabel.Create(PathPage);
-    with LblGitBash do begin
-        Parent:=PathPage.Surface;
-        Caption:=
-            'This is the safest choice as your PATH will not be modified at all. You will only be' + #13 +
-            'able to use the Git command line tools from Git Bash.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(32);
-        Width:=ScaleX(405);
-        Height:=ScaleY(26);
-    end;
+    RdbPath[GP_BashOnly]:=CreateRadioButton(PathPage,'Use Git from Git Bash only','This is the safest choice as your PATH will not be modified at all. You will only be'+#13+'able to use the Git command line tools from Git Bash.',TabOrder,Top,Left);
 
     // 2nd choice
-    RdbPath[GP_Cmd]:=TRadioButton.Create(PathPage);
-    with RdbPath[GP_Cmd] do begin
-        Parent:=PathPage.Surface;
-        Caption:='Use Git from the Windows Command Prompt';
-        Left:=ScaleX(4);
-        Top:=ScaleY(76);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=1;
-        Checked:=True;
-    end;
-    LblGitCmd:=TLabel.Create(PathPage);
-    with LblGitCmd do begin
-        Parent:=PathPage.Surface;
-        Caption:=
-            'This option is considered safe as it only adds some minimal Git wrappers to your' + #13 +
-            'PATH to avoid cluttering your environment with optional Unix tools. You will be' + #13 +
-            'able to use Git from both Git Bash and the Windows Command Prompt.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(100);
-        Width:=ScaleX(405);
-        Height:=ScaleY(39);
-    end;
+    RdbPath[GP_Cmd]:=CreateRadioButton(PathPage,'Use Git from the Windows Command Prompt','This option is considered safe as it only adds some minimal Git wrappers to your'+#13+'PATH to avoid cluttering your environment with optional Unix tools. You will be'+#13+'able to use Git from both Git Bash and the Windows Command Prompt.',TabOrder,Top,Left);
 
     // 3rd choice
-    RdbPath[GP_CmdTools]:=TRadioButton.Create(PathPage);
-    with RdbPath[GP_CmdTools] do begin
-        Parent:=PathPage.Surface;
-        Caption:='Use Git and optional Unix tools from the Windows Command Prompt';
-        Left:=ScaleX(4);
-        Top:=ScaleY(152);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=2;
-    end;
-    LblGitCmdTools:=TLabel.Create(PathPage);
-    with LblGitCmdTools do begin
-        Parent:=PathPage.Surface;
-        Caption:='Both Git and the optional Unix tools will be added to your PATH.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(176);
-        Width:=ScaleX(405);
-        Height:=ScaleY(13);
-    end;
-    LblGitCmdToolsWarn:=TLabel.Create(PathPage);
-    with LblGitCmdToolsWarn do begin
-        Parent:=PathPage.Surface;
-        Caption:=
-            'Warning: This will override Windows tools like "find" and "sort". Only' + #13 +
-            'use this option if you understand the implications.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(192);
-        Width:=ScaleX(405);
-        Height:=ScaleY(26);
-        Font.Color:=255;
-        Font.Style:=[fsBold];
-    end;
+    RdbPath[GP_CmdTools]:=CreateRadioButton(PathPage,'Use Git and optional Unix tools from the Windows Command Prompt','Both Git and the optional Unix tools will be added to your PATH.'+#13+'<RED>Warning: This will override Windows tools like "find" and "sort". Only'+#13+'use this option if you understand the implications.</RED>',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
     Data:=ReplayChoice('Path Option','Cmd');
@@ -1297,64 +1111,16 @@ begin
      *)
 
     if RegGetSubkeyNames(HKEY_CURRENT_USER,'Software\SimonTatham\PuTTY\Sessions',PuTTYSessions) and (GetArrayLength(PuTTYSessions)>0) then begin
-        PuTTYPage:=CreateCustomPage(
-            PrevPageID
-        ,   'Choosing the SSH executable'
-        ,   'Which Secure Shell client program would you like Git to use?'
-        );
-        PrevPageID:=PuTTYPage.ID;
+        PuTTYPage:=CreatePage(PrevPageID,'Choosing the SSH executable','Which Secure Shell client program would you like Git to use?',TabOrder,Top,Left);
 
         // 1st choice
-        RdbSSH[GS_OpenSSH]:=TRadioButton.Create(PuTTYPage);
-        with RdbSSH[GS_OpenSSH] do begin
-            Parent:=PuTTYPage.Surface;
-            Caption:='Use OpenSSH';
-            Left:=ScaleX(4);
-            Top:=ScaleY(8);
-            Width:=ScaleX(405);
-            Height:=ScaleY(17);
-            Font.Style:=[fsBold];
-            TabOrder:=0;
-            Checked:=True;
-        end;
-        LblOpenSSH:=TLabel.Create(PuTTYPage);
-        with LblOpenSSH do begin
-            Parent:=PuTTYPage.Surface;
-            Caption:=
-                'This uses ssh.exe that comes with Git. The GIT_SSH and SVN_SSH' + #13 +
-                'environment variables will not be modified.';
-            Left:=ScaleX(28);
-            Top:=ScaleY(32);
-            Width:=ScaleX(405);
-            Height:=ScaleY(26);
-        end;
+        RdbSSH[GS_OpenSSH]:=CreateRadioButton(PuTTYPage,'Use OpenSSH','This uses ssh.exe that comes with Git. The GIT_SSH and SVN_SSH'+#13+'environment variables will not be modified.',TabOrder,Top,Left);
 
         // 2nd choice
-        RdbSSH[GS_Plink]:=TRadioButton.Create(PuTTYPage);
-        with RdbSSH[GS_Plink] do begin
-            Parent:=PuTTYPage.Surface;
-            Caption:='Use (Tortoise)Plink';
-            Left:=ScaleX(4);
-            Top:=ScaleY(76);
-            Width:=ScaleX(405);
-            Height:=ScaleY(17);
-            Font.Style:=[fsBold];
-            TabOrder:=1;
-        end;
-        LblPlink:=TLabel.Create(PuTTYPage);
-        with LblPlink do begin
-            Parent:=PuTTYPage.Surface;
-            Caption:=
-                'PuTTY sessions were found in your Registry. You may specify the path' + #13 +
-                'to an existing copy of (Tortoise)Plink.exe from the TortoiseGit/SVN/CVS' + #13 +
-                'or PuTTY applications. The GIT_SSH and SVN_SSH environment' + #13 +
-                'variables will be adjusted to point to the following executable:';
-            Left:=ScaleX(28);
-            Top:=ScaleY(100);
-            Width:=ScaleX(405);
-            Height:=ScaleY(52);
-        end;
+        RdbSSH[GS_Plink]:=CreateRadioButton(PuTTYPage,'Use (Tortoise)Plink','PuTTY sessions were found in your Registry. You may specify the path'+#13+'to an existing copy of (Tortoise)Plink.exe from the TortoiseGit/SVN/CVS'+#13+'or PuTTY applications. The GIT_SSH and SVN_SSH environment'+#13+'variables will be adjusted to point to the following executable:',TabOrder,Top,Left);
         EdtPlink:=TEdit.Create(PuTTYPage);
+        EdtPlink.Left:=ScaleX(Left+24);
+        EdtPlink.Top:=ScaleY(Top+9);
         with EdtPlink do begin
             Parent:=PuTTYPage.Surface;
 
@@ -1372,21 +1138,20 @@ begin
                 Text:='';
             end;
 
-            Left:=ScaleX(28);
-            Top:=ScaleY(161);
             Width:=ScaleX(316);
             Height:=ScaleY(13);
         end;
         BtnPlink:=TButton.Create(PuTTYPage);
+        BtnPlink.Left:=ScaleX(Left+344);
+        BtnPlink.Top:=ScaleY(Top+9);
         with BtnPlink do begin
             Parent:=PuTTYPage.Surface;
             Caption:='...';
             OnClick:=@BrowseForPuTTYFolder;
-            Left:=ScaleX(348);
-            Top:=ScaleY(161);
             Width:=ScaleX(21);
             Height:=ScaleY(21);
         end;
+	Top:=Top+30;
 
         // Restore the setting chosen during a previous install.
         Data:=ReplayChoice('SSH Option','OpenSSH');
@@ -1404,60 +1169,13 @@ begin
      * Create a custom page for HTTPS implementation (cURL) setting.
      *)
 
-    CurlVariantPage:=CreateCustomPage(
-        PrevPageID
-    ,   'Choosing HTTPS transport backend'
-    ,   'Which SSL/TLS library would you like Git to use for HTTPS connections?'
-    );
-    PrevPageID:=CurlVariantPage.ID;
+    CurlVariantPage:=CreatePage(PrevPageID,'Choosing HTTPS transport backend','Which SSL/TLS library would you like Git to use for HTTPS connections?',TabOrder,Top,Left);
 
     // 1st choice
-    RdbCurlVariant[GC_OpenSSL]:=TRadioButton.Create(CurlVariantPage);
-    with RdbCurlVariant[GC_OpenSSL] do begin
-        Parent:=CurlVariantPage.Surface;
-        Caption:='Use the OpenSSL library';
-        Left:=ScaleX(4);
-        Top:=ScaleY(8);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=0;
-        Checked:=True;
-    end;
-    LblCurlOpenSSL:=TLabel.Create(CurlVariantPage);
-    with LblCurlOpenSSL do begin
-        Parent:=CurlVariantPage.Surface;
-        Caption:='Server certificates will be validated using the ca-bundle.crt file.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(32);
-        Width:=ScaleX(405);
-        Height:=ScaleY(47);
-    end;
+    RdbCurlVariant[GC_OpenSSL]:=CreateRadioButton(CurlVariantPage,'Use the OpenSSL library','Server certificates will be validated using the ca-bundle.crt file.',TabOrder,Top,Left);
 
     // 2nd choice
-    RdbCurlVariant[GC_WinSSL]:=TRadioButton.Create(CurlVariantPage);
-    with RdbCurlVariant[GC_WinSSL] do begin
-        Parent:=CurlVariantPage.Surface;
-        Caption:='Use the native Windows Secure Channel library';
-        Left:=ScaleX(4);
-        Top:=ScaleY(76);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=1;
-        Checked:=False;
-    end;
-    LblCurlWinSSL:=TLabel.Create(CurlVariantPage);
-    with LblCurlWinSSL do begin
-        Parent:=CurlVariantPage.Surface;
-        Caption:='Server certificates will be validated using Windows Certificate Stores.' + #13 +
-            'This option also allows you to use your company''s internal Root CA certificates' + #13 +
-            'distributed e.g. via Active Directory Domain Services.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(100);
-        Width:=ScaleX(405);
-        Height:=ScaleY(67);
-    end;
+    RdbCurlVariant[GC_WinSSL]:=CreateRadioButton(CurlVariantPage,'Use the native Windows Secure Channel library','Server certificates will be validated using Windows Certificate Stores.'+#13+'This option also allows you to use your company''s internal Root CA certificates'+#13+'distributed e.g. via Active Directory Domain Services.',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
     Data:=ReplayChoice('CURL Option','OpenSSL');
@@ -1472,90 +1190,16 @@ begin
      * Create a custom page for the core.autocrlf setting.
      *)
 
-    CRLFPage:=CreateCustomPage(
-        PrevPageID
-    ,   'Configuring the line ending conversions'
-    ,   'How should Git treat line endings in text files?'
-    );
-    PrevPageID:=CRLFPage.ID;
+    CRLFPage:=CreatePage(PrevPageID,'Configuring the line ending conversions','How should Git treat line endings in text files?',TabOrder,Top,Left);
 
     // 1st choice
-    RdbCRLF[GC_CRLFAlways]:=TRadioButton.Create(CRLFPage);
-    with RdbCRLF[GC_CRLFAlways] do begin
-        Parent:=CRLFPage.Surface;
-        Caption:='Checkout Windows-style, commit Unix-style line endings';
-        Left:=ScaleX(4);
-        Top:=ScaleY(8);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=0;
-        Checked:=True;
-    end;
-    LblCRLFAlways:=TLabel.Create(CRLFPage);
-    with LblCRLFAlways do begin
-        Parent:=CRLFPage.Surface;
-        Caption:=
-            'Git will convert LF to CRLF when checking out text files. When committing' + #13 +
-            'text files, CRLF will be converted to LF. For cross-platform projects,' + #13 +
-            'this is the recommended setting on Windows ("core.autocrlf" is set to "true").';
-        Left:=ScaleX(28);
-        Top:=ScaleY(32);
-        Width:=ScaleX(405);
-        Height:=ScaleY(47);
-    end;
+    RdbCRLF[GC_CRLFAlways]:=CreateRadioButton(CRLFPage,'Checkout Windows-style, commit Unix-style line endings','Git will convert LF to CRLF when checking out text files. When committing'+#13+'text files, CRLF will be converted to LF. For cross-platform projects,'+#13+'this is the recommended setting on Windows ("core.autocrlf" is set to "true").',TabOrder,Top,Left);
 
     // 2nd choice
-    RdbCRLF[GC_LFOnly]:=TRadioButton.Create(CRLFPage);
-    with RdbCRLF[GC_LFOnly] do begin
-        Parent:=CRLFPage.Surface;
-        Caption:='Checkout as-is, commit Unix-style line endings';
-        Left:=ScaleX(4);
-        Top:=ScaleY(80);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=1;
-        Checked:=False;
-    end;
-    LblLFOnly:=TLabel.Create(CRLFPage);
-    with LblLFOnly do begin
-        Parent:=CRLFPage.Surface;
-        Caption:=
-            'Git will not perform any conversion when checking out text files. When' + #13 +
-            'committing text files, CRLF will be converted to LF. For cross-platform projects,' + #13 +
-            'this is the recommended setting on Unix ("core.autocrlf" is set to "input").';
-        Left:=ScaleX(28);
-        Top:=ScaleY(104);
-        Width:=ScaleX(405);
-        Height:=ScaleY(47);
-    end;
+    RdbCRLF[GC_LFOnly]:=CreateRadioButton(CRLFPage,'Checkout as-is, commit Unix-style line endings','Git will not perform any conversion when checking out text files. When'+#13+'committing text files, CRLF will be converted to LF. For cross-platform projects,'+#13+'this is the recommended setting on Unix ("core.autocrlf" is set to "input").',TabOrder,Top,Left);
 
     // 3rd choice
-    RdbCRLF[GC_CRLFCommitAsIs]:=TRadioButton.Create(CRLFPage);
-    with RdbCRLF[GC_CRLFCommitAsIs] do begin
-        Parent:=CRLFPage.Surface;
-        Caption:='Checkout as-is, commit as-is';
-        Left:=ScaleX(4);
-        Top:=ScaleY(152);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=2;
-        Checked:=False;
-    end;
-    LblCRLFCommitAsIs:=TLabel.Create(CRLFPage);
-    with LblCRLFCommitAsIs do begin
-        Parent:=CRLFPage.Surface;
-        Caption:=
-            'Git will not perform any conversions when checking out or committing' + #13 +
-            'text files. Choosing this option is not recommended for cross-platform' + #13 +
-            'projects ("core.autocrlf" is set to "false").';
-        Left:=ScaleX(28);
-        Top:=ScaleY(176);
-        Width:=ScaleX(405);
-        Height:=ScaleY(47);
-    end;
+    RdbCRLF[GC_CRLFCommitAsIs]:=CreateRadioButton(CRLFPage,'Checkout as-is, commit as-is','Git will not perform any conversions when checking out or committing'+#13+'text files. Choosing this option is not recommended for cross-platform'+#13+'projects ("core.autocrlf" is set to "false").',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
     Data:=ReplayChoice('CRLF Option','CRLFAlways');
@@ -1572,66 +1216,13 @@ begin
      * Create a custom page for Git Bash's terminal emulator setting.
      *)
 
-    BashTerminalPage:=CreateCustomPage(
-        PrevPageID
-    ,   'Configuring the terminal emulator to use with Git Bash'
-    ,   'Which terminal emulator do you want to use with your Git Bash?'
-    );
-    PrevPageID:=BashTerminalPage.ID;
+    BashTerminalPage:=CreatePage(PrevPageID,'Configuring the terminal emulator to use with Git Bash','Which terminal emulator do you want to use with your Git Bash?',TabOrder,Top,Left);
 
     // 1st choice
-    RdbBashTerminal[GB_MinTTY]:=TRadioButton.Create(BashTerminalPage);
-    with RdbBashTerminal[GB_MinTTY] do begin
-        Parent:=BashTerminalPage.Surface;
-        Caption:='Use MinTTY (the default terminal of MSYS2)';
-        Left:=ScaleX(4);
-        Top:=ScaleY(8);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=0;
-        Checked:=True;
-    end;
-    LblMinTTY:=TLabel.Create(BashTerminalPage);
-    with LblMinTTY do begin
-        Parent:=BashTerminalPage.Surface;
-        Caption:=
-            'Git Bash will use MinTTY as terminal emulator, which sports a resizable window,' + #13 +
-            'non-rectangular selections and a Unicode font. Windows console programs (such' + #13 +
-            'as interactive Python) must be launched via `winpty` to work in MinTTY.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(32);
-        Width:=ScaleX(405);
-        Height:=ScaleY(47);
-    end;
+    RdbBashTerminal[GB_MinTTY]:=CreateRadioButton(BashTerminalPage,'Use MinTTY (the default terminal of MSYS2)','Git Bash will use MinTTY as terminal emulator, which sports a resizable window,'+#13+'non-rectangular selections and a Unicode font. Windows console programs (such'+#13+'as interactive Python) must be launched via `winpty` to work in MinTTY.',TabOrder,Top,Left);
 
     // 2nd choice
-    RdbBashTerminal[GB_ConHost]:=TRadioButton.Create(BashTerminalPage);
-    with RdbBashTerminal[GB_ConHost] do begin
-        Parent:=BashTerminalPage.Surface;
-        Caption:='Use Windows'' default console window';
-        Left:=ScaleX(4);
-        Top:=ScaleY(80);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=1;
-        Checked:=False;
-    end;
-    LblConHost:=TLabel.Create(BashTerminalPage);
-    with LblConHost do begin
-        Parent:=BashTerminalPage.Surface;
-        Caption:=
-            'Git will use the default console window of Windows ("cmd.exe"), which works well' + #13 +
-            'with Win32 console programs such as interactive Python or node.js, but has a' + #13 +
-            'very limited default scroll-back, needs to be configured to use a Unicode font in' + #13 +
-            'order to display non-ASCII characters correctly, and prior to Windows 10 its' + #13 +
-            'window was not freely resizable and it only allowed rectangular text selections.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(104);
-        Width:=ScaleX(405);
-        Height:=ScaleY(67);
-    end;
+    RdbBashTerminal[GB_ConHost]:=CreateRadioButton(BashTerminalPage,'Use Windows'' default console window','Git will use the default console window of Windows ("cmd.exe"), which works well'+#13+'with Win32 console programs such as interactive Python or node.js, but has a'+#13+'very limited default scroll-back, needs to be configured to use a Unicode font in'+#13+'order to display non-ASCII characters correctly, and prior to Windows 10 its'+#13+'window was not freely resizable and it only allowed rectangular text selections.',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
     Data:=ReplayChoice('Bash Terminal Option','MinTTY');
@@ -1646,38 +1237,10 @@ begin
      * Create a custom page for extra options.
      *)
 
-    ExtraOptionsPage:=CreateCustomPage(
-        PrevPageID
-    ,   'Configuring extra options'
-    ,   'Which features would you like to enable?'
-    );
-    PrevPageID:=ExtraOptionsPage.ID;
+    ExtraOptionsPage:=CreatePage(PrevPageID,'Configuring extra options','Which features would you like to enable?',TabOrder,Top,Left);
 
     // 1st option
-    RdbExtraOptions[GP_FSCache]:=TCheckBox.Create(ExtraOptionsPage);
-    with RdbExtraOptions[GP_FSCache] do begin
-        Parent:=ExtraOptionsPage.Surface;
-        Caption:='Enable file system caching';
-        Left:=ScaleX(4);
-        Top:=ScaleY(8);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=0;
-        Checked:=True;
-    end;
-    LblFSCache:=TLabel.Create(ExtraOptionsPage);
-    with LblFSCache do begin
-        Parent:=ExtraOptionsPage.Surface;
-        Caption:=
-            'File system data will be read in bulk and cached in memory for certain' + #13 +
-            'operations ("core.fscache" is set to "true"). This provides a significant' + #13 +
-            'performance boost.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(32);
-        Width:=ScaleX(405);
-        Height:=ScaleY(39);
-    end;
+    RdbExtraOptions[GP_FSCache]:=CreateCheckBox(ExtraOptionsPage,'Enable file system caching','File system data will be read in bulk and cached in memory for certain'+#13+'operations ("core.fscache" is set to "true"). This provides a significant'+#13+'performance boost.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install.
     Data:=ReplayChoice('Performance Tweaks FSCache','Enabled');
@@ -1687,40 +1250,7 @@ begin
     end;
 
     // 2nd option
-    RdbExtraOptions[GP_GCM]:=TCheckBox.Create(ExtraOptionsPage);
-    with RdbExtraOptions[GP_GCM] do begin
-        Parent:=ExtraOptionsPage.Surface;
-        Caption:='Enable Git Credential Manager';
-        Left:=ScaleX(4);
-        Top:=ScaleY(80);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=1;
-    end;
-    LblGCM:=TLabel.Create(ExtraOptionsPage);
-    with LblGCM do begin
-        Parent:=ExtraOptionsPage.Surface;
-        Caption:=
-            'The Git Credential Manager for Windows provides secure Git credential storage'+#13+'for Windows, most notably multi-factor authentication support for Visual Studio'+#13+'Team Services and GitHub. (requires .NET framework v4.5.1 or or later).';
-        Left:=ScaleX(28);
-        Top:=ScaleY(104);
-        Width:=ScaleX(405);
-        Height:=ScaleY(39);
-    end;
-    LblGCMLink:=TLabel.Create(ExtraOptionsPage);
-    with LblGCMLink do begin
-        Parent:=ExtraOptionsPage.Surface;
-        Caption:='Git Credential Manager';
-        Left:=GetTextWidth('The ',LblGCM.Font)+ScaleX(28);
-        Top:=ScaleY(104);
-        Width:=ScaleX(405);
-        Height:=ScaleY(13);
-        Font.Color:=clBlue;
-        Font.Style:=[fsUnderline];
-        Cursor:=crHand;
-        OnClick:=@OpenGCMHomepage;
-    end;
+    RdbExtraOptions[GP_GCM]:=CreateCheckBox(ExtraOptionsPage,'Enable Git Credential Manager','The <A HREF=https://github.com/Microsoft/Git-Credential-Manager-for-Windows>Git Credential Manager for Windows</A> provides secure Git credential storage'+#13+'for Windows, most notably multi-factor authentication support for Visual Studio'+#13+'Team Services and GitHub. (requires .NET framework v4.5.1 or or later).',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install, if .NET 4.5.1
     // or later is available.
@@ -1734,40 +1264,7 @@ begin
     end;
 
     // 3rd option
-    RdbExtraOptions[GP_Symlinks]:=TCheckBox.Create(ExtraOptionsPage);
-    with RdbExtraOptions[GP_Symlinks] do begin
-        Parent:=ExtraOptionsPage.Surface;
-        Caption:='Enable symbolic links';
-        Left:=ScaleX(4);
-        Top:=ScaleY(152);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=1;
-    end;
-    LblSymlinks:=TLabel.Create(ExtraOptionsPage);
-    with LblSymlinks do begin
-        Parent:=ExtraOptionsPage.Surface;
-        Caption:=
-            'Enable symbolic links (requires the SeCreateSymbolicLink permission).'+#13+'Please note that existing repositories are unaffected by this setting.';
-        Left:=ScaleX(28);
-        Top:=ScaleY(176);
-        Width:=ScaleX(405);
-        Height:=ScaleY(26);
-    end;
-    LblSymlinksLink:=TLabel.Create(ExtraOptionsPage);
-    with LblSymlinksLink do begin
-        Parent:=ExtraOptionsPage.Surface;
-        Caption:='symbolic links';
-        Left:=GetTextWidth('Enable ',LblSymlinks.Font)+ScaleX(28);
-        Top:=ScaleY(176);
-        Width:=ScaleX(405);
-        Height:=ScaleY(13);
-        Font.Color:=clBlue;
-        Font.Style:=[fsUnderline];
-        Cursor:=crHand;
-        OnClick:=@OpenSymlinksWikiPage;
-    end;
+    RdbExtraOptions[GP_Symlinks]:=CreateCheckBox(ExtraOptionsPage,'Enable symbolic links','Enable <A HREF=https://github.com/git-for-windows/git/wiki/Symbolic-Links>symbolic links</A> (requires the SeCreateSymbolicLink permission).'+#13+'Please note that existing repositories are unaffected by this setting.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install, or auto-detect
     // by running `mklink` (unless started as administrator, in which case that
@@ -1787,35 +1284,10 @@ begin
      * Create a custom page for experimental options.
      *)
 
-    ExperimentalOptionsPage:=CreateCustomPage(
-        PrevPageID
-    ,   'Configuring experimental options'
-    ,   'Which bleeding-edge features would you like to enable?'
-    );
-    PrevPageID:=ExperimentalOptionsPage.ID;
+    ExperimentalOptionsPage:=CreatePage(PrevPageID,'Configuring experimental options','Which bleeding-edge features would you like to enable?',TabOrder,Top,Left);
 
     // 1st option
-    RdbExperimentalOptions[GP_BuiltinDifftool]:=TCheckBox.Create(ExperimentalOptionsPage);
-    with RdbExperimentalOptions[GP_BuiltinDifftool] do begin
-        Parent:=ExperimentalOptionsPage.Surface;
-        Caption:='Enable experimental, builtin difftool';
-        Left:=ScaleX(4);
-        Top:=ScaleY(8);
-        Width:=ScaleX(405);
-        Height:=ScaleY(17);
-        Font.Style:=[fsBold];
-        TabOrder:=1;
-    end;
-    LblBuiltinDifftool:=TLabel.Create(ExperimentalOptionsPage);
-    with LblBuiltinDifftool do begin
-        Parent:=ExperimentalOptionsPage.Surface;
-        Caption:=
-            'Use the experimental builtin difftool (fast, but only lightly tested).';
-        Left:=ScaleX(28);
-        Top:=ScaleY(32);
-        Width:=ScaleX(405);
-        Height:=ScaleY(13);
-    end;
+    RdbExperimentalOptions[GP_BuiltinDifftool]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, builtin difftool','Use the experimental builtin difftool (fast, but only lightly tested).',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
     Data:=ReplayChoice('Enable Builtin Difftool','Auto');
