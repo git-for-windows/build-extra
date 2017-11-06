@@ -880,17 +880,21 @@ begin
     end;
 end;
 
+function CountLines(S:String):Integer;
+begin
+    Result:=1+StringChangeEx(S,#13,'',True);
+end;
+
 {
     Description can contain pseudo tags <RED>...</RED> and <A HREF=...>...</A>
-    (which cannot be mixed). It is currently not allowed to have line breaks
-    (i.e. #13) in those tags.
+    (which cannot be mixed).
 }
 
 function CreateRadioButton(Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TRadioButton;
 var
     RadioLabel,SubLabel:TLabel;
     Untagged,RowPrefix,Link:String;
-    RowStart,RowCount,i:Integer;
+    RowStart,RowCount,i,j:Integer;
 begin
     Result:=TRadioButton.Create(Page);
     Result.Parent:=Page.Surface;
@@ -934,13 +938,31 @@ begin
                 RowPrefix:=RowPrefix+SubString(Description,1,i-1);
                 Description:=SubString(Description,i+5,-1);
                 i:=Pos('</RED>',Description);
+                if (i=0) then LogError('Could not find </RED> in '+Description);
+                j:=Pos(#13,Description);
+                if (j>0) and (j<i) and (RowPrefix<>'') then begin
+                    SubLabeL:=TLabel.Create(Page);
+                    SubLabel.Parent:=Page.Surface;
+                    SubLabel.Caption:=SubString(Description,1,j-1);
+                    SubLabel.Top:=ScaleY(Top);
+                    SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                    SubLabel.Width:=ScaleX(405);
+                    SubLabel.Height:=ScaleY(13);
+                    SubLabel.Font.Color:=clRed;
+                    Untagged:=Untagged+SubString(Description,1,j);
+                    Description:=SubString(Description,j+1,-1);
+                    i:=i-j;
+                    RowPrefix:='';
+                    Top:=Top+13;
+                    RowCount:=RowCount+1;
+                end;
                 SubLabeL:=TLabel.Create(Page);
                 SubLabel.Parent:=Page.Surface;
                 SubLabel.Caption:=SubString(Description,1,i-1);
                 SubLabel.Top:=ScaleY(Top);
                 SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
                 SubLabel.Width:=ScaleX(405);
-                SubLabel.Height:=ScaleY(13);
+                SubLabel.Height:=ScaleY(13*CountLines(SubLabel.Caption));
                 SubLabel.Font.Color:=clRed;
                 Untagged:=Untagged+SubString(Description,1,i-1);
                 RowPrefix:=RowPrefix+SubString(Description,1,i-1);
@@ -951,12 +973,39 @@ begin
                 RowPrefix:=RowPrefix+SubString(Description,1,i-1);
                 Description:=SubString(Description,i+8,-1);
                 i:=Pos('>',Description);
+                if (i=0) then LogError('Could not find > in '+Description);
                 HyperlinkCount:=HyperlinkCount+1;
                 SetArrayLength(HyperlinkSource,HyperlinkCount);
                 SetArrayLength(HyperlinkTarget,HyperlinkCount);
                 HyperlinkTarget[HyperlinkCount-1]:=SubString(Description,1,i-1);
                 Description:=SubString(Description,i+1,-1);
                 i:=Pos('</A>',Description);
+                if (i=0) then LogError('Could not find </A> in '+Description);
+                j:=Pos(#13,Description);
+                if (j>0) and (j<i) and (RowPrefix<>'') then begin
+                    SubLabeL:=TLabel.Create(Page);
+                    HyperlinkSource[HyperlinkCount-1]:=SubLabel;
+                    HyperlinkCount:=HyperlinkCount+1;
+                    SetArrayLength(HyperlinkSource,HyperlinkCount);
+                    SetArrayLength(HyperlinkTarget,HyperlinkCount);
+                    HyperlinkTarget[HyperlinkCount-1]:=HyperlinkTarget[HyperlinkCount-2];
+                    SubLabel.Parent:=Page.Surface;
+                    SubLabel.Caption:=SubString(Description,1,j-1);
+                    SubLabel.Top:=ScaleY(Top);
+                    SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                    SubLabel.Width:=ScaleX(405);
+                    SubLabel.Height:=ScaleY(13);
+                    SubLabel.Font.Color:=clBlue;
+                    SubLabel.Font.Style:=[fsUnderline];
+                    SubLabel.Cursor:=crHand;
+                    SubLabel.OnClick:=@OpenHyperlink;
+                    Untagged:=Untagged+SubString(Description,1,j);
+                    Description:=SubString(Description,j+1,-1);
+                    i:=i-j;
+                    RowPrefix:='';
+                    Top:=Top+13;
+                    RowCount:=RowCount+1;
+                end;
                 SubLabeL:=TLabel.Create(Page);
                 HyperlinkSource[HyperlinkCount-1]:=SubLabel;
                 SubLabel.Parent:=Page.Surface;
@@ -964,7 +1013,7 @@ begin
                 SubLabel.Top:=ScaleY(Top);
                 SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
                 SubLabel.Width:=ScaleX(405);
-                SubLabel.Height:=ScaleY(13);
+                SubLabel.Height:=ScaleY(13*CountLines(SubLabel.Caption));
                 SubLabel.Font.Color:=clBlue;
                 SubLabel.Font.Style:=[fsUnderline];
                 SubLabel.Cursor:=crHand;
