@@ -41,6 +41,10 @@ then
 	EXTRA_FILE_EXCLUDES="$EXTRA_FILE_EXCLUDES
 		/mingw$BITNESS/libexec/git-core/git-update"
 fi
+if test -n "$INCLUDE_TMUX"
+then
+	UTIL_PACKAGES="$UTIL_PACKAGES tmux libevent"
+fi
 
 pacman_list () {
 	package_list=$(for arg
@@ -247,4 +251,9 @@ usr/bin/start
 mingw$BITNESS/bin/pdftotext.exe
 mingw$BITNESS/bin/libstdc++-6.dll
 usr/bin/column.exe
+EOF
+
+test -z "$INCLUDE_TMUX" || cat <<EOF
+usr/bin/tmux.exe
+$(ldd /usr/bin/tmux.exe | sed -n 's/.*> \/\(.*msys-event[^ ]*\).*/\1/p')
 EOF
