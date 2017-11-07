@@ -209,7 +209,7 @@ else
 		-e "^\\($(echo $EXTRA_FILE_EXCLUDES |
 			sed 's/ /\\|/g')\\)\$"
 fi | sort |
-grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|xterm.*)$)' |
+grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|screen.*|xterm.*)$)' |
 sed 's/^\///'
 
 test -z "$PACKAGE_VERSIONS_FILE" ||
