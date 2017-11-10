@@ -2813,6 +2813,9 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 
 	quoted="* $(echo "$*" | sed "s/[\\\/\"'&]/\\\\&/g")"
 
+	if test ! -d "$sdk32/$pkgpath"; then
+		(cd "$sdk64/$pkgpath" && require_clean_worktree)
+	fi ||
 	up_to_date usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
@@ -2864,6 +2867,7 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 		-m "$(echo "$*" | fmt -72)" ReleaseNotes.md) ||
 	die "Could not commit release note edits\n"
 
+	test ! -d "$sdk32"/usr/src/build-extra ||
 	(cd "$sdk32"/usr/src/build-extra &&
 	 git pull --ff-only "$sdk64"/usr/src/build-extra master) ||
 	die "Could not synchronize release note edits to 32-bit SDK\n"
