@@ -73,6 +73,27 @@ init)
 	 git commit -s -m "Pacman package index") ||
 	die "Could not conclude initial commits"
 	;;
+add)
+	shift &&
+	(cd "$root" &&
+	 if test false != "$(git config core.autocrlf)"
+	 then
+		git config core.autocrlf false ||
+		die "Could not force core.autocrlf = false"
+	 fi &&
+	 packages="$(for package; do
+		case "$package" in
+		mingw-w64-*) echo mingw-w64-$(uname -m)${package#mingw-w64};;
+		*) echo "$package";;
+		esac; done)" &&
+	 pacman -Syy --noconfirm $packages &&
+	 git add -A . ||
+	 die "Could not add $*"
+
+	 git diff-index --exit-code --cached HEAD ||
+	 git commit -q -s -m "Add $*") ||
+	die "Could not commit changes"
+	;;
 commit)
 	(cd "$root" &&
 	 if test false != "$(git config core.autocrlf)"
