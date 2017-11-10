@@ -378,7 +378,8 @@ foreach_sdk () {
 		(cd "$sdk/$pkgpath" ||
 		 die "%s does not exist\n" "$sdk/$pkgpath"
 
-		 "$@") || exit
+		 "$@") ||
+		die "Could not run '%s' in '%s'\n" "$*" "$sdk"
 	done
 }
 
@@ -590,7 +591,8 @@ build () { # [--force] <package>
 	up_to_date "$pkgpath" ||
 	die "%s: not up-to-date\n" "$pkgpath"
 
-	foreach_sdk pkg_build $force
+	foreach_sdk pkg_build $force ||
+	die "Could not build '%s'\n" "$package"
 }
 
 # require_remote <nickname> <url>
