@@ -42,7 +42,8 @@ source=('inputrc'
         'astextplain'
         'git-sdk.sh'
         'git-update'
-        'blocked-file-util.c')
+        'blocked-file-util.c'
+        'zzz_rm_stackdumps.sh')
 sha256sums=('9efaf8dccc08c7cddc58cb589bab5aac5c0894661175a344ca02b2aa849382bd'
             '36e0b6ae5fcf6361b5dad8bac815603d9211b38dfd8fdad89c01c34412529959'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
@@ -70,10 +71,10 @@ prepare() {
   test $startdir/$pkgname.install -nt $startdir/gitconfig &&
   test $startdir/$pkgname.install -nt $startdir/gitattributes ||
   sed -e "/^@@GITCONFIG@@$/r $startdir/gitconfig" \
-	-e "/^@@GITCONFIG@@$/d" \
-	-e "/^@@GITATTRIBUTES@@$/r $startdir/gitattributes" \
-	-e "/^@@GITATTRIBUTES@@$/d" \
-	<$startdir/$pkgname.install.in >$startdir/$pkgname.install
+        -e "/^@@GITCONFIG@@$/d" \
+        -e "/^@@GITATTRIBUTES@@$/r $startdir/gitattributes" \
+        -e "/^@@GITATTRIBUTES@@$/d" \
+        <$startdir/$pkgname.install.in >$startdir/$pkgname.install
 }
 
 build() {
@@ -93,6 +94,7 @@ package() {
   install -d -m755 $pkgdir/usr/share/git
   install -d -m755 $pkgdir${MINGW_PREFIX}/bin
   install -d -m755 $pkgdir${MINGW_PREFIX}/libexec/git-core
+  install -d -m755 $pkgdir/usr/share/makepkg/lint_package
   install -m644 inputrc $pkgdir/etc
   install -m644 vimrc $pkgdir/etc
   install -m755 vi $pkgdir/usr/bin
@@ -110,4 +112,5 @@ package() {
   install -m644 99-post-install-cleanup.post $pkgdir/etc/post-install
   install -m755 astextplain $pkgdir/usr/bin
   install -m755 git-update $pkgdir${MINGW_PREFIX}/libexec/git-core
+  install -m755 zzz_rm_stackdumps.sh $pkgdir/usr/share/makepkg/lint_package
 }
