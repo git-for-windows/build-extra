@@ -40,6 +40,10 @@ This package contains software from a number of other projects including Bash, z
 * Operations in massively-sparse worktrees [are now much faster if `core.fscache = true`](https://github.com/git-for-windows/git/pull/1344).
 * It is [now possible to configure `nano`](https://github.com/git-for-windows/build-extra/pull/161) or [Notepad++](https://github.com/git-for-windows/git/issues/291) as Git's default editor [instead of `vim`](https://www.xkcd.com/378/).
 
+### Bug Fixes
+
+* The experimental `--show-ignored-directory` option of `git status` which was removed in Git for Windows v2.15.0 without warning [has been reintroduced as a deprecated option](https://github.com/git-for-windows/git/pull/1354).
+
 ## Changes since Git for Windows v2.14.3 (October 23rd 2017)
 
 ### New Features
