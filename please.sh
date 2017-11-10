@@ -2746,6 +2746,48 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] <pack
 		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
 		die "Could not update $sdk32/$pkgpath"
 		;;
+	openssl)
+		version="$(curl -s https://www.openssl.org/source/ |
+		sed -n 's/.*<a href="openssl-\(1\.0\.[1-9]*[^"]*\)\.tar\.gz".*/\1/p')"
+		test -n "$version" ||
+		die "Could not determine newest OpenSSL version\n"
+
+		ensure_gpg_key 0E604491 || exit
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e 's/^\(_ver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 updpkgsums &&
+		 gpg --verify openssl-$version.tar.gz.asc \
+		 	openssl-$version.tar.gz &&
+		 git commit -s -m "openssl: new version ($version)" PKGBUILD) &&
+		test 0 = $? ||
+		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+
+		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
+
+		(set_package mingw-w64-$1 &&
+		 cd "$sdk64/$pkgpath" &&
+		 require_push_url origin &&
+		 sdk="$sdk64" ff_master || exit
+
+		 sed -i -e 's/^\(_ver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 updpkgsums &&
+		 gpg --verify openssl-$version.tar.gz.asc \
+		 	openssl-$version.tar.gz &&
+		 git commit -s -m "openssl: new version ($version)" PKGBUILD &&
+
+		 build $force "$package" &&
+		 install "$package" &&
+		 if test -z "$skip_upload"; then upload "$package"; fi &&
+		 sdk="$sdk64" pkg_copy_artifacts) &&
+		test 0 = $? &&
+
+		shortversion="$(echo "$version" | tr -dc 0-9)" &&
+		url=https://www.openssl.org/news/cl$shortversion.txt &&
+		relnotes_feature='Comes with [OpenSSL v'$version']('"$url"').'
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
