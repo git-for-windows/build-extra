@@ -2368,11 +2368,23 @@ pkg_copy_artifacts () {
 	create_bundle_artifact
 }
 
+# <pkrel>
+maybe_force_pkgrel () {
+	if test -n "$1"
+	then
+		test -z "$(echo "$1" | tr -d 0-9)" ||
+		die "Invalid pkgrel: '%s'\n" "$1"
+
+		sed -i "s/^\\(pkgrel=\\).*/\\1$1/" PKGBUILD
+	fi
+}
+
 # --force overwrites existing an Git tag, or existing package files
-upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] <package>
+upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--force-pkgrel=<pkgrel>] <package>
 	artifactsdir=
 	skip_upload=
 	force=
+	force_pkgrel=
 	while case "$1" in
 	--directory=*)
 		artifactsdir="$(cygpath -am "${1#*=}")" || exit
@@ -2392,6 +2404,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] <pack
 		;;
 	-f|--force)
 		force=--force
+		;;
+	--force-pkgrel=*)
+		force_pkgrel="${1#*=}"
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -2452,7 +2467,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] <pack
 		   's/^.\{28\} *\(.*\/\)\?git-credential-manager.exe/\1/p')" &&
 		 sed -i -e 's/^\(  srcdir2=\).*/\1"${srcdir}\/'$srcdir2'"/' \
 			PKGBUILD &&
-		 git commit -s -m "Upgrade $package to $version" PKGBUILD) &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD) &&
 		url=https://github.com/$repo/releases/tag/$tag_name &&
 		relnotes_feature='Comes with [Git Credential Manager v'$version']('"$url"').'
 		;;
@@ -2490,9 +2506,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] <pack
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
-		 git commit -s -m "curl: new version ($version)" PKGBUILD) ||
+		 git commit -s -m "curl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
 		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
 
 		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
@@ -2504,9 +2521,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] <pack
 
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
-		 git commit -s -m "curl: new version ($version)" PKGBUILD &&
+		 git commit -s -m "curl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
 
 		 build $force "$package" &&
 		 install "$package" &&
@@ -2574,10 +2592,12 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] <pack
 		 s1='s/\(folder=\)[^\n]*/\1' &&
 		 s2='s/\(sha256sum=\)[0-9a-f]*/\1' &&
 		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
+		 -e "s/^\\(pkgrel=\\).*/\\11/" \
 		 -e "/^i686)/{N;N;N;$s1$dir32/;$s2$sha256_32/}" \
 		 -e "/^x86_64)/{N;N;N;$s1$dir64/;$s2$sha256_64/}" \
 			PKGBUILD &&
-		 git commit -s -m "Upgrade $package to $version" PKGBUILD) &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD) &&
 		url=https://github.com/$repo/releases/tag/v$version &&
 		relnotes_feature='Comes with [Git LFS v'$version']('"$url"').'
 		;;
@@ -2741,8 +2761,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] <pack
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "openssh: new version ($version)" PKGBUILD) ||
+		 git commit -s -m "openssh: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
 		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
 
 		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
@@ -2759,10 +2780,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] <pack
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(_ver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 gpg --verify openssl-$version.tar.gz.asc \
 		 	openssl-$version.tar.gz &&
-		 git commit -s -m "openssl: new version ($version)" PKGBUILD) &&
+		 git commit -s -m "openssl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) &&
 		test 0 = $? ||
 		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
 
@@ -2775,10 +2797,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] <pack
 
 		 sed -i -e 's/^\(_ver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 gpg --verify openssl-$version.tar.gz.asc \
 		 	openssl-$version.tar.gz &&
-		 git commit -s -m "openssl: new version ($version)" PKGBUILD &&
+		 git commit -s -m "openssl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
 
 		 build $force "$package" &&
 		 install "$package" &&
