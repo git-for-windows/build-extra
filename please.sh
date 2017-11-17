@@ -359,6 +359,11 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
+	wintoast|mingw-w64-wintoast)
+		package=mingw-w64-wintoast
+		type=MINGW
+		pkgpath=/usr/src/build-extra/mingw-w64-wintoast
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
