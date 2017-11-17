@@ -21,11 +21,11 @@ die () {
   exit 1
 }
 
-test -n "$VS_DIR" ||
-VS_DIR="/c/Program Files (x86)/Microsoft Visual Studio 14.0"
+test -n "$MSBUILD_DIR" ||
+MSBUILD_DIR="/c/Program Files (x86)/MSBuild/14.0/Bin"
 
-test -d "$VS_DIR" ||
-die "Need a valid VS_DIR to point to Visual Studio"
+test -d "$MSBUILD_DIR" ||
+die "Need a valid MSBUILD_DIR to point to MSBuild"
 
 case "$CARCH" in
 i686) WARCH=Win32; OUTDIR=bin/Release;;
@@ -42,14 +42,15 @@ prepare () {
   cd "$srcdir/cv2pdb"
   grep -q "<PlatformToolset>v140<" src/cv2pdb.vcxproj ||
   sed -i 's/\(<PlatformToolset>\)[^<]*/\1v140/g' src/cv2pdb.vcxproj
+  #grep -q "<PlatformToolset>v140<" src/dumplines.vcxproj ||
+  #sed -i 's/\(<PlatformToolset>\)[^<]*/\1v140/g' src/dumplines.vcxproj
 }
 
 build() {
   cd "$srcdir/cv2pdb"
 
-  "$VS_DIR"/Common7/IDE/devenv.exe \
-    //Build "Release|$WARCH" src/cv2pdb_vs12.sln ||
-  ! grep error $OUTDIR/cv2pdb/cv2pdb.log
+  "$MSBUILD_DIR"/MSBuild.exe //p:Configuration=Release //p:Platform="$WARCH" \
+    src/cv2pdb.vcxproj
 
   test -z "$SIGNTOOL" ||
   eval "$SIGNTOOL $OUTDIR/cv2pdb.exe"
