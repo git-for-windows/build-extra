@@ -21,11 +21,11 @@ die () {
   exit 1
 }
 
-test -n "$VS_DIR" ||
-VS_DIR="/c/Program Files (x86)/Microsoft Visual Studio 14.0"
+test -n "$MSBUILD_DIR" ||
+MSBUILD_DIR="/c/Program Files (x86)/MSBuild/14.0/Bin"
 
-test -d "$VS_DIR" ||
-die "Need a valid VS_DIR to point to Visual Studio"
+test -d "$MSBUILD_DIR" ||
+die "Need a valid MSBUILD_DIR to point to MSBuild"
 
 case "$CARCH" in
 i686) WARCH=x86; OUTDIR=Release;;
@@ -41,8 +41,8 @@ pkgver() {
 build() {
   cd "$srcdir/wintoast"
 
-  "$VS_DIR"/Common7/IDE/devenv.exe //Build "Release|$WARCH" \
-	  example/console-example/WinToast\ Console\ Example.sln
+  (cd example/console-example/ &&
+   "$MSBUILD_DIR"/MSBuild.exe //p:Configuration=Release //p:Platform="$WARCH")
 
   cp example/console-example/$OUTDIR/WinToast\ Console\ Example.exe wintoast.exe
 
