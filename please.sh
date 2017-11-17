@@ -2818,7 +2818,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		url=https://www.openssl.org/news/cl$shortversion.txt &&
 		relnotes_feature='Comes with [OpenSSL v'$version']('"$url"').'
 		;;
-	mingw-w64-wintoast)
+	mingw-w64-wintoast|mingw-w64-cv2pdb)
 		(cd "$sdk64/$pkgpath" &&
 		 MINGW_INSTALLS=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
@@ -2826,7 +2826,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
 		 if test "1.0.0.181.9b0663d" != "$version"
 		 then
-			git commit -s -m "wintoast: upgrade to $version" \
+			git commit -s -m \
+				"${package#mingw-w64-}: upgrade to $version" \
 				PKGBUILD
 		 fi &&
 		 git update-index -q --refresh &&
