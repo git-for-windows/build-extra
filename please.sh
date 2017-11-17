@@ -2818,6 +2818,20 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		url=https://www.openssl.org/news/cl$shortversion.txt &&
 		relnotes_feature='Comes with [OpenSSL v'$version']('"$url"').'
 		;;
+	mingw-w64-wintoast)
+		(cd "$sdk64/$pkgpath" &&
+		 MINGW_INSTALLS=mingw64 \
+		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+			'makepkg-mingw --nobuild' &&
+		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
+		 if test "1.0.0.181.9b0663d" != "$version"
+		 then
+			git commit -s -m "wintoast: upgrade to $version" \
+				PKGBUILD
+		 fi &&
+		 git update-index -q --refresh &&
+		 git diff-files --quiet --)
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
