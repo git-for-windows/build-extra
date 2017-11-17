@@ -102,12 +102,14 @@ git_update () {
 
 	yn=
 	use_gui=
+	testing=
 	while test $# -gt 0
 	do
 		case "$1" in
 		-\?|--?\?|-h|--help) ;;
 		-y|--yes) yn=y; shift; continue;;
 		-g|--gui) use_gui=t; shift; continue;;
+		--testing) testing=t; shift; continue;;
 		*) echo "Unknown option: $1" >&2;;
 		esac
 		printf >&2 '%s\n%s\n\t%s\n%s\n' \
@@ -131,16 +133,17 @@ git_update () {
 		sed -E 's/.*"tag_name": "v([^"]*).*/\1/')
 	# Did we ask about this version already?
 	recently_seen="$(git config --global winUpdater.recentlySeenVersion)"
-	test "x$recently_seen" != "x$latest" || return
+	test -n "$testing" || test "x$recently_seen" != "x$latest" || return
 
 	version=$(git --version | sed "s/git version //")
 	echo "Git for Windows $version (${bit}bit)" >&2
-	if test "$latest" = "$version"
+	if test -z "$testing" && test "$latest" = "$version"
 	then
 		echo "Up to date" >&2
 		git config --global winUpdater.recentlySeenVersion "$latest"
 		return
 	fi
+	test -n "$testing" ||
 	case "$version" in
 	*.rc[1-9]*)
 		# Do not downgrade from -rc versions to the latest stable one
