@@ -40,6 +40,9 @@ if test -z "$INCLUDE_GIT_UPDATE"
 then
 	EXTRA_FILE_EXCLUDES="$EXTRA_FILE_EXCLUDES
 		/mingw$BITNESS/libexec/git-core/git-update"
+	GIT_UPDATE_EXTRA_PACKAGES=
+else
+	GIT_UPDATE_EXTRA_PACKAGES=mingw-w64-$ARCH-wintoast
 fi
 if test -n "$INCLUDE_TMUX"
 then
@@ -72,7 +75,7 @@ for req in mingw-w64-$ARCH-git-credential-manager $SH_FOR_REBASE \
 		mingw-w64-$ARCH-connect git-flow unzip docx2txt \
 		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt \
 		mingw-w64-$ARCH-xpdf ssh-pageant mingw-w64-$ARCH-git-lfs tig \
-		nano)
+		nano $GIT_UPDATE_EXTRA_PACKAGES)
 do
 	test -d /var/lib/pacman/local/$req-[0-9]* ||
 	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
@@ -89,7 +92,8 @@ then
 	packages="$packages mingw-w64-$ARCH-git-doc-html ncurses mintty vim nano
 		winpty less gnupg tar diffutils patch dos2unix which subversion
 		mingw-w64-$ARCH-tk mingw-w64-$ARCH-connect git-flow docx2txt
-		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt ssh-pageant mingw-w64-$ARCH-git-lfs tig"
+		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt ssh-pageant
+		mingw-w64-$ARCH-git-lfs tig $GIT_UPDATE_EXTRA_PACKAGES"
 fi
 pacman_list $packages "$@" |
 
