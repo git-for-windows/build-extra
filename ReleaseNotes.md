@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * Operations in massively-sparse worktrees [are now much faster if `core.fscache = true`](https://github.com/git-for-windows/git/pull/1344).
 * It is [now possible to configure `nano`](https://github.com/git-for-windows/build-extra/pull/161) or [Notepad++](https://github.com/git-for-windows/git/issues/291) as Git's default editor [instead of `vim`](https://www.xkcd.com/378/).
 * Comes with [OpenSSL v1.0.2m](https://www.openssl.org/news/cl102.txt).
+* Git for Windows' updater [now uses non-intrusive toast notifications on Windows 8, 8.1 and 10](https://github.com/git-for-windows/build-extra/commit/master).
 
 ### Bug Fixes
 
