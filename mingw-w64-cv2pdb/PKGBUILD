@@ -35,6 +35,8 @@ esac
 
 pkgver() {
   cd "$srcdir/cv2pdb"
+  git rev-parse --verify 0.42 >/dev/null >&2 ||
+  git tag -m "Missing tag" 0.42 14eef861769f85b6f32c68ff1898c41d8ac65ef5
   git describe --tags HEAD | tr - . | sed 's/^v//'
 }
 
