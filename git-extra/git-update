@@ -110,9 +110,10 @@ git_update () {
 		-g|--gui) use_gui=t; shift; continue;;
 		*) echo "Unknown option: $1" >&2;;
 		esac
-		printf >&2 '%s\n%s\n\t%s\n' \
+		printf >&2 '%s\n%s\n\t%s\n%s\n' \
 			"Usage: git-update [options]" \
 			"Options:" \
+			"-g, --gui Use GUI instead of terminal to prompt" \
 			"-y, --yes Automatic yes to download and install prompt"
 		return 1
 	done
