@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSL v1.0.2m](https://www.openssl.org/news/cl102.txt).
 * Git for Windows' updater [now uses non-intrusive toast notifications on Windows 8, 8.1 and 10](https://github.com/git-for-windows/build-extra/commit/master).
 * Running `git fetch` in a repository with lots of refs [is now considerably faster](https://github.com/git-for-windows/git/pull/1379).
+* Comes with [cURL v7.57.0](https://curl.haxx.se/changes.html#7_57_0).
 
 ### Bug Fixes
 
