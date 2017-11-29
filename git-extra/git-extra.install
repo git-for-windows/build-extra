@@ -169,7 +169,11 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	! grep -A3 '^ *autocmd BufReadPost \*' \
 		/usr/share/vim/vim80/defaults.vim |
 	grep -q ' exe "normal! g`\\""' ||
-	sed -i -e '/^ *autocmd BufReadPost \*/,/\\ endif$/s/^/"/' \
+	sed -i -e '/^ *autocmd BufReadPost \*/,/\\ \(| \)\?endif$/s/^/"/' \
+		/usr/share/vim/vim80/defaults.vim
+
+	! grep -q '^"  augroup END$' /usr/share/vim/vim80/defaults.vim ||
+	sed -i -e '/^"  augroup END$/,$s/^"//' \
 		/usr/share/vim/vim80/defaults.vim
 
 	! grep -q '^if .*command -v getent' /etc/bash.bashrc ||
