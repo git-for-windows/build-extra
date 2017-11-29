@@ -3314,7 +3314,7 @@ publish () { #
 		"From $version Mon Sep 17 00:00:00 2001" \
 		"From: $(git var GIT_COMMITTER_IDENT | sed -e 's/>.*/>/')" \
 		"Date: $(date -R)" \
-		"To: git-for-windows@googlegroups.com, git@vger.kernel.org" \
+		"To: git-for-windows@googlegroups.com, git@vger.kernel.org, git-packagers@googlegroups.com" \
 		"Subject: [ANNOUNCE] Git for Windows $displayver" \
 		"Content-Type: text/plain; charset=UTF-8" \
 		"Content-Transfer-Encoding: 8bit" \
