@@ -2,7 +2,7 @@
 
 pkgname=('git-extra')
 _ver_base=1.1
-pkgver=1.1.222.afa7a26
+pkgver=1.1.225.cf6c25d
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('i686' 'x86_64')
