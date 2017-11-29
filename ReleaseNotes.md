@@ -48,7 +48,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The experimental `--show-ignored-directory` option of `git status` which was removed in Git for Windows v2.15.0 without warning [has been reintroduced as a deprecated option](https://github.com/git-for-windows/git/pull/1354).
-* The `git update` command (to auto-update Git for Windows) will [now work also work behind proxies](https://github.com/git-for-windows/git/issues/1363).
+* The `git update` command (to auto-update Git for Windows) will [now also work behind proxies](https://github.com/git-for-windows/git/issues/1363).
 
 ## Changes since Git for Windows v2.14.3 (October 23rd 2017)
 
