@@ -3110,6 +3110,25 @@ release () { # [--directory=<artifacts-directory>]
 				"/usr/src/build-extra/$dir/release.sh '$ver'" ||
 			die "Could not make %s in %s\n" "$dir" "$sdk"
 		done
+		test "$sdk64" != "$sdk" ||
+		(cd "$sdk/usr/src/build-extra" &&
+		 cp installer/package-versions.txt \
+		    versions/package-versions-$ver.txt &&
+		 cp mingit/root/etc/package-versions.txt \
+		    versions/package-versions-$ver-MinGit.txt &&
+		 git add versions/package-versions-$ver.txt \
+			versions/package-versions-$ver-MinGit.txt &&
+		 git commit -s -m "versions: add v$ver" \
+			versions/package-versions-$ver.txt \
+			versions/package-versions-$ver-MinGit.txt &&
+		 if test -n "$artifactsdir"
+		 then
+			cp versions/package-versions-$ver-MinGit.txt \
+				versions/package-versions-$ver.txt \
+				"$artifactsdir/"
+		 fi) ||
+		die "Could not add the package-versions for %s\n" "$ver"
+
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			"/usr/src/build-extra/mingit/release.sh \
 				--busybox '$ver-busybox'" ||
