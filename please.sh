@@ -3123,6 +3123,9 @@ release () { # [--directory=<artifacts-directory>]
 			versions/package-versions-$ver-MinGit.txt &&
 		 if test -n "$artifactsdir"
 		 then
+			git -C "$sdk64/usr/src/build-extra" bundle create \
+				"$artifactsdir/build-extra.bundle" \
+				-2 master &&
 			cp versions/package-versions-$ver-MinGit.txt \
 				versions/package-versions-$ver.txt \
 				"$artifactsdir/"
