@@ -2254,6 +2254,22 @@ install () { # <package>
 	}
 }
 
+# origin HEAD
+really_push () {
+	if ! git push "$@"
+	then
+		if test "origin HEAD" = "$*"
+		then
+			git pull origin master
+		else
+			git pull "$@"
+		fi &&
+		git push "$@" ||
+		return 1
+	fi
+	return 0
+}
+
 pacman_helper () {
 	"$sdk64/git-cmd.exe" --command=usr\\bin\\bash.exe -l \
 		"$sdk64/usr/src/build-extra/pacman-helper.sh" "$@"
@@ -2292,7 +2308,7 @@ upload () { # <package>
 	 if test refs/heads/master = \
 		"$(git rev-parse --symbolic-full-name HEAD)"
 	 then
-		git push origin HEAD
+		really_push origin HEAD
 	 else
 		printf "The local branch '%s' in '%s' has unpushed changes\n" \
 			"$(git rev-parse --symbolic-full-name HEAD)" \
@@ -2848,7 +2864,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		(cd "$sdk64/usr/src/build-extra" &&
 		 git pull origin master &&
 		 mention feature "$relnotes_feature"&&
-		 if test -z "$skip_upload"; then git push origin HEAD; fi &&
+		 if test -z "$skip_upload"; then really_push origin HEAD; fi &&
 		 create_bundle_artifact)
 	fi
 }
@@ -3312,7 +3328,7 @@ publish () { #
 	(cd "$wwwdir" &&
 	 "$sdk64/mingw64/bin/node.exe" bump-version.js --auto &&
 	 git commit -a -s -m "New Git for Windows version" &&
-	 git push origin HEAD) ||
+	 really_push origin HEAD) ||
 	die "Could not update website\n"
 
 	echo "Updating download-stats.sh..." >&2
@@ -3320,7 +3336,7 @@ publish () { #
 	 ./download-stats.sh --update &&
 	 git commit -s -m "download-stats: new Git for Windows version" \
 		./download-stats.sh &&
-	 git push origin HEAD) ||
+	 really_push origin HEAD) ||
 	die "Could not update download-stats.sh\n"
 
 	prefix="$(printf "%s\n\n%s%s\n\n\t%s\n" \
