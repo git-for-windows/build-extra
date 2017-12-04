@@ -1683,6 +1683,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				precmd="$precmd $file"
 			done || exit
 			eval "$precmd" &&
+			pacman -S --noconfirm git-extra &&
 			sed -i -e "1s/.*/# Pre-release '"$pkgver"'/" \
 				-e "2s/.*/Date: '"$(today)"'/" \
 				/usr/src/build-extra/ReleaseNotes.md &&
@@ -1700,7 +1701,8 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 			done &&
 			(cd /usr/src/build-extra &&
 			 git diff -- ReleaseNotes.md | git apply -R) &&
-			eval "$postcmd"' ||
+			eval "$postcmd"' &&
+			pacman -S --noconfirm git-extra ||
 		die "Could not use package '%s' in '%s'\n" "$pkglist" "$sdk"
 	done
 
