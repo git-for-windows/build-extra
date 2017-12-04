@@ -1701,8 +1701,8 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 			done &&
 			(cd /usr/src/build-extra &&
 			 git diff -- ReleaseNotes.md | git apply -R) &&
-			eval "$postcmd"' &&
-			pacman -S --noconfirm git-extra ||
+			eval "$postcmd" &&
+			pacman -S --noconfirm git-extra' ||
 		die "Could not use package '%s' in '%s'\n" "$pkglist" "$sdk"
 	done
 
