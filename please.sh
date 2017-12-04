@@ -1346,6 +1346,12 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	--installer|--portable|--mingit)
 		modes="$modes ${1#--}"
 		;;
+	--only-installer|--only-portable|--only-mingit)
+		modes="${1#--only-}"
+		;;
+	--reset-mode)
+		modes=
+		;;
 	--installer+portable)
 		modes="installer portable"
 		;;
