@@ -1084,6 +1084,9 @@ begin
     RdbEditor[GE_VisualStudioCode]:=CreateRadioButton(EditorPage,'Use VisualStudioCode as Git'+#39+'s default editor','<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is a powerful and popular web GUI editor that can be used by Git.',TabOrder,Top,Left);
 
     RdbEditor[GE_VisualStudioCode].Enabled:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
+    if (RdbEditor[GE_VisualStudioCode].Enabled) then begin
+        StringChangeEx(VisualStudioCodePath,' "%1"','',True);
+    end;
 
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Editor Option','VIM') of
@@ -2025,7 +2028,7 @@ begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+NotepadPlusPlusPath+#39+' -multiInst -notabbar -nosession -noPlugin"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Notepad++ as core.editor in the gitconfig.');
     end else if (RdbEditor[GE_VisualStudioCode].Checked) and (VisualStudioCodePath<>'') then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' -multiInst -notabbar -nosession -noPlugin"','',SW_HIDE,ewWaitUntilTerminated, i) then
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set VisualStudioCode as core.editor in the gitconfig.');
     end;
 
