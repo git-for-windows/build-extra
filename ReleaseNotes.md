@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Git Credential Manager v1.14.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.14.0).
 * Comes with [OpenSSL v1.0.2n](https://www.openssl.org/news/cl102.txt).
+* The Git for Windows installer [now offers to configure Visual Studio Code as default editor for Git](https://github.com/git-for-windows/git/issues/1356).
 
 ## Changes since Git for Windows v2.15.1 (November 29th 2017)
 
