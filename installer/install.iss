@@ -895,49 +895,28 @@ end;
     (which cannot be mixed).
 }
 
-function CreateRadioButtonOrCheckBox(CreateRadioButton:Boolean;Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TButtonControl;
+function CreateItemDescription(Page:TWizardPage;const Description:String;var Top,Left:Integer):TLabel;
 var
-    RadioButton:TRadioButton;
-    CheckBox:TCheckBox;
-    RadioLabel,SubLabel:TLabel;
+    SubLabel:TLabel;
     Untagged,RowPrefix,Link:String;
     RowStart,RowCount,i,j:Integer;
 begin
-    if (CreateRadioButton) then begin
-        RadioButton:=TRadioButton.Create(Page);
-        RadioButton.Caption:=Caption;
-        RadioButton.Font.Style:=[fsBold];
-        Result:=RadioButton;
-    end else begin
-        CheckBox:=TCheckBox.Create(Page);
-        CheckBox.Caption:=Caption;
-        CheckBox.Font.Style:=[fsBold];
-        Result:=CheckBox;
-    end;
-    Result.Parent:=Page.Surface;
-    Result.Left:=ScaleX(Left);
-    Result.Top:=ScaleY(Top);
-    Result.Width:=ScaleX(405);
-    Result.Height:=ScaleY(17);
-    Result.TabOrder:=TabOrder;
-    TabOrder:=TabOrder+1;
-    Top:=Top+24;
     Untagged:='';
-    RadioLabel:=TLabel.Create(Page);
-    RadioLabel.Parent:=Page.Surface;
-    RadioLabel.Caption:=Untagged;
-    RadioLabel.Top:=ScaleY(Top);
-    RadioLabel.Left:=ScaleX(Left+24);
-    RadioLabel.Width:=ScaleX(405);
-    RadioLabel.Height:=ScaleY(13);
+    Result:=TLabel.Create(Page);
+    Result.Parent:=Page.Surface;
+    Result.Caption:=Untagged;
+    Result.Top:=ScaleY(Top);
+    Result.Left:=ScaleX(Left+24);
+    Result.Width:=ScaleX(405);
+    Result.Height:=ScaleY(13);
     RowPrefix:='';
     RowCount:=1;
     while True do begin
         case Pos3(Description,#13,'<RED>','<A HREF=',i) of
             '': begin
                 Untagged:=Untagged+Description;
-                RadioLabel.Caption:=Untagged;
-                RadioLabel.Height:=ScaleY(13*RowCount);
+                Result.Caption:=Untagged;
+                Result.Height:=ScaleY(13*RowCount);
                 Top:=Top+13+18;
                 Exit;
             end;
@@ -960,7 +939,7 @@ begin
                     SubLabel.Parent:=Page.Surface;
                     SubLabel.Caption:=SubString(Description,1,j-1);
                     SubLabel.Top:=ScaleY(Top);
-                    SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                    SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                     SubLabel.Width:=ScaleX(405);
                     SubLabel.Height:=ScaleY(13);
                     SubLabel.Font.Color:=clRed;
@@ -975,7 +954,7 @@ begin
                 SubLabel.Parent:=Page.Surface;
                 SubLabel.Caption:=SubString(Description,1,i-1);
                 SubLabel.Top:=ScaleY(Top);
-                SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                 SubLabel.Width:=ScaleX(405);
                 SubLabel.Height:=ScaleY(13*CountLines(SubLabel.Caption));
                 SubLabel.Font.Color:=clRed;
@@ -1007,7 +986,7 @@ begin
                     SubLabel.Parent:=Page.Surface;
                     SubLabel.Caption:=SubString(Description,1,j-1);
                     SubLabel.Top:=ScaleY(Top);
-                    SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                    SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                     SubLabel.Width:=ScaleX(405);
                     SubLabel.Height:=ScaleY(13);
                     SubLabel.Font.Color:=clBlue;
@@ -1026,7 +1005,7 @@ begin
                 SubLabel.Parent:=Page.Surface;
                 SubLabel.Caption:=SubString(Description,1,i-1);
                 SubLabel.Top:=ScaleY(Top);
-                SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                 SubLabel.Width:=ScaleX(405);
                 SubLabel.Height:=ScaleY(13*CountLines(SubLabel.Caption));
                 SubLabel.Font.Color:=clBlue;
@@ -1039,6 +1018,33 @@ begin
             end;
         end;
     end;
+end;
+
+function CreateRadioButtonOrCheckBox(CreateRadioButton:Boolean;Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TButtonControl;
+var
+    RadioButton:TRadioButton;
+    CheckBox:TCheckBox;
+begin
+    if (CreateRadioButton) then begin
+        RadioButton:=TRadioButton.Create(Page);
+        RadioButton.Caption:=Caption;
+        RadioButton.Font.Style:=[fsBold];
+        Result:=RadioButton;
+    end else begin
+        CheckBox:=TCheckBox.Create(Page);
+        CheckBox.Caption:=Caption;
+        CheckBox.Font.Style:=[fsBold];
+        Result:=CheckBox;
+    end;
+    Result.Parent:=Page.Surface;
+    Result.Left:=ScaleX(Left);
+    Result.Top:=ScaleY(Top);
+    Result.Width:=ScaleX(405);
+    Result.Height:=ScaleY(17);
+    Result.TabOrder:=TabOrder;
+    TabOrder:=TabOrder+1;
+    Top:=Top+24;
+    CreateItemDescription(Page,Description,Top,Left);
 end;
 
 function CreateRadioButton(Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TRadioButton;
