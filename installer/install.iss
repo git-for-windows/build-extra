@@ -304,6 +304,7 @@ const
     GE_VIM            = 1;
     GE_Nano           = 2;
     GE_NotepadPlusPlus = 3;
+    GE_VisualStudioCode = 4;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -346,9 +347,10 @@ var
 
     // Wizard page and variables for the Editor options.
     EditorPage:TWizardPage;
-    RdbEditor:array[GE_VIM..GE_NotepadPlusPlus] of TRadioButton;
+    RdbEditor:array[GE_VIM..GE_VisualStudioCode] of TRadioButton;
 
     NotepadPlusPlusPath:String;
+    VisualStudioCodePath:String;
 
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
@@ -1078,6 +1080,14 @@ begin
 
     RdbEditor[GE_NotepadPlusPlus].Enabled:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\notepad++.exe','',NotepadPlusPlusPath);
 
+    // 4th choice
+    RdbEditor[GE_VisualStudioCode]:=CreateRadioButton(EditorPage,'Use VisualStudioCode as Git'+#39+'s default editor','<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is a powerful and popular web GUI editor that can be used by Git.',TabOrder,Top,Left);
+
+    RdbEditor[GE_VisualStudioCode].Enabled:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
+    if (RdbEditor[GE_VisualStudioCode].Enabled) then begin
+        StringChangeEx(VisualStudioCodePath,' "%1"','',True);
+    end;
+
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Editor Option','VIM') of
         'Nano': RdbEditor[GE_Nano].Checked:=True;
@@ -1085,6 +1095,12 @@ begin
 	'Notepad++': begin
             if RdbEditor[GE_NotepadPlusPlus].Enabled then
                 RdbEditor[GE_NotepadPlusPlus].Checked:=True
+            else
+                RdbEditor[GE_VIM].Checked:=True;
+        end;
+    'VisualStudioCode': begin
+            if RdbEditor[GE_VisualStudioCode].Enabled then
+                RdbEditor[GE_VisualStudioCode].Checked:=True
             else
                 RdbEditor[GE_VIM].Checked:=True;
         end;
@@ -2011,6 +2027,9 @@ begin
     end else if (RdbEditor[GE_NotepadPlusPlus].Checked) and (NotepadPlusPlusPath<>'') then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+NotepadPlusPlusPath+#39+' -multiInst -notabbar -nosession -noPlugin"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Notepad++ as core.editor in the gitconfig.');
+    end else if (RdbEditor[GE_VisualStudioCode].Checked) and (VisualStudioCodePath<>'') then begin
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set VisualStudioCode as core.editor in the gitconfig.');
     end;
 
     {
@@ -2056,6 +2075,8 @@ begin
         Data:='VIM';
     end else if RdbEditor[GE_NotepadPlusPlus].Checked then begin
         Data:='Notepad++';
+    end else if RdbEditor[GE_VisualStudioCode].Checked then begin
+        Data:='VisualStudioCode';
     end;
     RecordChoice(PreviousDataKey,'Editor Option',Data);
 
