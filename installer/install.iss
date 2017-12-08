@@ -301,10 +301,10 @@ end;
 
 const
     // Git Editor options.
+    GE_Nano           = 0;
     GE_VIM            = 1;
-    GE_Nano           = 2;
-    GE_NotepadPlusPlus = 3;
-    GE_VisualStudioCode = 4;
+    GE_NotepadPlusPlus = 2;
+    GE_VisualStudioCode = 3;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -347,7 +347,10 @@ var
 
     // Wizard page and variables for the Editor options.
     EditorPage:TWizardPage;
-    RdbEditor:array[GE_VIM..GE_VisualStudioCode] of TRadioButton;
+    CbbEditor:TNewComboBox;
+    LblEditor:array[GE_Nano..GE_VisualStudioCode] of array of TLabel;
+    EditorAvailable:array[GE_Nano..GE_VisualStudioCode] of Boolean;
+    SelectedEditor:Integer;
 
     NotepadPlusPlusPath:String;
     VisualStudioCodePath:String;
@@ -895,49 +898,31 @@ end;
     (which cannot be mixed).
 }
 
-function CreateRadioButtonOrCheckBox(CreateRadioButton:Boolean;Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TButtonControl;
+function CreateItemDescription(Page:TWizardPage;const Description:String;var Top,Left:Integer;var Labels:array of TLabel;Visible:Boolean):TLabel;
 var
-    RadioButton:TRadioButton;
-    CheckBox:TCheckBox;
-    RadioLabel,SubLabel:TLabel;
+    SubLabel:TLabel;
     Untagged,RowPrefix,Link:String;
     RowStart,RowCount,i,j:Integer;
 begin
-    if (CreateRadioButton) then begin
-        RadioButton:=TRadioButton.Create(Page);
-        RadioButton.Caption:=Caption;
-        RadioButton.Font.Style:=[fsBold];
-        Result:=RadioButton;
-    end else begin
-        CheckBox:=TCheckBox.Create(Page);
-        CheckBox.Caption:=Caption;
-        CheckBox.Font.Style:=[fsBold];
-        Result:=CheckBox;
-    end;
-    Result.Parent:=Page.Surface;
-    Result.Left:=ScaleX(Left);
-    Result.Top:=ScaleY(Top);
-    Result.Width:=ScaleX(405);
-    Result.Height:=ScaleY(17);
-    Result.TabOrder:=TabOrder;
-    TabOrder:=TabOrder+1;
-    Top:=Top+24;
     Untagged:='';
-    RadioLabel:=TLabel.Create(Page);
-    RadioLabel.Parent:=Page.Surface;
-    RadioLabel.Caption:=Untagged;
-    RadioLabel.Top:=ScaleY(Top);
-    RadioLabel.Left:=ScaleX(Left+24);
-    RadioLabel.Width:=ScaleX(405);
-    RadioLabel.Height:=ScaleY(13);
+    Result:=TLabel.Create(Page);
+    Result.Parent:=Page.Surface;
+    Result.Caption:=Untagged;
+    Result.Top:=ScaleY(Top);
+    Result.Left:=ScaleX(Left+24);
+    Result.Width:=ScaleX(405);
+    Result.Height:=ScaleY(13);
+    Result.Visible:=Visible;
+    SetArrayLength(Labels,GetArrayLength(Labels)+1);
+    Labels[GetArrayLength(Labels)-1]:=Result;
     RowPrefix:='';
     RowCount:=1;
     while True do begin
         case Pos3(Description,#13,'<RED>','<A HREF=',i) of
             '': begin
                 Untagged:=Untagged+Description;
-                RadioLabel.Caption:=Untagged;
-                RadioLabel.Height:=ScaleY(13*RowCount);
+                Result.Caption:=Untagged;
+                Result.Height:=ScaleY(13*RowCount);
                 Top:=Top+13+18;
                 Exit;
             end;
@@ -960,28 +945,34 @@ begin
                     SubLabel.Parent:=Page.Surface;
                     SubLabel.Caption:=SubString(Description,1,j-1);
                     SubLabel.Top:=ScaleY(Top);
-                    SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                    SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                     SubLabel.Width:=ScaleX(405);
                     SubLabel.Height:=ScaleY(13);
                     SubLabel.Font.Color:=clRed;
+                    SubLabel.Visible:=Visible;
                     Untagged:=Untagged+SubString(Description,1,j);
                     Description:=SubString(Description,j+1,-1);
                     i:=i-j;
                     RowPrefix:='';
                     Top:=Top+13;
                     RowCount:=RowCount+1;
+                    SetArrayLength(Labels,GetArrayLength(Labels)+1);
+                    Labels[GetArrayLength(Labels)-1]:=SubLabel;
                 end;
                 SubLabeL:=TLabel.Create(Page);
                 SubLabel.Parent:=Page.Surface;
                 SubLabel.Caption:=SubString(Description,1,i-1);
                 SubLabel.Top:=ScaleY(Top);
-                SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                 SubLabel.Width:=ScaleX(405);
                 SubLabel.Height:=ScaleY(13*CountLines(SubLabel.Caption));
                 SubLabel.Font.Color:=clRed;
+                SubLabel.Visible:=Visible;
                 Untagged:=Untagged+SubString(Description,1,i-1);
                 RowPrefix:=RowPrefix+SubString(Description,1,i-1);
                 Description:=SubString(Description,i+6,-1);
+                SetArrayLength(Labels,GetArrayLength(Labels)+1);
+                Labels[GetArrayLength(Labels)-1]:=SubLabel;
             end;
             '<A HREF=': begin
                 Untagged:=Untagged+SubString(Description,1,i-1);
@@ -1007,38 +998,72 @@ begin
                     SubLabel.Parent:=Page.Surface;
                     SubLabel.Caption:=SubString(Description,1,j-1);
                     SubLabel.Top:=ScaleY(Top);
-                    SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                    SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                     SubLabel.Width:=ScaleX(405);
                     SubLabel.Height:=ScaleY(13);
                     SubLabel.Font.Color:=clBlue;
                     SubLabel.Font.Style:=[fsUnderline];
                     SubLabel.Cursor:=crHand;
                     SubLabel.OnClick:=@OpenHyperlink;
+                    SubLabel.Visible:=Visible;
                     Untagged:=Untagged+SubString(Description,1,j);
                     Description:=SubString(Description,j+1,-1);
                     i:=i-j;
                     RowPrefix:='';
                     Top:=Top+13;
                     RowCount:=RowCount+1;
+                    SetArrayLength(Labels,GetArrayLength(Labels)+1);
+                    Labels[GetArrayLength(Labels)-1]:=SubLabel;
                 end;
                 SubLabeL:=TLabel.Create(Page);
                 HyperlinkSource[HyperlinkCount-1]:=SubLabel;
                 SubLabel.Parent:=Page.Surface;
                 SubLabel.Caption:=SubString(Description,1,i-1);
                 SubLabel.Top:=ScaleY(Top);
-                SubLabel.Left:=GetTextWidth(RowPrefix,RadioLabel.Font)+ScaleX(Left+24);
+                SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                 SubLabel.Width:=ScaleX(405);
                 SubLabel.Height:=ScaleY(13*CountLines(SubLabel.Caption));
                 SubLabel.Font.Color:=clBlue;
                 SubLabel.Font.Style:=[fsUnderline];
                 SubLabel.Cursor:=crHand;
                 SubLabel.OnClick:=@OpenHyperlink;
+                SubLabel.Visible:=Visible;
                 Untagged:=Untagged+SubString(Description,1,i-1);
                 RowPrefix:=RowPrefix+SubString(Description,1,i-1);
                 Description:=SubString(Description,i+4,-1);
+                SetArrayLength(Labels,GetArrayLength(Labels)+1);
+                Labels[GetArrayLength(Labels)-1]:=SubLabel;
             end;
         end;
     end;
+end;
+
+function CreateRadioButtonOrCheckBox(CreateRadioButton:Boolean;Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TButtonControl;
+var
+    RadioButton:TRadioButton;
+    CheckBox:TCheckBox;
+    Dummy:array of TLabel;
+begin
+    if (CreateRadioButton) then begin
+        RadioButton:=TRadioButton.Create(Page);
+        RadioButton.Caption:=Caption;
+        RadioButton.Font.Style:=[fsBold];
+        Result:=RadioButton;
+    end else begin
+        CheckBox:=TCheckBox.Create(Page);
+        CheckBox.Caption:=Caption;
+        CheckBox.Font.Style:=[fsBold];
+        Result:=CheckBox;
+    end;
+    Result.Parent:=Page.Surface;
+    Result.Left:=ScaleX(Left);
+    Result.Top:=ScaleY(Top);
+    Result.Width:=ScaleX(405);
+    Result.Height:=ScaleY(17);
+    Result.TabOrder:=TabOrder;
+    TabOrder:=TabOrder+1;
+    Top:=Top+24;
+    CreateItemDescription(Page,Description,Top,Left,Dummy,True);
 end;
 
 function CreateRadioButton(Page:TWizardPage;const Caption,Description:String;var TabOrder,Top,Left:Integer):TRadioButton;
@@ -1051,9 +1076,24 @@ begin
     Result:=TCheckBox(CreateRadioButtonOrCheckBox(False,Page,Caption,Description,TabOrder,Top,Left));
 end;
 
+procedure EditorSelectionChanged(Sender: TObject);
+var
+    i:Integer;
+begin
+    for i:=0 to GetArrayLength(LblEditor[SelectedEditor])-1 do
+        LblEditor[SelectedEditor][i].Visible:=False;
+    SelectedEditor:=CbbEditor.ItemIndex;
+    for i:=0 to GetArrayLength(LblEditor[SelectedEditor])-1 do begin
+        LblEditor[SelectedEditor][i].Visible:=True;
+        if (LblEditor[SelectedEditor][i].Cursor<>crHand) then
+            LblEditor[SelectedEditor][i].Enabled:=EditorAvailable[SelectedEditor];
+    end;
+    Wizardform.NextButton.Enabled:=EditorAvailable[SelectedEditor];
+end;
+
 procedure InitializeWizard;
 var
-    PrevPageID,TabOrder,Top,Left:Integer;
+    PrevPageID,TabOrder,TopOfLabels,Top,Left:Integer;
     PuTTYSessions,EnvSSH:TArrayOfString;
     BtnPlink:TButton;
     Data:String;
@@ -1069,44 +1109,70 @@ begin
 
     EditorPage:=CreatePage(PrevPageID,'Choosing the default editor used by Git','Which editor would you like Git to use?',TabOrder,Top,Left);
 
-    // 1st choice
-    RdbEditor[GE_Nano]:=CreateRadioButton(EditorPage,'Use the Nano editor by default','<RED>(NEW!)</RED> <A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window. This is the recommended option.',TabOrder,Top,Left);
+    CbbEditor:=TNewComboBox.Create(EditorPage);
+    CbbEditor.Style:=csDropDown;
+    CbbEditor.OnChange:=@EditorSelectionChanged;
+    CbbEditor.Parent:=EditorPage.Surface;
+    CbbEditor.Left:=ScaleX(Left);
+    CbbEditor.Top:=ScaleY(Top);
+    CbbEditor.Width:=ScaleX(405);
+    CbbEditor.Height:=ScaleY(17);
+    CbbEditor.TabOrder:=TabOrder;
+    TabOrder:=TabOrder+1;
+    Top:=Top+24;
+    TopOfLabels:=Top;
 
-    // 2nd choice
-    RdbEditor[GE_VIM]:=CreateRadioButton(EditorPage,'Use Vim (the ubiquitous text editor) as Git'+#39+'s default editor','The <A HREF=http://www.vim.org/>Vim editor</A>, while powerful, <A HREF=https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/>can be hard to use</A>. It is the default editor of'+#13+'Git for Windows only for historical reasons.',TabOrder,Top,Left);
-
-    // 3rd choice
-    RdbEditor[GE_NotepadPlusPlus]:=CreateRadioButton(EditorPage,'Use Notepad++ as Git'+#39+'s default editor','<RED>(NEW!)</RED> <A HREF=https://notepad-plus-plus.org/>Notepad++</A> is a popular GUI editor that can be used by Git.',TabOrder,Top,Left);
-
-    RdbEditor[GE_NotepadPlusPlus].Enabled:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\notepad++.exe','',NotepadPlusPlusPath);
-
-    // 4th choice
-    RdbEditor[GE_VisualStudioCode]:=CreateRadioButton(EditorPage,'Use VisualStudioCode as Git'+#39+'s default editor','<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is a powerful and popular web GUI editor that can be used by Git.',TabOrder,Top,Left);
-
-    RdbEditor[GE_VisualStudioCode].Enabled:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
-    if (RdbEditor[GE_VisualStudioCode].Enabled) then begin
+    EditorAvailable[GE_NotepadPlusPlus]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\notepad++.exe','',NotepadPlusPlusPath);
+    EditorAvailable[GE_VisualStudioCode]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
+    if (EditorAvailable[GE_VisualStudioCode]) then begin
         StringChangeEx(VisualStudioCodePath,' "%1"','',True);
     end;
 
+    // 1st choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use the Nano editor by default');
+    Data:='<RED>(NEW!)</RED> <A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window.';
+    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode]) then
+        Data:=Data+#13+#13+'This is the recommended option for end users if no GUI editors are installed.';
+    CreateItemDescription(EditorPage,Data,Top,Left,LblEditor[GE_Nano],False);
+    EditorAvailable[GE_Nano]:=True;
+
+    // 2nd choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use Vim (the ubiquitous text editor) as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'The <A HREF=http://www.vim.org/>Vim editor</A>, while powerful, <A HREF=https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/>can be hard to use</A>. Its user interface is'+#13+'unintuitive and its key bindings are awkward.'+#13+#13+'<RED>Note:</RED> Vim is the default editor of Git for Windows only for historical reasons, and'+#13+'it is highly recommended to switch to a modern GUI editor instead.',Top,Left,LblEditor[GE_VIM],False);
+    EditorAvailable[GE_VIM]:=True;
+
+    // 3rd choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use Notepad++ as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://notepad-plus-plus.org/>Notepad++</A> is a popular GUI editor that can be used by Git.'+#13+#13+'This editor is popular in part due to the vast number of available plugins;'+#13+'However, when configured via this option, Git will call Notepad++ with'+#13+'plugins disabled (to open the editor as quickly as possible).',Top,Left,LblEditor[GE_NotepadPlusPlus],False);
+
+    // 4th choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use VisualStudioCode as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False);
+
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Editor Option','VIM') of
-        'Nano': RdbEditor[GE_Nano].Checked:=True;
-        'VIM': RdbEditor[GE_VIM].Checked:=True;
+        'Nano': CbbEditor.ItemIndex:=GE_Nano;
+        'VIM': CbbEditor.ItemIndex:=GE_VIM;
 	'Notepad++': begin
-            if RdbEditor[GE_NotepadPlusPlus].Enabled then
-                RdbEditor[GE_NotepadPlusPlus].Checked:=True
+            if EditorAvailable[GE_NotepadPlusPlus] then
+                CbbEditor.ItemIndex:=GE_NotepadPlusPlus
             else
-                RdbEditor[GE_VIM].Checked:=True;
+                CbbEditor.ItemIndex:=GE_VIM;
         end;
     'VisualStudioCode': begin
-            if RdbEditor[GE_VisualStudioCode].Enabled then
-                RdbEditor[GE_VisualStudioCode].Checked:=True
+            if EditorAvailable[GE_VisualStudioCode] then
+                CbbEditor.ItemIndex:=GE_VisualStudioCode
             else
-                RdbEditor[GE_VIM].Checked:=True;
+                CbbEditor.ItemIndex:=GE_VIM;
         end;
     else
-        RdbEditor[GE_VIM].Checked:=True;
+        CbbEditor.ItemIndex:=GE_VIM;
     end;
+    EditorSelectionChanged(NIL);
 
     (*
      * Create a custom page for modifying the environment.
@@ -2021,13 +2087,13 @@ begin
         Set nano as default editor
     }
 
-    if RdbEditor[GE_Nano].Checked then begin
+    if (CbbEditor.ItemIndex=GE_Nano) then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor nano.exe','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set GNU nano as core.editor in the gitconfig.');
-    end else if (RdbEditor[GE_NotepadPlusPlus].Checked) and (NotepadPlusPlusPath<>'') then begin
+    end else if ((CbbEditor.ItemIndex=GE_NotepadPlusPlus)) and (NotepadPlusPlusPath<>'') then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+NotepadPlusPlusPath+#39+' -multiInst -notabbar -nosession -noPlugin"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Notepad++ as core.editor in the gitconfig.');
-    end else if (RdbEditor[GE_VisualStudioCode].Checked) and (VisualStudioCodePath<>'') then begin
+    end else if ((CbbEditor.ItemIndex=GE_VisualStudioCode)) and (VisualStudioCodePath<>'') then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set VisualStudioCode as core.editor in the gitconfig.');
     end;
@@ -2069,13 +2135,13 @@ var
 begin
     // Git Editor options.
     Data:='';
-    if RdbEditor[GE_Nano].Checked then begin
+    if (CbbEditor.ItemIndex=GE_Nano) then begin
         Data:='Nano';
-    end else if RdbEditor[GE_VIM].Checked then begin
+    end else if (CbbEditor.ItemIndex=GE_VIM) then begin
         Data:='VIM';
-    end else if RdbEditor[GE_NotepadPlusPlus].Checked then begin
+    end else if (CbbEditor.ItemIndex=GE_NotepadPlusPlus) then begin
         Data:='Notepad++';
-    end else if RdbEditor[GE_VisualStudioCode].Checked then begin
+    end else if (CbbEditor.ItemIndex=GE_VisualStudioCode) then begin
         Data:='VisualStudioCode';
     end;
     RecordChoice(PreviousDataKey,'Editor Option',Data);
