@@ -1122,34 +1122,36 @@ begin
     Top:=Top+24;
     TopOfLabels:=Top;
 
+    EditorAvailable[GE_NotepadPlusPlus]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\notepad++.exe','',NotepadPlusPlusPath);
+    EditorAvailable[GE_VisualStudioCode]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
+    if (EditorAvailable[GE_VisualStudioCode]) then begin
+        StringChangeEx(VisualStudioCodePath,' "%1"','',True);
+    end;
+
     // 1st choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use the Nano editor by default');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window. This is the recommended option.',Top,Left,LblEditor[GE_Nano],False);
+    Data:='<RED>(NEW!)</RED> <A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window.';
+    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode]) then
+        Data:=Data+#13+#13+'This is the recommended option for end users if no GUI editors are installed.';
+    CreateItemDescription(EditorPage,Data,Top,Left,LblEditor[GE_Nano],False);
     EditorAvailable[GE_Nano]:=True;
 
     // 2nd choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Vim (the ubiquitous text editor) as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'The <A HREF=http://www.vim.org/>Vim editor</A>, while powerful, <A HREF=https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/>can be hard to use</A>. It is the default editor of'+#13+'Git for Windows only for historical reasons.',Top,Left,LblEditor[GE_VIM],False);
+    CreateItemDescription(EditorPage,'The <A HREF=http://www.vim.org/>Vim editor</A>, while powerful, <A HREF=https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/>can be hard to use</A>. Its user interface is'+#13+'unintuitive and its key bindings are awkward.'+#13+#13+'<RED>Note:</RED> Vim is the default editor of Git for Windows only for historical reasons, and'+#13+'it is highly recommended to switch to a modern GUI editor instead.',Top,Left,LblEditor[GE_VIM],False);
     EditorAvailable[GE_VIM]:=True;
 
     // 3rd choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Notepad++ as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://notepad-plus-plus.org/>Notepad++</A> is a popular GUI editor that can be used by Git.',Top,Left,LblEditor[GE_NotepadPlusPlus],False);
-
-    EditorAvailable[GE_NotepadPlusPlus]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\notepad++.exe','',NotepadPlusPlusPath);
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://notepad-plus-plus.org/>Notepad++</A> is a popular GUI editor that can be used by Git.'+#13+#13+'This editor is popular in part due to the vast number of available plugins;'+#13+'However, when configured via this option, Git will call Notepad++ with'+#13+'plugins disabled (to open the editor as quickly as possible).',Top,Left,LblEditor[GE_NotepadPlusPlus],False);
 
     // 4th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use VisualStudioCode as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is a powerful and popular web GUI editor that can be used by Git.',Top,Left,LblEditor[GE_VisualStudioCode],False);
-
-    EditorAvailable[GE_VisualStudioCode]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
-    if (EditorAvailable[GE_VisualStudioCode]) then begin
-        StringChangeEx(VisualStudioCodePath,' "%1"','',True);
-    end;
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False);
 
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Editor Option','VIM') of
