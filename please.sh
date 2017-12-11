@@ -577,11 +577,15 @@ up_to_date () {
 	fi
 }
 
-build () { # [--force] <package>
+build () { # [--force] [--cleanbuild] <package>
 	force=
+	cleanbuild=
 	while case "$1" in
 	-f|--force)
 		force=--force
+		;;
+	--cleanbuild)
+		cleanbuild=--cleanbuild
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -590,13 +594,13 @@ build () { # [--force] <package>
 	die "Expected 1 argument, got $#: %s\n" "$*"
 
 	set_package "$1"
-	extra_makepkg_opts="$extra_makepkg_opts $force"
+	extra_makepkg_opts="$extra_makepkg_opts $force $cleanbuild"
 
 	test MINGW = "$type" ||
 	up_to_date "$pkgpath" ||
 	die "%s: not up-to-date\n" "$pkgpath"
 
-	foreach_sdk pkg_build $force ||
+	foreach_sdk pkg_build $force $cleanbuild ||
 	die "Could not build '%s'\n" "$package"
 }
 
@@ -2409,11 +2413,12 @@ maybe_force_pkgrel () {
 }
 
 # --force overwrites existing an Git tag, or existing package files
-upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--force-pkgrel=<pkgrel>] <package>
+upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--force-pkgrel=<pkgrel>] [--cleanbuild] <package>
 	artifactsdir=
 	skip_upload=
 	force=
 	force_pkgrel=
+	cleanbuild=
 	while case "$1" in
 	--directory=*)
 		artifactsdir="$(cygpath -am "${1#*=}")" || exit
@@ -2436,6 +2441,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		;;
 	--force-pkgrel=*)
 		force_pkgrel="${1#*=}"
+		;;
+	--cleanbuild)
+		cleanbuild=--cleanbuild
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -2555,7 +2563,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
 		 git commit -s -m "curl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
 
-		 build $force "$package" &&
+		 build $force $cleanbuild "$package" &&
 		 install "$package" &&
 		 if test -z "$skip_upload"; then upload "$package"; fi &&
 		 sdk="$sdk64" pkg_copy_artifacts) &&
@@ -2832,7 +2840,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		 	openssl-$version.tar.gz &&
 		 git commit -s -m "openssl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
 
-		 build $force "$package" &&
+		 build $force $cleanbuild "$package" &&
 		 install "$package" &&
 		 if test -z "$skip_upload"; then upload "$package"; fi &&
 		 sdk="$sdk64" pkg_copy_artifacts) &&
@@ -2862,7 +2870,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		;;
 	esac &&
 
-	build $force "$package" &&
+	build $force $cleanbuild "$package" &&
 	install "$package" &&
 	if test -z "$skip_upload"; then upload "$package"; fi &&
 	foreach_sdk pkg_copy_artifacts &&
