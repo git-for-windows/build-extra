@@ -2552,6 +2552,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
 
 		(set_package mingw-w64-$1 &&
+		 maybe_init_repository "$sdk32/$pkgpath" &&
 		 cd "$sdk64/$pkgpath" &&
 		 require_push_url origin &&
 		 sdk="$sdk64" ff_master || exit
@@ -2828,6 +2829,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
 
 		(set_package mingw-w64-$1 &&
+		 maybe_init_repository "$sdk32/$pkgpath" &&
 		 cd "$sdk64/$pkgpath" &&
 		 require_push_url origin &&
 		 sdk="$sdk64" ff_master || exit
