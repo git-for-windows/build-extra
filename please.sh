@@ -2848,8 +2848,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		 sdk="$sdk64" pkg_copy_artifacts) &&
 		test 0 = $? &&
 
-		shortversion="$(echo "$version" | tr -dc 0-9)" &&
-		url=https://www.openssl.org/news/cl$shortversion.txt &&
+		v="$(echo "$version" | tr -dc 0-9.)" &&
+		url=https://www.openssl.org/news/openssl-$v-notes.html &&
 		relnotes_feature='Comes with [OpenSSL v'$version']('"$url"').'
 		;;
 	mingw-w64-wintoast|mingw-w64-cv2pdb)
