@@ -273,13 +273,13 @@ set_package () {
 		;;
 	git)
 		package=mingw-w64-git
-		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man mingw-w64-git-test-artifacts"
+		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man mingw-w64-git-test-artifacts mingw-w64-pdb"
 		type=MINGW
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
 	mingw-w64-git)
 		type=MINGW
-		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man mingw-w64-git-test-artifacts"
+		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man mingw-w64-git-test-artifacts mingw-w64-pdb"
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
 	mingw-w64-git-credential-manager)
@@ -336,6 +336,7 @@ set_package () {
 		;;
 	mingw-w64-openssl)
 		type=MINGW
+		extra_packages="mingw-w64-openssl-pdb"
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
 	curl)
@@ -345,6 +346,7 @@ set_package () {
 		;;
 	mingw-w64-curl)
 		type=MINGW
+		extra_packages="mingw-w64-curl-pdb"
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
 	git-flow)
@@ -2172,9 +2174,10 @@ pkg_files () {
 
 	for p in $package $extra_packages
 	do
-		test mingw-w64-git-test-artifacts != "$p" ||
-		test "--for-upload" = "$1" ||
-		continue
+		case "$p" in
+		mingw-w64-git-test-artifacts|mingw-w64-git-pdb)
+			test "--for-upload" = "$1" || continue;;
+		esac
 
 		case "$p" in
 		mingw-w64-*)
