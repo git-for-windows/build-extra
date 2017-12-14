@@ -2882,8 +2882,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		(cd "$sdk64/usr/src/build-extra" &&
 		 git pull origin master &&
 		 mention feature "$relnotes_feature"&&
-		 if test -z "$skip_upload"; then really_push origin HEAD; fi &&
-		 create_bundle_artifact)
+		 create_bundle_artifact &&
+		 if test -z "$skip_upload"; then really_push origin HEAD; fi)
 	fi
 }
 
