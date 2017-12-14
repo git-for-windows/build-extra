@@ -2872,6 +2872,12 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		;;
 	esac &&
 
+	if test -n "$relnotes_feature"
+	then
+		(cd "$sdk64/usr/src/build-extra" &&
+		 require_push_url origin)
+	fi &&
+
 	build $force $cleanbuild "$package" &&
 	install "$package" &&
 	if test -z "$skip_upload"; then upload "$package"; fi &&
