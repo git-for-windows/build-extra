@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSL v1.0.2n](https://www.openssl.org/news/cl102.txt).
 * The Git for Windows installer [now offers to configure Visual Studio Code as default editor for Git](https://github.com/git-for-windows/git/issues/1356).
 * Comes with [OpenSSL v1.0.2n](https://www.openssl.org/news/openssl-1.0.2-notes.html).
+* Comes with [OpenSSL v1.0.2n](https://www.openssl.org/news/openssl-1.0.2-notes.html).
 
 ## Changes since Git for Windows v2.15.1 (November 29th 2017)
 
