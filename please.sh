@@ -1291,7 +1291,7 @@ update_vs_branch () { # [--worktree=<path>] [--remote=<remote>] [--branch=<branc
 	 fi &&
 	 git reset --hard &&
 	 git checkout --force refs/remotes/"$remote/$branch"^0 &&
-	 make MSVC=1 vcxproj &&
+	 make vcxproj &&
 	 git push "$remote" +HEAD:refs/heads/vs/"$branch" ||
 	 die "Could not push vs/$branch\n") ||
 	exit
