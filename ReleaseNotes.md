@@ -35,6 +35,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.15.1(2) (November 30th 2017)
 
+Git for Windows now has a new homepage: [https://gitforwindows.org/](https://gitforwindows.org/) (it is still graciously hosted by GitHub, but now much quicker to type).
+
 ### New Features
 
 * Comes with [Git Credential Manager v1.14.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.14.0).
