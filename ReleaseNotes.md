@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * The Git for Windows installer [now offers to configure Visual Studio Code as default editor for Git](https://github.com/git-for-windows/git/issues/1356).
 * Comes with [OpenSSL v1.0.2n](https://www.openssl.org/news/openssl-1.0.2-notes.html).
 * `git checkout` [is now a lot faster when checking out a *lot* of files](https://github.com/git-for-windows/git/pull/1419).
+* The `core.excludesfile` [can now reference a symbolic link](https://github.com/git-for-windows/git/issues/1392).
 
 ## Changes since Git for Windows v2.15.1 (November 29th 2017)
 
