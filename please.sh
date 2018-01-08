@@ -1318,8 +1318,7 @@ publish_prerelease () {
 	die "Could not determine ID of release for %s\n" "$1"
 
 	out="$(curl --netrc --show-error -s -XPATCH -d \
-		'{"name":"'"$1"'","body":"This is a prerelease.",
-		 "draft":false,"prerelease":true}' \
+		'{"name":"'"$1"'","draft":false,"prerelease":true}' \
 		$url/$id)" ||
 	die "Could not edit release for %s:\n%s\n" "$1" "$out"
 }
