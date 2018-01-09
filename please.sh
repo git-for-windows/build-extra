@@ -1398,7 +1398,10 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	test -n "$modes" ||
 	modes=installer
 
-	ensure_valid_login_shell 32 &&
+	if test -z "$only_64_bit"
+	then
+		ensure_valid_login_shell 32
+	fi &&
 	ensure_valid_login_shell 64 ||
 	die "Could not ensure valid login shell\n"
 
