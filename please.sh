@@ -2692,6 +2692,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 			git-for-windows/master --) &&
 		 msys2_package_mtime=$(git -C ../.. log -1 --format=%ct -- .) &&
 		 test $msys2_runtime_mtime -gt $msys2_package_mtime ||
+		 test -n "$force_pkgrel" ||
 		 die "Package '%s' already up-to-date\n\t%s: %s\n\t%s: %s\n" \
 			"$package" \
 			"Most recent source code update" \
@@ -2720,13 +2721,14 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 			 "Cygwin $version" "$cygwin_url" >../.git/relnotes &&
 			sed -i "s/^\\(pkgrel=\\).*/\\1$pkgrel/" PKGBUILD
 		 else
+			pkgrel=
 			printf 'Comes with %s [%s](%s).' \
 			 'MSYS2 runtime (Git for Windows flavor) based on' \
 			 "Cygwin $version" "$cygwin_url" >../.git/relnotes &&
 			sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
 				-e "s/^\\(pkgrel=\\).*/\\11/" PKGBUILD
 		 fi &&
-		 git commit -s -m "$package: update to v$version" PKGBUILD &&
+			 git commit -s -m "$package: update to v$version${pkgrel:+ ($pkgrel)}" PKGBUILD &&
 		 MSYSTEM=msys PATH="$sdk64/usr/bin:$PATH" \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			./update-patches.sh &&
