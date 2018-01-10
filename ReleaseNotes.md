@@ -49,6 +49,7 @@ Git for Windows now has a new homepage: [https://gitforwindows.org/](https://git
 ### Bug Fixes
 
 * When cloning into an existing (empty) directory fails, [Git no longer removes said directory](https://github.com/git-for-windows/git/pull/1421).
+* Interrupting processes (and their children) using Control+C [is now a lot more robust](https://github.com/git-for-windows/msys2-runtime/pull/16).
 
 ## Changes since Git for Windows v2.15.1 (November 29th 2017)
 
