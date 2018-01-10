@@ -45,6 +45,7 @@ Git for Windows now has a new homepage: [https://gitforwindows.org/](https://git
 * `git checkout` [is now a lot faster when checking out a *lot* of files](https://github.com/git-for-windows/git/pull/1419).
 * The `core.excludesfile` [can now reference a symbolic link](https://github.com/git-for-windows/git/issues/1392).
 * Comes with [patch level 5](https://github.com/git-for-windows/msys2-runtime/commit/40af06afb9691cfa05a5eb99db42de82a19c3fc7) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.9.0](https://cygwin.com/ml/cygwin-announce/2017-09/msg00056.html).
+* Comes with [patch level 6](https://github.com/git-for-windows/msys2-runtime/commit/f9ea2574b90e18d1213ba28858aa2ce31570c451) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.9.0](https://cygwin.com/ml/cygwin-announce/2017-09/msg00056.html).
 
 ### Bug Fixes
 
