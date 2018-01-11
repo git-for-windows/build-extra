@@ -366,6 +366,11 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/build-extra/mingw-w64-wintoast
 		;;
+	bash)
+		type=MSYS
+		extra_packages="bash-devel"
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
@@ -2873,6 +2878,34 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		 fi &&
 		 git update-index -q --refresh &&
 		 git diff-files --quiet --)
+		;;
+	bash)
+		url="http://git.savannah.gnu.org/cgit/bash.git/commit/?id=master" &&
+		commit_subject="$(curl $url | sed -n \
+			's/.*<div class=.commit-subject.>\([^<]*\).*/\1/p')" &&
+		case "$commit_subject" in
+		Bash-[1-9]*) ;; # okay
+		*) die "Unhandled commit subject in Bash's master: '%s'\n" "$commit_subject";;
+		esac &&
+		version="$(echo "$commit_subject" | sed -n 's/^Bash-\([^ ]*\).*/\1/p')" &&
+		patchlevel=${commit_subject##* patch } &&
+		if test "a$patchlevel" = "a$commit_subject"
+		then
+			patchlevel=0
+		fi &&
+		patchlevel="$(printf "%03d" $patchlevel)" &&
+		(cd "$sdk64/usr/src/MSYS2-packages/bash" &&
+		 sed -i -e 's/^\(_basever=\).*/\1'$version/ \
+			-e 's/^\(_patchlevel=\)[0-9]*\(.*\)/\1'$patchlevel'\2/' \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 v="$version.$patchlevel${force_pkgrel:+-$force_pkgrel}" &&
+		 git commit -s -m "bash: new version ($v)" PKGBUILD) ||
+		exit
+		v="$version patchlevel $patchlevel ${force_pkgrel:+ ($force_pkgrel)}" &&
+		url=https://tiswww.case.edu/php/chet/bash/NEWS &&
+		relnotes_feature='Comes with [Bash v'$version']('"$url"').'
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
