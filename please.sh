@@ -2173,6 +2173,7 @@ pkg_files () {
 		'/^_basever=/{N;N;s/.*=\([0-9].*\)\n.*\npkgrel=\(.*\)/\1-\2/p}' \
 		-e '/^_ver=/{N;N;N;s/.*=\([.0-9]*\)\([a-z][a-z]*\)\n.*\n.*\npkgrel=\(.*\)/\1.\2-\3/p}' \
 		-e '/^pkgver=/{N;s/.*=\([0-9].*\)\npkgrel=\(.*\)/\1-\2/p}' \
+		-e '/^_basever=/{N;s/^_basever=\([0-9].*\)\n_patchlevel=\([0-9]*\) .*\n.*\npkgrel=\([0-9]*\).*/\1.\2-\3/p}' \
 		<PKGBUILD)"
 	test -n "$pkgver" ||
 	die "%s: could not determine pkgver\n" "$sdk/$pkgpath"
