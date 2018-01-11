@@ -559,7 +559,12 @@ pkg_build () {
 }
 
 fast_forward () {
-	git -C "$1" fetch "$2" refs/heads/master &&
+	if test -d "$2"/.git
+	then
+		git -C "$1" fetch "$2" refs/heads/master
+	else
+		git -C "$1" fetch "$2"/.. refs/heads/master
+	fi &&
 	git -C "$1" merge --ff-only "$3" &&
 	test "a$3" = "a$(git -C "$1" rev-parse --verify HEAD)"
 }
