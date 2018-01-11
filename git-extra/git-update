@@ -102,6 +102,7 @@ git_update () {
 
 	yn=
 	use_gui=
+	quiet=
 	testing=
 	while test $# -gt 0
 	do
@@ -109,6 +110,7 @@ git_update () {
 		-\?|--?\?|-h|--help) ;;
 		-y|--yes) yn=y; shift; continue;;
 		-g|--gui) use_gui=t; shift; continue;;
+		--quiet) quiet=t; shift; continue;;
 		--testing) testing=t; shift; continue;;
 		*) echo "Unknown option: $1" >&2;;
 		esac
@@ -157,7 +159,7 @@ git_update () {
 		sed -E 's/.*"tag_name": "v([^"]*).*/\1/')
 	# Did we ask about this version already?
 	recently_seen="$(git config --global winUpdater.recentlySeenVersion)"
-	test -n "$testing" || test "x$recently_seen" != "x$latest" || return
+	test -n "$quiet" && test "x$recently_seen" = "x$latest" && return
 
 	version=$(git --version | sed "s/git version //")
 	echo "Git for Windows $version (${bit}bit)" >&2
