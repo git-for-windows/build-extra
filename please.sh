@@ -2911,7 +2911,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		exit
 		v="$version patchlevel $patchlevel ${force_pkgrel:+ ($force_pkgrel)}" &&
 		url=https://tiswww.case.edu/php/chet/bash/NEWS &&
-		relnotes_feature='Comes with [Bash v'$version']('"$url"').'
+		relnotes_feature='Comes with [Bash v'$v']('"$url"').'
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
