@@ -1730,7 +1730,7 @@ begin
         '  <Actions Context="Author">'+
         '    <Exec>'+
         '      <Command>"'+AppPath+'\git-bash.exe"</Command>'+
-        '      <Arguments>--hide --no-needs-console --command=cmd\git.exe update --quiet --gui</Arguments>'+
+        '      <Arguments>--hide --no-needs-console --command=cmd\git.exe update-git-for-windows --quiet --gui</Arguments>'+
         '    </Exec>'+
         '  </Actions>'+
         '</Task>',False);

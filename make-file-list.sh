@@ -39,7 +39,7 @@ fi
 if test -z "$INCLUDE_GIT_UPDATE"
 then
 	EXTRA_FILE_EXCLUDES="$EXTRA_FILE_EXCLUDES
-		/mingw$BITNESS/libexec/git-core/git-update"
+		/mingw$BITNESS/libexec/git-core/git-update-git-for-windows"
 	GIT_UPDATE_EXTRA_PACKAGES=
 else
 	GIT_UPDATE_EXTRA_PACKAGES=mingw-w64-$ARCH-wintoast

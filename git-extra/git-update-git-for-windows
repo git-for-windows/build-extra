@@ -50,8 +50,8 @@ version_compare () {
 }
 
 # Counts how many Bash instances are running, apart from the current one (if
-# any: `git update` might have been called from a CMD window, in which case no
-# Git Bash might be running at all).
+# any: `git update-git-for-windows` might have been called from a CMD window,
+# in which case no Git Bash might be running at all).
 #
 # This is a little tricky, as the /usr/bin/sh process (as which `ps` reports the
 # process running this script) is an MSYS2 one, but the calling `git.exe`
@@ -92,7 +92,7 @@ count_other_bashes () {
 
 # The main function of this script
 
-git_update () {
+update_git_for_windows () {
 	proxy=$(git config --get http.proxy)
 	if test -n "$proxy"
 	then
@@ -115,7 +115,7 @@ git_update () {
 		*) echo "Unknown option: $1" >&2;;
 		esac
 		printf >&2 '%s\n%s\n\t%s\n\t%s\n' \
-			"Usage: git-update [options]" \
+			"Usage: git update-git-for-windows [options]" \
 			"Options:" \
 			"-g, --gui Use GUI instead of terminal to prompt" \
 			"-y, --yes Automatic yes to download and install prompt"
@@ -268,4 +268,4 @@ git_update () {
 	ps | grep ' /usr/bin/bash$' | awk '{print "kill -9 " $1 ";" }' | sh
 }
 
-git_update "$@"
+update_git_for_windows "$@"
