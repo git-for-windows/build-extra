@@ -493,6 +493,10 @@ pkg_build () {
 			'MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
 				'"$extra"'makepkg-mingw -s --noconfirm \
 					'"$extra_makepkg_opts"' &&
+			 if test mingw-w64-git = "'"$package"'"
+			 then
+				git push ../../git refs/tags/"'"$tag"'"
+			 fi &&
 			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
 				'"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk/$pkgpath"
