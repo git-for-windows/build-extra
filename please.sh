@@ -3061,6 +3061,9 @@ finalize () { # <what, e.g. release-notes>
 	git "$dir_option" fetch --tags upstream ||
 	die "Could not update Git\n"
 
+	(cd "$sdk64/$pkgpath"/src/git/.git &&
+	 require_remote git-for-windows \
+	 https://github.com/git-for-windows/git) &&
 	ver="$(git "$dir_option" \
 		describe --first-parent --match 'v[0-9]*[0-9]' \
 		git-for-windows/master)" ||
