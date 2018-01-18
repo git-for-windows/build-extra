@@ -18,22 +18,6 @@ test "--update" != "$1" || {
 }
 
 # IDs
-# v2.11.1.mingit-prerelease.1
-#id=${1:-5068926}
-# v2.11.0.windows.2
-#id=${1:-5153384}
-# v2.11.0.windows.3
-#id=${1:-5159523}
-# v2.11.1.windows-prerelease.2
-#id=${1:-5220049}
-# v2.11.1.windows.1
-#id=${1:-5349389}
-# v2.12.0.windows.1
-#id=${1:-5571947}
-# v2.12.0.windows.2
-#id=${1:-5757342}
-# v2.12.1.windows.1
-#id=${1:-5819520}
 # v2.12.2.windows.1
 #id=${1:-5885060}
 # v2.12.2.windows.2
@@ -77,7 +61,25 @@ test "--update" != "$1" || {
 # v2.15.1.windows.1
 #id=${1:-8700844}
 # v2.15.1.windows.2
-id=${1:-8710511}
+#id=${1:-8710511}
+# v2.13.1.windows.4
+#id=${1:-8759345}
+# v2.13.1.windows.6
+#id=${1:-8925346}
+# v2.13.1.windows.7
+#id=${1:-8928934}
+# v2.16.0-rc0.windows.1
+#id=${1:-9079338}
+# v2.14.3.windows.2
+#id=${1:-9124043}
+# v2.16.0-rc1.windows.1
+#id=${1:-9134153}
+# v2.16.0-rc2.windows.1
+#id=${1:-9220789}
+# v2.16.0.windows.2
+id=${1:-9296463}
+# v2.11.1.mingit-prerelease.1
+# v2.11.1.mingit-prerelease.2
 # v2.11.1.mingit-prerelease.1
 # v2.11.1.mingit-prerelease.2
 # prerelease-v2.11.0.windows.1.1
