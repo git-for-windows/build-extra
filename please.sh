@@ -2438,6 +2438,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 	artifactsdir=
 	skip_upload=
 	force=
+	ignore_existing_tag=
 	force_pkgrel=
 	cleanbuild=
 	while case "$1" in
@@ -2459,6 +2460,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		;;
 	-f|--force)
 		force=--force
+		ignore_existing_tag=--ignore-existing-tag
 		;;
 	--force-pkgrel=*)
 		force_pkgrel="${1#*=}"
@@ -2595,7 +2597,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		relnotes_feature='Comes with [cURL v'$version']('"$url"').'
 		;;
 	mingw-w64-git)
-		finalize release-notes &&
+		finalize $ignore_existing_tag release-notes &&
 		tag_git $force &&
 		if test -n "$artifactsdir"
 		then
@@ -3051,7 +3053,12 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 	die "Could not synchronize release note edits to 32-bit SDK\n"
 }
 
-finalize () { # <what, e.g. release-notes>
+finalize () { # [--ignore-existing-tag] <what, e.g. release-notes>
+	ignore_existing_tag=
+	case "$1" in
+	--ignore-existing-tag) ignore_existing_tag=t; shift;;
+	esac
+
 	case "$1" in
 	relnotes|rel-notes|release-notes) ;;
 	*) die "I don't know how to finalize %s\n" "$1";;
@@ -3079,6 +3086,7 @@ finalize () { # <what, e.g. release-notes>
 	*.windows.*)
 		test 0 -lt $(git "$dir_option" rev-list --count \
 			"$ver"..git-for-windows/master) ||
+		test -n "$ignore_existing_tag" ||
 		die "Already tagged: %s\n" "$ver"
 
 		nextver=${ver%.windows.*}.windows.$((${ver##*.windows.}+1))
