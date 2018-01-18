@@ -3057,8 +3057,9 @@ finalize () { # <what, e.g. release-notes>
 
 	update git &&
 	(cd "$sdk64/$pkgpath"/src/git/.git &&
+	 require_remote upstream https://github.com/git/git &&
 	 require_remote git-for-windows \
-	 https://github.com/git-for-windows/git) &&
+		https://github.com/git-for-windows/git) &&
 	dir_option="--git-dir=$sdk64/$pkgpath"/src/git/.git &&
 	git "$dir_option" fetch --tags git-for-windows &&
 	git "$dir_option" fetch --tags upstream ||
