@@ -14,7 +14,7 @@
 #endif
 #define MINGW_BITNESS 'mingw'+BITNESS
 #define APP_CONTACT_URL 'https://github.com/git-for-windows/git/wiki/Contact'
-#define APP_URL       'https://git-for-windows.github.io/'
+#define APP_URL       'https://gitforwindows.org/'
 #define APP_BUILTINS  'share\git\builtins.txt'
 
 #define PLINK_PATH_ERROR_MSG 'Please enter a valid path to a Plink executable.'
