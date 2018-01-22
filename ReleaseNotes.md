@@ -33,6 +33,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.16.0(2) (January 18th 2018)
+
+### Bug Fixes
+
+* A set of regressions introduced by patches intended to speed up `reset` and `checkout` was fixed (issues [#1437](https://github.com/git-for-windows/git/issues/1437), [#1438](https://github.com/git-for-windows/git/issues/1438), [#1440](https://github.com/git-for-windows/git/issues/1440) and [#1442](https://github.com/git-for-windows/git/issues/1442).
+
 ## Changes since Git for Windows v2.15.1(2) (November 30th 2017)
 
 Git for Windows now has a new homepage: [https://gitforwindows.org/](https://gitforwindows.org/) (it is still graciously hosted by GitHub, but now much quicker to type).
