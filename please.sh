@@ -2608,7 +2608,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 			git -C "$sdk64/usr/src/build-extra" bundle create \
 				"$artifactsdir/build-extra.bundle" \
 				-1 master
-		fi
+		fi &&
+		rm -rf "$git_src_dir"/sha1collisiondetection
 		;;
 	mingw-w64-git-lfs)
 		repo=git-lfs/git-lfs
