@@ -35,6 +35,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.16.0(2) (January 18th 2018)
 
+This is a hotfix release, based on upstream Git's hotfix to address a possible segmentation fault associated with case-insensitive file systems.
+
+Note: another hotfix might be coming the day after tomorrow, as cURL announced a new version addressing security advisories that *might* affect how Git talks via HTTP/HTTPS, too.
+
 ### Bug Fixes
 
 * A set of regressions introduced by patches intended to speed up `reset` and `checkout` was fixed (issues [#1437](https://github.com/git-for-windows/git/issues/1437), [#1438](https://github.com/git-for-windows/git/issues/1438), [#1440](https://github.com/git-for-windows/git/issues/1440) and [#1442](https://github.com/git-for-windows/git/issues/1442).
