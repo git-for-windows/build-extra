@@ -39,6 +39,11 @@ This is a hotfix release, based on upstream Git's hotfix to address a possible s
 
 Note: another hotfix might be coming the day after tomorrow, as cURL announced a new version addressing security advisories that *might* affect how Git talks via HTTP/HTTPS, too.
 
+### New Features
+
+* Comes with [Git v2.16.1](https://github.com/git/git/blob/v2.16.1/Documentation/RelNotes/2.16.1.txt).
+
+
 ### Bug Fixes
 
 * A set of regressions introduced by patches intended to speed up `reset` and `checkout` was fixed (issues [#1437](https://github.com/git-for-windows/git/issues/1437), [#1438](https://github.com/git-for-windows/git/issues/1438), [#1440](https://github.com/git-for-windows/git/issues/1440) and [#1442](https://github.com/git-for-windows/git/issues/1442).
