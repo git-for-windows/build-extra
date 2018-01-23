@@ -1110,7 +1110,7 @@ begin
     EditorPage:=CreatePage(PrevPageID,'Choosing the default editor used by Git','Which editor would you like Git to use?',TabOrder,Top,Left);
 
     CbbEditor:=TNewComboBox.Create(EditorPage);
-    CbbEditor.Style:=csDropDown;
+    CbbEditor.Style:=csDropDownList;
     CbbEditor.OnChange:=@EditorSelectionChanged;
     CbbEditor.Parent:=EditorPage.Surface;
     CbbEditor.Left:=ScaleX(Left);
