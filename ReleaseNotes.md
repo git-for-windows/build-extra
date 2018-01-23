@@ -54,6 +54,7 @@ Git for Windows now has a new homepage: [https://gitforwindows.org/](https://git
 
 ### New Features
 
+* Comes with [Git v2.16.0](https://github.com/git/git/blob/v2.16.0/Documentation/RelNotes/2.16.0.txt).
 * Comes with [Git Credential Manager v1.14.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.14.0).
 * The Git for Windows installer [now offers to configure Visual Studio Code as default editor for Git](https://github.com/git-for-windows/git/issues/1356).
 * Comes with [OpenSSL v1.0.2n](https://www.openssl.org/news/openssl-1.0.2-notes.html).
