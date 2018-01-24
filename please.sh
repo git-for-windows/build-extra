@@ -2937,7 +2937,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		die "Could not determine latest Heimdal version\n"
 
 		# 7.5.0 is the initial version shipped by Git for Windows
-		test 7.5.0 != $ver ||
+		test 7.5.0 = $ver ||
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$ver/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
