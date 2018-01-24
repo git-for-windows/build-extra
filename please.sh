@@ -371,6 +371,11 @@ set_package () {
 		extra_packages="bash-devel"
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
+	heimdal)
+		type=MSYS
+		extra_packages="heimdal-libs heimdal-devel"
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
@@ -2920,6 +2925,29 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		v="$version patchlevel $patchlevel ${force_pkgrel:+ ($force_pkgrel)}" &&
 		url=https://tiswww.case.edu/php/chet/bash/NEWS &&
 		relnotes_feature='Comes with [Bash v'$v']('"$url"').'
+		;;
+	heimdal)
+		releases="$(curl http://h5l.org/releases.html)" ||
+		die "Could not download release notes for Heimdal\n"
+
+		ver="$(echo "$releases" | sed -n '/ - Heimdal [1-9][0-9]*\./{
+			s/.*Heimdal \([1-9][0-9.]*\).*/\1/p;q
+		}')"
+		test -n "$ver" ||
+		die "Could not determine latest Heimdal version\n"
+
+		# 7.5.0 is the initial version shipped by Git for Windows
+		test 7.5.0 != $ver ||
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$ver/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "heimdal: new version ($ver)" PKGBUILD) ||
+		exit
+
+		url=http://h5l.org/releases.html &&
+		relnotes_feature='Comes with [Heimdal v'$ver']('"$url"').'
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
