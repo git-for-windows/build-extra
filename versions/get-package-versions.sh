@@ -32,23 +32,34 @@ download () {
 
 file=package-versions-"$version".txt
 test -f "$file" || {
-	if ! type innoextract >/dev/null 2>&1
+	extracted=app/etc/package-versions.txt &&
+	use_innounp= &&
+	if type innounp >/dev/null 2>&1
+	then
+		use_innounp=t &&
+		extracted='{app}/etc/package-versions.txt'
+	elif ! type innoextract >/dev/null 2>&1
 	then
 		pacman -Sy mingw-w64-x86_64-innoextract ||
 		die "Could not install innoextract"
 	fi &&
 	installer=Git-"$version"-64-bit.exe &&
 	download "$installer" &&
-	extracted=app/etc/package-versions.txt &&
 	if test -f $extracted
 	then
 		rm $extracted
 	fi &&
-	# For some stupid reason, innoextract segfaults after extracting the
-	# file successfully... Work-around.
-	({ innoextract -e -I "$(echo $extracted | tr / \\\\)" \
-		cached-files/"$installer"; } 2>/dev/null ||
-	 test 139 = $?) &&
+	backslashed_extracted="$(echo $extracted | tr / \\\\)" &&
+	if test -n "$use_innounp"
+	then
+		innounp -x cached-files/"$installer" "$backslashed_extracted"
+	else
+		# For some stupid reason, innoextract segfaults after
+		# extracting the file successfully... Work-around.
+		({ innoextract -e -I "$backslashed_extracted" \
+			cached-files/"$installer"; } ||
+		 test 139 = $?)
+	fi &&
 	mv $extracted "$file"
 } ||
 die "Could not extract $file"
