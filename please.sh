@@ -2579,6 +2579,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 
 		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
 
+		case "$version" in 7.58.0)
+			: skip because of partially successful upgrade
+			;;
+		*)
 		(set_package mingw-w64-$1 &&
 		 maybe_init_repository "$sdk64/$pkgpath" &&
 		 cd "$sdk64/$pkgpath" &&
@@ -2595,7 +2599,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		 build $force $cleanbuild "$package" &&
 		 install "$package" &&
 		 if test -z "$skip_upload"; then upload "$package"; fi &&
-		 sdk="$sdk64" pkg_copy_artifacts) &&
+		 sdk="$sdk64" pkg_copy_artifacts)
+			;;
+		esac &&
 
 		url=https://curl.haxx.se/changes.html &&
 		url="$url$(echo "#$version" | tr . _)" &&
