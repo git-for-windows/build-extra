@@ -64,6 +64,12 @@ test -f "$file" || {
 } ||
 die "Could not extract $file"
 
+case "$version" in
+1.*|2.[5-8].*|2.9.0)
+	exit # The first official MinGit was released with v2.9.2
+	;;
+esac
+
 file=package-versions-"$version"-MinGit.txt
 test -f "$file" || {
 	zip=MinGit-"$version"-64-bit.zip &&
