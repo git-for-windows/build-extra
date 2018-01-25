@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Heimdal v7.5.0](http://h5l.org/releases.html).
+* Comes with [cURL v7.58.0](https://curl.haxx.se/changes.html#7_58_0).
 
 ## Changes since Git for Windows v2.16.0(2) (January 18th 2018)
 
