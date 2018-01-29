@@ -2964,7 +2964,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		die "Could not download release notes for Perl\n"
 
 		ver="$(echo "$releases" | sed -n \
-			's/.*Perl <[^>]*>\(5\..*\)<.* stable version.*/1\1/p')"
+			's/.*Perl <[^>]*>\(5\..*\)<.* stable version.*/\1/p')"
 		test -n "$ver" ||
 		die "Could not determine latest Perl version\n"
 
