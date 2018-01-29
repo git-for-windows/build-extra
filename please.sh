@@ -376,6 +376,10 @@ set_package () {
 		extra_packages="heimdal-libs heimdal-devel"
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
+	perl)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
@@ -2954,6 +2958,26 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 
 		url=http://h5l.org/releases.html &&
 		relnotes_feature='Comes with [Heimdal v'$ver']('"$url"').'
+		;;
+	perl)
+		releases="$(curl https://dev.perl.org/perl5/)" ||
+		die "Could not download release notes for Perl\n"
+
+		ver="$(echo "$releases" | sed -n \
+			's/.*Perl <[^>]*>\(5\..*\)<.* stable version.*/1\1/p')"
+		test -n "$ver" ||
+		die "Could not determine latest Perl version\n"
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$ver/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "perl: new version ($ver)" PKGBUILD) ||
+		exit
+
+		url=http://search.cpan.org/dist/perl-$ver/pod/perldelta.pod &&
+		relnotes_feature='Comes with [Perl v'$ver']('"$url"').'
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
