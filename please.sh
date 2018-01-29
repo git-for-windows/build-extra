@@ -379,6 +379,7 @@ set_package () {
 	perl)
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
+		extra_makepkg_opts=--nocheck
 		;;
 	*)
 		die "Unknown package: %s\n" "$package"
