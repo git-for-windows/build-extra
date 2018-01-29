@@ -8,6 +8,7 @@
 # respectively, to make it easier to interact between the two.
 
 rootdir="$(cygpath -w /)" &&
+rootdir="${rootdir%\\}" &&
 case "$rootdir" in
 *\\git-sdk-32|*\\git-sdk-64)
 	otherarch=$((96-${rootdir##*-})) &&
