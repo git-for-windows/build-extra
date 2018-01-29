@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Heimdal v7.5.0](http://h5l.org/releases.html).
 * Comes with [cURL v7.58.0](https://curl.haxx.se/changes.html#7_58_0).
+* Comes with [Perl v5.26.1](http://search.cpan.org/dist/perl-5.26.1/pod/perldelta.pod).
 
 ## Changes since Git for Windows v2.16.0(2) (January 18th 2018)
 
