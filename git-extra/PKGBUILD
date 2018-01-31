@@ -25,7 +25,6 @@ pkgver() {
 source=('inputrc'
         'vimrc'
         'vi'
-        'nanorc'
         'git.nanorc'
         'notepad'
         'wordpad'
@@ -104,7 +103,6 @@ package() {
   install -d -m755 $pkgdir/usr/share/makepkg/lint_package
   install -m644 inputrc $pkgdir/etc
   install -m644 vimrc $pkgdir/etc
-  install -m644 nanorc $pkgdir/etc
   install -m644 git.nanorc $pkgdir/usr/share/nano
   install -m755 vi $pkgdir/usr/bin
   install -m755 notepad $pkgdir/usr/bin
