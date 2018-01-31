@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Perl v5.26.1](http://search.cpan.org/dist/perl-5.26.1/pod/perldelta.pod).
 * When using GNU nano as Git's default editor, [it is now colorful (shows syntax-highlighting)](https://github.com/git-for-windows/build-extra/pull/169).
 * Comes with [tig v2.3.3](https://github.com/jonas/tig/releases/tag/tig-2.3.3).
+* When using Secure Channel as HTTPS transport behind a proxy, it may be necessary to disable revocation checks, [which is now possible](https://github.com/git-for-windows/git/pull/1450).
 
 ### Bug Fixes
 
