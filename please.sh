@@ -381,6 +381,10 @@ set_package () {
 		pkgpath=/usr/src/MSYS2-packages/$package
 		extra_makepkg_opts=--nocheck
 		;;
+	tig)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
@@ -2980,6 +2984,29 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 
 		url=http://search.cpan.org/dist/perl-$ver/pod/perldelta.pod &&
 		relnotes_feature='Comes with [Perl v'$ver']('"$url"').'
+		;;
+	tig)
+		repo=jonas/tig
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+
+		version="$(echo "$release" |
+			sed -n 's/^  "tag_name": "tig-\(.*\)",\?$/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: upgrade to v$version" PKGBUILD) ||
+		exit
+
+		url=https://github.com/jonas/tig/releases/tag/tig-$version &&
+		relnotes_feature="Comes with [$package v$version]($url)."
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
