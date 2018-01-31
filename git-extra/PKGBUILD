@@ -98,6 +98,7 @@ package() {
   install -d -m755 $pkgdir/etc/post-install
   install -d -m755 $pkgdir/usr/bin
   install -d -m755 $pkgdir/usr/share/git
+  install -d -m755 $pkgdir/usr/share/nano
   install -d -m755 $pkgdir${MINGW_PREFIX}/bin
   install -d -m755 $pkgdir${MINGW_PREFIX}/libexec/git-core
   install -d -m755 $pkgdir/usr/share/makepkg/lint_package
