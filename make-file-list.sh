@@ -126,8 +126,13 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/bin/msys-\(db\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
 	-e '^/usr/bin/dumper\.exe$' \
 	-e '^/usr/share.*/magic$' \
-	-e '^/usr/share/perl5/core_perl/Unicode/Collate/Locale/' \
+	-e '^/usr/share/perl5/core_perl/Unicode/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
+	-e '^/usr/share/perl5/core_perl/Locale/' \
+	-e '^/usr/share/perl5/core_perl/Pod/' \
+	-e '^/usr/share/perl5/core_perl/ExtUtils/' \
+	-e '^/usr/share/perl5/core_perl/CPAN/' \
+	-e '^/usr/share/perl5/core_perl/TAP/' \
 	-e '^/usr/share/vim/vim74/lang/' \
 	-e '^/etc/profile.d/git-sdk.sh$' |
 if test -n "$WITH_L10N" && test -z "$MINIMAL_GIT"
