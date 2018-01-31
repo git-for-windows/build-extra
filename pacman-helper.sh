@@ -156,7 +156,7 @@ fetch () {
 			(cd "$(arch_dir sources)" ||
 			 die "Could not cd to sources/"
 			 case "$name" in
-			 libcurl-[1-9]*|libcurl-devel-[1-9]*|mingw-w64-x86_64-git-doc-html-[1-9]*|mingw-w64-x86_64-git-doc-man-[1-9]*|msys2-runtime-devel-[1-9]*|libopenssl-[1-9]*|openssl-devel-[1-9]*|mingw-w64-x86_64-git-test-artifacts-[1-9]*)
+			 libcurl-[1-9]*|libcurl-devel-[1-9]*|mingw-w64-x86_64-git-doc-html-[1-9]*|mingw-w64-x86_64-git-doc-man-[1-9]*|msys2-runtime-devel-[1-9]*|libopenssl-[1-9]*|openssl-devel-[1-9]*|mingw-w64-x86_64-git-test-artifacts-[1-9]*|bash-devel-[1-9]*|heimdal-devel-[1-9]*|heimdal-libs-[1-9]*|mingw-w64-x86_64-curl-pdb-[1-9]*|mingw-w64-x86_64-git-pdb-[1-9]*|mingw-w64-x86_64-openssl-pdb-[1-9]*)
 				# extra package's source included elsewhere
 				continue
 				;;
