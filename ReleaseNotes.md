@@ -43,6 +43,10 @@ This package contains software from a number of other projects including Bash, z
 * When using GNU nano as Git's default editor, [it is now colorful (shows syntax-highlighting)](https://github.com/git-for-windows/build-extra/pull/169).
 * Comes with [tig v2.3.3](https://github.com/jonas/tig/releases/tag/tig-2.3.3).
 
+### Bug Fixes
+
+* When Git spawns processes, [now only the necessary file handles are inherited from the parent process](https://github.com/git-for-windows/git/commit/576ff26eeca22526b7ba11444da24d31daf0b369), possibly preventing file locking issues.
+
 ## Changes since Git for Windows v2.16.0(2) (January 18th 2018)
 
 This is a hotfix release, based on upstream Git's hotfix to address a possible segmentation fault associated with case-insensitive file systems.
