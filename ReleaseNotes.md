@@ -47,6 +47,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * When Git spawns processes, [now only the necessary file handles are inherited from the parent process](https://github.com/git-for-windows/git/commit/576ff26eeca22526b7ba11444da24d31daf0b369), possibly preventing file locking issues.
+* The `git update` command [has been renamed to `git update-git-for-windows`](https://github.com/git-for-windows/build-extra/pull/167) to avoid confusion where users may think that `git update` updates their local repository or worktree.
 
 ## Changes since Git for Windows v2.16.0(2) (January 18th 2018)
 
