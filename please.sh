@@ -2559,7 +2559,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		 then
 			MINGW_INSTALLS=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-				'makepkg-mingw --nobuild -s' &&
+				'makepkg-mingw --nobuild -s --noconfirm' &&
 			git checkout HEAD -- PKGBUILD &&
 			git update-index -q --refresh &&
 			if ! git diff-files --quiet -- git-extra.install
@@ -2785,7 +2785,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		 then
 			MINGW_INSTALLS=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-				'makepkg-mingw --nobuild -s'
+				'makepkg-mingw --nobuild -s --noconfirm'
 		 fi &&
 		 git stash &&
 		 url=https://github.com/git-for-windows/busybox-w32 &&
@@ -2818,7 +2818,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 
 		 MINGW_INSTALLS=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'makepkg-mingw --nobuild -s' &&
+			'makepkg-mingw --nobuild -s --noconfirm' &&
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
 		 git commit -s -m "busybox: upgrade to $version" PKGBUILD &&
 		 url=$url/commit/${version##*.} &&
@@ -2903,7 +2903,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		(cd "$sdk64/$pkgpath" &&
 		 MINGW_INSTALLS=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'makepkg-mingw --nobuild -s' &&
+			'makepkg-mingw --nobuild -s --noconfirm' &&
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
 		 if test "1.0.0.181.9b0663d" != "$version"
 		 then
