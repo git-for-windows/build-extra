@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 * When using GNU nano as Git's default editor, [it is now colorful (shows syntax-highlighting)](https://github.com/git-for-windows/build-extra/pull/169).
 * Comes with [tig v2.3.3](https://github.com/jonas/tig/releases/tag/tig-2.3.3).
 * When using Secure Channel as HTTPS transport behind a proxy, it may be necessary to disable revocation checks, [which is now possible](https://github.com/git-for-windows/git/pull/1450).
+* Comes with [BusyBox v1.28.0pre.16550.0b3cdd76c](https://github.com/git-for-windows/busybox-w32/commit/0b3cdd76c).
 
 ### Bug Fixes
 
