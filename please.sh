@@ -2559,7 +2559,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		 then
 			MINGW_INSTALLS=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-				'makepkg-mingw --nobuild' &&
+				'makepkg-mingw --nobuild -s' &&
 			git checkout HEAD -- PKGBUILD &&
 			git update-index -q --refresh &&
 			if ! git diff-files --quiet -- git-extra.install
@@ -2690,7 +2690,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		 then
 			MSYSTEM=msys PATH="$sdk64/usr/bin:$PATH" \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-				'makepkg -s --noconfirm --nobuild'
+				'makepkg -s --noconfirm --nobuild -s'
 		 fi ||
 		 die "Could not initialize worktree for '%s\n" "$package"
 
@@ -2818,7 +2818,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 
 		 MINGW_INSTALLS=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'makepkg-mingw --nobuild' &&
+			'makepkg-mingw --nobuild -s' &&
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
 		 git commit -s -m "busybox: upgrade to $version" PKGBUILD &&
 		 url=$url/commit/${version##*.} &&
@@ -2903,7 +2903,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		(cd "$sdk64/$pkgpath" &&
 		 MINGW_INSTALLS=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'makepkg-mingw --nobuild' &&
+			'makepkg-mingw --nobuild -s' &&
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
 		 if test "1.0.0.181.9b0663d" != "$version"
 		 then
