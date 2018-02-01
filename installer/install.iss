@@ -2110,11 +2110,17 @@ begin
     }
 
     Cmd:=AppDir+'\post-install.bat';
-    if not Exec(Cmd,ExpandConstant('>"{tmp}\post-install.log"'),AppDir,SW_HIDE,ewWaitUntilTerminated,i) or (i<>0) then begin
-        if FileExists(ExpandConstant('>"{tmp}\post-install.log"')) then
-            LogError('Line {#__LINE__}: Unable to run post-install scripts:'+#13+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')))
+    Log('Line {#__LINE__}: Executing '+Cmd);
+    if (not Exec(Cmd,ExpandConstant('>"{tmp}\post-install.log"'),AppDir,SW_HIDE,ewWaitUntilTerminated,i) or (i<>0)) and FileExists(Cmd) then begin
+        if FileExists(ExpandConstant('{tmp}\post-install.log')) then
+            LogError('Line {#__LINE__}: Unable to run post-install scripts:'+#13+#10+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')))
 	else
-	    Log('post-install output:'+#13+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')));
+            LogError('Line {#__LINE__}: Unable to run post-install scripts; no output?');
+    end else begin
+        if FileExists(ExpandConstant('{tmp}\post-install.log')) then
+            Log('Line {#__LINE__}: post-install scripts run successfully:'+#13+#10+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')))
+	else
+            LogError('Line {#__LINE__}: Unable to run post-install scripts; no error, no output?');
     end;
 
     {
