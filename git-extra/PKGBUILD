@@ -42,6 +42,7 @@ source=('inputrc'
         'astextplain'
         'git-sdk.sh'
         'git-update-git-for-windows'
+        'git-update'
         'blocked-file-util.c'
         'zzz_rm_stackdumps.sh'
         'proxy-lookup.c')
@@ -116,5 +117,6 @@ package() {
   install -m644 99-post-install-cleanup.post $pkgdir/etc/post-install
   install -m755 astextplain $pkgdir/usr/bin
   install -m755 git-update-git-for-windows $pkgdir${MINGW_PREFIX}/libexec/git-core
+  install -m755 git-update $pkgdir${MINGW_PREFIX}/libexec/git-core
   install -m755 zzz_rm_stackdumps.sh $pkgdir/usr/share/makepkg/lint_package
 }
