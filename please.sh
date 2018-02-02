@@ -3156,7 +3156,9 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	die "build-extra is not up-to-date\n"
 
 	update git &&
-	(cd "$sdk64/$pkgpath"/src/git/.git &&
+	git_src_dir="$sdk64/$pkgpath"/src/git &&
+	require_git_src_dir &&
+	(cd "$git_src_dir"/.git &&
 	 require_remote upstream https://github.com/git/git &&
 	 require_remote git-for-windows \
 		https://github.com/git-for-windows/git) &&
