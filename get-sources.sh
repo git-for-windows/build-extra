@@ -256,6 +256,7 @@ do
 		esac
 
 		echo "Downloading $url"
+		test -s "$dir/$filename" ||
 		curl -sfLo "$dir/$filename" "$url" ||
 		curl -sfLo "$dir/$filename" "$sf1_url" ||
 		curl -sfLo "$dir/$filename" "$sf2_url" ||
