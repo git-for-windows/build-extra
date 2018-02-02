@@ -509,7 +509,7 @@ pkg_build () {
 					'"$extra_makepkg_opts"' &&
 			 if test mingw-w64-git = "'"$package"'"
 			 then
-				git -C src/git push "$PWD/../../git" \
+				git -C src/git push "$PWD/git" \
 					refs/tags/"'"$tag"'"
 			 fi &&
 			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
