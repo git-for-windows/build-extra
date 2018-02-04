@@ -77,7 +77,7 @@ req () {
 		;;
 	lock)
 		file="$2"
-		content_length="$(get_remote_file_length "$file")"
+		content_length=0
 		resource_extra=/"${file##*/}"
 
 		request_method="PUT"
@@ -90,7 +90,7 @@ req () {
 	unlock)
 		lease_id="$2"
 		file="$3"
-		content_length="$(get_remote_file_length "$file")"
+		content_length=0
 		resource_extra=/"${file##*/}"
 
 		request_method="PUT"
@@ -123,7 +123,7 @@ req () {
 	canonicalized_headers="${x_ms_blob_type:+$x_ms_blob_type\n}$x_ms_date_h\n${x_ms_lease_action:+$x_ms_lease_action\n}${x_ms_lease_duration:+$x_ms_lease_duration\n}${x_ms_lease_id:+$x_ms_lease_id\n}$x_ms_version_h"
 	canonicalized_resource="/$storage_account/$container_name$resource_extra"
 
-	string_to_sign="$request_method\n\n\n$content_length\n\n$content_type\n\n\n\n\n\n\n$canonicalized_headers\n$canonicalized_resource$string_to_sign_extra"
+	string_to_sign="$request_method\n\n\n${content_length#0}\n\n$content_type\n\n\n\n\n\n\n$canonicalized_headers\n$canonicalized_resource$string_to_sign_extra"
 
 	# Decode the Base64 encoded access key, convert to Hex.
 	decoded_hex_key="$(printf %s "$access_key" | base64 -d -w0 | xxd -p -c256)"
