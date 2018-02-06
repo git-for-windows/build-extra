@@ -204,7 +204,7 @@ upload () { # <package> <version> <arch> <filename>
 	}
 
 	case "$1" in
-	package-database) action=upload-with-lease;;
+	disabled-for-now-package-database) action=upload-with-lease;;
 	*) action=upload;;
 	esac
 
