@@ -28,7 +28,7 @@ mingw_source_url=http://repo.msys2.org/mingw/sources
 sf_repos_url=http://sourceforge.net/projects/msys2/files/REPOS
 msys_sf_source_url=$sf_repos_url/MSYS2/Sources
 mingw_sf_source_url=$sf_repos_url/MINGW/Sources
-bintray_source_url=https://dl.bintray.com/git-for-windows/pacman/sources
+azure_blobs_source_url=https://wingit.blob.core.windows.net/sources
 
 cd "$(dirname "$0")" ||
 die "Could not change directory to build-extra/"
@@ -198,7 +198,7 @@ do
 
 		case "$name" in
 		git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|msys2-runtime|mingw-w64-x86_64-git-credential-manager|mingw-w64-i686-git-credential-manager|mingw-w64-i686-git-lfs|mingw-w64-x86_64-git-lfs|curl|mingw-w64-i686-curl|mingw-w64-x86_64-curl|mingw-w64-i686-wintoast|mingw-w64-x86_64-wintoast|bash|heimdal|perl)
-			url="$bintray_source_url/$filename"
+			url="$azure_blobs_source_url/$filename"
 			sf1_url=
 			sf2_url=
 			sf3_url=
@@ -207,7 +207,7 @@ do
 			url=$mingw_source_url/$filename
 			sf1_url=$mingw_sf_source_url/$filename/download
 			sf2_url=$mingw_sf_source_url/$name-$version.src.tar.gz/download
-			sf3_url="$bintray_source_url/$filename"
+			sf3_url="$azure_blobs_source_url/$filename"
 			;;
 		*)
 			if test crypt != $name &&
@@ -250,7 +250,7 @@ do
 
 			url="$msys_source_url/$filename"
 			sf1_url="$msys_sf_source_url/$filename/download"
-			sf2_url="$bintray_source_url/$filename"
+			sf2_url="$azure_blobs_source_url/$filename"
 			sf3_url=
 			;;
 		esac
