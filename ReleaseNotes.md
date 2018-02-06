@@ -40,6 +40,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [perl-Net-SSLeay v1.84](https://metacpan.org/source/MIKEM/Net-SSLeay-1.84/Changes).
 * Git for Windows' SDK packages [are now hosted on Azure Blobs](https://github.com/git-for-windows/build-extra/commit/53695c41ec95f49c191b7792eee6fc8d91846ed8), fixing part of [issue #1479](https://github.com/git-for-windows/git/issues/1479).
 
+### Bug Fixes
+
+* When `http.sslBackend` is not configured (e.g. in portable Git or MinGit), fetch/push operations [no longer crash](https://github.com/git-for-windows/git/issues/1474).
+
 ## Changes since Git for Windows v2.16.1 (January 22nd 2018)
 
 ### New Features
