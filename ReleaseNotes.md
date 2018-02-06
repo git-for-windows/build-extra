@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 * When `http.sslBackend` is not configured (e.g. in portable Git or MinGit), fetch/push operations [no longer crash](https://github.com/git-for-windows/git/issues/1474).
 * On Windows 7 and older, Git for Windows v2.16.1(2) was no longer able to spawn any processes (e.g. during fetch/clone). This regression [has been fixed](https://github.com/git-for-windows/git/issues/1475).
+* The Perl upgrade in v2.16.1(2) broke `git send-email`; This [has been fixed](https://github.com/git-for-windows/git/issues/1480) by updating the Net-SSLeay Perl module.
 
 ## Changes since Git for Windows v2.16.1 (January 22nd 2018)
 
