@@ -97,21 +97,39 @@ GITATTRIBUTES
 	grep -q '^# Fixup git-bash in non login env' /etc/bash.bashrc ||
 	printf "\n# Fixup git-bash in non login env\nshopt -q login_shell || . /etc/profile.d/git-prompt.sh\n" >> /etc/bash.bashrc
 
+	uname_m="$(uname -m)"
+	case "$uname_m" in
+	i686)
+		arch=i686
+		otherarch=x86-64
+		otherpacman=git-for-windows-mingw64
+		;;
+	x86_64)
+		arch=x86-64
+		otherarch=i686
+		otherpacman=git-for-windows-mingw32
+		;;
+	esac
+
 	grep -q git-for-windows[^-] etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://dl.bintray.com/$repo/pacman/$arch\n' etc/pacman.conf
+	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://wingit.blob.core.windows.net/'$arch'\n' etc/pacman.conf
 
 	! grep -A2 git-for-windows[^-] etc/pacman.conf |
 	grep -q '^SigLevel = Optional' ||
 	sed -i -e '/\[git-for-windows\]/{N;N;s/\nSigLevel = Optional//}' \
 		etc/pacman.conf
 
-	uname_m="$(uname -m)"
-	test i686 = "$uname_m" ||
-	grep -q git-for-windows-mingw32 etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i[git-for-windows-mingw32]\nServer = https://dl.bintray.com/git-for-windows/pacman/i686\n' etc/pacman.conf
-	test x86_64 = "$uname_m" ||
-	grep -q git-for-windows-mingw64 etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i[git-for-windows-mingw64]\nServer = https://dl.bintray.com/git-for-windows/pacman/x86_64\n' etc/pacman.conf
+	grep -q "$otherpacman" etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i['$otherpacman']\nServer = https://wingit.blob.core.windows.net/'$otherarch'\n' etc/pacman.conf
+
+	! grep -q 'https://dl.bintray.com/\$repo/pacman/\$arch' etc/pacman.conf ||
+	sed -i -e 's/https:\/\/dl\.bintray\.com\/\$repo\/pacman\/\$arch/https:\/\/wingit.blob.core.windows.net\/'$arch'/g' etc/pacman.conf
+
+	! grep -q 'https://dl.bintray.com/git-for-windows/pacman/i686' etc/pacman.conf ||
+	sed -i -e 's/https:\/\/dl\.bintray\.com\/git-for-windows\/pacman\/i686/https:\/\/wingit.blob.core.windows.net\/i686/g' etc/pacman.conf
+
+	! grep -q 'https://dl.bintray.com/git-for-windows/pacman/x86_64' etc/pacman.conf ||
+	sed -i -e 's/https:\/\/dl\.bintray\.com\/git-for-windows\/pacman\/x86_64/https:\/\/wingit.blob.core.windows.net\/x86-64/g' etc/pacman.conf
 
 	test i686 != $"uname -m" ||
 	case "$(md5sum.exe < /msys2.ico)" in

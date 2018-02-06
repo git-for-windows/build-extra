@@ -38,11 +38,11 @@ export CURL_CA_BUNDLE
 
 mode=
 case "$1" in
-fetch|add|remove|push|files|dirs|orphans|push_missing_signatures)
+fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists)
 	mode="$1"
 	shift
 	;;
-upload|publish|delete_version)
+upload)
 	test -n "$IKNOWWHATIMDOING" ||
 	die "You need to switch to expert mode to do that"
 
@@ -56,16 +56,27 @@ upload|publish|delete_version)
 	;;
 esac
 
-base_url=https://dl.bintray.com/git-for-windows/pacman
-api_url=https://api.bintray.com
-content_url=$api_url/content/git-for-windows/pacman
-packages_url=$api_url/packages/git-for-windows/pacman
+this_script_dir="$(cygpath -am "${0%/*}")"
+base_url=https://wingit.blob.core.windows.net
 mirror=/var/local/pacman-mirror
+azure_blobs_token=
 
 architectures="i686 x86_64"
 
 arch_dir () { # <architecture>
 	echo "$mirror/$1"
+}
+
+map_arch () { # <architecture>
+	# Azure Blobs does not allow underlines, but dashes in container names
+	case "$1" in
+	x86_64) echo "x86-64";;
+	*) echo "$1";;
+	esac
+}
+
+arch_url () { # <architecture>
+	echo "$base_url/$(map_arch $1)"
 }
 
 arch_to_mingw () { # <arch>
@@ -80,7 +91,7 @@ arch_to_mingw () { # <arch>
 fetch () {
 	for arch in $architectures
 	do
-		arch_url=$base_url/$arch
+		arch_url=$(arch_url $arch)
 		dir="$(arch_dir $arch)"
 		mkdir -p "$dir"
 		(cd "$dir" &&
@@ -142,11 +153,11 @@ fetch () {
 			esac
 			test -f $filename ||
 			curl --cacert /usr/ssl/certs/ca-bundle.crt \
-				-sfLO $base_url/$arch/$filename ||
+				-sfLO $(arch_url $arch)/$filename ||
 			die "Could not get $filename"
 			test -f $filename.sig ||
 			curl --cacert /usr/ssl/certs/ca-bundle.crt \
-				-sfLO $base_url/$arch/$filename.sig ||
+				-sfLO $(arch_url $arch)/$filename.sig ||
 			die "Could not get $filename.sig"
 			test x86_64 = "$arch" || continue
 
@@ -181,91 +192,30 @@ fetch () {
 }
 
 upload () { # <package> <version> <arch> <filename>
+	test -n "$azure_blobs_token" || {
+		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
+		test -n "$azure_blobs_token" ||
+		die "Could not read token from ~/.azure-blobs-token"
+	}
+
 	test -z "$PACMANDRYRUN" || {
-		echo "upload: curl --netrc -fT $4 $content_url/$1/$2/$3/$4"
+		echo "upload: wingit-snapshot-helper.sh wingit $(map_arch $3) <token> upload $4"
 		return
 	}
+
+	case "$1" in
+	disabled-for-now-package-database) action=upload-with-lease;;
+	*) action=upload;;
+	esac
+
 	echo "Uploading $1..." >&2
-	curl --netrc -m 1800 --connect-timeout 300 \
-		-fT "$4" "$content_url/$1/$2/$3/$4" ||
-	curl --netrc -m 1800 --connect-timeout 300 \
-		-fT "$4" "$content_url/$1/$2/$3/$4" ||
-	curl --netrc -m 1800 --connect-timeout 300 \
-		-fT "$4" "$content_url/$1/$2/$3/$4" ||
-	curl --netrc -m 1800 --connect-timeout 300 \
-		-fT "$4" "$content_url/$1/$2/$3/$4" ||
-	die "Could not upload $4 to $1/$2/$3"
-}
-
-publish () { # <package> <version>
-	test -z "$PACMANDRYRUN" || {
-		echo "publish: curl --netrc -fX POST $content_url/$1/$2/publish"
-		return
-	}
-	curl --netrc --connect-timeout 300 --max-time 1800 \
-		--expect100-timeout 300 --speed-time 300 \
-		-fX POST "$content_url/$1/$2/publish" ||
-	while test $? = 7
-	do
-		echo "Timed out connecting to host, retrying in 5" >&2
-		sleep 5
-		curl --netrc --connect-timeout 300 --max-time 1800 \
-			--expect100-timeout 300 --speed-time 300 \
-			-fX POST "$content_url/$1/$2/publish"
-	done ||
-	die "Could not publish $2 in $1 (exit code $?)"
-}
-
-
-delete_version () { # <package> <version>
-	test -z "$PACMANDRYRUN" || {
-		echo "delete: curl --netrc -fX DELETE $packages_url/$1/versions/$2"
-		return
-	}
-	curl --netrc -fX DELETE "$packages_url/$1/versions/$2" ||
-	curl --netrc -fX DELETE "$packages_url/$1/versions/$2" ||
-	curl --netrc -fX DELETE "$packages_url/$1/versions/$2" ||
-	curl --netrc -fX DELETE "$packages_url/$1/versions/$2" ||
-	die "Could not delete version $2 of $1"
+	"$this_script_dir"/wingit-snapshot-helper.sh wingit $(map_arch $3) "$azure_blobs_token" $action $4 ||
+	die "Could not upload $4 to $(map_arch $3)"
 }
 
 package_list () { # db.tar.xz
 	tar tf "$1" |
 	sed -n 's/\/$//p'
-}
-
-package_exists () { # package-name
-	case "$(curl --netrc -s "$packages_url/$1")" in
-	*\"name\":\""$1"\"*)
-		return 0
-		;;
-	*)
-		echo "Package $1 does not yet exist" >&2
-		return 1
-		;;
-	esac
-}
-
-db_version () {
-	json="$(curl --netrc -s \
-		"$packages_url/package-database/versions/_latest")"
-	latest="$(expr "$json" : '.*"name":"\([^"]*\)".*')"
-	test -n "$latest" ||
-	die "Could not determine latest version"
-
-	echo "$latest"
-}
-
-next_db_version () { # old version
-	today="$(date -u +%Y-%m-%d)"
-	case "$1" in
-	$today-*)
-		echo $today-$((${1##*-}+1))
-		;;
-	*)
-		echo $today-1
-		;;
-	esac
 }
 
 add () { # <file>
@@ -365,12 +315,6 @@ update_local_package_databases () {
 }
 
 push_next_db_version () {
-	db_version="$1"
-	next_db_version="$(next_db_version "$db_version")"
-
-	test -z "$db_version" ||
-	delete_version package-database "$db_version"
-
 	for arch in $architectures
 	do
 		(cd "$(arch_dir $arch)" &&
@@ -387,73 +331,59 @@ push_next_db_version () {
 		 done
 		 for filename in $files
 		 do
-			upload package-database $next_db_version $arch $filename
+			upload package-database - $arch $filename
 		 done
 		) || exit
 	done
-	publish package-database $next_db_version
 }
 
 push () {
-	db_version="$(db_version)"
-	if test -z "$db_version"
-	then
-		to_upload=
-	else
-		update_local_package_databases
-		for arch in $architectures
+	test -n "$azure_blobs_token" || {
+		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
+		test -n "$azure_blobs_token" ||
+		die "Could not read token from ~/.azure-blobs-token"
+	}
+
+	update_local_package_databases
+	for arch in $architectures
+	do
+		arch_url=$(arch_url $arch)
+		dir="$(arch_dir $arch)"
+		mkdir -p "$dir"
+		(cd "$dir" &&
+		 echo "Getting $arch_url/git-for-windows.db.tar.xz" &&
+		 curl -Lfo .remote $arch_url/git-for-windows.db.tar.xz
+		) ||
+		die "Could not get remote index for $arch"
+	done
+
+	old_list="$((for arch in $architectures
 		do
-			arch_url=$base_url/$arch
 			dir="$(arch_dir $arch)"
-			mkdir -p "$dir"
-			(cd "$dir" &&
-			 echo "Getting $arch_url/git-for-windows.db.tar.xz" &&
-			 curl -Lfo .remote $arch_url/git-for-windows.db.tar.xz
-			) ||
-			die "Could not get remote index for $arch"
-		done
+			test -s "$dir/.remote" &&
+			package_list "$dir/.remote"
+		done) |
+		sort | uniq)"
+	new_list="$((for arch in $architectures
+		do
+			dir="$(arch_dir $arch)"
+			package_list "$dir/git-for-windows.db.tar.xz"
+		done) |
+		sort | uniq)"
 
-		old_list="$((for arch in $architectures
-			do
-				dir="$(arch_dir $arch)"
-				test -s "$dir/.remote" &&
-				package_list "$dir/.remote"
-			done) |
-			sort | uniq)"
-		new_list="$((for arch in $architectures
-			do
-				dir="$(arch_dir $arch)"
-				package_list "$dir/git-for-windows.db.tar.xz"
-			done) |
-			sort | uniq)"
+	to_upload="$(printf "%s\n%s\n%s\n" \
+			"$old_list" "$old_list" "$new_list" |
+		sort | uniq -u)"
 
-		to_upload="$(printf "%s\n%s\n%s\n" \
-				"$old_list" "$old_list" "$new_list" |
-			sort | uniq -u)"
-
-		test -n "$to_upload" || test "x$old_list" != "x$new_list" || {
-			echo "Nothing to be done" >&2
-			return
-		}
-	fi
+	test -n "$to_upload" || test "x$old_list" != "x$new_list" || {
+		echo "Nothing to be done" >&2
+		return
+	}
 
 	test -z "$to_upload" || {
 		to_upload_basenames="$(echo "$to_upload" |
 			sed 's/-[0-9].*//' |
 			sort | uniq)"
-
-		# Verify that the packages exist already
-		for basename in $to_upload_basenames
-		do
-			case " $(echo "$old_list" | tr '\n' ' ')" in
-			*" $basename"-[0-9]*)
-				;;
-			*)
-				package_exists $basename ||
-				die "The package $basename does not yet exist... Add it at https://bintray.com/git-for-windows/pacman/new/package?pkgPath="
-				;;
-			esac
-		done
 
 		for name in $to_upload
 		do
@@ -495,15 +425,14 @@ push () {
 						$filename.sig
 				fi) || exit
 			done
-			publish $basename $version
 		done
 	}
 
-	push_next_db_version "$db_version"
+	push_next_db_version
 }
 
 file_exists () { # arch filename
-	curl -sfI "$base_url/$1/$2" >/dev/null
+	curl -sfI "$(arch_url $1)/$2" >/dev/null
 }
 
 push_missing_signatures () {
@@ -513,8 +442,6 @@ push_missing_signatures () {
 			package_list "$dir/git-for-windows.db.tar.xz"
 		done) |
 		sort | uniq)"
-
-	db_version="$(db_version)"
 
 	signopt=
 	test -z "$GPGKEY" || signopt=--sign
@@ -571,11 +498,6 @@ push_missing_signatures () {
 			 upload $basename $version $arch $filename.sig) || exit
 			count=$(($count+1))
 		done
-		test $count = 0 || {
-			echo "Re-publishing $basename $version" &&
-			publish $basename $version
-		} ||
-		die "Could not re-publish $basename $version"
 	done
 
 	count=0
@@ -659,14 +581,13 @@ push_missing_signatures () {
 			fi
 			(cd "$dir" &&
 			 echo "Uploading missing $arch/$filename.sig" &&
-			 upload package-database $db_version $arch \
-				$filename.sig) || exit
+			 upload package-database - $arch $filename.sig) || exit
 			count=$(($count+1))
 		done || exit
 	done
 
 	test 0 = $count ||
-	push_next_db_version "$db_version" ||
+	push_next_db_version ||
 	die "Could not push next db_version"
 }
 
