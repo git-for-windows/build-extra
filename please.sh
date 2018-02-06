@@ -2337,8 +2337,8 @@ upload () { # <package>
 
 	set_package "$1"
 
-	grep -q '^machine api\.bintray\.com$' "$HOME"/_netrc ||
-	die "Missing BinTray entries in ~/_netrc\n"
+	test -s "$HOME"/.azure-blobs-token ||
+	die "Missing token in ~/.azure-blobs-token\n"
 
 	(cd "$sdk64/$pkgpath" &&
 	 require_push_url origin) || exit
@@ -2492,8 +2492,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 	test -n "$GPGKEY" ||
 	die "Need GPGKEY to upload packages\n"
 
-	grep -q '^machine api\.bintray\.com$' "$HOME"/_netrc ||
-	die "Missing BinTray entries in ~/_netrc\n"
+	test -s "$HOME"/.azure-blobs-token ||
+	die "Missing token in ~/.azure-blobs-token\n"
 
 	set_package "$1"
 
