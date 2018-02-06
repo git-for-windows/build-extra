@@ -2187,14 +2187,18 @@ test_git () { # <bitness>
 		-c "cd \"\$(cygpath -au .)\" && GIT_TEST_INSTALLED=/mingw$1/bin/ prove --timer --jobs 5 ./t[0-9]*.sh")
 }
 
-pkg_files () {
-	pkgver="$(sed -ne \
+version_from_pkgbuild () { # <PKGBUILD>
+	sed -ne \
 		'/^_basever=/{N;N;s/.*=\([0-9].*\)\n.*\npkgrel=\(.*\)/\1-\2/p}' \
 		-e '/^_ver=/{N;N;N;s/.*=\([.0-9]*\)\([a-z][a-z]*\)\n.*\n.*\npkgrel=\(.*\)/\1.\2-\3/p}' \
 		-e '/^pkgver=/{N;s/.*=\([0-9].*\)\npkgrel=\(.*\).*/\1-\2/p;N;s/.*=\([0-9].*\)\n.*\npkgrel=\(.*\).*/\1-\2/p}' \
 		-e '/^pkgver=/{N;N;s/[^=]*=\([0-9].*\)\npkgrel=\([0-9]*\).*/\1-\2/p}' \
 		-e '/^_basever=/{N;s/^_basever=\([0-9].*\)\n_patchlevel=\([0-9]*\) .*\n.*\npkgrel=\([0-9]*\).*/\1.\2-\3/p}' \
-		<PKGBUILD)"
+		<"$1"
+}
+
+pkg_files () {
+	pkgver="$(version_from_pkgbuild PKGBUILD)"
 	test -n "$pkgver" ||
 	die "%s: could not determine pkgver\n" "$sdk/$pkgpath"
 
