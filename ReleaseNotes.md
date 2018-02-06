@@ -37,8 +37,8 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [perl-Net-SSLeay v1.84](https://metacpan.org/source/MIKEM/Net-SSLeay-1.84/Changes).
 * Git for Windows' SDK packages [are now hosted on Azure Blobs](https://github.com/git-for-windows/build-extra/commit/53695c41ec95f49c191b7792eee6fc8d91846ed8), fixing part of [issue #1479](https://github.com/git-for-windows/git/issues/1479).
+* Comes with [perl-Net-SSLeay v1.84](https://metacpan.org/source/MIKEM/Net-SSLeay-1.84/Changes).
 
 ### Bug Fixes
 
