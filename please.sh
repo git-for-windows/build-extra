@@ -381,6 +381,10 @@ set_package () {
 		pkgpath=/usr/src/MSYS2-packages/$package
 		extra_makepkg_opts=--nocheck
 		;;
+	perl-Net-SSLeay)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	tig)
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
@@ -2988,6 +2992,26 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 
 		url=http://search.cpan.org/dist/perl-$ver/pod/perldelta.pod &&
 		relnotes_feature='Comes with [Perl v'$ver']('"$url"').'
+		;;
+	perl-Net-SSLeay)
+		meta="$(curl -s https://metacpan.org/release/Net-SSLeay)" ||
+		die "Could not download release notes for $package\n"
+
+		ver="$(echo "$meta" | sed -n \
+			's/.*<option selected value="\/release\/MIKEM\/Net-SSLeay-\([0-9.]*\)".*/\1/p')"
+		test -n "$ver" ||
+		die "Could not determine latest $package version\n"
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$ver/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: new version ($ver)" PKGBUILD) ||
+		exit
+
+		url=https://metacpan.org/source/MIKEM/Net-SSLeay-$ver/Changes &&
+		relnotes_feature="Comes with [$package v$ver]($url)."
 		;;
 	tig)
 		repo=jonas/tig
