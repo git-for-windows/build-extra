@@ -3507,6 +3507,9 @@ virus_check () { #
 publish () { #
 	set_version_from_sdks_git
 
+	git_pkgver="$("$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		'pacman -Q mingw-w64-x86_64-git | sed "s/.* //"')"
+
 	needs_upload_permissions || exit
 
 	grep -q '<apikeys>' "$HOME"/AppData/Roaming/NuGet/NuGet.Config ||
@@ -3558,7 +3561,9 @@ publish () { #
 			MinGit-"$ver"-busybox-64-bit.zip \
 			MinGit-"$ver"-busybox-32-bit.zip \
 			Git-"$ver"-64-bit.tar.bz2 \
-			Git-"$ver"-32-bit.tar.bz2) |
+			Git-"$ver"-32-bit.tar.bz2 \
+			pdbs-for-git-32-bit-$git_pkgver.zip \
+			pdbs-for-git-64-bit-$git_pkgver.zip) |
 		sed -n 's/\([^ ]*\) \*\(.*\)/\2 | \1/p')"
 	body="$(printf "%s\n\n%s" "$text" "$checksums")"
 	quoted="$(echo "$body" |
@@ -3575,7 +3580,9 @@ publish () { #
 		"$HOME"/MinGit-"$ver"-busybox-64-bit.zip \
 		"$HOME"/MinGit-"$ver"-busybox-32-bit.zip \
 		"$HOME"/Git-"$ver"-64-bit.tar.bz2 \
-		"$HOME"/Git-"$ver"-32-bit.tar.bz2 ||
+		"$HOME"/Git-"$ver"-32-bit.tar.bz2 \
+		"$HOME"/pdbs-for-git-32-bit-$git_pkgver.zip \
+		"$HOME"/pdbs-for-git-64-bit-$git_pkgver.zip ||
 	die "Could not upload files\n"
 
 	for nupkg in GitForWindows Git-Windows-Minimal
