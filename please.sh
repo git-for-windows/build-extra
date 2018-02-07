@@ -3316,7 +3316,7 @@ release () { # [--directory=<artifacts-directory>]
 		'pacman -S --noconfirm git-extra'
 	cmp "$sdk64"/mingw64/bin/git-receive-pack.exe \
 		"$sdk64"/mingw64/bin/git.exe 2>/dev/null &&
-	"$sdk75/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+	"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 		'pacman -S --noconfirm git-extra'
 
 	echo "Releasing Git for Windows $displayver" >&2
