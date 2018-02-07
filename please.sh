@@ -3283,9 +3283,23 @@ sign_files () {
 	fi
 }
 
-bundle_pdbs () { # [<package-versions>]
+bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 	packages="mingw-w64-git-pdb mingw-w64-curl-pdb mingw-w64-openssl-pdb
 		msys2-runtime-devel bash-devel"
+
+	case "$1" in
+	--directory=*)
+		artifactsdir="$(cygpath -am "${1#*=}")" || exit
+		shift
+		test -d "$artifactsdir" ||
+		mkdir "$artifactsdir" ||
+		die "Could not create artifacts directory: %s\n" "$artifactsdir"
+		;;
+	*)
+		artifactsdir="$(cygpath -am "$HOME")" || exit
+		;;
+	esac
+
 	versions="$(case $# in 0) pacman -Q;; 1) cat "$1";; esac |
 		sed 's/^\(mingw-w64\)\(-[^-]*\)/\1/')"
 	test -n "$versions" ||
@@ -3349,8 +3363,8 @@ bundle_pdbs () { # [<package-versions>]
 
 		zip=pdbs-for-git-$bitness-$git_version.zip &&
 		echo "Bundling .pdb files for $bitness..." >&2
-		(cd "$unpack" && zip -9qr ../../$zip *) &&
-		echo "Created $zip" >&2 ||
+		(cd "$unpack" && zip -9qr "$artifactsdir/$zip" *) &&
+		echo "Created $artifactsdir/$zip" >&2 ||
 		die 'Could not create %s for %s\n' "$zip" "$arch"
 	done
 }
@@ -3465,6 +3479,11 @@ release () { # [--directory=<artifacts-directory>]
 			Git-Windows-Minimal.$ver.nupkg \
 			"$artifactsdir/") ||
 		die "Could not copy artifacts to '%s'\n" "$artifactsdir"
+
+		(cd "$sdk64/usr/src/build-extra" &&
+		 bundle_pdbs --directory="$artifactsdir" \
+			installer/package-versions.txt) ||
+		die 'Could not generate .pdb bundles\n'
 	fi
 }
 
