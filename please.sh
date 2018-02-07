@@ -3283,6 +3283,78 @@ sign_files () {
 	fi
 }
 
+bundle_pdbs () { # [<package-versions>]
+	packages="mingw-w64-git-pdb mingw-w64-curl-pdb mingw-w64-openssl-pdb
+		msys2-runtime-devel bash-devel"
+	versions="$(case $# in 0) pacman -Q;; 1) cat "$1";; esac |
+		sed 's/^\(mingw-w64\)\(-[^-]*\)/\1/')"
+	test -n "$versions" ||
+	die 'Could not obtain package versions\n'
+
+	git_version="$(echo "$versions" | sed -n 's/^mingw-w64-git //p')"
+
+	dir=cached-source-packages
+	unpack=$dir/.unpack
+	url=https://wingit.blob.core.windows.net
+
+	for arch in i686 x86_64
+	do
+		test i686 = $arch &&
+		bitness=32-bit ||
+		bitness=64-bit
+
+		echo "Unpacking .pdb files for $bitness..." >&2
+
+		test x86_64 = $arch &&
+		oarch=x86-64 ||
+		oarch=$arch
+
+		test ! -d $unpack ||
+		rm -rf $unpack ||
+		die 'Could not remove %s\n' "$unpack"
+
+		mkdir -p $unpack
+
+		for package in $packages
+		do
+			name=${package%-*}
+			version=$(echo "$versions" | sed -n "s/^$name //p")
+			case "$package" in
+			mingw-w64-*)
+				tar=mingw-w64-$arch-${package#mingw-w64-}-$version-any.pkg.tar.xz
+				dir2="$sdk64/usr/src/MINGW-packages/$name"
+				;;
+			*)
+				tar=$package-$version-$arch.pkg.tar.xz
+				test i686 = $arch &&
+				dir2="$sdk32/usr/src/MSYS2-packages/$name" ||
+				dir2="$sdk64/usr/src/MSYS2-packages/$name"
+				;;
+			esac
+
+			test -f "$dir/$tar" ||
+			if test -f "$dir2/$tar"
+			then
+				cp "$dir2/$tar" "$dir/$tar"
+			else
+				echo "Retrieving $tar..." >&2
+				curl -sfo "$dir/$tar" $url/$oarch/$tar
+			fi ||
+			die 'Could not retrieve %s\n' "$tar"
+
+			(cd "$unpack" &&
+			 tar --wildcards -xf ../"$tar" \*.pdb) ||
+			die 'Could not unpack .pdb files from %s\n' "$tar"
+		done
+
+		zip=pdbs-for-git-$bitness-$git_version.zip &&
+		echo "Bundling .pdb files for $bitness..." >&2
+		(cd "$unpack" && zip -9qr ../../$zip *) &&
+		echo "Created $zip" >&2 ||
+		die 'Could not create %s for %s\n' "$zip" "$arch"
+	done
+}
+
 release () { # [--directory=<artifacts-directory>]
 	artifactsdir=
 	while case "$1" in
