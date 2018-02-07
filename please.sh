@@ -309,6 +309,7 @@ set_package () {
 	busybox|mingw-w64-busybox)
 		package=mingw-w64-busybox
 		type=MINGW
+		extra_packages="mingw-w64-busybox-pdb"
 		pkgpath=/usr/src/MINGW-packages/mingw-w64-busybox
 		;;
 	msys2-runtime)
