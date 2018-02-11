@@ -216,11 +216,13 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 
 	# Re-enable at least AES256-cbc and AES128-cbc, as they are still used
 	# e.g. in VSTS
+	test ! -f /etc/ssh/ssh_config ||
 	grep -q '^Ciphers .*aes256-cbc,aes192-cbc' /etc/ssh/ssh_config ||
 	sed -i -e '/^[# ]*Ciphers /{s/^# *//;s/$/,aes256-cbc,aes192-cbc/}' \
 		/etc/ssh/ssh_config
 
 	# Enable color and syntax-highlighting in GNU nano
+	test ! -f /etc/nanorc ||
 	grep -q '^set titlecolor' /etc/nanorc ||
 	sed -i -e '/Paint the interface elements/,/root.s .nanorc/s/^# //' \
 		-e 's/^# \(include .*nanorc"\)$/\1/' /etc/nanorc
