@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * For every new Git for Windows version, `.zip` archives containing `.pdb` files for some of Git for Windows' components [are now published alongside the new version](https://github.com/git-for-windows/build-extra/commit/0af1701ba3329151ae8b21fa43d4f4abca11cc26).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.10.0](https://cygwin.com/ml/cygwin-announce/2018-02/msg00002.html).
+* Comes with [OpenSSH v7.6p1](https://www.openssh.com/txt/release-7.6).
 
 ## Changes since Git for Windows v2.16.1(3) (February 6th 2018)
 
