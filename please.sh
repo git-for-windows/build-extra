@@ -2737,11 +2737,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 			die "Could not rebase '%s' to '%s'\n" "$package" "$tag"
 		 fi
 
-		 msys2_runtime_mtime=$(git log -1 --format=%ct \
-			git-for-windows/master --) &&
-		 msys2_package_mtime=$(git -C ../.. log -1 --format=%ct -- .) &&
-		 test $msys2_runtime_mtime -gt $msys2_package_mtime ||
 		 test -n "$force_pkgrel" ||
+		 case "$(version_from_pkgbuild ../../PKGBUILD)" in
+		 $version-[1-9]*)
+			 msys2_runtime_mtime=$(git log -1 --format=%ct \
+				git-for-windows/master --) &&
+			 msys2_package_mtime=$(git -C ../.. log -1 \
+				--format=%ct -- .) &&
+			 test $msys2_runtime_mtime -gt $msys2_package_mtime
+			 ;;
+		 esac ||
 		 die "Package '%s' already up-to-date\n\t%s: %s\n\t%s: %s\n" \
 			"$package" \
 			"Most recent source code update" \
