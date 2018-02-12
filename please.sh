@@ -3652,7 +3652,7 @@ publish () { #
 		"Dear Git users," \
 		"It is my pleasure to announce that Git for Windows " \
 		"$displayver is available from:" \
-		"https://git-for-windows.github.io/")"
+		"https://gitforwindows.org/")"
 	rendered="$(echo "$text" |
 		"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			'markdown |

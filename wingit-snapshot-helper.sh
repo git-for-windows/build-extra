@@ -159,19 +159,19 @@ html_preamble='<!DOCTYPE html>
 <title>Git for Windows snapshots</title>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <link rel="stylesheet" href="GitForWindows.css">
-<link rel="shortcut icon" href="https://git-for-windows.github.io/favicon.ico">
+<link rel="shortcut icon" href="https://gitforwindows.org/favicon.ico">
 </head>
 <body class="details">
 <div class="links">
 <ul>
-<li><a href="https://git-for-windows.github.io/">homepage</a></li>
+<li><a href="https://gitforwindows.org/">homepage</a></li>
 <li><a href="https://github.com/git-for-windows/git/wiki/FAQ">faq</a></li>
-<li><a href="https://git-for-windows.github.io/#contribute">contribute</a></li>
-<li><a href="https://git-for-windows.github.io/#contribute">bugs</a></li>
+<li><a href="https://gitforwindows.org/#contribute">contribute</a></li>
+<li><a href="https://gitforwindows.org/#contribute">bugs</a></li>
 <li><a href="mailto:git@vger.kernel.org">questions</a></li>
 </ul>
 </div>
-<img src="https://git-for-windows.github.io/img/gwindows_logo.png" alt="Git Logo" style="float: right; width: 170px;"/><div class="content">
+<img src="https://gitforwindows.org/img/gwindows_logo.png" alt="Git Logo" style="float: right; width: 170px;"/><div class="content">
 <h1><center>Git for Windows Snapshots</center></h1>
 
 '

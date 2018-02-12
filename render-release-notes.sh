@@ -59,7 +59,7 @@ die () {
 }
 
 render_release_notes () {
-	(homepage=https://git-for-windows.github.io/ &&
+	(homepage=https://gitforwindows.org/ &&
 		contribute=$homepage#contribute &&
 		wiki=https://github.com/git-for-windows/git/wiki &&
 		faq=$wiki/FAQ &&

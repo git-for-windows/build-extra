@@ -7,13 +7,13 @@
     <authors>@@AUTHOR@@</authors>
     <owners>@@OWNERS@@</owners>
     <licenseUrl>https://github.com/git-for-windows/git/blob/master/COPYING</licenseUrl>
-    <projectUrl>https://git-for-windows.github.io/</projectUrl>
+    <projectUrl>https://gitforwindows.org/</projectUrl>
     <iconUrl>https://avatars2.githubusercontent.com/u/4571183?v=3&amp;s=200</iconUrl>
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>@@DESCRIPTION@@</description>
     <summary>@@SUMMARY@@</summary>
     <releaseNotes>https://github.com/git-for-windows/git/releases/tag/@@VERSIONTAG@@</releaseNotes>
-    <copyright>https://git-for-windows.github.io/governance-model.html</copyright>
+    <copyright>https://gitforwindows.org/governance-model.html</copyright>
     <language />
     <tags>git scm vcs windows light-weight dvcs@@EXTRATAGS@@</tags>
   </metadata>

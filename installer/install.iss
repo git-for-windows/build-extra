@@ -681,7 +681,7 @@ begin
     GetWindowsVersionEx(Version);
     if (Version.Major<6) then begin
         if SuppressibleMsgBox('Git for Windows requires Windows Vista or later.'+#13+'Click "Yes" for more details.',mbError,MB_YESNO,IDNO)=IDYES then
-	    ShellExec('open','https://git-for-windows.github.io/requirements.html','','',SW_SHOW,ewNoWait,ErrorCode);
+	    ShellExec('open','https://gitforwindows.org/requirements.html','','',SW_SHOW,ewNoWait,ErrorCode);
 	Result:=False;
 	Exit;
     end;
