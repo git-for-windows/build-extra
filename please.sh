@@ -390,6 +390,10 @@ set_package () {
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
+	subversion)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
@@ -3050,6 +3054,29 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 
 		url=https://github.com/jonas/tig/releases/tag/tig-$version &&
 		relnotes_feature="Comes with [$package v$version]($url)."
+		;;
+	subversion)
+		url=https://subversion.apache.org/download.cgi
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+
+		version="$(echo "$release" | sed -n \
+		 's/.*<a href="#recommended-release">\([1-9][0-9.]*\)<.*/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: upgrade to v$version" PKGBUILD) ||
+		exit
+
+		url=https://svn.apache.org/repos/asf/subversion/tags/$version &&
+		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
+		relnotes_feature="Comes with [$package $v]($url/CHANGES)."
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
