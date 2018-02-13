@@ -78,8 +78,10 @@ req () {
 		;;
 	lock)
 		extract_lease=t
+		lease_duration=60
 		while case "$2" in
 		--verbose|-v) extract_lease=;;
+		--duration=*) lease_duration=${2#*=};;
 		-*) die "Unknown option: '$2'";;
 		*) break;;
 		esac; do shift; done
@@ -92,7 +94,7 @@ req () {
 		get_parameters="?comp=lease"
 		string_to_sign_extra="\ncomp:lease"
 		x_ms_lease_action="x-ms-lease-action:acquire"
-		x_ms_lease_duration="x-ms-lease-duration:60"
+		x_ms_lease_duration="x-ms-lease-duration:$lease_duration"
 		content_length_header="Content-Length: $content_length"
 		;;
 	unlock)
