@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.10.0](https://cygwin.com/ml/cygwin-announce/2018-02/msg00002.html); This required rebuilding OpenSSH and Perl.
 * Comes with [Bash v4.4 patchlevel 019 ](https://tiswww.case.edu/php/chet/bash/NEWS).
 * Comes with [Perl v5.26.1](http://search.cpan.org/dist/perl-5.26.1/pod/perldelta.pod).
+* Comes with [perl-YAML-Syck v1.30](https://metacpan.org/source/TODDR/YAML-Syck-1.30/Changes).
 
 ## Changes since Git for Windows v2.16.1(3) (February 6th 2018)
 
