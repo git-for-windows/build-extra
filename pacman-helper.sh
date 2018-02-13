@@ -50,8 +50,8 @@ upload)
 	shift
 	;;
 *)
-	die "Usage:\n" \
-		" $0 ( fetch | push | ( add | remove ) <package>... )\n" \
+	die "Usage:\n%s\n%s\n" \
+		" $0 ( fetch | push | ( add | remove ) <package>... )" \
 		" $0 ( files | dirs | orphans )"
 	;;
 esac
