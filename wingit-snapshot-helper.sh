@@ -37,6 +37,7 @@ req () {
 	resource_trailer=
 	get_parameters=
 	string_to_sign_extra=
+	extract_lease=
 	case "$1" in
 	upload)
 		uploading=t
@@ -76,6 +77,13 @@ req () {
 		content_length_header="Content-Length: $content_length"
 		;;
 	lock)
+		extract_lease=t
+		while case "$2" in
+		--verbose|-v) extract_lease=;;
+		-*) die "Unknown option: '$2'";;
+		*) break;;
+		esac; do shift; done
+
 		file="$2"
 		content_length=0
 		resource_extra=/"${file##*/}"
@@ -132,7 +140,7 @@ req () {
 	signature=$(printf "$string_to_sign" | openssl dgst -sha256 -mac HMAC -macopt "hexkey:$decoded_hex_key" -binary |  base64 -w0)
 	authorization_header="Authorization: $authorization $storage_account:$signature"
 
-	{
+	out="$({
 		test -z "$content_type" ||
 		echo "-H \"Content-Type: $content_type\""
 		test -z "$x_ms_blob_type" || echo "-H \"$x_ms_blob_type\""
@@ -149,8 +157,18 @@ req () {
 		test -z "$uploading" || test -z "$file" ||
 		echo "--data-binary \"@$file\""
 	} |
-	curl -i -K - \
-	  "https://$storage_account.$blob_store_url/$container_name$resource_extra$get_parameters"
+	curl -i -f -K - \
+	"https://$storage_account.$blob_store_url/$container_name$resource_extra$get_parameters")" ||
+	die "Failed: $out"
+
+	if test -z "$extract_lease"
+	then
+		echo "$out"
+	else
+		echo "$out" |
+		tr -d '\r' |
+		sed -n 's/x-ms-lease-id: *//p'
+	fi
 }
 
 html_preamble='<!DOCTYPE html>
@@ -219,10 +237,7 @@ add_snapshot () {
 		eval req upload "$f" || die "Could not upload '$f'"
 	done
 
-	response="$(req lock index.html)" || die "Could not lock 'index.html'"
-	lease_id="$(echo "$response" |
-		tr -d '\r' |
-		sed -n 's/x-ms-lease-id: *//p')"
+	lease_id="$(req lock index.html)" || die "Could not lock 'index.html'"
 	test -n "$lease_id" || die "Could not find lease ID in $response"
 
 	urlbase="https://$storage_account.$blob_store_url/$container_name"
@@ -275,7 +290,6 @@ remove)
 	exit $ret
 	;;
 lock)
-	test $# = 1 || die "Can only 'lock' exactly one file"
 	req "$action" "$@"
 	;;
 unlock)
