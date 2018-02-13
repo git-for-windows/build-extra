@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Perl v5.26.1](http://search.cpan.org/dist/perl-5.26.1/pod/perldelta.pod).
 * Comes with [perl-YAML-Syck v1.30](https://metacpan.org/source/TODDR/YAML-Syck-1.30/Changes).
 * Comes with [perl-TermReadKey v2.37](https://metacpan.org/source/JSTOWE/TermReadKey-2.37/Changes).
+* Comes with [perl-HTML-Parser v3.72](https://metacpan.org/source/GAAS/HTML-Parser-3.72/Changes).
 
 ## Changes since Git for Windows v2.16.1(3) (February 6th 2018)
 
