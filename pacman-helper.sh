@@ -454,7 +454,8 @@ lock () { #
 	while test $counter -lt 7200
 	do
 		"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
-			"$azure_blobs_token" lock git-for-windows.db &&
+			"$azure_blobs_token" \
+			lock --duration=-1 git-for-windows.db &&
 		break
 
 		echo "Waiting 60 seconds ($counter in total so far)..."
