@@ -38,7 +38,7 @@ export CURL_CA_BUNDLE
 
 mode=
 case "$1" in
-fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists)
+fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists|lock|unlock)
 	mode="$1"
 	shift
 	;;
@@ -50,8 +50,9 @@ upload)
 	shift
 	;;
 *)
-	die "Usage:\n%s\n%s\n" \
+	die "Usage:\n%s\n%s\n%s\n" \
 		" $0 ( fetch | push | ( add | remove ) <package>... )" \
+		" $0 ( lock | unlock <id> )" \
 		" $0 ( files | dirs | orphans )"
 	;;
 esac
@@ -429,6 +430,48 @@ push () {
 	}
 
 	push_next_db_version
+}
+
+lock () { #
+	test -n "$azure_blobs_token" || {
+		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
+		test -n "$azure_blobs_token" ||
+		die "Could not read token from ~/.azure-blobs-token"
+	}
+
+	test -z "$PACMANDRYRUN" || {
+		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> lock git-for-windows.db"
+		return
+	}
+
+	echo "Trying to lock for upload..." >&2
+	counter=0
+	while test $counter -lt 7200
+	do
+		"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
+			"$azure_blobs_token" lock git-for-windows.db &&
+		break
+
+		echo "Waiting 60 seconds ($counter in total so far)..."
+		sleep 60
+		counter=$(($counter+60))
+	done
+}
+
+unlock () { # <lease-ID>
+	test -n "$azure_blobs_token" || {
+		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
+		test -n "$azure_blobs_token" ||
+		die "Could not read token from ~/.azure-blobs-token"
+	}
+
+	test -z "$PACMANDRYRUN" || {
+		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> unlock $1 git-for-windows.db"
+		return
+	}
+
+	"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
+		"$azure_blobs_token" unlock "$1" git-for-windows.db
 }
 
 file_exists () { # arch filename
