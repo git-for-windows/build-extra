@@ -204,13 +204,18 @@ upload () { # <package> <version> <arch> <filename>
 		return
 	}
 
-	case "$1" in
-	disabled-for-now-package-database) action=upload-with-lease;;
-	*) action=upload;;
-	esac
-
 	echo "Uploading $1..." >&2
-	"$this_script_dir"/wingit-snapshot-helper.sh wingit $(map_arch $3) "$azure_blobs_token" $action $4 ||
+	case "$3/$4,$PACMAN_DB_LEASE" in
+	x86_64/git-for-windows.db,?*)
+		"$this_script_dir"/wingit-snapshot-helper.sh \
+			wingit $(map_arch $3) "$azure_blobs_token" \
+			upload-with-lease "$PACMAN_DB_LEASE" $4
+		;;
+	*)
+		"$this_script_dir"/wingit-snapshot-helper.sh \
+			wingit $(map_arch $3) "$azure_blobs_token" upload $4
+		;;
+	esac ||
 	die "Could not upload $4 to $(map_arch $3)"
 }
 
