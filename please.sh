@@ -2356,10 +2356,17 @@ upload () { # <package>
 	(cd "$sdk64/$pkgpath" &&
 	 require_push_url origin) || exit
 
+	PACMAN_DB_LEASE="$(pacman_helper lock)" ||
+	die 'Could not obtain a lock for uploading\n'
+
 	pacman_helper fetch &&
 	foreach_sdk pkg_upload &&
-	pacman_helper push ||
+	PACMAN_DB_LEASE="$PACMAN_DB_LEASE" pacman_helper push ||
 	die "Could not upload %s\n" "$package"
+
+	pacman_helper unlock "$PACMAN_DB_LEASE" ||
+	die 'Could not release lock for uploading\n'
+	PACMAN_DB_LEASE=
 
 	# Here, we exploit the fact that the 64-bit SDK is either the only
 	# SDK where the package was built (MinGW) or it agrees with the 32-bit
