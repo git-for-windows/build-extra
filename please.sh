@@ -2989,8 +2989,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		die "Could not determine latest Perl version\n"
 
 		(cd "$sdk64$pkgpath" &&
+		 dll=msys-perl"$(echo "$ver" | tr . _)".dll &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$ver/ \
-			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+			-e 's/^pkgrel=.*/pkgrel=1/' \
+			-e 's/msys-perl[1-9][0-9.]*\.dll/'$dll/ PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 git commit -s -m "perl: new version ($ver)" PKGBUILD) ||
