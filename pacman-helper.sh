@@ -458,7 +458,7 @@ lock () { #
 			lock --duration=-1 git-for-windows.db &&
 		break
 
-		echo "Waiting 60 seconds ($counter in total so far)..."
+		echo "Waiting 60 seconds ($counter in total so far)..." >&2
 		sleep 60
 		counter=$(($counter+60))
 	done
