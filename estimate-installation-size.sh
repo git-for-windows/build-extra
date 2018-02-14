@@ -8,6 +8,23 @@ die () {
 test $# = 1 ||
 die "Usage: $0 Git-<version>-<bitness>-bit.exe"
 
+if type innounp.exe >/dev/null 2>&1
+then
+	innounp.exe -v "$1" |
+	perl -e '
+		use POSIX qw/ceil/;
+		my $total = 0; # estimate of uninstaller + extra files/dirs
+		while (<>) {
+			if (/^\s*(\d+)/) {
+				my $size = $1;
+				$total += 512 * ceil($size / 512);
+			}
+		}
+		print $total;
+		'
+	exit
+fi
+
 type innoextract.exe >/dev/null ||
 die "Need innoextract.exe in the PATH"
 
