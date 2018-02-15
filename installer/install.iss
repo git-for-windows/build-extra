@@ -1853,6 +1853,20 @@ begin
             Log('Line {#__LINE__}: Creating initial "' + ProgramData + '\Git\config" failed.');
         end;
     end;
+
+    {
+        Configure http.sslBackend according to the user's choice.
+    }
+
+    if RdbCurlVariant[GC_WinSSL].Checked then begin
+        Cmd:='schannel';
+    end else begin
+        Cmd:='openssl';
+    end;
+    if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system http.sslBackend '+Cmd,
+                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+        LogError('Unable to configure the HTTPS backend: '+Cmd);
+
     if FileExists(ProgramData+'\Git\config') then begin
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config pack.packsizelimit)\" && if test 2g = \"$value\"; then git config -f config --unset pack.packsizelimit; fi"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to remove packsize limit from ProgramData config');
@@ -1870,19 +1884,6 @@ begin
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to configure SSL CA info: ' + Cmd);
     end;
-
-    {
-        Configure http.sslBackend according to the user's choice.
-    }
-
-    if RdbCurlVariant[GC_WinSSL].Checked then begin
-        Cmd:='schannel';
-    end else begin
-        Cmd:='openssl';
-    end;
-    if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system http.sslBackend '+Cmd,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-        LogError('Unable to configure the HTTPS backend: '+Cmd);
 
     {
         Adapt core.autocrlf
