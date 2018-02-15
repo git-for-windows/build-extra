@@ -1878,11 +1878,17 @@ begin
         StringChangeEx(Cmd,'\','/',True);
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config http.sslcainfo)\" && case \"$value\" in \"'+Cmd+'\"/*|\"C:/Program Files/Git/\"*|\"c:/Program Files/Git/\"*) git config -f config --unset http.sslcainfo;; esac"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to delete http.sslCAInfo from ProgramData config');
-        Cmd:='http.sslCAInfo "'+AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
-        StringChangeEx(Cmd,'\','/',True);
-        if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+Cmd,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-            LogError('Unable to configure SSL CA info: ' + Cmd);
+        if not RdbCurlVariant[GC_WinSSL].Checked then begin
+            Cmd:='http.sslCAInfo "'+AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
+            StringChangeEx(Cmd,'\','/',True);
+            if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+Cmd,
+                    AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+                LogError('Unable to configure SSL CA info: ' + Cmd);
+         end else begin
+            if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system --unset http.sslCAInfo',
+                    AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+                LogError('Unable to unset SSL CA info');
+         end;
     end;
 
     {
