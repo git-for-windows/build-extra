@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The Perl upgrade in Git for Windows v2.16.1(4) [broke interactive authentication of `git svn`](https://github.com/git-for-windows/git/issues/1488), which was fixed.
+* When configuring HTTPS transport to use Secure Channel, [we now refrain from configuring `http.sslCAInfo`](https://github.com/git-for-windows/build-extra/pull/172). This also helps Git LFS (which uses Git for Windows' private `http.sslCAInfo` setting) to use the same credentials as `git fetch` and `git push`.
 
 ## Changes since Git for Windows v2.16.1(3) (February 6th 2018)
 
