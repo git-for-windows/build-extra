@@ -1853,23 +1853,6 @@ begin
             Log('Line {#__LINE__}: Creating initial "' + ProgramData + '\Git\config" failed.');
         end;
     end;
-    if FileExists(ProgramData+'\Git\config') then begin
-        if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config pack.packsizelimit)\" && if test 2g = \"$value\"; then git config -f config --unset pack.packsizelimit; fi"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
-            LogError('Unable to remove packsize limit from ProgramData config');
-#if BITNESS=='32'
-        if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system pack.packsizelimit 2g',AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-            LogError('Unable to limit packsize to 2GB');
-#endif
-        Cmd:=AppDir+'/';
-        StringChangeEx(Cmd,'\','/',True);
-        if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config http.sslcainfo)\" && case \"$value\" in \"'+Cmd+'\"/*|\"C:/Program Files/Git/\"*|\"c:/Program Files/Git/\"*) git config -f config --unset http.sslcainfo;; esac"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
-            LogError('Unable to delete http.sslCAInfo from ProgramData config');
-        Cmd:='http.sslCAInfo "'+AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
-        StringChangeEx(Cmd,'\','/',True);
-        if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+Cmd,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-            LogError('Unable to configure SSL CA info: ' + Cmd);
-    end;
 
     {
         Configure http.sslBackend according to the user's choice.
@@ -1883,6 +1866,30 @@ begin
     if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system http.sslBackend '+Cmd,
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
         LogError('Unable to configure the HTTPS backend: '+Cmd);
+
+    if FileExists(ProgramData+'\Git\config') then begin
+        if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config pack.packsizelimit)\" && if test 2g = \"$value\"; then git config -f config --unset pack.packsizelimit; fi"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
+            LogError('Unable to remove packsize limit from ProgramData config');
+#if BITNESS=='32'
+        if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system pack.packsizelimit 2g',AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+            LogError('Unable to limit packsize to 2GB');
+#endif
+        Cmd:=AppDir+'/';
+        StringChangeEx(Cmd,'\','/',True);
+        if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config http.sslcainfo)\" && case \"$value\" in \"'+Cmd+'\"/*|\"C:/Program Files/Git/\"*|\"c:/Program Files/Git/\"*) git config -f config --unset http.sslcainfo;; esac"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
+            LogError('Unable to delete http.sslCAInfo from ProgramData config');
+        if not RdbCurlVariant[GC_WinSSL].Checked then begin
+            Cmd:='http.sslCAInfo "'+AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
+            StringChangeEx(Cmd,'\','/',True);
+            if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+Cmd,
+                    AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+                LogError('Unable to configure SSL CA info: ' + Cmd);
+         end else begin
+            if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system --unset http.sslCAInfo',
+                    AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+                LogError('Unable to unset SSL CA info');
+         end;
+    end;
 
     {
         Adapt core.autocrlf
