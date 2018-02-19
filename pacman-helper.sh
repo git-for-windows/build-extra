@@ -155,11 +155,21 @@ fetch () {
 			test -f $filename ||
 			curl --cacert /usr/ssl/certs/ca-bundle.crt \
 				-sfLO $(arch_url $arch)/$filename ||
-			die "Could not get $filename"
+			if test $? = 56
+			then
+				curl --cacert /usr/ssl/certs/ca-bundle.crt \
+					-sfLO $(arch_url $arch)/$filename
+			fi ||
+			die "Could not get $filename ($?)"
 			test -f $filename.sig ||
 			curl --cacert /usr/ssl/certs/ca-bundle.crt \
 				-sfLO $(arch_url $arch)/$filename.sig ||
-			die "Could not get $filename.sig"
+			if test $? = 56
+			then
+				curl --cacert /usr/ssl/certs/ca-bundle.crt \
+					-sfLO $(arch_url $arch)/$filename.sig
+			fi ||
+			die "Could not get $filename.sig ($?)"
 			test x86_64 = "$arch" || continue
 
 			mkdir -p "$(arch_dir sources)" ||
@@ -182,11 +192,21 @@ fetch () {
 			 test -f $filename ||
 			 curl --cacert /usr/ssl/certs/ca-bundle.crt \
 				-sfLO $base_url/sources/$filename ||
-			 die "Could not get $filename"
+			 if test $? = 56
+			 then
+				curl --cacert /usr/ssl/certs/ca-bundle.crt \
+					-sfLO $base_url/sources/$filename
+			 fi ||
+			 die "Could not get $filename ($?)"
 			 test -f $filename.sig ||
 			 curl --cacert /usr/ssl/certs/ca-bundle.crt \
 				-sfLO $base_url/sources/$filename.sig ||
-			 die "Could not get $filename.sig")
+			 if test $? = 56
+			 then
+				curl --cacert /usr/ssl/certs/ca-bundle.crt \
+					-sfLO $base_url/sources/$filename.sig
+			 fi ||
+			 die "Could not get $filename.sig ($?)")
 		 done
 		) || exit
 	done
