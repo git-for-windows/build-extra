@@ -316,7 +316,8 @@ update_local_package_databases () {
 			*.pkg.tar.xz &&
 		 repo-add $signopt --new \
 		 git-for-windows-$(arch_to_mingw "$arch").db.tar.xz \
-		 mingw-w64-$arch-*.pkg.tar.xz)
+		 mingw-w64-$arch-*.pkg.tar.xz) ||
+		 die "Could not update $arch package database"
 	done
 }
 
