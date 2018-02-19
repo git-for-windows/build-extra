@@ -3405,13 +3405,16 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 			die 'Could not retrieve %s\n' "$tar"
 
 			(cd "$unpack" &&
-			 tar --wildcards -xf ../"$tar" \*.pdb) ||
+			 "$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+				"tar --wildcards -xf ../\"$tar\" \\*.pdb") ||
 			die 'Could not unpack .pdb files from %s\n' "$tar"
 		done
 
 		zip=pdbs-for-git-$bitness-$git_version.zip &&
 		echo "Bundling .pdb files for $bitness..." >&2
-		(cd "$unpack" && zip -9qr "$artifactsdir/$zip" *) &&
+		(cd "$unpack" &&
+		 "$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			"zip -9qr \"$artifactsdir/$zip\" *") &&
 		echo "Created $artifactsdir/$zip" >&2 ||
 		die 'Could not create %s for %s\n' "$zip" "$arch"
 	done
