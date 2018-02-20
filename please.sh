@@ -3417,9 +3417,13 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 				cp "$dir2/$tar" "$dir/$tar"
 			else
 				echo "Retrieving $tar..." >&2
-				curl -sfo "$dir/$tar" $url/$oarch/$tar
+				curl -sfo "$dir/$tar" $url/$oarch/$tar ||
+				while test 56 = $?
+				do
+					curl -sfo "$dir/$tar" $url/$oarch/$tar
+				done
 			fi ||
-			die 'Could not retrieve %s\n' "$tar"
+			die 'Could not retrieve %s (%d)\n' "$tar" $?
 
 			(cd "$unpack" &&
 			 "$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
