@@ -5,6 +5,15 @@ die () {
 	exit 1
 }
 
+mingit_only=
+while case "$1" in
+--mingit-only|--only-mingit)
+	mingit_only=t
+	;;
+-*) die "Unknown option: %s\n" "$1";;
+*) break;;
+esac; do shift; done
+
 test $# = 1 ||
 die "Usage: $0 <version>"
 
@@ -31,6 +40,7 @@ download () {
 }
 
 file=package-versions-"$version".txt
+test -n "$mingit_only" ||
 test -f "$file" || {
 	extracted=app/etc/package-versions.txt &&
 	use_innounp= &&
@@ -66,6 +76,9 @@ die "Could not extract $file"
 
 case "$version" in
 1.*|2.[5-8].*|2.9.0)
+	test -z "$mingit_only" ||
+	die "No MinGit for version $version"
+
 	exit # The first official MinGit was released with v2.9.2
 	;;
 esac
@@ -73,7 +86,14 @@ esac
 file=package-versions-"$version"-MinGit.txt
 test -f "$file" || {
 	zip=MinGit-"$version"-64-bit.zip &&
-	download "$zip" &&
+	if ! (download "$zip")
+	then
+		# Some MinGit-only versions were named like the tag
+		test -n "$mingit_only" &&
+		zip=MinGit-"${tagname#v}"-64-bit.zip &&
+		download "$zip" ||
+		die "Could not download $zip"
+	fi &&
 	unzip -p cached-files/"$zip" etc/package-versions.txt >"$file"
 } ||
 die "Could not extract $file"
