@@ -3372,6 +3372,8 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 
 	git_version="$(echo "$versions" | sed -n 's/^mingw-w64-git //p')"
 
+	sdk="$sdk64" require zip
+
 	dir=cached-source-packages
 	unpack=$dir/.unpack
 	url=https://wingit.blob.core.windows.net
