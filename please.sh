@@ -3586,6 +3586,14 @@ publish () { #
 	die "Need to call \`%s setApiKey Your-API-Key\`\n" \
 		"$sdk64/usr/src/build-extra/nuget/nuget.exe"
 
+	test -d "$sdk64/usr/src/git" || {
+		mkdir -p "$sdk64/usr/src/git" &&
+		git init "$sdk64/usr/src/git" &&
+		git -C "$sdk64/usr/src/git" remote add origin \
+			https://github.com/git-for-windows/git
+	} ||
+	die 'Could not initialize /usr/src/git in SDK-64\n'
+
 	test -d "$sdk64/usr/src/git/3rdparty" || {
 		mkdir "$sdk64/usr/src/git/3rdparty" &&
 		echo "/3rdparty/" >> "$sdk64/usr/src/git/.git/info/exclude"
