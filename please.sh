@@ -3574,18 +3574,7 @@ virus_check () { #
 	done
 }
 
-publish () { #
-	set_version_from_sdks_git
-
-	git_pkgver="$("$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-		'pacman -Q mingw-w64-x86_64-git | sed "s/.* //"')"
-
-	needs_upload_permissions || exit
-
-	grep -q '<apikeys>' "$HOME"/AppData/Roaming/NuGet/NuGet.Config ||
-	die "Need to call \`%s setApiKey Your-API-Key\`\n" \
-		"$sdk64/usr/src/build-extra/nuget/nuget.exe"
-
+require_3rdparty_directory () {
 	test -d "$sdk64/usr/src/git" || {
 		mkdir -p "$sdk64/usr/src/git" &&
 		git init "$sdk64/usr/src/git" &&
@@ -3599,6 +3588,21 @@ publish () { #
 		echo "/3rdparty/" >> "$sdk64/usr/src/git/.git/info/exclude"
 	} ||
 	die "Could not make /usr/src/3rdparty in SDK-64\n"
+}
+
+publish () { #
+	set_version_from_sdks_git
+
+	git_pkgver="$("$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		'pacman -Q mingw-w64-x86_64-git | sed "s/.* //"')"
+
+	needs_upload_permissions || exit
+
+	grep -q '<apikeys>' "$HOME"/AppData/Roaming/NuGet/NuGet.Config ||
+	die "Need to call \`%s setApiKey Your-API-Key\`\n" \
+		"$sdk64/usr/src/build-extra/nuget/nuget.exe"
+
+	require_3rdparty_directory
 
 	wwwdir="$sdk64/usr/src/git/3rdparty/git-for-windows.github.io"
 	if test ! -d "$wwwdir"
