@@ -3249,17 +3249,34 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 		git-for-windows/master)" ||
 	die "Cannot describe current revision of Git\n"
 	ver=${ver%%-*}
+
+	# With --delete-existing-tag, delete previously generated tags, e.g.
+	# from failed automated builds
+	while test -n "$delete_existing_tag" &&
+		test 0 = $(git "$dir_option" rev-list --count \
+			"$ver"..git-for-windows/master)
+	do
+		case "$ver" in
+		*.windows.*) ;; # delete and continue
+		*) break;;
+		esac
+
+		git "$dir_option" tag -d "$ver" ||
+		die "Could not delete tag '%s'\n" "$ver"
+
+		ver="$(git "$dir_option" \
+			describe --first-parent --match 'v[0-9]*[0-9]' \
+			git-for-windows/master)" ||
+		die "Cannot describe current revision of Git\n"
+
+		ver=${ver%%-*}
+	done
+
 	case "$ver" in
 	*.windows.*)
 		test 0 -lt $(git "$dir_option" rev-list --count \
 			"$ver"..git-for-windows/master) ||
-		if test -z "$delete_existing_tag"
-		then
-			die "Already tagged: %s\n" "$ver"
-		else
-			git "$dir_option" tag -d "$ver" ||
-			die "Could not delete tag '%s'\n" "$ver"
-		fi
+		die "Already tagged: %s\n" "$ver"
 
 		nextver=${ver%.windows.*}.windows.$((${ver##*.windows.}+1))
 		displayver="${ver%.windows.*}(${nextver##*.windows.})"
