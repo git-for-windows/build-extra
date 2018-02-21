@@ -208,6 +208,9 @@ Type: files; Name: {app}\{#MINGW_BITNESS}\bin\git-*.exe
 Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\git-*.exe
 Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\git.exe
 
+; Delete git-lfs wrapper
+Type: files; Name: {app}\cmd\git-lfs.exe
+
 ; Delete copied *.dll files
 Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\*.dll
 
@@ -1831,6 +1834,10 @@ begin
             if FileExists(FileName) then begin
                 CopyBuiltin(FileName);
             end;
+        end;
+
+        if IsComponentSelected('gitlfs') then begin
+            CopyBuiltin(AppDir+'\cmd\git-lfs.exe');
         end;
 
         // Delete git-wrapper from the temp directory.
