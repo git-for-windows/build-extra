@@ -1402,24 +1402,24 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		only_64_bit=t
 		;;
 	--output=*)
-		outputdir="${1#*=}" &&
-		output="--output='$(cygpath -am "$outputdir")'" ||
+		outputdir="$(cygpath -am "${1#*=}")" &&
+		output="--output='$outputdir'" ||
 		die "Directory '%s' inaccessible\n" "${1#*=}"
 		;;
 	--clean-output=*)
-		outputdir="${1#*=}" &&
+		outputdir="$(cygpath -am "${1#*=}")" &&
 		rm -rf "$outputdir" &&
 		mkdir -p "$outputdir" ||
 		die "Could not make directory '%s'\n" "$outputdir"
-		output="--output='$(cygpath -am "${1#*=}")'" ||
+		output="--output='$outputdir'" ||
 		die "Directory '%s' inaccessible\n" "$outputdir"
 		;;
 	--now)
-		outputdir=./prerelease-now &&
+		outputdir="$(cygpath -am "./prerelease-now")" &&
 		rm -rf "$outputdir" &&
 		mkdir "$outputdir" ||
 		die "Could not make ./prerelease-now/\n"
-		output="--output='$(cygpath -am "$outputdir")'" ||
+		output="--output='$outputdir'" ||
 		die "Directory "$outputdir"/ is inaccessible\n"
 
 		modes="installer portable mingit"
@@ -1730,6 +1730,11 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				file=$pkg-'"$pkgsuffix"'
 				test -f $file || {
 					echo "$file was not built" >&2
+					exit 1
+				}
+				test -z "'"$outputdir"'" ||
+				cp "$file" "'"$outputdir"'/" || {
+					echo "$file not copied to outputdir" >&2
 					exit 1
 				}
 				precmd="$precmd $file"
