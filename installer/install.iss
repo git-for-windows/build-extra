@@ -1576,21 +1576,26 @@ end;
 
 // Procedure to create hardlinks for builtins. This procedure relies upon that
 // git-wrapper.exe is already copied to {app}\tmp.
-procedure CopyBuiltin(FileName:String);
+procedure HardlinkOrCopyGit(FileName:String;Builtin:Boolean);
 var
-    AppDir:String;
+    AppDir,GitTarget:String;
     LinkCreated:Boolean;
 begin
-    if (not DeleteFile(FileName)) then begin
+    if FileExists(FileName) and (not DeleteFile(FileName)) then begin
         Log('Line {#__LINE__}: Unable to delete existing built-in "'+FileName+'", skipping.');
         Exit;
     end;
 
     AppDir:=ExpandConstant('{app}');
+    if Builtin then
+        GitTarget:=AppDir+'\{#MINGW_BITNESS}\bin\git.exe'
+    else
+        // For non-builtins, we want to use the Git wrapper in cmd
+        GitTarget:=AppDir+'\cmd\git.exe';
 
     try
         // This will throw an exception on pre-Win2k systems.
-        LinkCreated:=CreateHardLink(FileName,AppDir+'\{#MINGW_BITNESS}\bin\git.exe',0);
+        LinkCreated:=CreateHardLink(FileName,GitTarget,0);
     except
         LinkCreated:=False;
         Log('Line {#__LINE__}: Creating hardlink "'+FileName+'" failed, will try a copy.');
@@ -1826,18 +1831,18 @@ begin
             FileName:=AppDir+'\{#MINGW_BITNESS}\bin\'+BuiltIns[i];
 
             if FileExists(FileName) then begin
-                CopyBuiltin(FileName);
+                HardlinkOrCopyGit(FileName,True);
             end;
 
             FileName:=AppDir+'\{#MINGW_BITNESS}\libexec\git-core\'+BuiltIns[i];
 
             if FileExists(FileName) then begin
-                CopyBuiltin(FileName);
+                HardlinkOrCopyGit(FileName,True);
             end;
         end;
 
         if IsComponentSelected('gitlfs') then begin
-            CopyBuiltin(AppDir+'\cmd\git-lfs.exe');
+            HardlinkOrCopyGit(AppDir+'\cmd\git-lfs.exe',False);
         end;
 
         // Delete git-wrapper from the temp directory.
