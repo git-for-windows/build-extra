@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Bash v4.4 patchlevel 019  (2)](https://tiswww.case.edu/php/chet/bash/NEWS).
+* When choosing to "Use Git from the Windows Command Prompt" (i.e. add only the minimal set of Git executables to the `PATH`), and when choosing the Git LFS component, Git LFS [is now included in that minimal set](https://github.com/git-for-windows/git/issues/1503).
 
 ## Changes since Git for Windows v2.16.1(4) (February 7th 2018)
 
