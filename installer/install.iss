@@ -1153,7 +1153,7 @@ begin
 
     // 4th choice
     Top:=TopOfLabels;
-    CbbEditor.Items.Add('Use VisualStudioCode as Git'+#39+'s default editor');
+    CbbEditor.Items.Add('Use Visual Studio Code as Git'+#39+'s default editor');
     CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False);
 
     // Restore the setting chosen during a previous install.
@@ -2114,7 +2114,7 @@ begin
             LogError('Could not set Notepad++ as core.editor in the gitconfig.');
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCode)) and (VisualStudioCodePath<>'') then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not set VisualStudioCode as core.editor in the gitconfig.');
+            LogError('Could not set Visual Studio Code as core.editor in the gitconfig.');
     end;
 
     {
