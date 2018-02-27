@@ -394,6 +394,11 @@ set_package () {
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
+	gawk)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		extra_makepkg_opts=--nocheck
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
@@ -3087,6 +3092,30 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		exit
 
 		url=https://svn.apache.org/repos/asf/subversion/tags/$version &&
+		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
+		relnotes_feature="Comes with [$package $v]($url/CHANGES)."
+		;;
+	gawk)
+		url=https://git.savannah.gnu.org/cgit/gawk.git/refs/tags
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+
+		version="$(echo "$release" | sed -n \
+		 '/<a href.*gawk-\([1-9][0-9.]*\)/{s/.*<a [^>]*gawk-\([1-9][0-9.]*[0-9]\).*/\1/p;q}')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: upgrade to v$version" PKGBUILD) ||
+		exit
+
+		url=http://git.savannah.gnu.org/cgit/gawk.git/plain &&
+		url=$url/NEWS?h=gawk-$version &&
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
 		relnotes_feature="Comes with [$package $v]($url/CHANGES)."
 		;;
