@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * When a `TERM` is configured that Git for Windows does not know about, [Bash no longer crashes](https://github.com/git-for-windows/git/issues/1473).
+* The regression where `gawk` stopped treating Carriage Returns as part of the line endings [was fixed](https://github.com/git-for-windows/git/issues/1524).
 
 ## Changes since Git for Windows v2.16.1(4) (February 7th 2018)
 
