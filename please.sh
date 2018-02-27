@@ -3117,7 +3117,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		url=http://git.savannah.gnu.org/cgit/gawk.git/plain &&
 		url=$url/NEWS?h=gawk-$version &&
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
-		relnotes_feature="Comes with [$package $v]($url/CHANGES)."
+		relnotes_feature="Comes with [$package $v]($url)."
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
