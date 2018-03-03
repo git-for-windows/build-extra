@@ -110,12 +110,12 @@ fi
 
 printf '; List of files\n%s\n%s\n%s\n%s\n%s\n%s\n' \
 	"Source: \"mingw$BITNESS\\bin\\blocked-file-util.exe\"; Flags: dontcopy" \
-	"Source: \"{#SourcePath}\\package-versions.txt\"; DestDir: {app}\\etc; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
-	"Source: \"{#SourcePath}\\..\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
-	"Source: \"cmd\\git.exe\"; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
-	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: bash.exe; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
-	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: sh.exe; DestDir: {app}\\bin; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore" \
-	"Source: \"{#SourcePath}\\..\\post-install.bat\"; DestName: post-install.bat; DestDir: {app}; Flags: replacesameversion" \
+	"Source: \"{#SourcePath}\\package-versions.txt\"; DestDir: {app}\\etc; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"{#SourcePath}\\..\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"cmd\\git.exe\"; DestDir: {app}\\bin; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: bash.exe; DestDir: {app}\\bin; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: sh.exe; DestDir: {app}\\bin; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"{#SourcePath}\\..\\post-install.bat\"; DestName: post-install.bat; DestDir: {app}; Flags: replacesameversion restartreplace" \
 >file-list.iss ||
 die "Could not write to file-list.iss"
 
@@ -164,7 +164,7 @@ test -z "$GITCONFIG_PATH" || {
 
 printf '%s%s%s\n%s\n' \
 	'Source: {#SourcePath}\gitconfig.system; DestName: gitconfig; ' \
-	  "DestDir: {app}\\mingw$BITNESS\\etc; Flags: replacesameversion; " \
+	  "DestDir: {app}\\mingw$BITNESS\\etc; Flags: replacesameversion restartreplace; " \
 	  'AfterInstall: DeleteFromVirtualStore' \
 	'Source: {#SourcePath}\programdata-config.template; Flags: dontcopy' \
 	>>file-list.iss ||
@@ -173,8 +173,8 @@ die "Could not append gitconfig to file list"
 test -z "$LIST" ||
 echo "$LIST" |
 sed -e 's|/|\\|g' \
-	-e 's|^\([^\\]*\)$|Source: \1; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore|' \
-	-e 's|^\(.*\)\\\([^\\]*\)$|Source: \1\\\2; DestDir: {app}\\\1; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore|' \
+	-e 's|^\([^\\]*\)$|Source: \1; DestDir: {app}; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore|' \
+	-e 's|^\(.*\)\\\([^\\]*\)$|Source: \1\\\2; DestDir: {app}\\\1; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore|' \
 	>> file-list.iss
 
 printf "%s\n%s\n%s\n%s%s" \
