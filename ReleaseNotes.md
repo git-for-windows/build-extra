@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [gawk v4.2.1](http://git.savannah.gnu.org/cgit/gawk.git/plain/NEWS?h=gawk-4.2.1).
 * In conjunction with the FSCache feature, `git checkout` [is now a lot faster when checking out a *lot* of files](https://github.com/git-for-windows/git/pull/1468).
 * Comes with [Git LFS v2.4.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.4.0).
+* Comes with [Git Credential Manager v1.15.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.15.0).
 
 ### Bug Fixes
 
