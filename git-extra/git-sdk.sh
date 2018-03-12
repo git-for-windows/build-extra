@@ -37,8 +37,24 @@ sdk () {
 		EOF
 		;;
 	create-desktop-icon)
-		create-shortcut.exe --icon-file /msys2.ico --work-dir / /git-bash.exe \
-		"$HOME/Desktop/Git SDK$(case "$(uname -m)" in i686) echo " 32-bit";; x86_64) echo " 64-bit";; esac).lnk"
+		force=t &&
+		while case "$1" in
+		--gentle) force=;;
+		'') break;;
+		-*) sdk die "Unknown option: %s\n" "$1"; return 1;;
+		esac; do shift; done &&
+
+		case "$(uname -m)" in
+		i686) bitness=" 32-bit";;
+		x86_64) bitness=" 64-bit";;
+		*) bitness=;;
+		esac &&
+		desktop_icon_path="$HOME/Desktop/Git SDK$bitness.lnk" &&
+		if test -n "$force" || test ! -f "$desktop_icon_path"
+		then
+			create-shortcut.exe --icon-file /msys2.ico --work-dir \
+				/ /git-bash.exe "$desktop_icon_path"
+		fi
 		;;
 	die)
 		shift
@@ -74,11 +90,14 @@ sdk () {
 	esac
 }
 
-# initialize (but do not fetch) worktrees in /usr/src
+# initialize (but do not fetch) worktrees in /usr/src, and also create the
+# Git SDK shortcut on the Desktop (unless it already exists).
 test -n "$JENKINS_URL" || {
 	for project in git build-extra MINGW-packages MSYS2-packages
 	do
 		test -d /usr/src/$project/.git ||
 		sdk init-lazy $project
 	done
+
+	sdk create-desktop-icon --gentle
 }
