@@ -45,22 +45,24 @@ sdk () {
 		echo "$*" >&2
 		return 1
 		;;
-	init)
+	init-lazy)
 		case "$2" in
 		build-extra|git|MINGW-packages|MSYS2-packages)
-			dest="/usr/src/$2"
-			if test ! -d "$dest"/.git
-			then
-				mkdir -p "$dest" &&
-				git init "$dest" &&
-				git -C "$dest" remote add origin https://github.com/git-for-windows/$2
-			fi &&
-			git -C "$dest" pull origin master
+			mkdir -p /usr/src/"$2" &&
+			git -C /usr/src/"$2" init &&
+			git -C /usr/src/"$2" config core.autocrlf false &&
+			git -C /usr/src/"$2" remote add origin \
+				https://github.com/git-for-windows/"$2" ||
+			sdk die "Could not initialize /usr/src/$2"
 			;;
 		*)
 			sdk die "Unhandled repository: $2" >&2
 			;;
 		esac
+		;;
+	init)
+		sdk init-lazy "$2" &&
+		git -C "/usr/src/$2" pull origin master
 		;;
 	build-git)
 		sdk init git &&
@@ -70,4 +72,13 @@ sdk () {
 		sdk die "Usage: sdk ( build-git | init <repo> | create-desktop-icon | help )"
 		;;
 	esac
+}
+
+# initialize (but do not fetch) worktrees in /usr/src
+test -n "$JENKINS_URL" || {
+	for project in git build-extra MINGW-packages MSYS2-packages
+	do
+		test -d /usr/src/$project/.git ||
+		sdk init-lazy $project
+	done
 }
