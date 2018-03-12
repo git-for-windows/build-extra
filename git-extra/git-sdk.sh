@@ -36,6 +36,14 @@ sdk () {
 		build-git:   initializes the Git repo and builds Git.
 		EOF
 		;;
+	welcome)
+		cat >&2 <<-EOF
+		Welcome to the Git for Windows SDK!
+
+		The common tasks are automated via the \`sdk\` function;
+		See \`sdk help\` for details.
+		EOF
+		;;
 	create-desktop-icon)
 		force=t &&
 		while case "$1" in
@@ -101,3 +109,5 @@ test -n "$JENKINS_URL" || {
 
 	sdk create-desktop-icon --gentle
 }
+
+sdk welcome
