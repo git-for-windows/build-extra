@@ -33,7 +33,7 @@ sdk () {
 		init <repo>: initialize and/or update a development repo. Known repos
 		    are: build-extra, git, MINGW-packages, MSYS2-packages.
 
-		build-git:   initializes the Git repo and builds Git.
+		build: builds one of the following: git, git-and-installer.
 		EOF
 		;;
 	welcome)
@@ -88,9 +88,23 @@ sdk () {
 		sdk init-lazy "$2" &&
 		git -C "/usr/src/$2" pull origin master
 		;;
-	build-git)
-		sdk init git &&
-		make -C /usr/src/git -j$(nproc) DEVELOPER=1
+	build)
+		case "$2" in
+		git)
+			sdk init git &&
+			make -C /usr/src/git -j$(nproc) DEVELOPER=1
+			;;
+		git-and-installer)
+			sdk build git &&
+			make -C /usr/src/git strip install &&
+			pacman -Syyu git-extra &&
+			sdk init build-extra &&
+			/usr/src/build-extra/installer/release.sh "${3:-0-test}"
+			;;
+		*)
+			sdk die "Unknown project: $2"
+			;;
+		esac
 		;;
 	*)
 		sdk die "Usage: sdk ( build-git | init <repo> | create-desktop-icon | help )"
