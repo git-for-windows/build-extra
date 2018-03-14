@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 * In conjunction with the FSCache feature, `git checkout` [is now a lot faster when checking out a *lot* of files](https://github.com/git-for-windows/git/pull/1468).
 * Comes with [Git LFS v2.4.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.4.0).
 * Comes with [Git Credential Manager v1.15.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.15.0).
+* Comes with [cURL v7.59.0](https://curl.haxx.se/changes.html#7_59_0).
 
 ### Bug Fixes
 
