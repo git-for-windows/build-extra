@@ -102,7 +102,14 @@ sdk () {
 			/usr/src/build-extra/installer/release.sh "${3:-0-test}"
 			;;
 		*)
-			sdk die "Unknown project: $2"
+			cat >&2 <<EOF
+sdk build <project>
+
+Supported projects:
+	git
+	git-and-installer
+EOF
+			return 1
 			;;
 		esac
 		;;
