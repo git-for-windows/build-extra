@@ -1,5 +1,3 @@
-#!/bin/sh
-
 # This profile.d script configures a few things for the Git SDK (but is
 # excluded from the end user-facing Git for Windows).
 
