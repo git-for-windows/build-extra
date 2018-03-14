@@ -72,6 +72,7 @@ sdk () {
 	init-lazy)
 		case "$2" in
 		build-extra|git|MINGW-packages|MSYS2-packages)
+			test -d /usr/src/"$2"/.git && return
 			mkdir -p /usr/src/"$2" &&
 			git -C /usr/src/"$2" init &&
 			git -C /usr/src/"$2" config core.autocrlf false &&
@@ -132,7 +133,6 @@ case $- in
 	test -n "$JENKINS_URL" || {
 		for project in git build-extra MINGW-packages MSYS2-packages
 		do
-			test -d /usr/src/$project/.git ||
 			sdk init-lazy $project
 		done
 
