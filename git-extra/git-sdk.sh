@@ -94,6 +94,10 @@ sdk () {
 			sdk init git &&
 			make -C /usr/src/git -j$(nproc) DEVELOPER=1
 			;;
+		installer)
+			sdk init build-extra &&
+			/usr/src/build-extra/installer/release.sh "${3:-0-test}"
+			;;
 		git-and-installer)
 			sdk build git &&
 			make -C /usr/src/git strip install &&
@@ -107,7 +111,8 @@ sdk build <project>
 
 Supported projects:
 	git
-	git-and-installer
+	installer [<version>]
+	git-and-installer [<version>]
 EOF
 			return 1
 			;;
