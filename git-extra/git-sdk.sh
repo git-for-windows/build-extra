@@ -124,16 +124,21 @@ EOF
 	esac
 }
 
-# initialize (but do not fetch) worktrees in /usr/src, and also create the
-# Git SDK shortcut on the Desktop (unless it already exists).
-test -n "$JENKINS_URL" || {
-	for project in git build-extra MINGW-packages MSYS2-packages
-	do
-		test -d /usr/src/$project/.git ||
-		sdk init-lazy $project
-	done
+case $- in
+*i*)
+	# in any interactive session, initialize (but do not fetch) worktrees
+	# in /usr/src, and also create the Git SDK shortcut on the Desktop
+	# (unless it already exists).
+	test -n "$JENKINS_URL" || {
+		for project in git build-extra MINGW-packages MSYS2-packages
+		do
+			test -d /usr/src/$project/.git ||
+			sdk init-lazy $project
+		done
 
-	sdk create-desktop-icon --gentle
-}
+		sdk create-desktop-icon --gentle
+	}
 
-sdk welcome
+	sdk welcome
+	;;
+esac
