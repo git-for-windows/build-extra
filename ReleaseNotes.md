@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git Credential Manager v1.15.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.15.0).
 * Comes with [cURL v7.59.0](https://curl.haxx.se/changes.html#7_59_0).
 * The Git for Windows SDK [can now be "installed" via `git clone --depth=1 https://github.com/git-for-windows/git-sdk-64`](https://github.com/git-for-windows/git/issues/1357).
+* The `tar` utility (included as a courtesy, not because Git needs it) [can now unpack `.tar.xz` archives](https://github.com/git-for-windows/build-extra/pull/177).
 
 ### Bug Fixes
 
