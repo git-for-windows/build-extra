@@ -3382,11 +3382,12 @@ sign_files () {
 	fi
 }
 
-bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [<package-versions>]
+bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--arch=<arch>] [<package-versions>]
 	packages="mingw-w64-git-pdb mingw-w64-curl-pdb mingw-w64-openssl-pdb
 		msys2-runtime-devel bash-devel"
 
 	artifactsdir=
+	architectures=
 	unpack=
 	while case "$1" in
 	--directory=*)
@@ -3395,6 +3396,9 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [<p
 		test -d "$artifactsdir" ||
 		mkdir "$artifactsdir" ||
 		die "Could not create artifacts directory: %s\n" "$artifactsdir"
+		;;
+	--arch=*)
+		architectures="${architectures:+$architectures }${1#*=}"
 		;;
 	--unpack=*)
 		unpack="$(cygpath -am "${1#*=}")" || exit
@@ -3420,6 +3424,9 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [<p
 	test -n "$artifactsdir" ||
 	artifactsdir="$(cygpath -am "$HOME")" || exit
 
+	test -n "$architectures" ||
+	architectures="i686 x86_64"
+
 	versions="$(case $# in 0) pacman -Q;; 1) cat "$1";; esac |
 		sed 's/^\(mingw-w64\)\(-[^-]*\)/\1/' | sort | uniq)"
 	test -n "$versions" ||
@@ -3433,7 +3440,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [<p
 	unpack=$dir/.unpack
 	url=https://wingit.blob.core.windows.net
 
-	for arch in i686 x86_64
+	for arch in $architectures
 	do
 		test i686 = $arch &&
 		bitness=32-bit ||
