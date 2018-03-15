@@ -45,7 +45,6 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v7.59.0](https://curl.haxx.se/changes.html#7_59_0).
 * The Git for Windows SDK [can now be "installed" via `git clone --depth=1 https://github.com/git-for-windows/git-sdk-64`](https://github.com/git-for-windows/git/issues/1357).
 * The `tar` utility (included as a courtesy, not because Git needs it) [can now unpack `.tar.xz` archives](https://github.com/git-for-windows/build-extra/pull/177).
-* Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/50159fe297ca46145558b60a0354701e3ce1bb54) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.10.0](https://cygwin.com/ml/cygwin-announce/2018-02/msg00002.html).
 
 ### Bug Fixes
 
