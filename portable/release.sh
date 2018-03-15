@@ -8,6 +8,7 @@ die () {
 }
 
 output_directory="$HOME"
+include_pdbs=
 while test $# -gt 0
 do
 	case "$1" in
@@ -17,6 +18,9 @@ do
 		;;
 	--output=*)
 		output_directory="${1#*=}"
+		;;
+	--include-pdbs)
+		include_pdbs=t
 		;;
 	-*)
 		die "Unknown option: $1"
@@ -102,6 +106,13 @@ mkdir -p "$SCRIPT_PATH/root/mingw$BITNESS/libexec/git-core" &&
 ln $(echo "$LIST" | sed -n "s|^mingw$BITNESS/bin/[^/]*\.dll$|/&|p") \
 	"$SCRIPT_PATH/root/mingw$BITNESS/libexec/git-core/" ||
 die "Could not copy .dll files into libexec/git-core/"
+
+test -z "$include_pdbs" || {
+	find "$SCRIPT_PATH/root" -name \*.pdb -exec rm {} \; &&
+	"$SCRIPT_PATH"/../please.sh bundle-pdbs \
+		--arch=$ARCH --unpack="$SCRIPT_PATH"/root
+} ||
+die "Could not unpack .pdb files"
 
 # 7-Zip will strip absolute paths completely... therefore, we can add another
 # root directory like this:
