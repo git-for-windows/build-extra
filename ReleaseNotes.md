@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 * When a `TERM` is configured that Git for Windows does not know about, [Bash no longer crashes](https://github.com/git-for-windows/git/issues/1473).
 * The regression where `gawk` stopped treating Carriage Returns as part of the line endings [was fixed](https://github.com/git-for-windows/git/issues/1524).
 * When Git asks for credentials via the terminal in a Powershell window, [it no longer fails to do so](https://github.com/git-for-windows/git/pull/1514).
+* The installer [is now more robust when encountering files that are in use](https://github.com/git-for-windows/build-extra/commit/d33ee8606bfbc0e9b801df0a5257721e20f8dd4a) (and can therefore not be overwritten right away).
 
 ## Changes since Git for Windows v2.16.1(4) (February 7th 2018)
 
