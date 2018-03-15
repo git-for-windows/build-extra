@@ -13,6 +13,7 @@ die () {
 }
 
 output_directory="$HOME"
+include_pdbs=
 while case "$1" in
 --output=*)
 	output_directory="$(cd "${1#*=}" && pwd)" ||
@@ -20,6 +21,9 @@ while case "$1" in
 	;;
 --busybox)
 	export MINIMAL_GIT_WITH_BUSYBOX=1
+	;;
+--include-pdbs)
+	include_pdbs=t
 	;;
 -*) die "Unknown option: %s\n" "$1";;
 *) break;;
@@ -59,6 +63,13 @@ die "Could not copy license file"
 
 mkdir -p "$SCRIPT_PATH"/root/etc ||
 die "Could not make etc/"
+
+test -z "$include_pdbs" || {
+	find "$SCRIPT_PATH/root" -name \*.pdb -exec rm {} \; &&
+	"$SCRIPT_PATH"/../please.sh bundle-pdbs \
+		--arch=$ARCH --unpack="$SCRIPT_PATH"/root
+} ||
+die "Could not unpack .pdb files"
 
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS MINIMAL_GIT=1 \
