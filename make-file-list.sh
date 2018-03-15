@@ -93,7 +93,7 @@ then
 		winpty less gnupg tar diffutils patch dos2unix which subversion
 		mingw-w64-$ARCH-tk mingw-w64-$ARCH-connect git-flow docx2txt
 		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt ssh-pageant
-		mingw-w64-$ARCH-git-lfs tig $GIT_UPDATE_EXTRA_PACKAGES"
+		mingw-w64-$ARCH-git-lfs mingw-w64-$ARCH-xz tig $GIT_UPDATE_EXTRA_PACKAGES"
 fi
 pacman_list $packages "$@" |
 
