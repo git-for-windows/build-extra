@@ -3382,11 +3382,13 @@ sign_files () {
 	fi
 }
 
-bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
+bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [<package-versions>]
 	packages="mingw-w64-git-pdb mingw-w64-curl-pdb mingw-w64-openssl-pdb
 		msys2-runtime-devel bash-devel"
 
-	case "$1" in
+	artifactsdir=
+	unpack=
+	while case "$1" in
 	--directory=*)
 		artifactsdir="$(cygpath -am "${1#*=}")" || exit
 		shift
@@ -3394,10 +3396,29 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 		mkdir "$artifactsdir" ||
 		die "Could not create artifacts directory: %s\n" "$artifactsdir"
 		;;
-	*)
-		artifactsdir="$(cygpath -am "$HOME")" || exit
+	--unpack=*)
+		unpack="$(cygpath -am "${1#*=}")" || exit
+		shift
+		test -d "$unpack" ||
+		die "Not a directory: %s\n" "$unpack"
 		;;
-	esac
+	--*)
+		die "Unknown option: %s\n" "$1"
+		;;
+	*)
+		break
+		;;
+	esac; do shift; done
+
+	test $# -le 1 ||
+	die "Extra options: %s\n" "$*"
+
+	test -z "$unpack" || test -z "$artifactsdir" ||
+	die "--unpack and --directory are mutually exclusive\n"
+
+	test -n "$unpack" ||
+	test -n "$artifactsdir" ||
+	artifactsdir="$(cygpath -am "$HOME")" || exit
 
 	versions="$(case $# in 0) pacman -Q;; 1) cat "$1";; esac |
 		sed 's/^\(mingw-w64\)\(-[^-]*\)/\1/' | sort | uniq)"
@@ -3408,6 +3429,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 
 	dir="${this_script_path:+$(cygpath -au \
 		"${this_script_path%/*}")/}"cached-source-packages
+	test -n "$unpack" ||
 	unpack=$dir/.unpack
 	url=https://wingit.blob.core.windows.net
 
@@ -3423,6 +3445,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 		oarch=x86-64 ||
 		oarch=$arch
 
+		test -z "$artifactsdir" ||
 		test ! -d $unpack ||
 		rm -rf $unpack ||
 		die 'Could not remove %s\n' "$unpack"
@@ -3476,6 +3499,8 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 				"tar --wildcards -xf \"$dir/$tar\" \\*.pdb") ||
 			die 'Could not unpack .pdb files from %s\n' "$tar"
 		done
+
+		test -n "$artifactsdir" || continue
 
 		zip=pdbs-for-git-$bitness-$git_version.zip &&
 		echo "Bundling .pdb files for $bitness..." >&2
