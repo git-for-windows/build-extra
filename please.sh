@@ -3406,7 +3406,8 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 
 	git_version="$(echo "$versions" | sed -n 's/^mingw-w64-git //p')"
 
-	dir=cached-source-packages
+	dir="${this_script_path:+$(cygpath -au \
+		"${this_script_path%/*}")/}"cached-source-packages
 	unpack=$dir/.unpack
 	url=https://wingit.blob.core.windows.net
 
@@ -3472,7 +3473,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 
 			(cd "$unpack" &&
 			 "$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-				"tar --wildcards -xf ../\"$tar\" \\*.pdb") ||
+				"tar --wildcards -xf \"$dir/$tar\" \\*.pdb") ||
 			die 'Could not unpack .pdb files from %s\n' "$tar"
 		done
 
