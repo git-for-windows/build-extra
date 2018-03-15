@@ -1375,6 +1375,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	prerelease_prefix=prerelease-
 	only_64_bit=
 	upload=
+	include_pdbs=
 	while case "$1" in
 	--force-tag)
 		force_tag=-f
@@ -1431,6 +1432,9 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		force_version='%(prerelease-tag)'
 		force_tag=-f
 		upload=t
+		;;
+	--include-pdbs)
+		include_pdbs=--include-pdbs
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -1756,6 +1760,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				test installer != $m ||
 				extra=--window-title-version="$version"
 				/usr/src/build-extra/$m/release.sh \
+					'"$include_pdbs"' \
 					'"$output"' $extra "$version" || {
 					postcmd="$postcmd && exit 1"
 					break
