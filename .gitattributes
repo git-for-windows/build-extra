@@ -12,8 +12,13 @@ PKGBUILD eol=lf
 *.sh eol=lf
 *.txt eol=lf
 *.wxs eol=lf
+*.exe -text
+*.dll -text
+*.chm -text
 /git-extra/astextplain eol=lf
 /git-extra/notepad eol=lf
 /git-extra/vi eol=lf
 /git-extra/vimrc eol=lf
 /git-extra/wordpad eol=lf
+/installer/InnoSetup/* eol=crlf
+/installer/InnoSetup/*.e32 -text
