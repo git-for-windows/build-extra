@@ -3400,7 +3400,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 	esac
 
 	versions="$(case $# in 0) pacman -Q;; 1) cat "$1";; esac |
-		sed 's/^\(mingw-w64\)\(-[^-]*\)/\1/')"
+		sed 's/^\(mingw-w64\)\(-[^-]*\)/\1/' | sort | uniq)"
 	test -n "$versions" ||
 	die 'Could not obtain package versions\n'
 
