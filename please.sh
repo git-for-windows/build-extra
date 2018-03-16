@@ -3445,6 +3445,9 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	unpack=$dir/.unpack
 	url=https://wingit.blob.core.windows.net
 
+	mkdir -p "$dir" ||
+	die "Could not create '%s'\n" "$dir"
+
 	for arch in $architectures
 	do
 		test i686 = $arch &&
