@@ -15,6 +15,7 @@ edit-git-bash.exe
 /installer/file-list.iss
 /installer/package-versions.txt
 /installer/programdata-config.template
+/installer/root/
 /mingit/exclude-list
 /mingit/root/
 /mingit/sorted-all

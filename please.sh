@@ -1375,6 +1375,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	prerelease_prefix=prerelease-
 	only_64_bit=
 	upload=
+	include_pdbs=
 	while case "$1" in
 	--force-tag)
 		force_tag=-f
@@ -1431,6 +1432,9 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		force_version='%(prerelease-tag)'
 		force_tag=-f
 		upload=t
+		;;
+	--include-pdbs)
+		include_pdbs=--include-pdbs
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -1756,6 +1760,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 				test installer != $m ||
 				extra=--window-title-version="$version"
 				/usr/src/build-extra/$m/release.sh \
+					'"$include_pdbs"' \
 					'"$output"' $extra "$version" || {
 					postcmd="$postcmd && exit 1"
 					break
@@ -3382,11 +3387,14 @@ sign_files () {
 	fi
 }
 
-bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
+bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--arch=<arch>] [<package-versions>]
 	packages="mingw-w64-git-pdb mingw-w64-curl-pdb mingw-w64-openssl-pdb
 		msys2-runtime-devel bash-devel"
 
-	case "$1" in
+	artifactsdir=
+	architectures=
+	unpack=
+	while case "$1" in
 	--directory=*)
 		artifactsdir="$(cygpath -am "${1#*=}")" || exit
 		shift
@@ -3394,23 +3402,53 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 		mkdir "$artifactsdir" ||
 		die "Could not create artifacts directory: %s\n" "$artifactsdir"
 		;;
-	*)
-		artifactsdir="$(cygpath -am "$HOME")" || exit
+	--arch=*)
+		architectures="${architectures:+$architectures }${1#*=}"
 		;;
-	esac
+	--unpack=*)
+		unpack="$(cygpath -am "${1#*=}")" || exit
+		shift
+		test -d "$unpack" ||
+		die "Not a directory: %s\n" "$unpack"
+		;;
+	--*)
+		die "Unknown option: %s\n" "$1"
+		;;
+	*)
+		break
+		;;
+	esac; do shift; done
+
+	test $# -le 1 ||
+	die "Extra options: %s\n" "$*"
+
+	test -z "$unpack" || test -z "$artifactsdir" ||
+	die "--unpack and --directory are mutually exclusive\n"
+
+	test -n "$unpack" ||
+	test -n "$artifactsdir" ||
+	artifactsdir="$(cygpath -am "$HOME")" || exit
+
+	test -n "$architectures" ||
+	architectures="i686 x86_64"
 
 	versions="$(case $# in 0) pacman -Q;; 1) cat "$1";; esac |
-		sed 's/^\(mingw-w64\)\(-[^-]*\)/\1/')"
+		sed 's/^\(mingw-w64\)\(-[^-]*\)/\1/' | sort | uniq)"
 	test -n "$versions" ||
 	die 'Could not obtain package versions\n'
 
 	git_version="$(echo "$versions" | sed -n 's/^mingw-w64-git //p')"
 
-	dir=cached-source-packages
+	dir="${this_script_path:+$(cygpath -au \
+		"${this_script_path%/*}")/}"cached-source-packages
+	test -n "$unpack" ||
 	unpack=$dir/.unpack
 	url=https://wingit.blob.core.windows.net
 
-	for arch in i686 x86_64
+	mkdir -p "$dir" ||
+	die "Could not create '%s'\n" "$dir"
+
+	for arch in $architectures
 	do
 		test i686 = $arch &&
 		bitness=32-bit ||
@@ -3422,6 +3460,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 		oarch=x86-64 ||
 		oarch=$arch
 
+		test -z "$artifactsdir" ||
 		test ! -d $unpack ||
 		rm -rf $unpack ||
 		die 'Could not remove %s\n' "$unpack"
@@ -3448,22 +3487,35 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [<package-versions>]
 			test -f "$dir/$tar" ||
 			if test -f "$dir2/$tar"
 			then
-				cp "$dir2/$tar" "$dir/$tar"
+				cp "$dir2/$tar" "$dir/$tar" ||
+				die 'Could not copy %s (%d)\n' "$tar" $?
 			else
 				echo "Retrieving $tar..." >&2
-				curl -sfo "$dir/$tar" $url/$oarch/$tar ||
-				while test 56 = $?
-				do
-					curl -sfo "$dir/$tar" $url/$oarch/$tar
-				done
-			fi ||
-			die 'Could not retrieve %s (%d)\n' "$tar" $?
+				curl -sfo "$dir/$tar" $url/$oarch/$tar
+				case $? in
+				0) ;; # okay
+				56)
+					while test 56 = $?
+					do
+						curl -sfo "$dir/$tar" \
+							$url/$oarch/$tar ||
+						die "curl error %s (%d)\n" \
+							"$tar" $?
+					done
+					;;
+				*)
+					die 'curl error %s (%d)\n' "$tar" $?
+					;;
+				esac
+			fi
 
 			(cd "$unpack" &&
 			 "$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-				"tar --wildcards -xf ../\"$tar\" \\*.pdb") ||
+				"tar --wildcards -xf \"$dir/$tar\" \\*.pdb") ||
 			die 'Could not unpack .pdb files from %s\n' "$tar"
 		done
+
+		test -n "$artifactsdir" || continue
 
 		zip=pdbs-for-git-$bitness-$git_version.zip &&
 		echo "Bundling .pdb files for $bitness..." >&2

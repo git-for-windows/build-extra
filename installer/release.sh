@@ -13,6 +13,7 @@ force=
 inno_defines=
 skip_files=
 test_installer=
+include_pdbs=
 while test $# -gt 0
 do
 	case "$1" in
@@ -47,6 +48,9 @@ do
 
 		inno_defines="$(printf "%s\n%s" "$inno_defines" \
 			"#define OUTPUT_DIRECTORY '$output_directory'")"
+		;;
+	--include-pdbs)
+		include_pdbs=t
 		;;
 	*)
 		break
@@ -176,6 +180,18 @@ sed -e 's|/|\\|g' \
 	-e 's|^\([^\\]*\)$|Source: \1; DestDir: {app}; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore|' \
 	-e 's|^\(.*\)\\\([^\\]*\)$|Source: \1\\\2; DestDir: {app}\\\1; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore|' \
 	>> file-list.iss
+
+test -z "$include_pdbs" || {
+	rm -rf root &&
+	mkdir root &&
+	../please.sh bundle-pdbs --arch=$ARCH --unpack=root/ &&
+	find root -name \*.pdb |
+	sed -e 's|/|\\|g' \
+		-e 's|^root\\\([^\\]*\)$|Source: "{#SourcePath}\\root\\\1"; DestDir: {app}; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore|' \
+		-e 's|^root\\\(.*\)\\\([^\\]*\)$|Source: "{#SourcePath}\\root\\\1\\\2"; DestDir: {app}\\\1; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore|' \
+		>> file-list.iss
+} ||
+die "Could not include .pdb files"
 
 printf "%s\n%s\n%s\n%s%s" \
 	"#define APP_VERSION '$displayver'" \
