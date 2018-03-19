@@ -1712,11 +1712,18 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c '
 			cd "'"$git_src_dir"'/../.." &&
+			mach="$(uname -m)" &&
+			if test -n "'"$include_pdbs"'" &&
+				test -n "'"$outputdir"'"
+			then
+				cp mingw-w64-$mach-git-pdb-"'"$pkgsuffix"'" \
+					"'"$outputdir"'"/
+			fi &&
 			precmd="pacman --force --noconfirm -U" &&
 			postcmd="pacman --force --noconfirm -U" &&
 			for pkg in '"$pkglist"'
 			do
-				pkg=mingw-w64-"$(uname -m)"-$pkg
+				pkg=mingw-w64-$mach-$pkg
 
 				file="$(pacman -Q $pkg)" || {
 					pacman -S --noconfirm $pkg &&
