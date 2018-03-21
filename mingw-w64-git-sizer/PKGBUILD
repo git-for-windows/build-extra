@@ -15,11 +15,11 @@ groups=('VCS')
 case "$CARCH" in
 i686)
   zipname="git-sizer-$pkgver-windows-386.zip"
-  sha256sum=
+  sha256sum=c598c84764aec2003a1772865d29d7936636863ee367df958f90fb25e59cee37
   ;;
 x86_64)
   zipname="git-sizer-$pkgver-windows-amd64.zip"
-  sha256sum=
+  sha256sum=24383cf861d46436c943458afca5ca6caa67161d1d58ad32e44ecee651493666
   ;;
 esac
 
