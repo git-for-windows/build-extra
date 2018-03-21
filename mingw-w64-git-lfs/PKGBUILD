@@ -38,4 +38,6 @@ options=('!strip')
 package() {
   install -d -m755 $pkgdir/$MINGW_PREFIX/bin
   install -m755 $srcdir/$folder/git-lfs.exe $pkgdir/$MINGW_PREFIX/bin/git-lfs.exe
+  install -d -m755 $pkgdir/$MINGW_PREFIX/share/doc/git-lfs
+  install -m755 $srcdir/$folder/README.md $pkgdir/$MINGW_PREFIX/share/doc/git-lfs/README.md
 }
