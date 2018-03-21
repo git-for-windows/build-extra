@@ -3176,9 +3176,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 	fi &&
 
 	build $force $cleanbuild "$package" &&
+	foreach_sdk pkg_copy_artifacts &&
 	install "$package" &&
 	if test -z "$skip_upload"; then upload "$package"; fi &&
-	foreach_sdk pkg_copy_artifacts &&
 
 	if test -n "$relnotes_feature"
 	then
