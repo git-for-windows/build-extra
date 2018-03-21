@@ -296,6 +296,11 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/build-extra/mingw-w64-git-lfs
 		;;
+	git-sizer|mingw-w64-git-sizer)
+		package=mingw-w64-git-sizer
+		type=MINGW
+		pkgpath=/usr/src/build-extra/mingw-w64-git-sizer
+		;;
 	cv2pdb|mingw-w64-cv2pdb)
 		package=mingw-w64-cv2pdb
 		type=MINGW
@@ -3130,6 +3135,34 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		url=$url/NEWS?h=gawk-$version &&
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
 		relnotes_feature="Comes with [$package $v]($url)."
+		;;
+	mingw-w64-git-sizer)
+		repo=github/git-sizer
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		version="$(echo "$release" |
+			sed -n 's/^  "tag_name": "v\(.*\)",\?$/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+
+		(cd "$sdk64/$pkgpath" &&
+		 url=https://github.com/$repo/releases/download/v$version/ &&
+		 zip32="git-sizer-$version-windows-386.zip" &&
+		 zip64="git-sizer-$version-windows-amd64.zip" &&
+		 curl -LO $url$zip32 &&
+		 curl -LO $url$zip64 &&
+		 sha256_32=$(sha256sum $zip32 | cut -c-64) &&
+		 sha256_64=$(sha256sum $zip64 | cut -c-64) &&
+		 s1='s/\(sha256sum=\)[0-9a-f]*/\1' &&
+		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
+		 -e "s/^\\(pkgrel=\\).*/\\11/" \
+		 -e "/^i686)/{N;N;$s1$sha256_32/}" \
+		 -e "/^x86_64)/{N;N;$s1$sha256_64/}" \
+			PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD)
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
