@@ -45,7 +45,6 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v7.59.0](https://curl.haxx.se/changes.html#7_59_0).
 * The Git for Windows SDK [can now be "installed" via `git clone --depth=1 https://github.com/git-for-windows/git-sdk-64`](https://github.com/git-for-windows/git/issues/1357).
 * The `tar` utility (included as a courtesy, not because Git needs it) [can now unpack `.tar.xz` archives](https://github.com/git-for-windows/build-extra/pull/177).
-* Comes with [cURL v7.59.0](https://curl.haxx.se/changes.html#7_59_0).
 
 ### Bug Fixes
 
@@ -55,6 +54,7 @@ This package contains software from a number of other projects including Bash, z
 * The installer [is now more robust when encountering files that are in use](https://github.com/git-for-windows/build-extra/commit/d33ee8606bfbc0e9b801df0a5257721e20f8dd4a) (and can therefore not be overwritten right away).
 * The included `find` and `rm` utilities [no longer have problems with deeply nested directories on FAT drives](https://github.com/git-for-windows/git/issues/1497).
 * The `cygpath` utility included in Git for Windows now strips trailing slashes when normalizing paths (just like the Cygwin version of the utility; this is *different* from how MSYS2 chooses to do things).
+* The certificates of HTTPS proxies configured via `http.proxy` [are now validated against the `ca-bundle.crt` correctly](https://github.com/git-for-windows/git/issues/1493).
 
 ## Changes since Git for Windows v2.16.1(4) (February 7th 2018)
 
