@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.16.3](https://github.com/git/git/blob/v2.16.3/Documentation/RelNotes/2.16.3.txt).
 * When choosing to "Use Git from the Windows Command Prompt" (i.e. add only the minimal set of Git executables to the `PATH`), and when choosing the Git LFS component, Git LFS [is now included in that minimal set](https://github.com/git-for-windows/git/issues/1503). This makes it possible to reuse Git for Windows' Git LFS, say, from Visual Studio.
 * Comes with [gawk v4.2.1](http://git.savannah.gnu.org/cgit/gawk.git/plain/NEWS?h=gawk-4.2.1).
 * In conjunction with the FSCache feature, `git checkout` [is now a lot faster when checking out a *lot* of files](https://github.com/git-for-windows/git/pull/1468).
