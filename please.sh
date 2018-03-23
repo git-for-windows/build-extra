@@ -3437,7 +3437,6 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	while case "$1" in
 	--directory=*)
 		artifactsdir="$(cygpath -am "${1#*=}")" || exit
-		shift
 		test -d "$artifactsdir" ||
 		mkdir "$artifactsdir" ||
 		die "Could not create artifacts directory: %s\n" "$artifactsdir"
@@ -3447,7 +3446,6 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 		;;
 	--unpack=*)
 		unpack="$(cygpath -am "${1#*=}")" || exit
-		shift
 		test -d "$unpack" ||
 		die "Not a directory: %s\n" "$unpack"
 		;;
