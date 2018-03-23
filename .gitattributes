@@ -15,6 +15,7 @@ PKGBUILD eol=lf
 *.exe -text
 *.dll -text
 *.chm -text
+*.bmp -text
 /git-extra/astextplain eol=lf
 /git-extra/notepad eol=lf
 /git-extra/vi eol=lf
