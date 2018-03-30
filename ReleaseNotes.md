@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Git Credential Manager v1.15.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.15.1).
 * Comes with [OpenSSL v1.0.2o](https://www.openssl.org/news/openssl-1.0.2-notes.html).
+* Comes with [Git Credential Manager v1.15.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.15.2).
 
 ## Changes since Git for Windows v2.16.2 (February 20th 2018)
 
