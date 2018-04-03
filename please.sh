@@ -2879,12 +2879,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		relnotes_feature="$(cat "$sdk64/$pkgpath/../.git/relnotes")"
 		;;
 	openssh)
-		#url="https://mirrors.sonic.net/pub/OpenBSD/OpenSSH/portable/"
-		#version="$(curl -s "$url?C=M;O=D" |
-		#	sed -n '/"openssh-\([1-9]*[^"]*\)\.tar\.gz"/{
-		#		s/.*"openssh-\([^"]*\)\.tar\.gz".*/\1/p;q}')"
 		url=https://www.openssh.com
-		newest="$(curl -s $url/releasenotes.html |
+		notes="$(curl -s $url/releasenotes.html)" ||
+		die 'Could not obtain release notes from %s\n' \
+			"$url/releasenotes.html"
+		newest="$(echo "$notes" |
 			sed -n '/OpenSSH [1-9].*href=.txt\/.*[0-9]p[1-9]/{
 			  s/.*href=.\(txt\/[^ ]*\). .*>\([1-9][^<]*\).*/\1 \2/p
 			  q
@@ -2894,12 +2893,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		die "Could not determine newest cURL version\n"
 		url=$url/${newest% *}
 		relnotes_feature='Comes with [OpenSSH v'$version']('"$url"').'
+		sha256="$(echo "$notes" |
+			sed -n "s/.*SHA256 (openssh-$version\\.tar\\.gz) = \([^ ]*\).*/\\1/p" |
+			base64 -d | hexdump -e '1/1 "%02x"')"
 
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
+		 grep "sha256sums.*$sha256" PKGBUILD &&
 		 git commit -s -m "openssh: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
 		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
 
