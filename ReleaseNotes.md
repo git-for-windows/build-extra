@@ -41,6 +41,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git Credential Manager v1.15.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.15.2).
 * Comes with [OpenSSH v7.7p1](https://www.openssh.com/txt/release-7.7).
 
+### Bug Fixes
+
+* When `git.exe` is called with an invalid subcommand,  [it no longer complains about file handles](https://github.com/git-for-windows/git/issues/1591).
+
 ## Changes since Git for Windows v2.16.2 (February 20th 2018)
 
 ### New Features
