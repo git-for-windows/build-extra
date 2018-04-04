@@ -72,7 +72,11 @@ do
 	basename="$(basename "$path")"
 	case "$uploaded" in *" $basename "*) continue;; esac
 	json="$(curl -i --netrc -XPOST -H "Content-Type: $contenttype" \
-		--data-binary @"$path" "$url/$id/assets?name=$basename")" ||
+		--data-binary @"$path" "$url/$id/assets?name=$basename")" &&
+	case "$json" in
+	"HTTP/1.? 200") ;; # okay
+	*) false;; # error!
+	esac ||
 	die "Could not upload $path (response: $json)"
 
 	url2="$(echo "${json##*\"browser_download_url\":\"}" | sed -n \
