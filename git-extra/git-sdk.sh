@@ -118,7 +118,8 @@ EOF
 		esac
 		;;
 	*)
-		sdk die "Usage: sdk ( build-git | init <repo> | create-desktop-icon | help )"
+		printf "Usage: sdk <command> [<argument>...]\n\n" >&2 &&
+		sdk help
 		;;
 	esac
 }
