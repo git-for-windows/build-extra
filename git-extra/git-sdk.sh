@@ -71,13 +71,14 @@ sdk () {
 	init-lazy)
 		case "$2" in
 		build-extra|git|MINGW-packages|MSYS2-packages)
-			test -d /usr/src/"$2"/.git && return
-			mkdir -p /usr/src/"$2" &&
-			git -C /usr/src/"$2" init &&
-			git -C /usr/src/"$2" config core.autocrlf false &&
-			git -C /usr/src/"$2" remote add origin \
+			src_dir=/usr/src/"$2"
+			test -d "$src_dir"/.git && return
+			mkdir -p "$src_dir" &&
+			git -C "$src_dir" init &&
+			git -C "$src_dir" config core.autocrlf false &&
+			git -C "$src_dir" remote add origin \
 				https://github.com/git-for-windows/"$2" ||
-			sdk die "Could not initialize /usr/src/$2"
+			sdk die "Could not initialize $src_dir"
 			;;
 		*)
 			sdk die "Unhandled repository: $2" >&2
@@ -86,24 +87,24 @@ sdk () {
 		;;
 	init)
 		sdk init-lazy "$2" &&
-		git -C "/usr/src/$2" pull origin master
+		git -C "$src_dir" pull origin master
 		;;
 	build)
 		case "$2" in
 		git)
 			sdk init git &&
-			make -C /usr/src/git -j$(nproc) DEVELOPER=1
+			make -C "$src_dir" -j$(nproc) DEVELOPER=1
 			;;
 		installer)
 			sdk init build-extra &&
-			/usr/src/build-extra/installer/release.sh "${3:-0-test}"
+			"$src_dir"/installer/release.sh "${3:-0-test}"
 			;;
 		git-and-installer)
 			sdk build git &&
-			make -C /usr/src/git strip install &&
+			make -C "$src_dir" strip install &&
 			pacman -Syyu git-extra &&
 			sdk init build-extra &&
-			/usr/src/build-extra/installer/release.sh "${3:-0-test}"
+			"$src_dir"/installer/release.sh "${3:-0-test}"
 			;;
 		*)
 			cat >&2 <<EOF
