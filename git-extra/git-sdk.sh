@@ -71,6 +71,14 @@ sdk () {
 		echo "$*" >&2
 		return 1
 		;;
+	# for completion
+	valid_commands)
+		echo "build cd create-desktop-icon init"
+		;;
+	valid_projects)
+		echo "build-extra git git-extra MINGW-packages MSYS2-packages"
+		;;
+	# here start the commands
 	init-lazy)
 		case "$2" in
 		build-extra|git|MINGW-packages|MSYS2-packages)

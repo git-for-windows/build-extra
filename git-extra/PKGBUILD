@@ -42,6 +42,7 @@ source=('inputrc'
         'gitattributes'
         'astextplain'
         'git-sdk.sh'
+        'sdk.completion'
         'git-update-git-for-windows'
         'git-update'
         'blocked-file-util.c'
@@ -96,6 +97,7 @@ build() {
 package() {
   builddir=build-${MINGW_CHOST}
   install -d -m755 $pkgdir/etc/profile.d
+  install -d -m755 $pkgdir/usr/share/bash-completion/completions
   install -d -m755 $pkgdir/etc/post-install
   install -d -m755 $pkgdir/usr/bin
   install -d -m755 $pkgdir/usr/share/git
@@ -118,6 +120,7 @@ package() {
   install -m755 env.sh $pkgdir/etc/profile.d
   install -m755 bash_profile.sh $pkgdir/etc/profile.d
   install -m755 git-sdk.sh $pkgdir/etc/profile.d
+  install -m755 sdk.completion $pkgdir/usr/share/bash-completion/completions/sdk
   install -m644 msys2-32.ico $pkgdir/usr/share/git
   install -m644 99-post-install-cleanup.post $pkgdir/etc/post-install
   install -m755 astextplain $pkgdir/usr/bin
