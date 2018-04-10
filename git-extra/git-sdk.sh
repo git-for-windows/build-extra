@@ -26,12 +26,13 @@ sdk () {
 		The 'sdk' shell function helps you to get up and running
 		with the Git for Windows SDK. The available subcommands are:
 
-		create-desktop-icon: install a desktop icon that starts the GfW SDK shell.
+		create-desktop-icon: install a desktop icon that starts the Git for
+		    Windows SDK Bash.
 
-		init <repo>: initialize and/or update a development repo. Known repos
+		init <project>: initialize and/or update a worktree. Known projects
 		    are: build-extra, git, MINGW-packages, MSYS2-packages.
 
-		build: builds one of the following: git, git-and-installer.
+		build <project>: builds one of the following: git, git-and-installer.
 		EOF
 		;;
 	welcome)
