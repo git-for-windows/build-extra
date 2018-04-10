@@ -30,7 +30,7 @@ sdk () {
 		    Windows SDK Bash.
 
 		cd <project>: initialize/update a worktree and cd into it. Known projects
-		    are: build-extra, git, MINGW-packages, MSYS2-packages.
+		    are: git, git-extra, build-extra, MINGW-packages, MSYS2-packages.
 
 		init <project>: initialize and/or update a worktree. Known projects
 		    are the same as for the 'cd' command.
@@ -75,6 +75,7 @@ sdk () {
 		case "$2" in
 		build-extra|git|MINGW-packages|MSYS2-packages)
 			src_dir=/usr/src/"$2"
+			src_cdup_dir="$src_dir"
 			test -d "$src_dir"/.git && return
 			mkdir -p "$src_dir" &&
 			git -C "$src_dir" init &&
@@ -82,6 +83,11 @@ sdk () {
 			git -C "$src_dir" remote add origin \
 				https://github.com/git-for-windows/"$2" ||
 			sdk die "Could not initialize $src_dir"
+			;;
+		git-extra)
+			sdk init-lazy build-extra &&
+			src_dir="$src_dir/$2" ||
+			return 1
 			;;
 		*)
 			sdk die "Unhandled repository: $2" >&2
@@ -95,7 +101,7 @@ sdk () {
 		;;
 	init)
 		sdk init-lazy "$2" &&
-		git -C "$src_dir" pull origin master
+		git -C "$src_cdup_dir" pull origin master
 		;;
 	build)
 		case "$2" in
