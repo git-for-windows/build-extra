@@ -29,8 +29,11 @@ sdk () {
 		create-desktop-icon: install a desktop icon that starts the Git for
 		    Windows SDK Bash.
 
-		init <project>: initialize and/or update a worktree. Known projects
+		cd <project>: initialize/update a worktree and cd into it. Known projects
 		    are: build-extra, git, MINGW-packages, MSYS2-packages.
+
+		init <project>: initialize and/or update a worktree. Known projects
+		    are the same as for the 'cd' command.
 
 		build <project>: builds one of the following: git, git-and-installer.
 		EOF
@@ -84,6 +87,11 @@ sdk () {
 			sdk die "Unhandled repository: $2" >&2
 			;;
 		esac
+		;;
+	cd)
+		sdk init "$2" &&
+		cd "$src_dir" ||
+		sdk die "Could not change directory to '$2'"
 		;;
 	init)
 		sdk init-lazy "$2" &&
