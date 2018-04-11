@@ -47,8 +47,8 @@ do
         todo=${todo#* }
 	exes_and_dlls="$exes_and_dlls$file "
 
-        for dll in $(objdump -p "$BIN_DIR/$file" |
-                sed -n "s|^\tDLL Name: ||p")
+        for dll in $(ldd "$BIN_DIR/$file" |
+		sed -n "s|.*> $BIN_DIR/\\([^ ]*\\).*|\\1|p")
         do
                 case " $exes_and_dlls $todo " in
                 *" $dll "*) ;; # already found/queued
