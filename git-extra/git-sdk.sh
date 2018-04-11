@@ -26,12 +26,16 @@ sdk () {
 		The 'sdk' shell function helps you to get up and running
 		with the Git for Windows SDK. The available subcommands are:
 
-		create-desktop-icon: install a desktop icon that starts the GfW SDK shell.
+		create-desktop-icon: install a desktop icon that starts the Git for
+		    Windows SDK Bash.
 
-		init <repo>: initialize and/or update a development repo. Known repos
-		    are: build-extra, git, MINGW-packages, MSYS2-packages.
+		cd <project>: initialize/update a worktree and cd into it. Known projects
+		    are: git, git-extra, build-extra, MINGW-packages, MSYS2-packages.
 
-		build: builds one of the following: git, git-and-installer.
+		init <project>: initialize and/or update a worktree. Known projects
+		    are the same as for the 'cd' command.
+
+		build <project>: builds one of the following: git, git-and-installer.
 		EOF
 		;;
 	welcome)
@@ -67,42 +71,62 @@ sdk () {
 		echo "$*" >&2
 		return 1
 		;;
+	# for completion
+	valid_commands)
+		echo "build cd create-desktop-icon init"
+		;;
+	valid_projects)
+		echo "build-extra git git-extra MINGW-packages MSYS2-packages"
+		;;
+	# here start the commands
 	init-lazy)
 		case "$2" in
 		build-extra|git|MINGW-packages|MSYS2-packages)
-			test -d /usr/src/"$2"/.git && return
-			mkdir -p /usr/src/"$2" &&
-			git -C /usr/src/"$2" init &&
-			git -C /usr/src/"$2" config core.autocrlf false &&
-			git -C /usr/src/"$2" remote add origin \
+			src_dir=/usr/src/"$2"
+			src_cdup_dir="$src_dir"
+			test -d "$src_dir"/.git && return
+			mkdir -p "$src_dir" &&
+			git -C "$src_dir" init &&
+			git -C "$src_dir" config core.autocrlf false &&
+			git -C "$src_dir" remote add origin \
 				https://github.com/git-for-windows/"$2" ||
-			sdk die "Could not initialize /usr/src/$2"
+			sdk die "Could not initialize $src_dir"
+			;;
+		git-extra)
+			sdk init-lazy build-extra &&
+			src_dir="$src_dir/$2" ||
+			return 1
 			;;
 		*)
 			sdk die "Unhandled repository: $2" >&2
 			;;
 		esac
 		;;
+	cd)
+		sdk init "$2" &&
+		cd "$src_dir" ||
+		sdk die "Could not change directory to '$2'"
+		;;
 	init)
 		sdk init-lazy "$2" &&
-		git -C "/usr/src/$2" pull origin master
+		git -C "$src_cdup_dir" pull origin master
 		;;
 	build)
 		case "$2" in
 		git)
 			sdk init git &&
-			make -C /usr/src/git -j$(nproc) DEVELOPER=1
+			make -C "$src_dir" -j$(nproc) DEVELOPER=1
 			;;
 		installer)
 			sdk init build-extra &&
-			/usr/src/build-extra/installer/release.sh "${3:-0-test}"
+			"$src_dir"/installer/release.sh "${3:-0-test}"
 			;;
 		git-and-installer)
 			sdk build git &&
-			make -C /usr/src/git strip install &&
+			make -C "$src_dir" strip install &&
 			pacman -Syyu git-extra &&
 			sdk init build-extra &&
-			/usr/src/build-extra/installer/release.sh "${3:-0-test}"
+			"$src_dir"/installer/release.sh "${3:-0-test}"
 			;;
 		*)
 			cat >&2 <<EOF
@@ -118,7 +142,8 @@ EOF
 		esac
 		;;
 	*)
-		sdk die "Usage: sdk ( build-git | init <repo> | create-desktop-icon | help )"
+		printf "Usage: sdk <command> [<argument>...]\n\n" >&2 &&
+		sdk help
 		;;
 	esac
 }
