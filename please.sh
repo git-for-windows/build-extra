@@ -3029,6 +3029,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		test -n "$ver" ||
 		die "Could not determine latest Perl version\n"
 
+		# work around stale https://dev.perl.org/perl5/
+		test 5.26.1 != "$ver" || ver=5.26.2
+
 		(cd "$sdk64$pkgpath" &&
 		 dll=msys-perl"$(echo "$ver" | tr . _)".dll &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$ver/ \
