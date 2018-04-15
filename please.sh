@@ -404,6 +404,12 @@ set_package () {
 		pkgpath=/usr/src/MSYS2-packages/$package
 		extra_makepkg_opts=--nocheck
 		;;
+	nodejs|mingw-w64-nodejs)
+		package=mingw-w64-nodejs
+		type=MINGW
+		pkgpath=/usr/src/MINGW-packages/mingw-w64-nodejs
+		extra_makepkg_opts=--nocheck
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
@@ -3169,6 +3175,29 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD)
+		;;
+	mingw-w64-nodejs)
+		url=https://nodejs.org/en/download/
+		downloads="$(curl $url)" ||
+		die "Could not download node.js' Downloads page\n"
+
+		version="$(echo "$downloads" | sed -n -e \
+			's|.*https://nodejs.org/dist/v\([0-9.]*\)/.*|\1|p' |
+			uniq)"
+		test -n "$version" ||
+		die "Could not determine current node.js version\n"
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: upgrade to v$version" PKGBUILD) ||
+		exit
+
+		url=https://nodejs.org/en/blog/release/v$version/ &&
+		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
+		relnotes_feature="Comes with [$package $v]($url)."
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
