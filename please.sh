@@ -3976,7 +3976,9 @@ publish_sdk () { #
 	git --git-dir="$sdk64"/usr/src/build-extra/.git push origin "$tag"
 }
 
-this_script_path="$(cygpath -am "$0")"
+this_script_path="$(cd "$(dirname "$0")" && echo "$(pwd -W)/$(basename "$0")")" ||
+die "Could not determine this script's path\n"
+
 test $# -gt 0 &&
 test help != "$*" ||
 die "Usage: $0 <command>\n\nCommands:\n%s" \
