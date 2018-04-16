@@ -116,6 +116,8 @@ sync () { # [--force]
 	test $# = 0 ||
 	die "Expected no argument, got $#: %s\n" "$*"
 
+	export MSYSTEM=msys
+	export MSYS2_PATH_TYPE=minimal
 	for sdk in "$sdk32" "$sdk64"
 	do
 		mkdir -p "$sdk/var/log" ||
@@ -124,15 +126,14 @@ sync () { # [--force]
 		remove_obsolete_packages ||
 		die "Could not remove obsolete packages\n"
 
-		"$sdk/git-cmd.exe" --command=usr\\bin\\pacman.exe -S$y_opt ||
+		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -lc \
+			"pacman.exe -S$y_opt" ||
 		die "Cannot run pacman in %s\n" "$sdk"
 
-		PATH="$sdk/usr/bin:$PATH" \
-		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\pacman.exe \
-			-Su $force --noconfirm ||
+		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\bash.exe \
+			-lc "pacman.exe -Su $force --noconfirm" ||
 		die "Could not update packages in %s\n" "$sdk"
 
-		PATH="$sdk/usr/bin:$PATH" \
 		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
 			pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
 			pacman-key --populate git-for-windows' ||
@@ -145,13 +146,11 @@ sync () { # [--force]
 			;; # okay
 		*)
 			# only "core" packages were updated, update again
-			PATH="$sdk/usr/bin:$PATH" \
 			"$sdk/git-cmd.exe" --cd="$sdk" \
-				--command=usr\\bin\\sh.exe -l \
+				--command=usr\\bin\\bash.exe -l \
 				-c 'pacman -Su '$force' --noconfirm' ||
 			die "Cannot update packages in %s\n" "$sdk"
 
-			PATH="$sdk/usr/bin:$PATH" \
 			"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
 				pacman-key --list-keys BB3AA74136C569BB \
 					>/dev/null ||
@@ -165,8 +164,7 @@ sync () { # [--force]
 		# SDK, though, as we require asciidoctor only when building
 		# Git, whose 32-bit packages are cross-compiled in from 64-bit.
 		test "$sdk64" != "$sdk" ||
-		PATH="$sdk/usr/bin:$PATH" \
-		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c \
 			'test -n "$(gem list --local | grep "^asciidoctor ")" ||
 			 gem install asciidoctor || exit;
 			 export PATH=/mingw32/bin:$PATH;
@@ -176,8 +174,7 @@ sync () { # [--force]
 
 		# git-extra rewrites some files owned by other packages,
 		# therefore it has to be (re-)installed now
-		PATH="$sdk/usr/bin:$PATH" \
-		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c \
 			'pacman -S '$force' --noconfirm git-extra' ||
 		die "Cannot update git-extra in %s\n" "$sdk"
 
@@ -199,8 +196,7 @@ sync () { # [--force]
 			# one of the .pacnew files could be pacman.conf, and
 			# replacing it removes the link to Git for Windows'
 			# Pacman repository
-			PATH="$sdk/bin:$PATH" \
-			"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			"$sdk/git-cmd.exe" --command=usr\\bin\\nbash.exe -l -c \
 			   'pkg=/var/cache/pacman/pkg/$(pacman -Q git-extra |
 				tr \  -)*.pkg.tar.xz
 			    test -f $pkg || {
