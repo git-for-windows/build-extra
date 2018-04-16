@@ -38,7 +38,6 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Perl v5.26.2](http://search.cpan.org/dist/perl-5.26.2/pod/perldelta.pod).
-* Comes with [mingw-w64-nodejs v8.11.1](https://nodejs.org/en/blog/release/v8.11.1/).
 
 ## Changes since Git for Windows v2.16.3 (March 23rd 2018)
 
