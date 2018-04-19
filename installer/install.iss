@@ -2189,6 +2189,8 @@ begin
         Data:='Notepad++';
     end else if (CbbEditor.ItemIndex=GE_VisualStudioCode) then begin
         Data:='VisualStudioCode';
+    end else if (CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders) then begin
+        Data:='VisualStudioCodeInsiders';
     end;
     RecordChoice(PreviousDataKey,'Editor Option',Data);
 
