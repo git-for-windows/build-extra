@@ -308,7 +308,7 @@ const
     GE_VIM            = 1;
     GE_NotepadPlusPlus = 2;
     GE_VisualStudioCode = 3;
-    GE_VisualStudioCodeInsiders = 3;
+    GE_VisualStudioCodeInsiders = 4;
 
     // Git Path options.
     GP_BashOnly       = 1;
