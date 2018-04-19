@@ -1184,6 +1184,12 @@ begin
             else
                 CbbEditor.ItemIndex:=GE_VIM;
         end;
+    'VisualStudioCodeInsiders': begin
+            if EditorAvailable[GE_VisualStudioCodeInsiders] then
+                CbbEditor.ItemIndex:=GE_VisualStudioCodeInsiders
+            else
+                CbbEditor.ItemIndex:=GE_VIM;
+        end;
     else
         CbbEditor.ItemIndex:=GE_VIM;
     end;
