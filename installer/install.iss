@@ -358,6 +358,7 @@ var
 
     NotepadPlusPlusPath:String;
     VisualStudioCodePath:String;
+    VisualStudioCodeInsidersPath:String;
 
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
@@ -1128,6 +1129,8 @@ begin
 
     EditorAvailable[GE_NotepadPlusPlus]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\notepad++.exe','',NotepadPlusPlusPath);
     EditorAvailable[GE_VisualStudioCode]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
+    EditorAvailable[GE_VisualStudioCodeInsiders]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodeInsidersPath);
+
     if (EditorAvailable[GE_VisualStudioCode]) then begin
         StringChangeEx(VisualStudioCodePath,' "%1"','',True);
     end;
