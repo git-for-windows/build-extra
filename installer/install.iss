@@ -308,6 +308,7 @@ const
     GE_VIM            = 1;
     GE_NotepadPlusPlus = 2;
     GE_VisualStudioCode = 3;
+    GE_VisualStudioCodeInsiders = 3;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -351,8 +352,8 @@ var
     // Wizard page and variables for the Editor options.
     EditorPage:TWizardPage;
     CbbEditor:TNewComboBox;
-    LblEditor:array[GE_Nano..GE_VisualStudioCode] of array of TLabel;
-    EditorAvailable:array[GE_Nano..GE_VisualStudioCode] of Boolean;
+    LblEditor:array[GE_Nano..GE_VisualStudioCodeInsiders] of array of TLabel;
+    EditorAvailable:array[GE_Nano..GE_VisualStudioCodeInsiders] of Boolean;
     SelectedEditor:Integer;
 
     NotepadPlusPlusPath:String;
