@@ -1142,7 +1142,7 @@ begin
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use the Nano editor by default');
     Data:='<RED>(NEW!)</RED> <A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window.';
-    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode]) and not EditorAvailable[GE_VisualStudioCodeInsiders]) then
+    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode] and not EditorAvailable[GE_VisualStudioCodeInsiders]) then
         Data:=Data+#13+#13+'This is the recommended option for end users if no GUI editors are installed.';
     CreateItemDescription(EditorPage,Data,Top,Left,LblEditor[GE_Nano],False);
     EditorAvailable[GE_Nano]:=True;
