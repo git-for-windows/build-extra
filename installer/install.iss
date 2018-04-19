@@ -1134,6 +1134,9 @@ begin
     if (EditorAvailable[GE_VisualStudioCode]) then begin
         StringChangeEx(VisualStudioCodePath,' "%1"','',True);
     end;
+    if (EditorAvailable[GE_VisualStudioCodeInsiders]) then begin
+        StringChangeEx(VisualStudioCodeInsidersPath,' "%1"','',True);
+    end;
 
     // 1st choice
     Top:=TopOfLabels;
