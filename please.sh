@@ -196,7 +196,7 @@ sync () { # [--force]
 			# one of the .pacnew files could be pacman.conf, and
 			# replacing it removes the link to Git for Windows'
 			# Pacman repository
-			"$sdk/git-cmd.exe" --command=usr\\bin\\nbash.exe -l -c \
+			"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c \
 			   'pkg=/var/cache/pacman/pkg/$(pacman -Q git-extra |
 				tr \  -)*.pkg.tar.xz
 			    test -f $pkg || {
