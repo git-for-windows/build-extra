@@ -308,6 +308,7 @@ const
     GE_VIM            = 1;
     GE_NotepadPlusPlus = 2;
     GE_VisualStudioCode = 3;
+    GE_VisualStudioCodeInsiders = 4;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -351,12 +352,13 @@ var
     // Wizard page and variables for the Editor options.
     EditorPage:TWizardPage;
     CbbEditor:TNewComboBox;
-    LblEditor:array[GE_Nano..GE_VisualStudioCode] of array of TLabel;
-    EditorAvailable:array[GE_Nano..GE_VisualStudioCode] of Boolean;
+    LblEditor:array[GE_Nano..GE_VisualStudioCodeInsiders] of array of TLabel;
+    EditorAvailable:array[GE_Nano..GE_VisualStudioCodeInsiders] of Boolean;
     SelectedEditor:Integer;
 
     NotepadPlusPlusPath:String;
     VisualStudioCodePath:String;
+    VisualStudioCodeInsidersPath:String;
 
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
@@ -1127,15 +1129,20 @@ begin
 
     EditorAvailable[GE_NotepadPlusPlus]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\notepad++.exe','',NotepadPlusPlusPath);
     EditorAvailable[GE_VisualStudioCode]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
+    EditorAvailable[GE_VisualStudioCodeInsiders]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code - Insiders.exe\shell\open\command','',VisualStudioCodeInsidersPath);
+
     if (EditorAvailable[GE_VisualStudioCode]) then begin
         StringChangeEx(VisualStudioCodePath,' "%1"','',True);
+    end;
+    if (EditorAvailable[GE_VisualStudioCodeInsiders]) then begin
+        StringChangeEx(VisualStudioCodeInsidersPath,' "%1"','',True);
     end;
 
     // 1st choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use the Nano editor by default');
     Data:='<RED>(NEW!)</RED> <A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window.';
-    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode]) then
+    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode] and not EditorAvailable[GE_VisualStudioCodeInsiders]) then
         Data:=Data+#13+#13+'This is the recommended option for end users if no GUI editors are installed.';
     CreateItemDescription(EditorPage,Data,Top,Left,LblEditor[GE_Nano],False);
     EditorAvailable[GE_Nano]:=True;
@@ -1154,7 +1161,12 @@ begin
     // 4th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Visual Studio Code as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False);
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'This is the Stable version of Visual Studio Code that recives tested updates'+#13+'every month.'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False);
+
+    // 5th choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use Visual Studio Code Insiders as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com/insiders/>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'This is the Insiders version of Visual Studio Code that recives updates from'+#13+'the main repository every day.'+#13+#13+'Use this option to let Git use Visual Studio Code Insiders as its default editor.',Top,Left,LblEditor[GE_VisualStudioCodeInsiders],False);
 
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Editor Option','VIM') of
@@ -1169,6 +1181,12 @@ begin
     'VisualStudioCode': begin
             if EditorAvailable[GE_VisualStudioCode] then
                 CbbEditor.ItemIndex:=GE_VisualStudioCode
+            else
+                CbbEditor.ItemIndex:=GE_VIM;
+        end;
+    'VisualStudioCodeInsiders': begin
+            if EditorAvailable[GE_VisualStudioCodeInsiders] then
+                CbbEditor.ItemIndex:=GE_VisualStudioCodeInsiders
             else
                 CbbEditor.ItemIndex:=GE_VIM;
         end;
@@ -2115,6 +2133,9 @@ begin
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCode)) and (VisualStudioCodePath<>'') then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Visual Studio Code as core.editor in the gitconfig.');
+    end else if ((CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders)) and (VisualStudioCodeInsidersPath<>'') then begin
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.');
     end;
 
     {
@@ -2168,6 +2189,8 @@ begin
         Data:='Notepad++';
     end else if (CbbEditor.ItemIndex=GE_VisualStudioCode) then begin
         Data:='VisualStudioCode';
+    end else if (CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders) then begin
+        Data:='VisualStudioCodeInsiders';
     end;
     RecordChoice(PreviousDataKey,'Editor Option',Data);
 
