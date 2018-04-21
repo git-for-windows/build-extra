@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Perl v5.26.2](http://search.cpan.org/dist/perl-5.26.2/pod/perldelta.pod).
+* The installer [now offers VS Code Insiders as option for Git's default editor](https://github.com/git-for-windows/build-extra/pull/181) if it is installed.
 
 ## Changes since Git for Windows v2.16.3 (March 23rd 2018)
 
