@@ -39,11 +39,12 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Perl v5.26.2](http://search.cpan.org/dist/perl-5.26.2/pod/perldelta.pod).
 * The installer [now offers VS Code Insiders as option for Git's default editor](https://github.com/git-for-windows/build-extra/pull/181) if it is installed.
-* Comes with [patch level 3](https://github.com/git-for-windows/msys2-runtime/commit/fa84a1f06b83b54847e6505df2bdb6db1860f47f) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.10.0](https://cygwin.com/ml/cygwin-announce/2018-02/msg00002.html).
 
 ### Bug Fixes
 
 * Aliases that expand to shell commands [can now take arguments containing curly brackets](https://github.com/git-for-windows/git/pull/1637).
+* Ctrl+C is now handled in Git Bash [in a sophisticated way](https://github.com/git-for-windows/msys2-runtime/commit/fa84a1f06b83b54847e6505df2bdb6db1860f47f): it emulates the way Ctrl+C is handled in Git CMD, but in a fine-grained way.
+* Based on the [the new Ctrl+C handling in Git Bash](https://github.com/git-for-windows/msys2-runtime/commit/fa84a1f06b83b54847e6505df2bdb6db1860f47f), pressing Ctrl+C while `git log` is running will only stop Git from traversing the commit history, [but keep the pager running](https://github.com/git-for-windows/git/commit/df8884cbc5c39073848ddf2058bafeea1188312b).
 
 ## Changes since Git for Windows v2.16.3 (March 23rd 2018)
 
