@@ -1,3 +1,5 @@
+*.pdb
+*.sig
 *.swp
 /ReleaseNotes.html
 edit-git-bash.exe
@@ -7,6 +9,8 @@ edit-git-bash.exe
 /git-extra/src/
 /git-extra/git-extra-*.pkg.tar.xz
 /git-extra/git-extra-*.src.tar.gz
+/git-for-windows-keyring/git-for-windows-keyring-*.pkg.tar.xz
+/git-for-windows-keyring/git-for-windows-keyring-*.src.tar.gz
 /installer/ReleaseNotes.html
 /installer/config.iss
 /installer/gitconfig.system
@@ -26,6 +30,10 @@ edit-git-bash.exe
 /mingw-w64-git-credential-manager/*.src.tar.gz
 /mingw-w64-git-credential-manager/gcmw-*.zip
 /mingw-w64-git-credential-manager/v[1-9]*.zip
+/mingw-w64-wintoast/mingw-w64-*-wintoast-*-any.pkg.tar.xz
+/mingw-w64-wintoast/pkg
+/mingw-w64-wintoast/src
+/mingw-w64-wintoast/wintoast
 /msi/GitComponents.wxs
 /msi/obj/
 /msi/package-versions.txt
@@ -46,6 +54,7 @@ edit-git-bash.exe
 /portable/root/post-install.bat
 /sdk-installer/root/
 /source-zips/
+/source-zips.previous/
 /source-zips-mingit/
 /archive/root/*
 !/archive/root/etc/hosts
