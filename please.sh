@@ -1373,7 +1373,7 @@ publish_prerelease () {
 	die "Could not edit release for %s:\n%s\n" "$1" "$out"
 }
 
-prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
+prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--only-64-bit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
 	modes=
 	output=
 	outputdir="$HOME"
@@ -1399,10 +1399,10 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	--skip-prerelease-prefix)
 		prerelease_prefix=
 		;;
-	--installer|--portable|--mingit)
+	--installer|--portable|--mingit|--mingit-busybox)
 		modes="$modes ${1#--}"
 		;;
-	--only-installer|--only-portable|--only-mingit)
+	--only-installer|--only-portable|--only-mingit|--only-mingit-busybox)
 		modes="${1#--only-}"
 		;;
 	--reset-mode)
@@ -1435,7 +1435,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		output="--output='$outputdir'" ||
 		die "Directory "$outputdir"/ is inaccessible\n"
 
-		modes="installer portable mingit"
+		modes="installer portable mingit mingit-busybox"
 		force_version='%(prerelease-tag)'
 		force_tag=-f
 		upload=t
@@ -1661,7 +1661,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		-e "s/^pkgrel=.*/pkgrel=1/" \
 		<"$git_src_dir/../../PKGBUILD" |
 	case "$modes" in
-	mingit)
+	mingit|mingit-busybox)
 		sed -e '/^pkgname=/{N;N;s/"[^"]*-doc[^"]*"//g}'
 		;;
 	*)
@@ -1704,7 +1704,7 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 	fi
 
 	case "$modes" in
-	mingit)
+	mingit|mingit-busybox)
 		pkglist="git"
 		;;
 	*)
@@ -1771,11 +1771,17 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 			for m in '"$modes"'
 			do
 				extra=
+				v="$version"
 				test installer != $m ||
 				extra=--window-title-version="$version"
+				test mingit-busybox != $m || {
+					extra="$extra --busybox"
+					v="$v-BusyBox"
+					m=mingit
+				}
 				/usr/src/build-extra/$m/release.sh \
 					'"$include_pdbs"' \
-					'"$output"' $extra "$version" || {
+					'"$output"' $extra "$v" || {
 					postcmd="$postcmd && exit 1"
 					break
 				}
