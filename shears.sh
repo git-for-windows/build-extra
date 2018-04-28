@@ -187,6 +187,8 @@ merge () {
 }
 
 start_merging_rebase () {
+	test "$#" -gt 0 ||
+	set "$(cat "$(git rev-parse --git-path rebase-merge/orig-head)")"
 	git merge -s ours -m "$(cat "$git_dir"/SHEARS-MERGING-MESSAGE)" "$1"
 }
 
