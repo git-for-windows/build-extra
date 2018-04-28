@@ -36,6 +36,8 @@ GITCONFIG
 *.DOCM	diff=astextplain
 *.dot	diff=astextplain
 *.DOT	diff=astextplain
+*.dotx	diff=astextplain
+*.DOTX	diff=astextplain
 *.dotm	diff=astextplain
 *.DOTM	diff=astextplain
 *.pdf	diff=astextplain
