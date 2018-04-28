@@ -301,20 +301,7 @@ ensure_labeled () {
 }
 
 generate_script () {
-	echo "Generating script..." >&2
-	origtodo="$(git rev-list --no-merges --cherry-pick --pretty=oneline \
-		--abbrev-commit --reverse --right-only --topo-order \
-		$(test "$onto" = "$upstream" || echo ^$upstream) $onto...$head | \
-		sed "s/^/pick /")"
 	shorthead=$(git rev-parse --short $head)
-	shortonto=$(git rev-parse --short $onto)
-
-	# --topo-order has the bad habit of breaking first-parent chains over
-	# merges, so we generate the topoligical order ourselves here
-
-	list="$(git log --format='%h %p' --topo-order --reverse \
-		$(test "$onto" = "$upstream" || echo ^$upstream) $onto..$head)"
-
 	todo=
 	if test -n "$merging"
 	then
@@ -328,6 +315,20 @@ $base_message
 EOF
 		todo="start_merging_rebase \"$shorthead\""
 	fi
+
+	echo "Generating script..." >&2
+	origtodo="$(git rev-list --no-merges --cherry-pick --pretty=oneline \
+		--abbrev-commit --reverse --right-only --topo-order \
+		$(test "$onto" = "$upstream" || echo ^$upstream) $onto...$head | \
+		sed "s/^/pick /")"
+	shortonto=$(git rev-parse --short $onto)
+
+	# --topo-order has the bad habit of breaking first-parent chains over
+	# merges, so we generate the topoligical order ourselves here
+
+	list="$(git log --format='%h %p' --topo-order --reverse \
+		$(test "$onto" = "$upstream" || echo ^$upstream) $onto..$head)"
+
 	todo="$(printf '%s\n%s\n' "$todo" \
 		"mark onto")"
 
