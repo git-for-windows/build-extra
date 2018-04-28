@@ -34,6 +34,20 @@
 #
 # Technical implementation notes:
 #
+# Originally, the shears were implemented as a pure Unix shell script on
+# top of the interactive rebase, by inserting itself as the sequence
+# editor. After years of proving its robustness, the shears were
+# re-implemented in C and contributed to the core Git as --rebase-merges
+# mode to the interactive rebase (with slight modifications such as doing
+# away with the `bud` call, renaming `mark` to `label` and `rewind` to
+# `reset`).
+#
+# When this script detects that the current Git version supports the
+# --rebase-merges mode, it will opt to use that mode, otherwise it will fall
+# back to its original implementation in pure Unix shell.
+#
+# The remainder of this comment describes the shell version:
+#
 # The idea is to generate a rebase script with "new" commands, i.e. in
 # addition to "pick", "reword" and friends, additional commands are handled:
 #
@@ -101,6 +115,16 @@ edit () {
 	shift &&
 	case "$*" in
 	*/git-rebase-todo)
+		test -s "$git_dir"/SHEARS-SCRIPT || {
+			# We're using --rebase-merges
+			test -s "$git_dir"/SHEARS-MERGING-MESSAGE &&
+			(echo "exec \"$this\" start_merging_rebase" &&
+			 cat "$1") >"$1".new &&
+			mv -f "$1".new "$1"
+
+			exec "$GIT_EDITOR" "$@"
+		}
+
 		sed -e '/^noop/d' < "$1" >> "$git_dir"/SHEARS-SCRIPT &&
 		mv "$git_dir"/SHEARS-SCRIPT "$1"
 		"$GIT_EDITOR" "$@" &&
@@ -259,6 +283,13 @@ do
 	shift
 done
 
+# Use the original shears implementation unless we can use git rebase -ir
+use_original_shears=t
+if test -z "$recreate" && git rebase -h 2>&1 | grep -q rebase-merges
+then
+	use_original_shears=
+fi
+
 case " $extra_commands " in
 *" $1 "*)
 	command="$1"
@@ -315,6 +346,7 @@ $base_message
 EOF
 		todo="start_merging_rebase \"$shorthead\""
 	fi
+	test -n "$use_original_shears" || return 0
 
 	echo "Generating script..." >&2
 	origtodo="$(git rev-list --no-merges --cherry-pick --pretty=oneline \
@@ -580,13 +612,16 @@ setup () {
 			"$existing")"
 	fi
 
-	alias="$(git config --get alias..r)"
-	test -z "$alias" ||
-	test "a$alias" = "a!sh \"$this\"" ||
-	test -n "$force" ||
-	die "There is already an '.r' alias!"
+	if test -n "$use_original_shears"
+	then
+		alias="$(git config --get alias..r)"
+		test -z "$alias" ||
+		test "a$alias" = "a!sh \"$this\"" ||
+		test -n "$force" ||
+		die "There is already an '.r' alias!"
 
-	git config alias..r "!sh \"$this\"" &&
+		git config alias..r "!sh \"$this\""
+	fi &&
 	generate_script > "$git_dir"/SHEARS-SCRIPT &&
 	shears_editor="$(cd "$git_dir" && pwd)/SHEARS-EDITOR" &&
 	cat > "$shears_editor" << EOF &&
@@ -627,5 +662,9 @@ die 'There are uncommitted changes!'
 setup
 
 # Rebase!
-git rebase -i --onto "$onto" HEAD
-
+if test -n "$use_original_shears"
+then
+	git rebase -i --onto "$onto" HEAD
+else
+	git rebase -ir --onto "$onto" "$upstream"
+fi
