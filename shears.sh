@@ -209,6 +209,7 @@ cleanup () {
 	fi
 }
 
+this="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 merging=
 base_message=
 onto=
@@ -560,7 +561,6 @@ merge refs/rewritten/$mark -C $(name_commit $merge)")"
 	printf '%s' "$todo" | uniq
 }
 
-this="$(cd "$(dirname "$0")" && pwd)/$(basename "$0")"
 setup () {
 	existing=$(git for-each-ref --format='%(refname)' refs/rewritten/)
 	test -z "$existing" ||
