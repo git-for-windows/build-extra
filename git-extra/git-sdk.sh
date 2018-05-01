@@ -109,7 +109,18 @@ sdk () {
 		;;
 	init)
 		sdk init-lazy "$2" &&
-		git -C "$src_cdup_dir" pull origin master
+		git -C "$src_cdup_dir" pull origin master &&
+		if test git = "$2" && test ! -f "$src_dir/config.mak"
+		then
+			cat >"$src_dir/config.mak" <<-\EOF
+			DEVELOPER=1
+			ifndef NDEBUG
+			CFLAGS := $(filter-out -O2,$(CFLAGS))
+			ASLR_OPTION := -Wl,--dynamicbase
+			BASIC_LDFLAGS := $(filter-out $(ASLR_OPTION),$(BASIC_LDFLAGS))
+			endif
+			EOF
+		fi
 		;;
 	build)
 		case "$2" in
