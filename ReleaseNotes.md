@@ -47,6 +47,7 @@ This package contains software from a number of other projects including Bash, z
 * Based on the [the new Ctrl+C handling in Git Bash](https://github.com/git-for-windows/msys2-runtime/commit/fa84a1f06b83b54847e6505df2bdb6db1860f47f), pressing Ctrl+C while `git log` is running will only stop Git from traversing the commit history, [but keep the pager running](https://github.com/git-for-windows/git/commit/df8884cbc5c39073848ddf2058bafeea1188312b).
 * Git was [fixed](https://github.com/git-for-windows/git/pull/1645) to work correctly in Docker volumes inside Windows containers.
 * Tab completion of `git status -- <partial-path>` [is now a lot faster](https://github.com/git-for-windows/git/issues/1533).
+* Git for Windows [now creates directory symlinks correctly](https://github.com/git-for-windows/git/pull/1651) when asked to.
 
 ## Changes since Git for Windows v2.16.3 (March 23rd 2018)
 
