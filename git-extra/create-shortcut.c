@@ -4,9 +4,13 @@
 void die(const char *message)
 {
 	DWORD err_code = GetLastError();
+	char err_msg[1024];
+
 	CoUninitialize();
-	fprintf(stderr, "%s\n", message);
-	fprintf(stderr, "last error: %lu\n", err_code);
+	if (!FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM,
+			   NULL, err_code, 0, err_msg, sizeof err_msg, NULL))
+		sprintf(err_msg, "N/A (0x%08lX)\n", err_code);
+	fprintf(stderr, "%s\nError: %s", message, err_msg);
 	exit(1);
 }
 
