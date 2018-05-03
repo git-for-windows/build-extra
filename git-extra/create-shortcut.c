@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <shlobj.h>
 
-void die(const char *message)
+void die(HRESULT hres, const char *message)
 {
-	DWORD err_code = GetLastError();
+	DWORD err_code = (DWORD) hres;
 	char err_msg[1024];
 
 	CoUninitialize();
@@ -62,23 +62,23 @@ int main(int argc, char **argv)
 
 	hres = CoInitialize(NULL);
 	if (FAILED(hres))
-		die ("Could not initialize OLE");
+		die (hres, "Could not initialize OLE");
 
 	hres = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
 			&IID_IShellLink, (void **)&psl);
 
 	if (FAILED(hres))
-		die ("Could not get ShellLink interface");
+		die (hres, "Could not get ShellLink interface");
 
 	hres = psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile,
 			(void **) &ppf);
 
 	if (FAILED(hres))
-		die ("Could not get PersistFile interface");
+		die (hres, "Could not get PersistFile interface");
 
 	hres = psl->lpVtbl->SetPath(psl, argv[1]);
 	if (FAILED(hres))
-		die ("Could not set path");
+		die (hres, "Could not set path");
 
 	if (work_dir)
 		psl->lpVtbl->SetWorkingDirectory(psl, work_dir);
@@ -103,7 +103,7 @@ int main(int argc, char **argv)
 	psl->lpVtbl->Release(psl);
 
 	if (FAILED(hres))
-		die ("Could not save link");
+		die (hres, "Could not save link");
 
 	CoUninitialize();
 	return 0;
