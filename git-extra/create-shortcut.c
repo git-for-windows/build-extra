@@ -14,6 +14,12 @@ void die(HRESULT hres, const char *message)
 	exit(1);
 }
 
+void check_hres(HRESULT hres, const char* message)
+{
+	if (FAILED(hres))
+		die(hres, message);
+}
+
 int main(int argc, char **argv)
 {
 	const char *progname = argv[0];
@@ -61,24 +67,18 @@ int main(int argc, char **argv)
 	}
 
 	hres = CoInitialize(NULL);
-	if (FAILED(hres))
-		die (hres, "Could not initialize OLE");
+	check_hres(hres, "Could not initialize OLE");
 
 	hres = CoCreateInstance(&CLSID_ShellLink, NULL, CLSCTX_INPROC_SERVER,
 			&IID_IShellLink, (void **)&psl);
-
-	if (FAILED(hres))
-		die (hres, "Could not get ShellLink interface");
+	check_hres(hres, "Could not get ShellLink interface");
 
 	hres = psl->lpVtbl->QueryInterface(psl, &IID_IPersistFile,
 			(void **) &ppf);
-
-	if (FAILED(hres))
-		die (hres, "Could not get PersistFile interface");
+	check_hres(hres, "Could not get PersistFile interface");
 
 	hres = psl->lpVtbl->SetPath(psl, argv[1]);
-	if (FAILED(hres))
-		die (hres, "Could not set path");
+	check_hres(hres, "Could not set path");
 
 	if (work_dir)
 		psl->lpVtbl->SetWorkingDirectory(psl, work_dir);
@@ -102,8 +102,7 @@ int main(int argc, char **argv)
 	ppf->lpVtbl->Release(ppf);
 	psl->lpVtbl->Release(psl);
 
-	if (FAILED(hres))
-		die (hres, "Could not save link");
+	check_hres(hres, "Could not save link");
 
 	CoUninitialize();
 	return 0;
