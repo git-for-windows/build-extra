@@ -3,9 +3,10 @@
 
 void die(const char *message)
 {
+	DWORD err_code = GetLastError();
 	CoUninitialize();
 	fprintf(stderr, "%s\n", message);
-	fprintf(stderr, "last error: %d\n", GetLastError());
+	fprintf(stderr, "last error: %lu\n", err_code);
 	exit(1);
 }
 
