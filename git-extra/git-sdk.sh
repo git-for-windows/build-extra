@@ -59,7 +59,7 @@ sdk () {
 		x86_64) bitness=" 64-bit";;
 		*) bitness=;;
 		esac &&
-		desktop_icon_path="$HOME/Desktop/Git SDK$bitness.lnk" &&
+		desktop_icon_path="$USERPROFILE/Desktop/Git SDK$bitness.lnk" &&
 		if test -n "$force" || test ! -f "$desktop_icon_path"
 		then
 			create-shortcut.exe --icon-file /msys2.ico --work-dir \
