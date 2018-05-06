@@ -372,9 +372,7 @@ BOOL SystemThreadInformation::Refresh()
 	THREAD_INFORMATION ti;
 
 	// Iterating through the found Thread objects
-	for (list<SystemHandleInformation::SYSTEM_HANDLE>::iterator iter = hi.m_HandleInfos.begin(); iter != hi.m_HandleInfos.end(); iter++) {
-		SystemHandleInformation::SYSTEM_HANDLE& h = *iter;
-
+	for (auto &h : hi.m_HandleInfos) {
 		ti.ProcessId = h.ProcessID;
 		ti.ThreadHandle = (HANDLE)(DWORD_PTR)h.HandleNumber;
 
@@ -1025,8 +1023,8 @@ BOOL SystemModuleInformation::Refresh()
 		}
 
 		// Iterating through the processes and get the module list
-		for (map<DWORD, SystemProcessInformation::SYSTEM_PROCESS_INFORMATION *>::iterator iter = pi.m_ProcessInfos.begin(); iter != pi.m_ProcessInfos.end(); iter++) {
-			GetModuleListForProcess( iter->first );
+		for (auto &iter: pi.m_ProcessInfos) {
+			GetModuleListForProcess( iter.first );
 		}
 	}
 
