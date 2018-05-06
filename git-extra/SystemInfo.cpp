@@ -1015,9 +1015,8 @@ BOOL SystemModuleInformation::Refresh()
 		GetModuleListForProcess( m_processId );
 	else
 	{
-		// Get teh process list
+		// Get the process list
 		DWORD pID;
-		SystemProcessInformation::SYSTEM_PROCESS_INFORMATION* p = NULL;
 		SystemProcessInformation pi( TRUE );
 
 		if ( pi.m_ProcessInfos.empty() )
@@ -1029,7 +1028,6 @@ BOOL SystemModuleInformation::Refresh()
 		// Iterating through the processes and get the module list
 		for (map<DWORD, SystemProcessInformation::SYSTEM_PROCESS_INFORMATION *>::iterator iter = pi.m_ProcessInfos.begin(); iter != pi.m_ProcessInfos.end(); iter++) {
 			pID = iter->first;
-			p = iter->second;
 			GetModuleListForProcess( pID );
 		}
 	}
