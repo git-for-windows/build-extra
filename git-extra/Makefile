@@ -1,5 +1,7 @@
 BUILDDIR ?= .
 SRCDIR ?= .
+CFLAGS ?= -Wall
+CXXFLAGS ?= -Wall
 
 all: $(BUILDDIR)/create-shortcut.exe $(BUILDDIR)/WhoUses.exe \
 	$(BUILDDIR)/blocked-file-util.exe $(BUILDDIR)/proxy-lookup.exe
