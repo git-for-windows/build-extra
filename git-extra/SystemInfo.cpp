@@ -297,7 +297,7 @@ BOOL SystemProcessInformation::Refresh()
 
 	while ( 1 ) {
 		// query the process information
-		NTSTATUS result = INtDll::NtQuerySystemInformation( 5,
+		DWORD result = INtDll::NtQuerySystemInformation( 5,
 				m_pBuffer, m_dBufferSize, NULL );
 		if ( result == 0 )
 			break;
