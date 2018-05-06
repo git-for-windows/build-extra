@@ -303,7 +303,7 @@ BOOL SystemProcessInformation::Refresh()
 			break;
 		if ( result != STATUS_INFO_LENGTH_MISMATCH )
 		{
-			fprintf( stderr, "NtQuerySystemInformation: 0x%x",
+			fprintf( stderr, "NtQuerySystemInformation: 0x%lx",
 					result );
 			return FALSE;
 		}
@@ -464,7 +464,7 @@ BOOL SystemHandleInformation::Refresh()
 
 		if ( result != STATUS_INFO_LENGTH_MISMATCH )
 		{
-			fprintf( stderr, "NtQuerySystemInformation: 0x%x\n",
+			fprintf( stderr, "NtQuerySystemInformation: 0x%lx\n",
 					result );
 			ret = FALSE;
 			goto cleanup;
