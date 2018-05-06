@@ -26,8 +26,8 @@ $(BUILDDIR)/proxy-lookup.exe: $(BUILDDIR)/proxy-lookup.o
 	$(CC) $(CFLAGS) -o $@ $^ -lshell32 -lwinhttp
 
 clean:
-	rm $(BUILDDIR)/create-shortcut.exe $(BUILDDIR)/create-shortcut.o
-	rm $(BUILDDIR)/WhoUses.exe $(BUILDDIR)/WhoUses.o \
+	$(RM) $(BUILDDIR)/create-shortcut.exe $(BUILDDIR)/create-shortcut.o
+	$(RM) $(BUILDDIR)/WhoUses.exe $(BUILDDIR)/WhoUses.o \
 		$(BUILDDIR)/SystemInfo.o
-	rm $(BUILDDIR)/blocked-file-util.exe $(BUILDDIR)/blocked-file-util.o
-	rm $(BUILDDIR)/proxy-lookup.exe $(BUILDDIR)/proxy-lookup.o
+	$(RM) $(BUILDDIR)/blocked-file-util.exe $(BUILDDIR)/blocked-file-util.o
+	$(RM) $(BUILDDIR)/proxy-lookup.exe $(BUILDDIR)/proxy-lookup.o
