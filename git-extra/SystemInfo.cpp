@@ -297,13 +297,13 @@ BOOL SystemProcessInformation::Refresh()
 
 	while ( 1 ) {
 		// query the process information
-		NTSTATUS result = INtDll::NtQuerySystemInformation( 5,
+		DWORD result = INtDll::NtQuerySystemInformation( 5,
 				m_pBuffer, m_dBufferSize, NULL );
 		if ( result == 0 )
 			break;
 		if ( result != STATUS_INFO_LENGTH_MISMATCH )
 		{
-			fprintf( stderr, "NtQuerySystemInformation: 0x%x",
+			fprintf( stderr, "NtQuerySystemInformation: 0x%lx",
 					result );
 			return FALSE;
 		}
@@ -372,9 +372,7 @@ BOOL SystemThreadInformation::Refresh()
 	THREAD_INFORMATION ti;
 
 	// Iterating through the found Thread objects
-	for (list<SystemHandleInformation::SYSTEM_HANDLE>::iterator iter = hi.m_HandleInfos.begin(); iter != hi.m_HandleInfos.end(); iter++) {
-		SystemHandleInformation::SYSTEM_HANDLE& h = *iter;
-
+	for (auto &h : hi.m_HandleInfos) {
 		ti.ProcessId = h.ProcessID;
 		ti.ThreadHandle = (HANDLE)(DWORD_PTR)h.HandleNumber;
 
@@ -464,7 +462,7 @@ BOOL SystemHandleInformation::Refresh()
 
 		if ( result != STATUS_INFO_LENGTH_MISMATCH )
 		{
-			fprintf( stderr, "NtQuerySystemInformation: 0x%x\n",
+			fprintf( stderr, "NtQuerySystemInformation: 0x%lx\n",
 					result );
 			ret = FALSE;
 			goto cleanup;
@@ -1015,9 +1013,7 @@ BOOL SystemModuleInformation::Refresh()
 		GetModuleListForProcess( m_processId );
 	else
 	{
-		// Get teh process list
-		DWORD pID;
-		SystemProcessInformation::SYSTEM_PROCESS_INFORMATION* p = NULL;
+		// Get the process list
 		SystemProcessInformation pi( TRUE );
 
 		if ( pi.m_ProcessInfos.empty() )
@@ -1027,10 +1023,8 @@ BOOL SystemModuleInformation::Refresh()
 		}
 
 		// Iterating through the processes and get the module list
-		for (map<DWORD, SystemProcessInformation::SYSTEM_PROCESS_INFORMATION *>::iterator iter = pi.m_ProcessInfos.begin(); iter != pi.m_ProcessInfos.end(); iter++) {
-			pID = iter->first;
-			p = iter->second;
-			GetModuleListForProcess( pID );
+		for (auto &iter: pi.m_ProcessInfos) {
+			GetModuleListForProcess( iter.first );
 		}
 	}
 
