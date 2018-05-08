@@ -37,6 +37,4 @@ if has("autocmd")
       autocmd Filetype diff
       \ highlight WhiteSpaceEOL ctermbg=red |
       \ match WhiteSpaceEOL /\(^+.*\)\@<=\s\+$/
-
-      autocmd Syntax gitcommit setlocal textwidth=74
 endif " has("autocmd")
