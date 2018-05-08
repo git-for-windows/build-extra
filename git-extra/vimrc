@@ -33,7 +33,6 @@ if has("autocmd")
       \ endif
 
       autocmd BufNewFile,BufRead *.patch set filetype=diff
-      autocmd BufNewFile,BufRead *.diff set filetype=diff
 
       autocmd Syntax diff
       \ highlight WhiteSpaceEOL ctermbg=red |
