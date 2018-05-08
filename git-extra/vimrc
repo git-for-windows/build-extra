@@ -12,6 +12,7 @@ set vb                          " turn on the "visual bell" - which is much quie
 set laststatus=2                " make the last line where the status is two lines deep so you can see status always
 set showmode                    " show the current mode
 set clipboard=unnamed           " set clipboard to unnamed to access the system clipboard under windows
+set wildmode=list:longest,longest:full   " Better command line completion
 
 " Show EOL type and last modified timestamp, right after the filename
 set statusline=%<%F%h%m%r\ [%{&ff}]\ (%{strftime(\"%H:%M\ %d/%m/%Y\",getftime(expand(\"%:p\")))})%=%l,%c%V\ %P
