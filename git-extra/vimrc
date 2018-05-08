@@ -1,4 +1,5 @@
 " Setting some decent VIM settings for programming
+" This source file comes from git-for-windows build-extra repository (git-extra/vimrc)
 
 set ai                          " set auto-indenting on for programming
 set showmatch                   " automatically show matching brackets. works like it does in bbedit.
