@@ -26,6 +26,12 @@ set statusline+=%=              " Rest: right align
 set statusline+=%l,%c%V         " Position in buffer: linenumber, column, virtual column
 set statusline+=\ %P            " Position in buffer: Percentage
 
+if &term =~ 'xterm'             " mintty identifies itsself as xterm-compatible
+  if &t_Co == 8
+    set t_Co = 256              " Use at lease 256 colors
+  endif
+  " set termguicolors           " Uncomment, to allow trucolors on mintty
+endif
 "------------------------------------------------------------------------------
 " Only do this part when compiled with support for autocommands.
 if has("autocmd")
