@@ -34,7 +34,7 @@ if has("autocmd")
 
       autocmd BufNewFile,BufRead *.patch set filetype=diff
 
-      autocmd Syntax diff
+      autocmd Filetype diff
       \ highlight WhiteSpaceEOL ctermbg=red |
       \ match WhiteSpaceEOL /\(^+.*\)\@<=\s\+$/
 
