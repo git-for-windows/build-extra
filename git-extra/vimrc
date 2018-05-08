@@ -1,16 +1,17 @@
 " Setting some decent VIM settings for programming
 " This source file comes from git-for-windows build-extra repository (git-extra/vimrc)
 
+ru! defaults.vim                " Use Enhanced Vim defaults
+set mouse=                      " Reset the mouse setting from defaults
+aug vimStartup | au! | aug END  " Revert last positioned jump, as it is defined below
+let g:skip_defaults_vim = 1     " Do not source defaults.vim again (after loading this system vimrc)
+
 set ai                          " set auto-indenting on for programming
 set showmatch                   " automatically show matching brackets. works like it does in bbedit.
 set vb                          " turn on the "visual bell" - which is much quieter than the "audio blink"
 set laststatus=2                " make the last line where the status is two lines deep so you can see status always
-set backspace=indent,eol,start  " make that backspace key work the way it should
-set nocompatible                " vi compatible is LAME
-set background=dark             " Use colours that work well on a dark background (Console is usually black)
 set showmode                    " show the current mode
 set clipboard=unnamed           " set clipboard to unnamed to access the system clipboard under windows
-syntax on                       " turn syntax highlighting on by default
 
 " Show EOL type and last modified timestamp, right after the filename
 set statusline=%<%F%h%m%r\ [%{&ff}]\ (%{strftime(\"%H:%M\ %d/%m/%Y\",getftime(expand(\"%:p\")))})%=%l,%c%V\ %P
