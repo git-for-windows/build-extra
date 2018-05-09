@@ -1396,6 +1396,9 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		force_tag=-f
 		upload=t
 		;;
+	--no-upload)
+		upload=
+		;;
 	--use-as-master-branch=*)
 		USE_AS_MASTERBRANCH="${1#*=}"
 		;;
