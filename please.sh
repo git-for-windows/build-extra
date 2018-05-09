@@ -1440,6 +1440,9 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 		force_tag=-f
 		upload=t
 		;;
+	--no-upload)
+		upload=
+		;;
 	--include-pdbs)
 		include_pdbs=--include-pdbs
 		;;
