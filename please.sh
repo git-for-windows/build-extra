@@ -1615,6 +1615,14 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	force_makepkg=
 	pkgprefix="$git_src_dir/../../mingw-w64"
 	pkgsuffix="${pkgver#v}-1-any.pkg.tar.xz"
+	case "$modes" in
+	mingit|mingit-busybox|"mingit mingit-busybox"|"mingit-busybox mingit")
+		pkglist="git"
+		;;
+	*)
+		pkglist="git git-doc-html"
+		;;
+	esac
 	if test -n "$only_64_bit" -o \
 			-f "${pkgprefix}-i686-git-doc-html-${pkgsuffix}" &&
 		test -f "${pkgprefix}-x86_64-git-doc-html-${pkgsuffix}" &&
@@ -1706,14 +1714,6 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 		die "Could not determine package suffix\n"
 	fi
 
-	case "$modes" in
-	mingit|mingit-busybox)
-		pkglist="git"
-		;;
-	*)
-		pkglist="git git-doc-html"
-		;;
-	esac
 	for sdk in "$sdk32" "$sdk64"
 	do
 		test -z "$only_64_bit" ||
