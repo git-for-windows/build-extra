@@ -1624,8 +1624,8 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 		;;
 	esac
 	if test -n "$only_64_bit" -o \
-			-f "${pkgprefix}-i686-git-doc-html-${pkgsuffix}" &&
-		test -f "${pkgprefix}-x86_64-git-doc-html-${pkgsuffix}" &&
+			-f "${pkgprefix}-i686-${pkglist##* }-${pkgsuffix}" &&
+		test -f "${pkgprefix}-x86_64-${pkglist##* }-${pkgsuffix}" &&
 		test "$(git rev-parse --verify "$1"^{commit})" = \
 			"$(git -C "$git_src_dir" rev-parse --verify \
 				"$tag_name"^{commit})"
