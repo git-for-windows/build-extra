@@ -1723,12 +1723,15 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c '
 			cd "'"$git_src_dir"'/../.." &&
 			mach="$(uname -m)" &&
-			if test -n "'"$include_pdbs"'" &&
-				test -n "'"$outputdir"'"
-			then
-				cp mingw-w64-$mach-git-pdb-"'"$pkgsuffix"'" \
-					"'"$outputdir"'"/
-			fi &&
+			pkgpre=mingw-w64-$mach-git && {
+			'"$(test -z "'"$outputdir"'" ||
+			echo 'file=$pkgpre-pdb-"'"$pkgsuffix"'";
+				test ! -f "$file" ||
+				cp "$file" "'"$outputdir"'"/; } && {
+				file=$pkgpre-test-artifacts-"'"$pkgsuffix"'";
+				test ! -f "$file" ||
+				cp "$file" "'"$outputdir"'"/; }'
+			)"'
 			precmd="pacman --force --noconfirm -U" &&
 			postcmd="pacman --force --noconfirm -U" &&
 			for pkg in '"$pkglist"'
