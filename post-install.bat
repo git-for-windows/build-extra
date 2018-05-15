@@ -2,7 +2,7 @@
 @REM (including the portable version)
 
 @REM If run manually, it should be run via
-@REM   git-bash.exe --no-needs-console --hide --no-cd --command=post-install.cmd
+@REM   git-bash.exe --no-needs-console --hide --no-cd --command=post-install.bat
 @REM to hide the console.
 
 @REM Change to the directory in which this script lives.
