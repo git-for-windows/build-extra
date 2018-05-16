@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 * Git was [fixed](https://github.com/git-for-windows/git/pull/1645) to work correctly in Docker volumes inside Windows containers.
 * Tab completion of `git status -- <partial-path>` [is now a lot faster](https://github.com/git-for-windows/git/issues/1533).
 * Git for Windows [now creates directory symlinks correctly](https://github.com/git-for-windows/git/pull/1651) when asked to.
+* The option to disable revocation checks with Secure Channel which was introduced in v2.16.1(2) [now really works](https://github.com/git-for-windows/git/issues/1531).
 
 ## Changes since Git for Windows v2.16.3 (March 23rd 2018)
 
