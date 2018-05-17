@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * The installer [now offers VS Code Insiders as option for Git's default editor](https://github.com/git-for-windows/build-extra/pull/181) if it is installed.
 * The vim configuration [was modernized](https://github.com/git-for-windows/build-extra/pull/186).
 * Comes with [cURL v7.60.0](https://curl.haxx.se/changes.html#7_60_0).
+* Certain errors, e.g. when pushing failed due to a non-fast-forwarding change, [are now colorful](https://github.com/git-for-windows/git/pull/1429).
 
 ### Bug Fixes
 
