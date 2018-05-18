@@ -74,8 +74,8 @@ for req in mingw-w64-$ARCH-git-credential-manager $SH_FOR_REBASE \
 	$(test -n "$MINIMAL_GIT" || echo \
 		mingw-w64-$ARCH-connect git-flow unzip docx2txt \
 		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt \
-		mingw-w64-$ARCH-xpdf ssh-pageant mingw-w64-$ARCH-git-lfs tig \
-		nano $GIT_UPDATE_EXTRA_PACKAGES)
+		mingw-w64-$ARCH-xpdf-tools ssh-pageant mingw-w64-$ARCH-git-lfs \
+		tig nano $GIT_UPDATE_EXTRA_PACKAGES)
 do
 	test -d /var/lib/pacman/local/$req-[0-9]* ||
 	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
@@ -227,7 +227,8 @@ sed 's/^\///'
 
 test -z "$PACKAGE_VERSIONS_FILE" ||
 pacman -Q filesystem $SH_FOR_REBASE rebase \
-	$(test -n "$MINIMAL_GIT" || echo util-linux unzip mingw-w64-$ARCH-xpdf) \
+	$(test -n "$MINIMAL_GIT" || echo util-linux unzip \
+		mingw-w64-$ARCH-xpdf-tools) \
 	>>"$PACKAGE_VERSIONS_FILE"
 
 cat <<EOF
