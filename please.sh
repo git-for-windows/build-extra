@@ -406,6 +406,11 @@ set_package () {
 		pkgpath=/usr/src/MINGW-packages/mingw-w64-nodejs
 		extra_makepkg_opts=--nocheck
 		;;
+	xpdf|xpdf-tools|mingw-w64-xpdf-tools)
+		package=mingw-w64-xpdf-tools
+		type=MINGW
+		pkgpath=/usr/src/MINGW-packages/mingw-w64-xpdf
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
@@ -3206,6 +3211,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		url=https://nodejs.org/en/blog/release/v$version/ &&
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
 		relnotes_feature="Comes with [$package $v]($url)."
+		;;
+	mingw-w64-xpdf-tools)
+		# If we ever have to upgrade beyond xpdf 4.00, we will
+		# implement this part. But no sooner.
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
