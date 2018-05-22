@@ -2515,13 +2515,14 @@ maybe_force_pkgrel () {
 }
 
 # --force overwrites existing an Git tag, or existing package files
-upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--force-pkgrel=<pkgrel>] [--cleanbuild] <package>
+upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] [--force] [--force-pkgrel=<pkgrel>] [--cleanbuild] <package>
 	artifactsdir=
 	skip_upload=
 	force=
 	delete_existing_tag=
 	force_pkgrel=
 	cleanbuild=
+	only_mingw=
 	while case "$1" in
 	--directory=*)
 		artifactsdir="$(cygpath -am "${1#*=}")" || exit
@@ -2538,6 +2539,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		;;
 	--no-upload)
 		skip_upload=t
+		;;
+	--only-mingw)
+		only_mingw=t
 		;;
 	-f|--force)
 		force=--force
@@ -2562,6 +2566,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 	die "Missing token in ~/.azure-blobs-token\n"
 
 	set_package "$1"
+
+	test -z "$only_mingw" ||
+	test curl = "$package" ||
+	die "The --only-mingw option is supported only for curl\n"
 
 	case "$package" in
 	msys2-runtime)
@@ -3227,10 +3235,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--no-upload] [--force] [--fo
 		 require_push_url origin)
 	fi &&
 
-	build $force $cleanbuild "$package" &&
-	foreach_sdk pkg_copy_artifacts &&
-	install "$package" &&
-	if test -z "$skip_upload"; then upload "$package"; fi &&
+	if test -z "$only_mingw"
+	then
+		build $force $cleanbuild "$package" &&
+		foreach_sdk pkg_copy_artifacts &&
+		install "$package" &&
+		if test -z "$skip_upload"; then upload "$package"; fi
+	fi &&
 
 	if test -n "$relnotes_feature"
 	then
