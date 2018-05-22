@@ -2660,6 +2660,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	force_pkgrel=
 	cleanbuild=
 	only_mingw=
+	skip_mingw=
 	while case "$1" in
 	--directory=*)
 		artifactsdir="$(cygpath -am "${1#*=}")" || exit
@@ -2679,6 +2680,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		;;
 	--only-mingw)
 		only_mingw=t
+		;;
+	--skip-mingw)
+		skip_mingw=t
 		;;
 	-f|--force)
 		force=--force
@@ -2713,6 +2717,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	test -z "$only_mingw" ||
 	test curl = "$package" ||
 	die "The --only-mingw option is supported only for curl\n"
+
+	test -z "$skip_mingw" ||
+	test openssl = "$package" ||
+	die "The --skip-mingw option is supported only for openssl\n"
 
 	test -z "$release_date" ||
 	test mingw-w64-git = "$package" ||
@@ -3137,7 +3145,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 
 		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
 
-		(set_package mingw-w64-$1 &&
+		(if test -n "$skip_mingw"
+		 then
+			 exit 0
+		 fi &&
+		 set_package mingw-w64-$1 &&
 		 maybe_init_repository "$sdk64/$pkgpath" &&
 		 cd "$sdk64/$pkgpath" &&
 		 require_push_url origin &&
