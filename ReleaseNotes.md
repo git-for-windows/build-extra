@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v7.60.0](https://curl.haxx.se/changes.html#7_60_0).
 * Certain errors, e.g. when pushing failed due to a non-fast-forwarding change, [are now colorful](https://github.com/git-for-windows/git/pull/1429).
 * Comes with [cURL v7.60.0](https://curl.haxx.se/changes.html#7_60_0).
+* Comes with [Git LFS v2.4.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.4.1).
 
 ### Bug Fixes
 
