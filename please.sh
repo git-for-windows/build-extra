@@ -2515,11 +2515,12 @@ maybe_force_pkgrel () {
 }
 
 # --force overwrites existing an Git tag, or existing package files
-upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] [--force] [--force-pkgrel=<pkgrel>] [--cleanbuild] <package>
+upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] [--force] [--release-date=<date>] [--force-pkgrel=<pkgrel>] [--cleanbuild] <package>
 	artifactsdir=
 	skip_upload=
 	force=
 	delete_existing_tag=
+	release_date=
 	force_pkgrel=
 	cleanbuild=
 	only_mingw=
@@ -2547,6 +2548,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		force=--force
 		delete_existing_tag=--delete-existing-tag
 		;;
+	--release-date=*)
+		release_date="$(echo "$1" | tr ' ' _)"
+		;;
 	--force-pkgrel=*)
 		force_pkgrel="${1#*=}"
 		;;
@@ -2570,6 +2574,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	test -z "$only_mingw" ||
 	test curl = "$package" ||
 	die "The --only-mingw option is supported only for curl\n"
+
+	test -z "$release_date" ||
+	test mingw-w64-git = "$package" ||
+	die "The --release-date option is supported only for git\n"
 
 	case "$package" in
 	msys2-runtime)
@@ -2692,7 +2700,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		relnotes_feature='Comes with [cURL v'$version']('"$url"').'
 		;;
 	mingw-w64-git)
-		finalize $delete_existing_tag release-notes &&
+		finalize $delete_existing_tag $release_date release-notes &&
 		tag_git $force &&
 		if test -n "$artifactsdir"
 		then
@@ -3362,9 +3370,12 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 
 finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	delete_existing_tag=
-	case "$1" in
-	--delete-existing-tag) delete_existing_tag=t; shift;;
-	esac
+	release_date=
+	while case "$1" in
+	--delete-existing-tag) delete_existing_tag=t;;
+	--release-date=*) release_date="$(echo "${1#*=}" | tr +_ ' ')";;
+	*) break;;
+	esac; do shift; done
 
 	case "$1" in
 	relnotes|rel-notes|release-notes) ;;
@@ -3454,8 +3465,11 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 		;;
 	esac
 
+	test -n "$release_date" ||
+	release_date="$(today)"
+
 	sed -i -e "1s/.*/# Git for Windows v$displayver Release Notes/" \
-		-e "2s/.*/Latest update: $(today)/" \
+		-e "2s/.*/Latest update: $release_date/" \
 		"$sdk64"/usr/src/build-extra/ReleaseNotes.md ||
 	die "Could not edit release notes\n"
 
@@ -3628,8 +3642,9 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	done
 }
 
-release () { # [--directory=<artifacts-directory>]
+release () { # [--directory=<artifacts-directory>] [--release-date=*]
 	artifactsdir=
+	release_date=
 	while case "$1" in
 	--directory=*)
 		artifactsdir="$(cygpath -am "${1#*=}")" || exit
@@ -3643,6 +3658,9 @@ release () { # [--directory=<artifacts-directory>]
 		test -d "$artifactsdir" ||
 		mkdir "$artifactsdir" ||
 		die "Could not create artifacts directory: %s\n" "$artifactsdir"
+		;;
+	--release-date=*)
+		release_date="$(echo "${1#*=}" | tr +_ ' ')"
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -3670,7 +3688,10 @@ release () { # [--directory=<artifacts-directory>]
 	test "$displayver" = "$(version_from_release_notes)" ||
 	die "Incorrect version in the release notes\n"
 
-	test "Latest update: $(today)" = "$(sed -n 2p \
+	test -n "$release_date" ||
+	release_date="$(today)"
+
+	test "Latest update: $release_date" = "$(sed -n 2p \
 		<"$sdk64/usr/src/build-extra/ReleaseNotes.md")" ||
 	die "Incorrect release date in the release notes\n"
 
