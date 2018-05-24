@@ -1193,7 +1193,6 @@ begin
     else
         CbbEditor.ItemIndex:=GE_VIM;
     end;
-    EditorSelectionChanged(NIL);
 
     (*
      * Create a custom page for modifying the environment.
@@ -1529,7 +1528,9 @@ begin
         end;
     end;
 
-    if (PuTTYPage<>NIL) and (CurPageID=PuTTYPage.ID) then begin
+    if (EditorPage<>NIL) and (CurPageID=EditorPage.ID) then begin
+        EditorSelectionChanged(NIL);
+    end else if (PuTTYPage<>NIL) and (CurPageID=PuTTYPage.ID) then begin
         Result:=RdbSSH[GS_OpenSSH].Checked or
             (RdbSSH[GS_Plink].Checked and FileExists(EdtPlink.Text));
         if not Result then begin
