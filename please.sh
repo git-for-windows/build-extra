@@ -2515,12 +2515,13 @@ maybe_force_pkgrel () {
 }
 
 # --force overwrites existing an Git tag, or existing package files
-upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] [--force] [--release-date=<date>] [--force-pkgrel=<pkgrel>] [--cleanbuild] <package>
+upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] [--force] [--release-date=<date>] [--use-branch=<branch>[@<URL>]] [--force-pkgrel=<pkgrel>] [--cleanbuild] <package>
 	artifactsdir=
 	skip_upload=
 	force=
 	delete_existing_tag=
 	release_date=
+	use_branch=
 	force_pkgrel=
 	cleanbuild=
 	only_mingw=
@@ -2551,6 +2552,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	--release-date=*)
 		release_date="$(echo "$1" | tr ' ' _)"
 		;;
+	--use-branch=*)
+		use_branch="$1"
+		;;
 	--force-pkgrel=*)
 		force_pkgrel="${1#*=}"
 		;;
@@ -2578,6 +2582,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	test -z "$release_date" ||
 	test mingw-w64-git = "$package" ||
 	die "The --release-date option is supported only for git\n"
+
+	test -z "$use_branch" ||
+	test mingw-w64-git = "$package" ||
+	die "The --use-branch option is supported only for git\n"
 
 	case "$package" in
 	msys2-runtime)
@@ -2700,7 +2708,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		relnotes_feature='Comes with [cURL v'$version']('"$url"').'
 		;;
 	mingw-w64-git)
-		finalize $delete_existing_tag $release_date release-notes &&
+		finalize $delete_existing_tag $release_date $use_branch \
+			release-notes &&
 		tag_git $force &&
 		if test -n "$artifactsdir"
 		then
@@ -3371,9 +3380,11 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	delete_existing_tag=
 	release_date=
+	use_branch=
 	while case "$1" in
 	--delete-existing-tag) delete_existing_tag=t;;
 	--release-date=*) release_date="$(echo "${1#*=}" | tr +_ ' ')";;
+	--use-branch=*) use_branch="${1#*=}";;
 	*) break;;
 	esac; do shift; done
 
@@ -3397,9 +3408,20 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	git "$dir_option" fetch --tags upstream ||
 	die "Could not update Git\n"
 
+	case "$use_branch" in
+	*@*)
+		git "$dir_option" fetch --tags \
+			"${use_branch#*@}" "${use_branch%%@*}" ||
+		die "Could not fetch '%s' from '%s'\n" \
+			"${use_branch%%@*}" "${use_branch#*@}"
+		use_branch=FETCH_HEAD
+		;;
+	esac
+	use_branch="${use_branch:-git-for-windows/master}"
+
 	ver="$(git "$dir_option" \
 		describe --first-parent --match 'v[0-9]*[0-9]' \
-		git-for-windows/master)" ||
+		"$use_branch")" ||
 	die "Cannot describe current revision of Git\n"
 	ver=${ver%%-*}
 
@@ -3407,7 +3429,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	# from failed automated builds
 	while test -n "$delete_existing_tag" &&
 		test 0 = $(git "$dir_option" rev-list --count \
-			"$ver"..git-for-windows/master)
+			"$ver".."$use_branch")
 	do
 		case "$ver" in
 		*.windows.*) ;; # delete and continue
@@ -3419,7 +3441,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 
 		ver="$(git "$dir_option" \
 			describe --first-parent --match 'v[0-9]*[0-9]' \
-			git-for-windows/master)" ||
+			"$use_branch")" ||
 		die "Cannot describe current revision of Git\n"
 
 		ver=${ver%%-*}
@@ -3428,7 +3450,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	case "$ver" in
 	*.windows.*)
 		test 0 -lt $(git "$dir_option" rev-list --count \
-			"$ver"..git-for-windows/master) ||
+			"$ver".."$use_branch") ||
 		die "Already tagged: %s\n" "$ver"
 
 		nextver=${ver%.windows.*}.windows.$((${ver##*.windows.}+1))
