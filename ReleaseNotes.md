@@ -54,6 +54,7 @@ This package contains software from a number of other projects including Bash, z
 * Tab completion of `git status -- <partial-path>` [is now a lot faster](https://github.com/git-for-windows/git/issues/1533).
 * Git for Windows [now creates directory symlinks correctly](https://github.com/git-for-windows/git/pull/1651) when asked to.
 * The option to disable revocation checks with Secure Channel which was introduced in v2.16.1(2) [now really works](https://github.com/git-for-windows/git/issues/1531).
+* Git [no longer enters an infinite loop](https://github.com/git-for-windows/git/issues/1496) when misspelling `git status` as, say, `git Status`.
 
 ## Changes since Git for Windows v2.16.3 (March 23rd 2018)
 
