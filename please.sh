@@ -2178,10 +2178,12 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 
 tag_git () { # [--force]
 	force=
+	branch_to_use=
 	while case "$1" in
 	-f|--force)
 		force=--force
 		;;
+	--use-branch=*) branch_to_use="${1#*=}";;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
@@ -2201,6 +2203,17 @@ tag_git () { # [--force]
 	 require_remote git-for-windows \
 		https://github.com/git-for-windows/git &&
 	 require_push_url git-for-windows) || exit
+
+	case "$branch_to_use" in
+	*@*)
+		git "$dir_option" fetch --tags \
+			"${branch_to_use#*@}" "${branch_to_use%%@*}" ||
+		die "Could not fetch '%s' from '%s'\n" \
+			"${branch_to_use%%@*}" "${branch_to_use#*@}"
+		branch_to_use=FETCH_HEAD
+		;;
+	esac
+	branch_to_use="${branch_to_use:-git-for-windows/master}"
 
 	nextver="$(sed -ne \
 		'1s/.* \(v[0-9][.0-9]*\)(\([0-9][0-9]*\)) .*/\1.windows.\2/p' \
@@ -2223,7 +2236,7 @@ tag_git () { # [--force]
 	 signopt= &&
 	 if git config user.signingkey >/dev/null; then signopt=-s; fi &&
 	 git tag -m "$tag_message" -a $signopt $force \
-		"$nextver" git-for-windows/master) ||
+		"$nextver" $branch_to_use) ||
 	die "Could not tag %s in %s\n" "$nextver" "$git_src_dir"
 
 	echo "Created tag $nextver" >&2
@@ -2710,7 +2723,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	mingw-w64-git)
 		finalize $delete_existing_tag $release_date $use_branch \
 			release-notes &&
-		tag_git $force &&
+		tag_git $force $use_branch &&
 		if test -n "$artifactsdir"
 		then
 			echo "$nextver" >"$artifactsdir/nextver" &&
@@ -3380,11 +3393,11 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	delete_existing_tag=
 	release_date=
-	use_branch=
+	branch_to_use=
 	while case "$1" in
 	--delete-existing-tag) delete_existing_tag=t;;
 	--release-date=*) release_date="$(echo "${1#*=}" | tr +_ ' ')";;
-	--use-branch=*) use_branch="${1#*=}";;
+	--use-branch=*) branch_to_use="${1#*=}";;
 	*) break;;
 	esac; do shift; done
 
@@ -3408,20 +3421,20 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	git "$dir_option" fetch --tags upstream ||
 	die "Could not update Git\n"
 
-	case "$use_branch" in
+	case "$branch_to_use" in
 	*@*)
 		git "$dir_option" fetch --tags \
-			"${use_branch#*@}" "${use_branch%%@*}" ||
+			"${branch_to_use#*@}" "${branch_to_use%%@*}" ||
 		die "Could not fetch '%s' from '%s'\n" \
-			"${use_branch%%@*}" "${use_branch#*@}"
-		use_branch=FETCH_HEAD
+			"${branch_to_use%%@*}" "${branch_to_use#*@}"
+		branch_to_use=FETCH_HEAD
 		;;
 	esac
-	use_branch="${use_branch:-git-for-windows/master}"
+	branch_to_use="${branch_to_use:-git-for-windows/master}"
 
 	ver="$(git "$dir_option" \
 		describe --first-parent --match 'v[0-9]*[0-9]' \
-		"$use_branch")" ||
+		"$branch_to_use")" ||
 	die "Cannot describe current revision of Git\n"
 	ver=${ver%%-*}
 
@@ -3429,7 +3442,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	# from failed automated builds
 	while test -n "$delete_existing_tag" &&
 		test 0 = $(git "$dir_option" rev-list --count \
-			"$ver".."$use_branch")
+			"$ver".."$branch_to_use")
 	do
 		case "$ver" in
 		*.windows.*) ;; # delete and continue
@@ -3441,7 +3454,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 
 		ver="$(git "$dir_option" \
 			describe --first-parent --match 'v[0-9]*[0-9]' \
-			"$use_branch")" ||
+			"$branch_to_use")" ||
 		die "Cannot describe current revision of Git\n"
 
 		ver=${ver%%-*}
@@ -3450,7 +3463,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	case "$ver" in
 	*.windows.*)
 		test 0 -lt $(git "$dir_option" rev-list --count \
-			"$ver".."$use_branch") ||
+			"$ver".."$branch_to_use") ||
 		die "Already tagged: %s\n" "$ver"
 
 		nextver=${ver%.windows.*}.windows.$((${ver##*.windows.}+1))
