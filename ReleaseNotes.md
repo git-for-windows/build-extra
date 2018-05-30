@@ -54,15 +54,14 @@ This package contains software from a number of other projects including Bash, z
 * The vim configuration [was modernized](https://github.com/git-for-windows/build-extra/pull/186).
 * Comes with [cURL v7.60.0](https://curl.haxx.se/changes.html#7_60_0).
 * Certain errors, e.g. when pushing failed due to a non-fast-forwarding change, [are now colorful](https://github.com/git-for-windows/git/pull/1429).
-* Comes with [cURL v7.60.0](https://curl.haxx.se/changes.html#7_60_0).
 * Comes with [Git LFS v2.4.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.4.1).
 
 ### Bug Fixes
 
 * Fixed an issue with recursive clone ([CVE 2018-11235](https://aka.ms/cve-2018-11235)).
 * Aliases that expand to shell commands [can now take arguments containing curly brackets](https://github.com/git-for-windows/git/pull/1637).
-* Ctrl+C is now handled in Git Bash [in a sophisticated way](https://github.com/git-for-windows/msys2-runtime/commit/fa84a1f06b83b54847e6505df2bdb6db1860f47f): it emulates the way Ctrl+C is handled in Git CMD, but in a fine-grained way.
-* Based on the [the new Ctrl+C handling in Git Bash](https://github.com/git-for-windows/msys2-runtime/commit/fa84a1f06b83b54847e6505df2bdb6db1860f47f), pressing Ctrl+C while `git log` is running will only stop Git from traversing the commit history, [but keep the pager running](https://github.com/git-for-windows/git/commit/df8884cbc5c39073848ddf2058bafeea1188312b).
+* Ctrl+C is now handled in Git Bash [in a sophisticated way](https://github.com/git-for-windows/msys2-runtime/commit/78e2deea8ec1db4aea1e78432ae98dac7198f6a5): it emulates the way Ctrl+C is handled in Git CMD, but in a fine-grained way.
+* Based on the [the new Ctrl+C handling in Git Bash](https://github.com/git-for-windows/msys2-runtime/commit/78e2deea8ec1db4aea1e78432ae98dac7198f6a5), pressing Ctrl+C while `git log` is running will only stop Git from traversing the commit history, [but keep the pager running](https://github.com/git-for-windows/git/commit/df8884cbc5c39073848ddf2058bafeea1188312b).
 * Git was [fixed](https://github.com/git-for-windows/git/pull/1645) to work correctly in Docker volumes inside Windows containers.
 * Tab completion of `git status -- <partial-path>` [is now a lot faster](https://github.com/git-for-windows/git/issues/1533).
 * Git for Windows [now creates directory symlinks correctly](https://github.com/git-for-windows/git/pull/1651) when asked to.
