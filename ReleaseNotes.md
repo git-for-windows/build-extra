@@ -39,6 +39,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Git Credential Manager v1.16.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.16.2).
 
+### Bug Fixes
+
+* The diff filter for `.pdf` files [was fixed](https://github.com/git-for-windows/build-extra/pull/189).
+
 ## Changes since Git for Windows v2.17.1 (May 29th 2018)
 
 ### New Features
