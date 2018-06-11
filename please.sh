@@ -1367,7 +1367,7 @@ publish_prerelease () {
 
 	url=https://api.github.com/repos/git-for-windows/git/releases
 	id="$(curl --netrc -s $url |
-		sed -n '/"id":/{N;/"tag_name": *"'"$1"'"/{
+		sed -n '/"id":/{N;N;/"tag_name": *"'"$1"'"/{
 			s/.*"id": *\([0-9]*\).*/\1/p;q}}')"
 	test -n "$id" ||
 	die "Could not determine ID of release for %s\n" "$1"
@@ -3949,7 +3949,7 @@ publish () { #
 
 	url=https://api.github.com/repos/git-for-windows/git/releases
 	id="$(curl --netrc -s $url |
-		sed -n '/"id":/{N;/"tag_name": *"v'"$version"'"/{
+		sed -n '/"id":/{N;N;/"tag_name": *"v'"$version"'"/{
 			s/.*"id": *\([0-9]*\).*/\1/p;q}}')"
 	test -n "$id" ||
 	die "Could not determine ID of release for %s\n" "$version"
@@ -4046,7 +4046,7 @@ publish_sdk () { #
 
 	url=https://api.github.com/repos/git-for-windows/build-extra/releases
 	id="$(curl --netrc -s $url |
-		sed -n '/"id":/{N;/"tag_name": *"'"$tag"'"/{
+		sed -n '/"id":/{N;N;/"tag_name": *"'"$tag"'"/{
 			s/.*"id": *\([0-9]*\).*/\1/p;q}}')"
 	test -z "$id" ||
 	die "Release %s exists already as ID %s\n" "$tag" "$id"
