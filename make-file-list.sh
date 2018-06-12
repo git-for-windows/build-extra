@@ -116,7 +116,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../itcl/' \
 	-e '^/mingw../t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
 	-e '^/mingw../bin/\(autopoint\|[a-z]*-config\)$' \
-	-e '^/mingw../bin/lib\(asprintf\|gettext\|gnutlsxx\|pcre[0-9a-oq-z]\|quadmath\|stdc++\)[^/]*\.dll$' \
+	-e '^/mingw../bin/lib\(asprintf\|gettext\|gnutlsxx\|pcre[013-9a-oq-z]\|quadmath\|stdc++\)[^/]*\.dll$' \
 	-e '^/mingw../bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\)[^/]*\.exe$' \
 	-e '^/mingw../.*/git-\(remote-testsvn\|shell\)\.exe$' \
 	-e '^/mingw../.*/git-cvsserver.*$' \
