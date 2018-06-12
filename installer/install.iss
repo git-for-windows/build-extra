@@ -1193,6 +1193,7 @@ begin
     else
         CbbEditor.ItemIndex:=GE_VIM;
     end;
+    EditorSelectionChanged(NIL);
 
     (*
      * Create a custom page for modifying the environment.
