@@ -106,7 +106,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/bin/xml.*exe$' \
 	-e '^/mingw../share/doc/gettext/' \
 	-e '^/mingw../share/doc/lib' \
-	-e '^/mingw../share/doc/pcre/' \
+	-e '^/mingw../share/doc/pcre2\?/' \
 	-e '^/mingw../share/doc/git-doc/.*\.txt$' \
 	-e '^/mingw../lib/gettext/' -e '^/mingw../share/gettext/' \
 	-e '^/usr/include/' -e '^/mingw../include/' \
