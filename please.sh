@@ -398,13 +398,15 @@ require_clean_worktree () {
 }
 
 ff_master () {
-	test refs/heads/master = "$(git rev-parse --symbolic-full-name HEAD)" ||
-	die "%s: Not on 'master'\n" "$sdk/$pkgpath"
+	USE_AS_MASTERBRANCH=${USE_AS_MASTERBRANCH:-master}
+	test refs/heads/"$USE_AS_MASTERBRANCH" = \
+		"$(git rev-parse --symbolic-full-name HEAD)" ||
+	die "%s: Not on '%s'\n" "$sdk/$pkgpath" "$USE_AS_MASTERBRANCH"
 
 	require_clean_worktree
 
-	git pull --ff-only origin master ||
-	die "%s: cannot fast-forward 'master'\n" "$sdk/$pkgpath"
+	git pull --ff-only origin "$USE_AS_MASTERBRANCH" ||
+	die "%s: cannot fast-forward '%s'\n" "$sdk/$pkgpath" "$USE_AS_MASTERBRANCH"
 }
 
 update () { # <package>
@@ -554,7 +556,8 @@ pkg_build () {
 }
 
 fast_forward () {
-	git -C "$1" fetch "$2" refs/heads/master &&
+	USE_AS_MASTERBRANCH="${USE_AS_MASTERBRANCH:-master}"
+	git -C "$1" fetch "$2" refs/heads/"$USE_AS_MASTERBRANCH" &&
 	git -C "$1" merge --ff-only "$3" &&
 	test "a$3" = "a$(git -C "$1" rev-parse --verify HEAD)"
 }
@@ -776,6 +779,7 @@ require_git_src_dir () {
 	then
 		if test ! -d "${git_src_dir%/src/git}"
 		then
+			b=${USE_AS_MASTERBRANCH:-master}
 			mingw_packages_dir="${git_src_dir%/*/src/git}"
 			if test ! -d "$mingw_packages_dir"
 			then
@@ -783,7 +787,9 @@ require_git_src_dir () {
 				*/MINGW-packages)
 					o=https://github.com/git-for-windows &&
 					git -C "${mingw_packages_dir%/*}" \
-						clone $o/MINGW-packages ||
+						clone \
+						--branch "$b" --single-branch \
+						$o/MINGW-packages ||
 					die "Could not clone into %s\n" \
 						"$mingw_packages_dir"
 					;;
@@ -795,7 +801,7 @@ require_git_src_dir () {
 			else
 				git -C "$mingw_packages_dir" fetch &&
 				git -C "$mingw_packages_dir" \
-					checkout -t origin/master ||
+					checkout -t origin/"$b" ||
 				die "Could not check out %s\n" \
 					"$mingw_packages_dir"
 			fi
@@ -1389,6 +1395,9 @@ prerelease () { # [--installer | --portable | --mingit] [--only-64-bit] [--clean
 		force_version='%(prerelease-tag)'
 		force_tag=-f
 		upload=t
+		;;
+	--use-as-master-branch=*)
+		USE_AS_MASTERBRANCH="${1#*=}"
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
