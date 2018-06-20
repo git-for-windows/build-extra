@@ -47,6 +47,81 @@ export CHERE_INVOKING=1
 # Never allow ORIGINAL_PATH to mess up our PATH
 unset ORIGINAL_PATH
 
+# In MinGit, there is no `cygpath`...
+# We really only use -w, -am and -au in please.sh, so that's what we
+# support here
+
+cygpath () {
+	test $# = 2 ||
+	die "This minimal cygpath drop-in cannot handle '%s'\n" "$*"
+
+	case "$1" in
+	-w)
+		case "$2" in
+		/[a-zA-Z]/*)
+			echo "$2" |
+			sed -e 's|^/\(.\)\(.*\)|\u\1:\2|' -e 's|/|\\|g'
+			;;
+		[a-zA-Z]:[\\/]*)
+			echo "$2" |
+			sed -e 's|^\(.\)|\u\1|' -e 's|/|\\|g'
+			;;
+		/*)
+			echo "$(cd / && pwd -W)$2" |
+			sed -e 's|/|\\|g'
+			;;
+		*)
+			echo "$2" |
+			sed -e 's|/|\\|g'
+			;;
+		esac
+		;;
+	-am)
+		case "$2" in
+		/[a-zA-Z]/*)
+			echo "$2" |
+			sed -e 's|^/\(.\)\(.*\)|\u\1:\2|' -e 's|\\|/|g'
+			;;
+		[a-zA-Z]:[\\/]*)
+			echo "$2" |
+			sed -e 's|^\(.\)|\u\1|' -e 's|\\|/|g'
+			;;
+		/*)
+			echo "$(cd / && pwd -W)$2" |
+			sed -e 's|\\|/|g'
+			;;
+		*)
+			echo "$(pwd -W)/$2" |
+			sed -e 's|\\|/|g' -e 's|//*|/|g'
+			;;
+		esac
+		;;
+	-au)
+		case "$2" in
+		/[a-zA-Z]/*)
+			echo "$2" |
+			sed -e 's|^/\(.\)\(.*\)|/\l\1\2|' -e 's|\\|/|g'
+			;;
+		[a-zA-Z]:[\\/]*)
+			echo "$2" |
+			sed -e 's|^\(.\):|/\l\1|' -e 's|\\|/|g'
+			;;
+		/*)
+			echo "$2" |
+			sed -e 's|\\|/|g'
+			;;
+		*)
+			echo "$(pwd)/$2" |
+			sed -e 's|\\|/|g' -e 's|//*|/|g'
+			;;
+		esac
+		;;
+	*)
+		die "Unhandled cygpath option: '%s'\n" "$1"
+		;;
+	esac
+}
+
 sdk_path () { # <bitness>
 	result="$(git config windows.sdk"$1".path)" && test -n "$result" || {
 		result="C:/git-sdk-$1" && test -e "$result" ||
