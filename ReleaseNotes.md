@@ -43,7 +43,7 @@ This package contains software from a number of other projects including Bash, z
 
 * The diff filter for `.pdf` files [was fixed](https://github.com/git-for-windows/build-extra/pull/189).
 * The `start-ssh-agent.cmd` script [no longer overrides the `HOME` variable](https://github.com/git-for-windows/MINGW-packages/pull/26).
-* Fixes an issue where passing an argument with a trailing slash from Git Bash to `git.exe` [was dropping that trailing slash](https://github.com/git-for-windows/msys2-runtime/commit/5b0abb29ab8845cf4eff9da1b4fd1bf58683aeda).
+* Fixes an issue where passing an argument with a trailing slash from Git Bash to `git.exe` [was dropping that trailing slash](https://github.com/git-for-windows/git/issues/1695).
 * The `http.schannel.checkRevoke` setting [now really works](https://github.com/git-for-windows/git/issues/1531).
 
 ## Changes since Git for Windows v2.17.1 (May 29th 2018)
