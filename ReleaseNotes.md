@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The diff filter for `.pdf` files [was fixed](https://github.com/git-for-windows/build-extra/pull/189).
+* The `start-ssh-agent.cmd` script [no longer overrides the `HOME` variable](https://github.com/git-for-windows/MINGW-packages/pull/26).
 
 ## Changes since Git for Windows v2.17.1 (May 29th 2018)
 
