@@ -180,10 +180,17 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 
 	# Re-enable at least AES256-cbc and AES128-cbc, as they are still used
 	# e.g. in VSTS
-	test ! -f /etc/ssh/ssh_config ||
-	grep -q '^Ciphers .*aes256-cbc,aes192-cbc' /etc/ssh/ssh_config ||
-	sed -i -e '/^[# ]*Ciphers /{s/^# *//;s/$/,aes256-cbc,aes192-cbc/}' \
-		/etc/ssh/ssh_config
+	test ! -f /etc/ssh/ssh_config || {
+		# Revert change by prior versions of git-extra.
+		! grep -q '^Ciphers [a-z].*cbc' /etc/ssh/ssh_config ||
+		sed -i -e 's/^Ciphers [a-z].*cbc/#   &/' /etc/ssh/ssh_config
+
+		grep -q '^Ciphers\s\++' /etc/ssh/ssh_config ||
+		printf "%s\n%s\n" \
+			'# Added by git-extra' \
+			'Ciphers +aes128-cbc,3des-cbc,aes256-cbc,aes192-cbc' \
+			>>/etc/ssh/ssh_config
+	}
 
 	# Enable color and syntax-highlighting in GNU nano
 	test ! -f /etc/nanorc ||
