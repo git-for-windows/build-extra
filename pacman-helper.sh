@@ -244,6 +244,16 @@ package_list () { # db.tar.xz
 	sed -n 's/\/$//p'
 }
 
+call_gpg () {
+	if test -z "$CALL_GPG"
+	then
+		GIT_GPG_PROGRAM="$(git config gpg.program)"
+		CALL_GPG="${GIT_GPG_PROGRAM:-gpg}"
+	fi
+
+	"$CALL_GPG" "$@"
+}
+
 add () { # <file>
 	test $# -gt 0 ||
 	die "What packages do you want to add?"
@@ -297,7 +307,7 @@ add () { # <file>
 
 		if test -n "$GPGKEY"
 		then
-			gpg --detach-sign --use-agent --no-armor \
+			call_gpg --detach-sign --no-armor \
 				-u $GPGKEY "$dir/$path"
 		fi
 	done
@@ -554,7 +564,7 @@ push_missing_signatures () {
 			test -f "$dir"/$filename.sig ||
 			if test -n "$GPGKEY"
 			then
-				gpg --detach-sign --use-agent --no-armor \
+				call_gpg --detach-sign --no-armor \
 					-u $GPGKEY "$dir/$filename"
 			else
 				die "Missing: $dir/$filename.sig"
@@ -640,7 +650,7 @@ push_missing_signatures () {
 			test -f "$dir"/$filename.sig ||
 			if test -n "$GPGKEY"
 			then
-				gpg --detach-sign --use-agent --no-armor \
+				call_gpg --detach-sign --no-armor \
 					-u $GPGKEY "$dir/$filename"
 			else
 				die "Missing: $dir/$filename.sig"

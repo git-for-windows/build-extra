@@ -1,5 +1,5 @@
-# Git for Windows v2.17.1(2) Release Notes
-Latest update: May 29th 2018
+# Git for Windows v2.18.0 Release Notes
+Latest update: June 22nd 2018
 
 ## Introduction
 
@@ -37,12 +37,15 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.18.0](https://github.com/git/git/blob/v2.18.0/Documentation/RelNotes/2.18.0.txt).
 * Comes with [Git Credential Manager v1.16.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.16.2).
-* Comes with [patch level 4](https://github.com/git-for-windows/msys2-runtime/commit/5b0abb29ab8845cf4eff9da1b4fd1bf58683aeda) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.10.0](https://cygwin.com/ml/cygwin-announce/2018-02/msg00002.html).
 
 ### Bug Fixes
 
 * The diff filter for `.pdf` files [was fixed](https://github.com/git-for-windows/build-extra/pull/189).
+* The `start-ssh-agent.cmd` script [no longer overrides the `HOME` variable](https://github.com/git-for-windows/MINGW-packages/pull/26).
+* Fixes an issue where passing an argument with a trailing slash from Git Bash to `git.exe` [was dropping that trailing slash](https://github.com/git-for-windows/git/issues/1695).
+* The `http.schannel.checkRevoke` setting [now really works](https://github.com/git-for-windows/git/issues/1531).
 
 ## Changes since Git for Windows v2.17.1 (May 29th 2018)
 

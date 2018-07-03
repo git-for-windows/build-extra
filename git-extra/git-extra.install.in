@@ -154,6 +154,7 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	sed -i -e '/^ *autocmd BufReadPost \*/,/\\ \(| \)\?endif$/s/^/"/' \
 		/usr/share/vim/vim81/defaults.vim
 
+	test ! -f /usr/share/vim/vim80/defaults.vim ||
 	! grep -q '^"  augroup END$' /usr/share/vim/vim80/defaults.vim ||
 	sed -i -e '/^"  augroup END$/,$s/^"//' \
 		/usr/share/vim/vim80/defaults.vim
