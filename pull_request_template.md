@@ -2,7 +2,7 @@ A friendly reminder for new contributors:
 
 # What is DCO sign-off?  Why is it required?
 
-DCO stands for [Developer's Certificate of Origin](https://github.com/git/git/blob/master/Documentation/SubmittingPatches#L304-L349).
+DCO stands for [Developer's Certificate of Origin](https://github.com/git/git/blob/v2.18.0/Documentation/SubmittingPatches#L304-L349).
 
 We require all commits to be DCO signed-off in case we need to track down and handle legal and/or technical issues.
 
