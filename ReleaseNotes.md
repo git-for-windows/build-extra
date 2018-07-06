@@ -39,6 +39,10 @@ This package contains software from a number of other projects including Bash, z
 
 * The included OpenSSH client [now enables modern ciphers](https://github.com/git-for-windows/build-extra/pull/192).
 
+### Bug Fixes
+
+* The `http.schannel.checkRevoke` setting (which never worked) [was renamed to `http.schannelCheckRevoke`](https://github.com/git-for-windows/git/pull/1747). In the same run, `http.schannel.useSSLCAInfo` (which also did not work, for the same reason) was renamed to `http.schannelUseSSLCAInfo`.
+
 ## Changes since Git for Windows v2.17.1(2) (May 29th 2018)
 
 ### New Features
