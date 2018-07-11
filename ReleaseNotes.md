@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * The included OpenSSH client [now enables modern ciphers](https://github.com/git-for-windows/build-extra/pull/192).
+* Comes with [cURL v7.61.0](https://curl.haxx.se/changes.html#7_61_0).
 
 ### Bug Fixes
 
