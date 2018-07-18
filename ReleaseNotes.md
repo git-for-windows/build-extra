@@ -39,11 +39,11 @@ This package contains software from a number of other projects including Bash, z
 
 * The included OpenSSH client [now enables modern ciphers](https://github.com/git-for-windows/build-extra/pull/192).
 * Comes with [cURL v7.61.0](https://curl.haxx.se/changes.html#7_61_0).
-* Comes with [patch level 5](https://github.com/git-for-windows/msys2-runtime/commit/f02cd2463d2c7e03fe97b8a1ce35ecffd0714f7e) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.10.0](https://cygwin.com/ml/cygwin-announce/2018-02/msg00002.html).
 
 ### Bug Fixes
 
 * The `http.schannel.checkRevoke` setting (which never worked) [was renamed to `http.schannelCheckRevoke`](https://github.com/git-for-windows/git/pull/1747). In the same run, `http.schannel.useSSLCAInfo` (which also did not work, for the same reason) was renamed to `http.schannelUseSSLCAInfo`.
+* [Avoids](https://github.com/git-for-windows/msys2-runtime/commit/f02cd2463d2c7e03fe97b8a1ce35ecffd0714f7e) a stack overflow with recent Windows Insider versions.
 
 ## Changes since Git for Windows v2.17.1(2) (May 29th 2018)
 
