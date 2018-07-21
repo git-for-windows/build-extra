@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * The included OpenSSH client [now enables modern ciphers](https://github.com/git-for-windows/build-extra/pull/192).
 * Comes with [cURL v7.61.0](https://curl.haxx.se/changes.html#7_61_0).
 * Comes with [cURL v7.61.0](https://curl.haxx.se/changes.html#7_61_0).
+* Comes with [tig v2.4.0](https://github.com/jonas/tig/releases/tag/tig-2.4.0).
 
 ### Bug Fixes
 
