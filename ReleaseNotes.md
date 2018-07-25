@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v7.61.0](https://curl.haxx.se/changes.html#7_61_0).
 * Comes with [cURL v7.61.0](https://curl.haxx.se/changes.html#7_61_0).
 * Comes with [tig v2.4.0](https://github.com/jonas/tig/releases/tag/tig-2.4.0).
+* Comes with [patch level 6](https://github.com/git-for-windows/msys2-runtime/commit/fb7bc42373ef89bb8180a518164c70cee4e3ecb5) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.10.0](https://cygwin.com/ml/cygwin-announce/2018-02/msg00002.html).
 
 ### Bug Fixes
 
