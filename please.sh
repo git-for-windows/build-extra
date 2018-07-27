@@ -2747,9 +2747,22 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		test -n "$version" ||
 		die "Could not determine version of %s\n" "$package"
 		needle1='^  "body": ".* SHA-256 hashes.*git-lfs-windows'
-		needle2="$version\\.zip\\**\\\\r\\\\n\\([0-9a-f]*\\).*"
+		needle2="$version\\.zip[^0-9a-f]*\\([0-9a-f]*\\).*"
 		sha256_32="$(echo "$release" |
 			sed -n "s/$needle1-386-$needle2/\1/p")"
+		extra_v=
+		test -n "$sha256_32" || {
+			needle1='^  "body": ".* SHA-256 hashes.*[^0-9a-f]'
+			needle1="$needle1\\([0-9a-f]\\+\\)"
+			needle1="$needle1[^0-9a-f]*git-lfs-windows"
+			needle2="$version\\.zip.*"
+			sha256_32="$(echo "$release" |
+				sed -n "s/$needle1-386-v$needle2/\1/p")"
+			test -n "$sha256_32" ||
+			die 'Could not find version in %s\n' \
+				"$(echo "$release" | sed -n "/$needle1/p")"
+			extra_v=v
+		}
 		test 64 = $(echo -n "$sha256_32" | wc -c) ||
 		die "Could not determine SHA-256 of 32-bit %s\n" "$package"
 
@@ -2758,13 +2771,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		test 2.2.1,1142055d51a7d70b3c2fbf184db41100457f170a532b638253991821890927b5 != "$version,$sha256_32" || sha256_32=0d6347bbdf25946f14949b50f18b9929183aefe55f6b626f8a618ae53c2220bb
 
 		sha256_64="$(echo "$release" |
-			sed -n "s/$needle1-amd64-$needle2/\1/p")"
+			sed -n "s/$needle1-amd64-$extra_v$needle2/\1/p")"
 		test 64 = $(echo -n "$sha256_64" | wc -c) ||
 		die "Could not determine SHA-256 of 64-bit %s\n" "$package"
 		(cd "$sdk64/$pkgpath" &&
 		 url=https://github.com/$repo/releases/download/v$version/ &&
-		 zip32="git-lfs-windows-386-$version.zip" &&
-		 zip64="git-lfs-windows-amd64-$version.zip" &&
+		 zip32="git-lfs-windows-386-$extra_v$version.zip" &&
+		 zip64="git-lfs-windows-amd64-$extra_v$version.zip" &&
 		 curl -LO $url$zip32 &&
 		 curl -LO $url$zip64 &&
 		 printf "%s *%s\n%s *%s\n" \
@@ -2778,10 +2791,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
 		 s1='s/\(folder=\)[^\n]*/\1' &&
 		 s2='s/\(sha256sum=\)[0-9a-f]*/\1' &&
+		 s3='s/\(386-\|amd64-\)v\?\(\$pkgver\.zip\)/\1'$extra_v'\2/' &&
 		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
 		 -e "s/^\\(pkgrel=\\).*/\\11/" \
-		 -e "/^i686)/{N;N;N;$s1$dir32/;$s2$sha256_32/}" \
-		 -e "/^x86_64)/{N;N;N;$s1$dir64/;$s2$sha256_64/}" \
+		 -e "/^i686)/{N;N;N;$s1$dir32/;$s2$sha256_32/;$s3}" \
+		 -e "/^x86_64)/{N;N;N;$s1$dir64/;$s2$sha256_64/;$s3}" \
 			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD) &&
