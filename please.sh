@@ -3555,7 +3555,7 @@ sign_files () {
 
 bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--arch=<arch>] [<package-versions>]
 	packages="mingw-w64-git-pdb mingw-w64-curl-pdb mingw-w64-openssl-pdb
-		msys2-runtime-devel bash-devel"
+		bash-devel"
 
 	artifactsdir=
 	architectures=
