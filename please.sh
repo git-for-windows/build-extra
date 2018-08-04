@@ -2747,15 +2747,23 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		test -n "$version" ||
 		die "Could not determine version of %s\n" "$package"
 		needle1='^  "body": ".* SHA-256 hashes.*git-lfs-windows'
-		needle2="$version\\.zip[^0-9a-f]*\\([0-9a-f]*\\).*"
-		sha256_32="$(echo "$release" |
-			sed -n "s/$needle1-386-$needle2/\1/p")"
-		extra_v=
-		test -n "$sha256_32" || {
+		# Git LFS sometimes lists SHA-256 sums below, sometimes
+		# above the file names. Work around that particular issue
+		if test -n "$(echo "$release" |
+			grep "$needle1"'.*\\n[0-9a-z]\{64\}"$')"
+		then
+			# The SHA-256 sums are listed below the file names
+			needle2="$version\\.zip[^0-9a-f]*\\([0-9a-f]*\\).*"
+		else
 			needle1='^  "body": ".* SHA-256 hashes.*[^0-9a-f]'
 			needle1="$needle1\\([0-9a-f]\\+\\)"
 			needle1="$needle1[^0-9a-f]*git-lfs-windows"
 			needle2="$version\\.zip.*"
+		fi
+		sha256_32="$(echo "$release" |
+			sed -n "s/$needle1-386-$needle2/\1/p")"
+		extra_v=
+		test -n "$sha256_32" || {
 			sha256_32="$(echo "$release" |
 				sed -n "s/$needle1-386-v$needle2/\1/p")"
 			test -n "$sha256_32" ||
