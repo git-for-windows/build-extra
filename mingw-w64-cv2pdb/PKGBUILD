@@ -3,7 +3,7 @@
 _realname=cv2pdb
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=0.42.1.gf75b963
+pkgver=0.44.18.g0198534
 pkgrel=1
 pkgdesc="Converter of DWARF debug information to PDB files (mingw-w64)"
 arch=('any')
@@ -21,12 +21,6 @@ die () {
   exit 1
 }
 
-test -n "$MSBUILD_DIR" ||
-MSBUILD_DIR="/c/Program Files (x86)/MSBuild/14.0/Bin"
-
-test -d "$MSBUILD_DIR" ||
-die "Need a valid MSBUILD_DIR to point to MSBuild"
-
 case "$CARCH" in
 i686) WARCH=Win32; OUTDIR=bin/Release;;
 x86_64) WARCH=x64; OUTDIR=bin/Release_x64;;
@@ -35,24 +29,23 @@ esac
 
 pkgver() {
   cd "$srcdir/cv2pdb"
-  git rev-parse --verify 0.42 >/dev/null >&2 ||
-  git tag -m "Missing tag" 0.42 14eef861769f85b6f32c68ff1898c41d8ac65ef5
+  git rev-parse --verify --quiet 0.44 >/dev/null >&2 ||
+  git tag -m "Missing tag" 0.44 ab4b0b1946295f9762ec3ed83a7c84cc8b7aa975
   git describe --tags HEAD | tr - . | sed 's/^v//'
 }
 
 prepare () {
   cd "$srcdir/cv2pdb"
-  grep -q "<PlatformToolset>v140<" src/cv2pdb.vcxproj ||
-  sed -i 's/\(<PlatformToolset>\)[^<]*/\1v140/g' src/cv2pdb.vcxproj
-  #grep -q "<PlatformToolset>v140<" src/dumplines.vcxproj ||
-  #sed -i 's/\(<PlatformToolset>\)[^<]*/\1v140/g' src/dumplines.vcxproj
+  grep -q '<PlatformToolset>$(DefaultPlatformToolset)<' src/cv2pdb.vcxproj ||
+  sed -i 's/\(<PlatformToolset>\)[^<]*/\1$(DefaultPlatformToolset)/g' src/cv2pdb.vcxproj
+  #grep -q '<PlatformToolset>$(DefaultPlatformToolset)<' ||
+  #sed -i 's/\(<PlatformToolset>\)[^<]*/\1$(DefaultPlatformToolset)/g' src/dumplines.vcxproj
 }
 
 build() {
   cd "$srcdir/cv2pdb"
-
-  "$MSBUILD_DIR"/MSBuild.exe //p:Configuration=Release //p:Platform="$WARCH" \
-    src/cv2pdb.vcxproj
+  cmd //c '..\..\..\msbuild\hMSBuild.bat -vswhere-version local -nocachevswhere /p:Configuration=Release /p:Platform='"$WARCH"' src\cv2pdb.vcxproj' ||
+  die "MSBuild failed."
 
   test -z "$SIGNTOOL" ||
   eval "$SIGNTOOL $OUTDIR/cv2pdb.exe"
@@ -67,4 +60,6 @@ package () {
   install -d "${pkgdir}/${MINGW_PREFIX}/share/doc/cv2pdb"
   install -m644 CHANGES FEATURES LICENSE README \
     "${pkgdir}/${MINGW_PREFIX}/share/doc/cv2pdb"
+
+  git -C "$srcdir/cv2pdb" clean -dfx
 }
