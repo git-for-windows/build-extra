@@ -3039,7 +3039,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			'makepkg-mingw --nobuild -s --noconfirm' &&
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
-		 if test "1.0.0.181.9b0663d" != "$version"
+		 if test "1.0.0.181.9b0663d" != "$version" &&
+			test "0.44.18.g0198534" != "$version"
 		 then
 			git commit -s -m \
 				"${package#mingw-w64-}: upgrade to $version" \
