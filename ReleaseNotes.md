@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git LFS v2.5.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.5.0).
 * Comes with [Git Credential Manager v1.17.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.17.0).
 * Comes with [Git LFS v2.5.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.5.1).
+* Comes with [Git Credential Manager v1.17.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.17.1).
 
 ### Bug Fixes
 
