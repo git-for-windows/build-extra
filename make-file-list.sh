@@ -120,6 +120,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\)[^/]*\.exe$' \
 	-e '^/mingw../.*/git-\(remote-testsvn\|shell\)\.exe$' \
 	-e '^/mingw../.*/git-cvsserver.*$' \
+	-e '^/mingw../.*/gitweb/' \
 	-e '^/mingw../lib/tdbc' \
 	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
 	-e '^/mingw../share/nghttp2/' \
