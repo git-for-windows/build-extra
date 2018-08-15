@@ -104,6 +104,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/etc/skel/' -e '^/mingw../etc/skel/' \
 	-e '^/usr/bin/svn' \
 	-e '^/usr/bin/xml.*exe$' \
+	-e '^/usr/bin/xslt.*$' \
 	-e '^/mingw../share/doc/gettext/' \
 	-e '^/mingw../share/doc/lib' \
 	-e '^/mingw../share/doc/pcre2\?/' \
