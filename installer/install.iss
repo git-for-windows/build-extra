@@ -309,6 +309,8 @@ const
     GE_NotepadPlusPlus = 2;
     GE_VisualStudioCode = 3;
     GE_VisualStudioCodeInsiders = 4;
+    GE_SublimeText = 5;
+    GE_Atom = 6;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -352,13 +354,15 @@ var
     // Wizard page and variables for the Editor options.
     EditorPage:TWizardPage;
     CbbEditor:TNewComboBox;
-    LblEditor:array[GE_Nano..GE_VisualStudioCodeInsiders] of array of TLabel;
-    EditorAvailable:array[GE_Nano..GE_VisualStudioCodeInsiders] of Boolean;
+    LblEditor:array[GE_Nano..GE_Atom] of array of TLabel;
+    EditorAvailable:array[GE_Nano..GE_Atom] of Boolean;
     SelectedEditor:Integer;
 
     NotepadPlusPlusPath:String;
     VisualStudioCodePath:String;
     VisualStudioCodeInsidersPath:String;
+    SublimeTextPath:String;
+    AtomPath:String;
 
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
@@ -1130,18 +1134,24 @@ begin
     EditorAvailable[GE_NotepadPlusPlus]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\notepad++.exe','',NotepadPlusPlusPath);
     EditorAvailable[GE_VisualStudioCode]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
     EditorAvailable[GE_VisualStudioCodeInsiders]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code - Insiders.exe\shell\open\command','',VisualStudioCodeInsidersPath);
+    EditorAvailable[GE_SublimeText]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\sublime_text.exe\shell\open\command','',SublimeTextPath);
+    EditorAvailable[GE_Atom]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\atom.exe\shell\open\command','',AtomPath);
 
     // Remove `" %1"` from end and unqote the string.
     if (EditorAvailable[GE_VisualStudioCode]) then
         VisualStudioCodePath:=Copy(VisualStudioCodePath, 2, Length(VisualStudioCodePath) - 7);
     if (EditorAvailable[GE_VisualStudioCodeInsiders]) then
         VisualStudioCodeInsidersPath:=Copy(VisualStudioCodeInsidersPath, 2, Length(VisualStudioCodeInsidersPath) - 7);
+    if (EditorAvailable[GE_SublimeText]) then
+        SublimeTextPath:=Copy(SublimeTextPath, 2, Length(SublimeTextPath) - 7);
+    if (EditorAvailable[GE_Atom]) then
+        AtomPath:=Copy(AtomPath, 2, Length(AtomPath) - 7);
 
     // 1st choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use the Nano editor by default');
     Data:='<RED>(NEW!)</RED> <A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window.';
-    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode] and not EditorAvailable[GE_VisualStudioCodeInsiders]) then
+    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode] and not EditorAvailable[GE_VisualStudioCodeInsiders] and not EditorAvailable[GE_SublimeText] and not EditorAvailable[GE_Atom]) then
         Data:=Data+#13+#13+'This is the recommended option for end users if no GUI editors are installed.';
     CreateItemDescription(EditorPage,Data,Top,Left,LblEditor[GE_Nano],False);
     EditorAvailable[GE_Nano]:=True;
@@ -1167,6 +1177,16 @@ begin
     CbbEditor.Items.Add('Use Visual Studio Code Insiders as Git'+#39+'s default editor');
     CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com/insiders/>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code Insiders as its default editor.',Top,Left,LblEditor[GE_VisualStudioCodeInsiders],False);
 
+    // 6th choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use Sublime Text as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://www.sublimetext.com/>Sublime text</A> is a lightweight editor which supports a great number'+#13+'of plugins.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Sublime Text as its default editor.',Top,Left,LblEditor[GE_SublimeText],False);
+
+    // 7th choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use Atom as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://atom.io/>Atom</A> is an open source text editor which comes with builtin support'+#13+'for Git and Github.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Atom as its default editor.',Top,Left,LblEditor[GE_Atom],False);
+
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Editor Option','VIM') of
         'Nano': CbbEditor.ItemIndex:=GE_Nano;
@@ -1186,6 +1206,18 @@ begin
     'VisualStudioCodeInsiders': begin
             if EditorAvailable[GE_VisualStudioCodeInsiders] then
                 CbbEditor.ItemIndex:=GE_VisualStudioCodeInsiders
+            else
+                CbbEditor.ItemIndex:=GE_VIM;
+        end;
+    'SublimeText': begin
+            if EditorAvailable[GE_SublimeText] then
+                CbbEditor.ItemIndex:=GE_SublimeText
+            else
+                CbbEditor.ItemIndex:=GE_VIM;
+        end;
+    'Atom': begin
+            if EditorAvailable[GE_Atom] then
+                CbbEditor.ItemIndex:=GE_Atom
             else
                 CbbEditor.ItemIndex:=GE_VIM;
         end;
@@ -2137,6 +2169,12 @@ begin
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders)) and (VisualStudioCodeInsidersPath<>'') then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.');
+    end else if ((CbbEditor.ItemIndex=GE_SublimeText)) and (SublimeTextPath<>'') then begin
+        if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+SublimeTextPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set Sublime Text as core.editor in the gitconfig.');
+    end else if ((CbbEditor.ItemIndex=GE_Atom)) and (AtomPath<>'') then begin
+        if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+AtomPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set Atom as core.editor in the gitconfig.');
     end;
 
     {
@@ -2192,6 +2230,10 @@ begin
         Data:='VisualStudioCode';
     end else if (CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders) then begin
         Data:='VisualStudioCodeInsiders';
+    end else if (CbbEditor.ItemIndex=GE_SublimeText) then begin
+        Data:='SublimeText';
+    end else if (CbbEditor.ItemIndex=GE_Atom) then begin
+        Data:='Atom';
     end;
     RecordChoice(PreviousDataKey,'Editor Option',Data);
 
