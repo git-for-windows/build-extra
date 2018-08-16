@@ -1131,12 +1131,11 @@ begin
     EditorAvailable[GE_VisualStudioCode]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
     EditorAvailable[GE_VisualStudioCodeInsiders]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code - Insiders.exe\shell\open\command','',VisualStudioCodeInsidersPath);
 
-    if (EditorAvailable[GE_VisualStudioCode]) then begin
-        StringChangeEx(VisualStudioCodePath,' "%1"','',True);
-    end;
-    if (EditorAvailable[GE_VisualStudioCodeInsiders]) then begin
-        StringChangeEx(VisualStudioCodeInsidersPath,' "%1"','',True);
-    end;
+    // Remove `" %1"` from end and unqote the string.
+    if (EditorAvailable[GE_VisualStudioCode]) then
+        VisualStudioCodePath:=Copy(VisualStudioCodePath, 2, Length(VisualStudioCodePath) - 7);
+    if (EditorAvailable[GE_VisualStudioCodeInsiders]) then
+        VisualStudioCodeInsidersPath:=Copy(VisualStudioCodeInsidersPath, 2, Length(VisualStudioCodeInsidersPath) - 7);
 
     // 1st choice
     Top:=TopOfLabels;
