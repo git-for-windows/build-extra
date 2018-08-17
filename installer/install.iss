@@ -311,6 +311,7 @@ const
     GE_VisualStudioCodeInsiders = 4;
     GE_SublimeText = 5;
     GE_Atom = 6;
+    GE_CustomEditor = 7;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -352,10 +353,10 @@ var
     PreviousGitForWindowsVersion:String;
 
     // Wizard page and variables for the Editor options.
-    EditorPage:TWizardPage;
+    EditorPage:TInputFileWizardPage;
     CbbEditor:TNewComboBox;
-    LblEditor:array[GE_Nano..GE_Atom] of array of TLabel;
-    EditorAvailable:array[GE_Nano..GE_Atom] of Boolean;
+    LblEditor:array[GE_Nano..GE_CustomEditor] of array of TLabel;
+    EditorAvailable:array[GE_Nano..GE_CustomEditor] of Boolean;
     SelectedEditor:Integer;
 
     VisualStudioCodeUserInstalation:Boolean;
@@ -366,6 +367,8 @@ var
     VisualStudioCodeInsidersPath:String;
     SublimeTextPath:String;
     AtomPath:String;
+    CustomEditorPath:String;
+    CustomEditorOptions:String;
 
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
@@ -867,6 +870,15 @@ begin
     Left:=4;
 end;
 
+function CreateFilePage(var PrevPageID:Integer;const Caption,Description,SubCaption:String;var TabOrder,Top,Left:Integer):TInputFileWizardPage;
+begin
+    Result:=CreateInputFilePage(PrevPageID,Caption,Description,SubCaption);
+    PrevPageID:=Result.ID;
+    TabOrder:=0;
+    Top:=8;
+    Left:=4;
+end;
+
 function SubString(S:String;Start,Count:Integer):String;
 begin
     Result:=S;
@@ -1088,6 +1100,68 @@ begin
     Result:=TCheckBox(CreateRadioButtonOrCheckBox(False,Page,Caption,Description,TabOrder,Top,Left));
 end;
 
+procedure SetInputFileTop(Page:TInputFileWizardPage;Offset:Integer);
+begin
+    Page.Edits[0].Top:=Offset+Page.Edits[0].Top;
+    Page.Buttons[0].Top:=Offset+Page.Buttons[0].Top;
+    Page.PromptLabels[0].Top:=Offset+Page.PromptLabels[0].Top;
+end;
+
+procedure SetInputFileState(Page:TInputFileWizardPage;State:Boolean);
+begin
+	Page.Edits[0].Enabled:=State;
+	Page.Buttons[0].Enabled:=State;
+	Page.PromptLabels[0].Enabled:=State;
+end;
+
+procedure SetInputFileVisible(Page:TInputFileWizardPage;Visible:Boolean);
+begin
+	Page.Edits[0].Visible:=Visible;
+	Page.Buttons[0].Visible:=Visible;
+	Page.PromptLabels[0].Visible:=Visible;
+end;
+
+function PathIsValidExecutable(Path: String):Boolean;
+begin
+    (*
+     * Add a space at the end of the string in order to rule out paths like
+     * 'FOO.exeBAR', but allow paths like 'FOO.exe --BAR'.
+     *)
+    Result:=(Path<>'') and FileExists(Path) and (Pos('.exe ', Path+' ') > 0);
+end;
+
+procedure EnableNextButtonOnValidExecutablePath(Path: String);
+begin
+	if PathIsValidExecutable(Path) then
+	   Wizardform.NextButton.Enabled:=True
+    else
+       Wizardform.NextButton.Enabled:=False;
+end;
+
+procedure UpdateCustomEditorPath(Sender: TObject);
+var
+    PathLength:Integer;
+    Path:String;
+begin
+    (*
+     * Add space at the end of the string in order to rule out paths like
+     * 'FOO.exeBAR', but allow paths like 'FOO.exe --BAR'.
+     *)
+
+    Path:=EditorPage.Values[0]+' ';
+    PathLength:=Pos('.exe ',Path)+3;
+
+    (*
+     * If the specified path does not contain '.exe' at the end,
+     * CustomEditorPath will be formed with the first three letters of Path,
+     * but that should not be a problem because the next button is enabled
+     * only when PathIsValidExecutable() returns True.
+     *)
+    CustomEditorPath:=Copy(Path,0,PathLength);
+    CustomEditorOptions:=Copy(Path,PathLength+2,Length(Path));
+    EnableNextButtonOnValidExecutablePath(CustomEditorPath);
+end;
+
 procedure EditorSelectionChanged(Sender: TObject);
 var
     i:Integer;
@@ -1100,7 +1174,15 @@ begin
         if (LblEditor[SelectedEditor][i].Cursor<>crHand) then
             LblEditor[SelectedEditor][i].Enabled:=EditorAvailable[SelectedEditor];
     end;
-    Wizardform.NextButton.Enabled:=EditorAvailable[SelectedEditor];
+    if (SelectedEditor=GE_CustomEditor) then begin
+        SetInputFileState(EditorPage,True);
+        SetInputFileVisible(EditorPage,True);
+        EnableNextButtonOnValidExecutablePath(CustomEditorPath);
+    end else begin
+        SetInputFileState(EditorPage,False);
+        SetInputFileVisible(EditorPage,False);
+        Wizardform.NextButton.Enabled:=EditorAvailable[SelectedEditor];
+    end;
 end;
 
 procedure InitializeWizard;
@@ -1119,7 +1201,7 @@ begin
      * Create a custom page for configuring the default Git editor.
      *)
 
-    EditorPage:=CreatePage(PrevPageID,'Choosing the default editor used by Git','Which editor would you like Git to use?',TabOrder,Top,Left);
+    EditorPage:=CreateFilePage(PrevPageID,'Choosing the default editor used by Git','Which editor would you like Git to use?','',TabOrder,Top,Left);
 
     CbbEditor:=TNewComboBox.Create(EditorPage);
     CbbEditor.Style:=csDropDownList;
@@ -1147,6 +1229,7 @@ begin
     end;
     EditorAvailable[GE_SublimeText]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\sublime_text.exe\shell\open\command','',SublimeTextPath);
     EditorAvailable[GE_Atom]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\atom.exe\shell\open\command','',AtomPath);
+    EditorAvailable[GE_CustomEditor]:=True;
 
     // Remove `" %1"` from end and unqote the string.
     if (EditorAvailable[GE_VisualStudioCode]) then
@@ -1204,6 +1287,17 @@ begin
     CbbEditor.Items.Add('Use Atom as Git'+#39+'s default editor');
     CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://atom.io/>Atom</A> is an open source text editor which comes with builtin support'+#13+'for Git and Github.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Atom as its default editor.',Top,Left,LblEditor[GE_Atom],False);
 
+    // Custom choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Select other editor as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Use this option to select the path to Git'+#39+'s default editor.',Top,Left,LblEditor[GE_CustomEditor],False);
+
+    EditorPage.add('Location of editor:','Executable files|*.exe|All files|*.*','.exe');
+    SetInputFileTop(EditorPage, ScaleY(Top) + ScaleY(CbbEditor.Height))
+    EditorPage.Edits[0].OnChange:=@UpdateCustomEditorPath;
+    SetInputFileState(EditorPage, False);
+    SetInputFileVisible(EditorPage, False);
+
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Editor Option','VIM') of
         'Nano': CbbEditor.ItemIndex:=GE_Nano;
@@ -1237,6 +1331,15 @@ begin
                 CbbEditor.ItemIndex:=GE_Atom
             else
                 CbbEditor.ItemIndex:=GE_VIM;
+        end;
+    'CustomEditor': begin
+            CbbEditor.ItemIndex:=GE_CustomEditor;
+            EditorPage.Values[0]:=ReplayChoice('Custom Editor Path','');
+            (*
+             * UpdateCustomEditorPath() will also check if the path is still available and
+             * enable / disable the "Next" button.
+             *)
+            UpdateCustomEditorPath(NIL);
         end;
     else
         CbbEditor.ItemIndex:=GE_VIM;
@@ -1579,6 +1682,16 @@ begin
 
     if (EditorPage<>NIL) and (CurPageID=EditorPage.ID) then begin
         EditorSelectionChanged(NIL);
+        (*
+         * Before continuing, we need to check one last time if the path
+         * to the custom editor (if selected) is still valid.
+         *)
+        if (CbbEditor.ItemIndex=GE_CustomEditor) and not PathIsValidExecutable(CustomEditorPath) then begin
+            Result:=False;
+            MsgBox('The path you specified is no longer available.',mbError,MB_OK);
+            Wizardform.NextButton.Enabled:=False;
+            Exit;
+        end;
     end else if (PuTTYPage<>NIL) and (CurPageID=PuTTYPage.ID) then begin
         Result:=RdbSSH[GS_OpenSSH].Checked or
             (RdbSSH[GS_Plink].Checked and FileExists(EdtPlink.Text));
@@ -2200,6 +2313,9 @@ begin
     end else if ((CbbEditor.ItemIndex=GE_Atom)) and (AtomPath<>'') then begin
         if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+AtomPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Atom as core.editor in the gitconfig.');
+    end else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then begin
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+CustomEditorPath+#39+' '+CustomEditorOptions+'"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set the selected editor as core.editor in the gitconfig.');
     end;
 
     {
@@ -2241,7 +2357,7 @@ end;
 
 procedure RegisterPreviousData(PreviousDataKey:Integer);
 var
-    Data,Path:String;
+    Data,CustomEditorData,Path:String;
 begin
     // Git Editor options.
     Data:='';
@@ -2259,8 +2375,12 @@ begin
         Data:='SublimeText';
     end else if (CbbEditor.ItemIndex=GE_Atom) then begin
         Data:='Atom';
+    end else if (CbbEditor.ItemIndex=GE_CustomEditor) then begin
+        Data:='CustomEditor'
+        CustomEditorData:=EditorPage.Values[0];
     end;
     RecordChoice(PreviousDataKey,'Editor Option',Data);
+    RecordChoice(PreviousDataKey,'Custom Editor Path',CustomEditorData);
 
     // Git Path options.
     Data:='';
