@@ -1785,6 +1785,8 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 			'"$extra"' \
 			makepkg-mingw -s --noconfirm '"$force_tag"' \
 				'"$force_makepkg"' \
+				-p prerelease-'"$pkgver"'.pkgbuild &&
+			MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
 				-p prerelease-'"$pkgver".pkgbuild ||
 		die "%s: could not build '%s'\n" "$git_src_dir" "$pkgver"
 
@@ -1804,14 +1806,19 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 			cd "'"$git_src_dir"'/../.." &&
 			mach="$(uname -m)" &&
 			pkgpre=mingw-w64-$mach-git && {
-			'"$(test -z "'"$outputdir"'" ||
+			'"$(test -z "'"$outputdir"'" || {
 			echo 'file=$pkgpre-pdb-"'"$pkgsuffix"'";
 				test ! -f "$file" ||
 				cp "$file" "'"$outputdir"'"/; } && {
 				file=$pkgpre-test-artifacts-"'"$pkgsuffix"'";
 				test ! -f "$file" ||
-				cp "$file" "'"$outputdir"'"/; }'
-			)"'
+				cp "$file" "'"$outputdir"'"/; }; '
+			srcsuffix="${pkgsuffix%-any.pkg.tar.xz}.src.tar.gz"
+			test "a$sdk" != "a$sdk64" ||
+			echo 'file=mingw-w64-git-'"$srcsuffix"';
+				test ! -f "$file" ||
+				cp "$file" "'"$outputdir"'"/;'
+			} )"'
 			precmd="pacman --force --noconfirm -U" &&
 			postcmd="pacman --force --noconfirm -U" &&
 			for pkg in '"$pkglist"'
