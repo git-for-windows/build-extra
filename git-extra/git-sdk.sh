@@ -14,7 +14,7 @@ case "$rootdir" in
 	then
 		othersdk="${rootdir%??}$otherarch"
 		test ! -d "$othersdk" ||
-		mount "$othersdk" /sdk$otherarch 2>/dev/null
+		mount -o noacl "$othersdk" /sdk$otherarch 2>/dev/null
 	fi
 	;;
 esac
