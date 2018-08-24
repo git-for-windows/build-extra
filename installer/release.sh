@@ -130,6 +130,20 @@ case "$LIST" in
 	;;
 esac
 
+case "$LIST" in
+*/libexec/git-core/git-legacy-rebase*)
+	inno_defines="$(printf "%s\n%s" "$inno_defines" \
+		"#define WITH_EXPERIMENTAL_BUILTIN_REBASE 1")"
+	;;
+esac
+
+case "$LIST" in
+*/libexec/git-core/git-legacy-stash*)
+	inno_defines="$(printf "%s\n%s" "$inno_defines" \
+		"#define WITH_EXPERIMENTAL_BUILTIN_STASH 1")"
+	;;
+esac
+
 GITCONFIG_PATH="$(echo "$LIST" | grep "^mingw$BITNESS/etc/gitconfig\$")"
 printf '' >programdata-config.template
 test -z "$GITCONFIG_PATH" || {

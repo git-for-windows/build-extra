@@ -338,8 +338,22 @@ const
     GP_Symlinks       = 3;
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
+#define HAVE_EXPERIMENTAL_OPTIONS 1
+#endif
+
+#ifdef WITH_EXPERIMENTAL_BUILTIN_REBASE
+#define HAVE_EXPERIMENTAL_OPTIONS 1
+#endif
+
+#ifdef WITH_EXPERIMENTAL_BUILTIN_STASH
+#define HAVE_EXPERIMENTAL_OPTIONS 1
+#endif
+
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Experimental options
     GP_BuiltinDifftool = 1;
+    GP_BuiltinRebase   = 2;
+    GP_BuiltinStash    = 3;
 #endif
 
 var
@@ -385,10 +399,10 @@ var
     ExtraOptionsPage:TWizardPage;
     RdbExtraOptions:array[GP_FSCache..GP_Symlinks] of TCheckBox;
 
-#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Wizard page and variables for the experimental options.
     ExperimentalOptionsPage:TWizardPage;
-    RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_BuiltinDifftool] of TCheckBox;
+    RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_BuiltinStash] of TCheckBox;
 #endif
 
     // Mapping controls to hyperlinks
@@ -1382,18 +1396,37 @@ begin
 
     RdbExtraOptions[GP_Symlinks].Checked:=Data<>'Disabled';
 
-#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
     (*
      * Create a custom page for experimental options.
      *)
 
     ExperimentalOptionsPage:=CreatePage(PrevPageID,'Configuring experimental options','Which bleeding-edge features would you like to enable?',TabOrder,Top,Left);
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     // 1st option
     RdbExperimentalOptions[GP_BuiltinDifftool]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, builtin difftool','Use the experimental builtin difftool (fast, but only lightly tested).',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
     RdbExperimentalOptions[GP_BuiltinDifftool].Checked:=ReplayChoice('Enable Builtin Difftool','Auto')='Enabled';
+#endif
+
+#ifdef WITH_EXPERIMENTAL_BUILTIN_REBASE
+    // 2nd option
+    RdbExperimentalOptions[GP_BuiltinRebase]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in rebase','<RED>(NEW!)</RED> Use the experimental built-in rebase (about 70% faster, but only'+#13+'lightly tested).',TabOrder,Top,Left);
+
+    // Restore the settings chosen during a previous install
+    RdbExperimentalOptions[GP_BuiltinRebase].Checked:=ReplayChoice('Enable Builtin Rebase','Auto')='Disabled';
+#endif
+
+#ifdef WITH_EXPERIMENTAL_BUILTIN_STASH
+    // 3rd option
+    RdbExperimentalOptions[GP_BuiltinStash]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in stash','<RED>(NEW!)</RED> Use the experimental built-in stash (about 90% faster, but only'+#13+'lightly tested).',TabOrder,Top,Left);
+
+    // Restore the settings chosen during a previous install
+    RdbExperimentalOptions[GP_BuiltinStash].Checked:=ReplayChoice('Enable Builtin Stash','Auto')='Disabled';
+#endif
+
 #endif
 
     (*
@@ -1431,7 +1464,7 @@ begin
     // This button is only used by the uninstaller.
     ContinueButton:=NIL;
 
-#ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
     PageIDBeforeInstall:=ExperimentalOptionsPage.ID;
 #else
     PageIDBeforeInstall:=ExtraOptionsPage.ID;
@@ -1987,6 +2020,26 @@ begin
     end;
 #endif
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_REBASE
+    if RdbExperimentalOptions[GP_BuiltinRebase].checked then begin
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system rebase.useBuiltin true','',SW_HIDE,ewWaitUntilTerminated, i) then
+        LogError('Could not configure rebase.useBuiltin')
+    end else begin
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset rebase.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
+        LogError('Could not configure rebase.useBuiltin')
+    end;
+#endif
+
+#ifdef WITH_EXPERIMENTAL_BUILTIN_STASH
+    if RdbExperimentalOptions[GP_BuiltinStash].checked then begin
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system stash.useBuiltin true','',SW_HIDE,ewWaitUntilTerminated, i) then
+        LogError('Could not configure stash.useBuiltin')
+    end else begin
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset stash.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
+        LogError('Could not configure stash.useBuiltin')
+    end;
+#endif
+
     {
         Modify the environment
 
@@ -2266,6 +2319,22 @@ begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Enable Builtin Difftool',Data);
+#endif
+
+#ifdef WITH_EXPERIMENTAL_BUILTIN_REBASE
+    Data:='Disabled';
+    if RdbExperimentalOptions[GP_BuiltinRebase].Checked then begin
+        Data:='Enabled';
+    end;
+    RecordChoice(PreviousDataKey,'Enable Builtin Rebase',Data);
+#endif
+
+#ifdef WITH_EXPERIMENTAL_BUILTIN_STASH
+    Data:='Disabled';
+    if RdbExperimentalOptions[GP_BuiltinStash].Checked then begin
+        Data:='Enabled';
+    end;
+    RecordChoice(PreviousDataKey,'Enable Builtin Stash',Data);
 #endif
 
     Path:=ExpandConstant('{app}\etc\install-options.txt');
