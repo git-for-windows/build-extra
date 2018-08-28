@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSL v1.0.2p](https://www.openssl.org/news/openssl-1.0.2-notes.html).
 * The `git archimport` tool (which was probably used by exactly 0 users) is [no longer included in Git for Windows](https://github.com/git-for-windows/build-extra/pull/202).
 * The `archimport` and `gitweb` components were removed because they are highly unlikely to be used on Windows.
+* There are now *fast*, built-in versions of `git stash` and `git rebase`, [available as experimental options](https://github.com/git-for-windows/build-extra/pull/203).
 
 ### Bug Fixes
 
