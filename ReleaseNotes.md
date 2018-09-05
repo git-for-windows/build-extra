@@ -41,7 +41,6 @@ This package contains software from a number of other projects including Bash, z
 * The included OpenSSH client [now enables modern ciphers](https://github.com/git-for-windows/build-extra/pull/192).
 * The `gitweb` component was removed because it is highly unlikely to be used on Windows.
 * The `git archimport` tool (which was probably used by exactly 0 users) is [no longer included in Git for Windows](https://github.com/git-for-windows/build-extra/pull/202).
-* Comes with [cURL v7.61.0](https://curl.haxx.se/changes.html#7_61_0).
 * Comes with [tig v2.4.0](https://github.com/jonas/tig/releases/tag/tig-2.4.0).
 * Comes with [Git LFS v2.5.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.5.1).
 * Comes with [Git Credential Manager v1.17.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.17.1).
