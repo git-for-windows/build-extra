@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git Credential Manager v1.17.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.17.1).
 * Comes with [OpenSSL v1.0.2p](https://www.openssl.org/news/openssl-1.0.2-notes.html).
 * Comes with [cURL v7.61.1](https://curl.haxx.se/changes.html#7_61_1).
+* Comes with [mingw-w64-nodejs v8.12.0](https://nodejs.org/en/blog/release/v8.12.0/).
 
 ### Bug Fixes
 
