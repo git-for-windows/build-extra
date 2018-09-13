@@ -134,7 +134,7 @@ do
 		# built as secondary package (see MSYS2-packages/*/PKGBUILD)
 		name=${name%-*}
 		;;
-	libcrypt|libdb|libpcre|libreadline|libserf|libsqlite)
+	libdb|libpcre|libreadline|libserf|libsqlite)
 		# built as secondary package (see MSYS2-packages/*/PKGBUILD)
 		name=${name#lib}
 		;;
