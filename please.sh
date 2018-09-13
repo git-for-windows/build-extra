@@ -2814,7 +2814,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 				git-for-windows/master..$nextver &&
 			git -C "$sdk64/usr/src/build-extra" bundle create \
 				"$artifactsdir/build-extra.bundle" \
-				-1 master
+				-9 master
 		fi &&
 		rm -rf "$git_src_dir"/sha1collisiondetection
 		;;
@@ -3858,7 +3858,7 @@ release () { # [--directory=<artifacts-directory>] [--release-date=*]
 		 then
 			git -C "$sdk64/usr/src/build-extra" bundle create \
 				"$artifactsdir/build-extra.bundle" \
-				-2 master &&
+				-9 master &&
 			cp versions/package-versions-$ver-MinGit.txt \
 				versions/package-versions-$ver.txt \
 				"$artifactsdir/"
