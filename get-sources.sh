@@ -146,6 +146,10 @@ do
 		# built as secondary package (see MSYS2-packages/*/PKGBUILD)
 		name=cyrus-sasl
 		;;
+	libpcre2_8)
+		# built as a secondary package (see MSYS2-packages/*/PKGBUILD)
+		name=pcre2
+		;;
 	mingw-w64-*-libwinpthread-git)
 		# built as secondary package (see MINGW-packages/*/PKGBUILD)
 		name=$(echo $name | sed 's/libwinpthread/winpthreads/')
