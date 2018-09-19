@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Git LFS v2.5.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.5.2).
+* Comes with [Git Credential Manager v1.17.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.17.2).
 
 ## Changes since Git for Windows v2.18.0 (June 22nd 2018)
 
