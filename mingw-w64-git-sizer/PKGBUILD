@@ -3,7 +3,7 @@
 _realname="git-sizer"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.2.0
+pkgver=1.3.0
 pkgrel=1
 pkgdesc="Compute various size metrics for a Git repository, flagging those that might cause problems"
 arch=('any')
@@ -15,11 +15,11 @@ groups=('VCS')
 case "$CARCH" in
 i686)
   zipname="git-sizer-$pkgver-windows-386.zip"
-  sha256sum=8b8037c4f1ce91923ed52ffbb5f53e6a879cc27dc53debe541b3a8d3fa30c531
+  sha256sum=abad6350e72f848117b6b12b3fa0f7695a1dd9ed87b5dec8e7d2e65246753dbf
   ;;
 x86_64)
   zipname="git-sizer-$pkgver-windows-amd64.zip"
-  sha256sum=600a3945a1478dff29f7d40d190989d30bacad6119294bd0e97aafc2a6793c02
+  sha256sum=15d9e56c10f81612796e8cbe6ff8e53eecfbabae1770b4a557252fce6e6addce
   ;;
 esac
 
