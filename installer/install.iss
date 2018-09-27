@@ -1127,7 +1127,7 @@ begin
      * Add a space at the end of the string in order to rule out paths like
      * 'FOO.exeBAR', but allow paths like 'FOO.exe --BAR'.
      *)
-    Result:=(Path<>'') and FileExists(Path) and (Pos('.exe ', Path+' ') > 0);
+    Result:=(Path<>'') and FileExists(Path) and (Pos('.exe ', Lowercase(Path)+' ') > 0);
 end;
 
 procedure EnableNextButtonOnValidExecutablePath(Path: String);
@@ -1149,7 +1149,7 @@ begin
      *)
 
     Path:=EditorPage.Values[0]+' ';
-    PathLength:=Pos('.exe ',Path)+3;
+    PathLength:=Pos('.exe ',Lowercase(Path))+3;
 
     (*
      * If the specified path does not contain '.exe' at the end,
