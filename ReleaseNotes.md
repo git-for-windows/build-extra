@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Git LFS v2.5.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.5.2).
 * Comes with [Git Credential Manager v1.17.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.17.2).
+* When FSCache is enabled, commands such as `add`, `commit, and `reset` [are now much faster](https://github.com/git-for-windows/git/pull/1827).
 
 ### Bug Fixes
 
