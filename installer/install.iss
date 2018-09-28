@@ -359,8 +359,8 @@ var
     EditorAvailable:array[GE_Nano..GE_CustomEditor] of Boolean;
     SelectedEditor:Integer;
 
-    VisualStudioCodeUserInstalation:Boolean;
-    VisualStudioCodeInsidersUserInstalation:Boolean;
+    VisualStudioCodeUserInstallation:Boolean;
+    VisualStudioCodeInsidersUserInstallation:Boolean;
 
     NotepadPlusPlusPath:String;
     VisualStudioCodePath:String;
@@ -1220,12 +1220,12 @@ begin
     EditorAvailable[GE_VisualStudioCode]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
     if (not EditorAvailable[GE_VisualStudioCode]) then begin
         EditorAvailable[GE_VisualStudioCode]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
-        VisualStudioCodeUserInstalation:=True;
+        VisualStudioCodeUserInstallation:=True;
     end;
     EditorAvailable[GE_VisualStudioCodeInsiders]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code - Insiders.exe\shell\open\command','',VisualStudioCodeInsidersPath);
     if (not EditorAvailable[GE_VisualStudioCodeInsiders]) then begin
         EditorAvailable[GE_VisualStudioCodeInsiders]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\Code - Insiders.exe\shell\open\command','',VisualStudioCodeInsidersPath);
-        VisualStudioCodeInsidersUserInstalation:=True;
+        VisualStudioCodeInsidersUserInstallation:=True;
     end;
     EditorAvailable[GE_SublimeText]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\sublime_text.exe\shell\open\command','',SublimeTextPath);
     EditorAvailable[GE_Atom]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\atom.exe\shell\open\command','',AtomPath);
@@ -1264,7 +1264,7 @@ begin
     // 4th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Visual Studio Code as Git'+#39+'s default editor');
-    if (VisualStudioCodeUserInstalation=False) then
+    if (VisualStudioCodeUserInstallation=False) then
         CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False)
     else
         CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False);
@@ -1272,7 +1272,7 @@ begin
     // 5th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Visual Studio Code Insiders as Git'+#39+'s default editor');
-    if (VisualStudioCodeInsidersUserInstalation=False) then
+    if (VisualStudioCodeInsidersUserInstallation=False) then
         CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com/insiders/>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code Insiders as its default editor.',Top,Left,LblEditor[GE_VisualStudioCodeInsiders],False)
     else
         CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com/insiders/>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Visual Studio Code Insiders as its default editor.',Top,Left,LblEditor[GE_VisualStudioCodeInsiders],False);
@@ -2293,14 +2293,14 @@ begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+NotepadPlusPlusPath+#39+' -multiInst -notabbar -nosession -noPlugin"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Notepad++ as core.editor in the gitconfig.');
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCode)) and (VisualStudioCodePath<>'') then begin
-        if (VisualStudioCodeUserInstalation=False) then
+        if (VisualStudioCodeUserInstallation=False) then
             if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
         else
             if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders)) and (VisualStudioCodeInsidersPath<>'') then begin
-        if (VisualStudioCodeInsidersUserInstalation=False) then
+        if (VisualStudioCodeInsidersUserInstallation=False) then
             if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
         else
