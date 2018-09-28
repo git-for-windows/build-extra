@@ -2349,7 +2349,7 @@ begin
     end;
 
     {
-        Set nano as default editor
+        Set the default Git editor
     }
 
     if (CbbEditor.ItemIndex=GE_Nano) then begin
