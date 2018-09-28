@@ -2359,19 +2359,21 @@ begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+NotepadPlusPlusPath+#39+' -multiInst -notabbar -nosession -noPlugin"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Notepad++ as core.editor in the gitconfig.');
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCode)) and (VisualStudioCodePath<>'') then begin
-        if (VisualStudioCodeUserInstallation=False) then
+        if (VisualStudioCodeUserInstallation=False) then begin
             if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
-        else
+        end else begin
             if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
+        end
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders)) and (VisualStudioCodeInsidersPath<>'') then begin
-        if (VisualStudioCodeInsidersUserInstallation=False) then
+        if (VisualStudioCodeInsidersUserInstallation=False) then begin
             if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
-        else
+        end else begin
             if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
+        end
     end else if ((CbbEditor.ItemIndex=GE_SublimeText)) and (SublimeTextPath<>'') then begin
         if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+SublimeTextPath+#39+' -w"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Sublime Text as core.editor in the gitconfig.');
@@ -2380,7 +2382,7 @@ begin
             LogError('Could not set Atom as core.editor in the gitconfig.');
     end else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+CustomEditorPath+#39+' '+CustomEditorOptions+'"','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not set the selected editor as core.editor in the gitconfig.');
+            LogError('Could not set the selected editor as core.editor in the gitconfig.')
     end;
 
     {
