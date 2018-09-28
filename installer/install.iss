@@ -1163,7 +1163,7 @@ begin
      * only when PathIsValidExecutable() returns True.
      *)
     CustomEditorPath:=Copy(Path,1,PathLength);
-    CustomEditorOptions:=Copy(Path,PathLength+2,Length(Path));
+    CustomEditorOptions:=Copy(Path,PathLength+2,Length(Path)-PathLength-2);
     EnableNextButtonOnValidExecutablePath(CustomEditorPath);
 end;
 
