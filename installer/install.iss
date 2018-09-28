@@ -1157,7 +1157,7 @@ begin
      * but that should not be a problem because the next button is enabled
      * only when PathIsValidExecutable() returns True.
      *)
-    CustomEditorPath:=Copy(Path,0,PathLength);
+    CustomEditorPath:=Copy(Path,1,PathLength);
     CustomEditorOptions:=Copy(Path,PathLength+2,Length(Path));
     EnableNextButtonOnValidExecutablePath(CustomEditorPath);
 end;
