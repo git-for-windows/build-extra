@@ -629,9 +629,9 @@ begin
     j:=1;
     while True do begin
         if j>Length(PreviousVersion) then begin
-	    Result:=+1;
+            Result:=+1;
             Exit;
-	end;
+        end;
         if i>Length(CurrentVersion) then begin
             Result:=-1;
             Exit;
@@ -642,7 +642,7 @@ begin
             if Current>=0 then
                 Result:=+1;
             Exit;
-	end;
+        end;
         if Current<0 then begin
             Result:=-1;
             Exit;
@@ -650,16 +650,16 @@ begin
         if Current>Previous then begin
             Result:=+1;
             Exit;
-	end;
+        end;
         if Current<Previous then begin
             Result:=-1;
             Exit;
         end;
         if j>Length(PreviousVersion) then begin
-	    if i<=Length(CurrentVersion) then
-	        Result:=+1;
+            if i<=Length(CurrentVersion) then
+                Result:=+1;
             Exit;
-	end;
+        end;
         if i>Length(CurrentVersion) then begin
             Result:=-1;
             Exit;
@@ -696,9 +696,9 @@ begin
     GetWindowsVersionEx(Version);
     if (Version.Major<6) then begin
         if SuppressibleMsgBox('Git for Windows requires Windows Vista or later.'+#13+'Click "Yes" for more details.',mbError,MB_YESNO,IDNO)=IDYES then
-	    ShellExec('open','https://gitforwindows.org/requirements.html','','',SW_SHOW,ewNoWait,ErrorCode);
-	Result:=False;
-	Exit;
+            ShellExec('open','https://gitforwindows.org/requirements.html','','',SW_SHOW,ewNoWait,ErrorCode);
+        Result:=False;
+        Exit;
     end;
     UpdateInfFilenames;
 #if BITNESS=='32'
@@ -844,7 +844,7 @@ var
 begin
     if IsOriginalUserAdmin then begin
         Log('Symbolic link permission detection failed: running as admin');
-	Result:=False;
+        Result:=False;
     end else begin
         ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
         Result:=DirExists(ExpandConstant('{tmp}\symbolic link'));
@@ -1109,16 +1109,16 @@ end;
 
 procedure SetInputFileState(Page:TInputFileWizardPage;State:Boolean);
 begin
-	Page.Edits[0].Enabled:=State;
-	Page.Buttons[0].Enabled:=State;
-	Page.PromptLabels[0].Enabled:=State;
+    Page.Edits[0].Enabled:=State;
+    Page.Buttons[0].Enabled:=State;
+    Page.PromptLabels[0].Enabled:=State;
 end;
 
 procedure SetInputFileVisible(Page:TInputFileWizardPage;Visible:Boolean);
 begin
-	Page.Edits[0].Visible:=Visible;
-	Page.Buttons[0].Visible:=Visible;
-	Page.PromptLabels[0].Visible:=Visible;
+    Page.Edits[0].Visible:=Visible;
+    Page.Buttons[0].Visible:=Visible;
+    Page.PromptLabels[0].Visible:=Visible;
 end;
 
 function PathIsValidExecutable(Path: String):Boolean;
@@ -1132,10 +1132,10 @@ end;
 
 procedure EnableNextButtonOnValidExecutablePath(Path: String);
 begin
-	if PathIsValidExecutable(Path) then
-	   Wizardform.NextButton.Enabled:=True
+    if PathIsValidExecutable(Path) then
+        Wizardform.NextButton.Enabled:=True
     else
-       Wizardform.NextButton.Enabled:=False;
+        Wizardform.NextButton.Enabled:=False;
 end;
 
 procedure UpdateCustomEditorPath(Sender: TObject);
@@ -1302,7 +1302,7 @@ begin
     case ReplayChoice('Editor Option','VIM') of
         'Nano': CbbEditor.ItemIndex:=GE_Nano;
         'VIM': CbbEditor.ItemIndex:=GE_VIM;
-	'Notepad++': begin
+    'Notepad++': begin
             if EditorAvailable[GE_NotepadPlusPlus] then
                 CbbEditor.ItemIndex:=GE_NotepadPlusPlus
             else
@@ -1416,13 +1416,13 @@ begin
             Width:=ScaleX(21);
             Height:=ScaleY(21);
         end;
-	Top:=Top+30;
+        Top:=Top+30;
 
         // Restore the setting chosen during a previous install.
         case ReplayChoice('SSH Option','OpenSSH') of
             'OpenSSH': RdbSSH[GS_OpenSSH].Checked:=True;
             'Plink': RdbSSH[GS_Plink].Checked:=True;
-	else
+        else
             RdbSSH[GS_OpenSSH].Checked:=True;
         end;
     end else begin
@@ -1526,9 +1526,9 @@ begin
     Data:=ReplayChoice('Enable Symlinks','Auto');
     if (Data='Auto') Or ((Data='Disabled') And (VersionCompare(PreviousGitForWindowsVersion,'2.14.1')<=0)) then begin
         if EnableSymlinksByDefault() then
-	    Data:='Enabled'
-	else
-	    Data:='Disabled';
+            Data:='Enabled'
+        else
+            Data:='Disabled';
     end;
 
     RdbExtraOptions[GP_Symlinks].Checked:=Data<>'Disabled';
@@ -1607,8 +1607,8 @@ begin
             if DirExists(AppDir) then begin
                 if not FileExists(ExpandConstant('{tmp}\blocked-file-util.exe')) then
                     ExtractTemporaryFile('blocked-file-util.exe');
-		LogPath:=ExpandConstant('{tmp}\blocking-pids.log');
-		Cmd:='/C ""'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'" 2>"'+LogPath+'""';
+                LogPath:=ExpandConstant('{tmp}\blocking-pids.log');
+                Cmd:='/C ""'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'" 2>"'+LogPath+'""';
                 if not Exec(ExpandConstant('{sys}\cmd.exe'),Cmd,'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then begin
                     Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+ReadFileAsString(LogPath);
                     if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
@@ -1704,21 +1704,20 @@ begin
         // WizardForm exports the button just read-only.
         for i:=0 to GetArrayLength(Processes)-1 do begin
             if Processes[i].ToTerminate then begin
-	        if not TerminateProcessByID(Processes[i].ID) then begin
+                if not TerminateProcessByID(Processes[i].ID) then begin
                     SuppressibleMsgBox('Failed to terminate '+Processes[i].Name+' (pid '+IntToStr(Processes[i].ID)+')'+#13+'Please terminate it manually and press the "Refresh" button.',mbCriticalError,MB_OK,IDOK);
                     Result:=False;
                     Exit;
                 end;
-		    ;
             end else if not Processes[i].Restartable then begin
-	        if WizardSilent() and (ParamIsSet('SKIPIFINUSE') or ParamIsSet('VSNOTICE')) then begin
-		    Msg:='Skipping installation because the process '+Processes[i].Name+' (pid '+IntToStr(Processes[i].ID)+') is running, using Git for Windows'+#39+' files.';
-		    if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
-		        LogError(Msg)
-		    else
-		        Log(Msg);
-		    ExitEarlyWithSuccess();
-		end;
+                if WizardSilent() and (ParamIsSet('SKIPIFINUSE') or ParamIsSet('VSNOTICE')) then begin
+                    Msg:='Skipping installation because the process '+Processes[i].Name+' (pid '+IntToStr(Processes[i].ID)+') is running, using Git for Windows'+#39+' files.';
+                    if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
+                        LogError(Msg)
+                    else
+                        Log(Msg);
+                    ExitEarlyWithSuccess();
+                end;
                 SuppressibleMsgBox(
                     'Setup cannot continue until you close at least those applications in the list that are marked as "closing is required".'
                 ,   mbCriticalError
@@ -2334,12 +2333,12 @@ begin
     if (not Exec(Cmd,ExpandConstant('>"{tmp}\post-install.log"'),AppDir,SW_HIDE,ewWaitUntilTerminated,i) or (i<>0)) and FileExists(Cmd) then begin
         if FileExists(ExpandConstant('{tmp}\post-install.log')) then
             LogError('Line {#__LINE__}: Unable to run post-install scripts:'+#13+#10+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')))
-	else
+        else
             LogError('Line {#__LINE__}: Unable to run post-install scripts; no output?');
     end else begin
         if FileExists(ExpandConstant('{tmp}\post-install.log')) then
             Log('Line {#__LINE__}: post-install scripts run successfully:'+#13+#10+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')))
-	else
+        else
             LogError('Line {#__LINE__}: Unable to run post-install scripts; no error, no output?');
     end;
 
