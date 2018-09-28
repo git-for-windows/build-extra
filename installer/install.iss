@@ -411,7 +411,7 @@ var
     Processes:ProcessList;
     ProcessesPage:TWizardPage;
     ProcessesListBox:TListBox;
-    ProcessesRefresh,ContinueButton:TButton;
+    ProcessesRefresh,ContinueButton,TestCustomEditorButton:TButton;
     PageIDBeforeInstall:Integer;
 #ifdef DEBUG_WIZARD_PAGE
     DebugWizardPage:Integer;
@@ -1105,6 +1105,7 @@ begin
     Page.Edits[0].Top:=Offset+Page.Edits[0].Top;
     Page.Buttons[0].Top:=Offset+Page.Buttons[0].Top;
     Page.PromptLabels[0].Top:=Offset+Page.PromptLabels[0].Top;
+    TestCustomEditorButton.Top:=Page.Buttons[0].Top+Page.Buttons[0].Height+ScaleY(3);
 end;
 
 procedure SetInputFileState(Page:TInputFileWizardPage;State:Boolean);
@@ -1112,6 +1113,7 @@ begin
     Page.Edits[0].Enabled:=State;
     Page.Buttons[0].Enabled:=State;
     Page.PromptLabels[0].Enabled:=State;
+    TestCustomEditorButton.Enabled:=State;
 end;
 
 procedure SetInputFileVisible(Page:TInputFileWizardPage;Visible:Boolean);
@@ -1119,6 +1121,7 @@ begin
     Page.Edits[0].Visible:=Visible;
     Page.Buttons[0].Visible:=Visible;
     Page.PromptLabels[0].Visible:=Visible;
+    TestCustomEditorButton.Visible:=Visible;
 end;
 
 function PathIsValidExecutable(Path: String):Boolean;
@@ -1128,6 +1131,55 @@ begin
      * 'FOO.exeBAR', but allow paths like 'FOO.exe --BAR'.
      *)
     Result:=(Path<>'') and FileExists(Path) and (Pos('.exe ', Lowercase(Path)+' ') > 0);
+end;
+
+procedure TestCustomEditor(Sender:TObject);
+var
+    InputText,OutputText:AnsiString;
+    TmpFile:String;
+    Res:Longint;
+begin
+    if not PathIsValidExecutable(CustomEditorPath) then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('Not a valid executable: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+
+    TmpFile:=ExpandConstant('{tmp}\editor-test.txt');
+    InputText:='Please modify this text, e.g. delete it.'
+    SaveStringToFile(TmpFile,InputText,False);
+
+    if not Exec(CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',SW_HIDE,ewWaitUntilTerminated,Res) then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('Could not launch: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+    if (Res<>0) then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('Exited with failure: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+
+    if not LoadStringFromFile(TmpFile,OutputText) then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('Could not read "'+TmpFile+'"',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+
+    if not DeleteFile(TmpFile) then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('Could not delete "'+TmpFile+'"',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+
+    if InputText=OutputText then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('The file was not modified!'+#13+#10+'Does the editor require an option to wait?',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+
+    Wizardform.NextButton.Enabled:=True;
+    SuppressibleMsgBox('Success!',mbInformation,MB_OK,IDOK);
 end;
 
 procedure EnableNextButtonOnValidExecutablePath(Path: String);
@@ -1298,6 +1350,15 @@ begin
     CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Use this option to select the path to Git'+#39+'s default editor.',Top,Left,LblEditor[GE_CustomEditor],False);
 
     EditorPage.add('Location of editor (plus command-line options, if necessary):','Executable files|*.exe|All files|*.*','.exe');
+    TestCustomEditorButton:=TButton.Create(EditorPage);
+    with TestCustomEditorButton do begin
+        Parent:=EditorPage.Surface;
+        Caption:='Test Custom Editor';
+        Left:=ScaleX(Left+24);
+        OnClick:=@TestCustomEditor;
+        Width:=ScaleX(128);
+        Height:=ScaleY(21);
+    end;
     SetInputFileTop(EditorPage, ScaleY(Top) + ScaleY(CbbEditor.Height))
     EditorPage.Edits[0].OnChange:=@UpdateCustomEditorPath;
     SetInputFileState(EditorPage, False);
