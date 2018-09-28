@@ -1292,7 +1292,7 @@ begin
     CbbEditor.Items.Add('Select other editor as Git'+#39+'s default editor');
     CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Use this option to select the path to Git'+#39+'s default editor.',Top,Left,LblEditor[GE_CustomEditor],False);
 
-    EditorPage.add('Location of editor:','Executable files|*.exe|All files|*.*','.exe');
+    EditorPage.add('Location of editor (plus command-line options, if necessary):','Executable files|*.exe|All files|*.*','.exe');
     SetInputFileTop(EditorPage, ScaleY(Top) + ScaleY(CbbEditor.Height))
     EditorPage.Edits[0].OnChange:=@UpdateCustomEditorPath;
     SetInputFileState(EditorPage, False);
