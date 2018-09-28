@@ -2312,7 +2312,7 @@ begin
             if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
     end else if ((CbbEditor.ItemIndex=GE_SublimeText)) and (SublimeTextPath<>'') then begin
-        if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+SublimeTextPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+        if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+SublimeTextPath+#39+' -w"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Sublime Text as core.editor in the gitconfig.');
     end else if ((CbbEditor.ItemIndex=GE_Atom)) and (AtomPath<>'') then begin
         if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+AtomPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
