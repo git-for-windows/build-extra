@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Several corner case bugs [were fixed](https://github.com/git-for-windows/git/pull/1852) in the built-in `rebase`/`stash` commands.
+* An [occasional crash in `git gc`](https://github.com/git-for-windows/git/issues/1839) (which had been introduced into v2.19.0) has been fixed.
 
 ## Changes since Git for Windows v2.18.0 (June 22nd 2018)
 
