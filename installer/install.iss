@@ -1149,7 +1149,12 @@ begin
      *)
 
     Path:=EditorPage.Values[0]+' ';
-    PathLength:=Pos('.exe ',Lowercase(Path))+3;
+    if not WildcardMatch(Lowercase(Path), '"*.exe" *') then
+        PathLength:=Pos('.exe ',Lowercase(Path))+3
+    else begin
+        PathLength:=Pos('.exe" ',Lowercase(Path))+2;
+        Path:=Copy(Path,2,PathLength)+Copy(Path,PathLength+3,Length(Path))
+    end;
 
     (*
      * If the specified path does not contain '.exe' at the end,
