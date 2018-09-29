@@ -309,6 +309,9 @@ const
     GE_NotepadPlusPlus = 2;
     GE_VisualStudioCode = 3;
     GE_VisualStudioCodeInsiders = 4;
+    GE_SublimeText = 5;
+    GE_Atom = 6;
+    GE_CustomEditor = 7;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -364,15 +367,22 @@ var
     PreviousGitForWindowsVersion:String;
 
     // Wizard page and variables for the Editor options.
-    EditorPage:TWizardPage;
+    EditorPage:TInputFileWizardPage;
     CbbEditor:TNewComboBox;
-    LblEditor:array[GE_Nano..GE_VisualStudioCodeInsiders] of array of TLabel;
-    EditorAvailable:array[GE_Nano..GE_VisualStudioCodeInsiders] of Boolean;
+    LblEditor:array[GE_Nano..GE_CustomEditor] of array of TLabel;
+    EditorAvailable:array[GE_Nano..GE_CustomEditor] of Boolean;
     SelectedEditor:Integer;
+
+    VisualStudioCodeUserInstallation:Boolean;
+    VisualStudioCodeInsidersUserInstallation:Boolean;
 
     NotepadPlusPlusPath:String;
     VisualStudioCodePath:String;
     VisualStudioCodeInsidersPath:String;
+    SublimeTextPath:String;
+    AtomPath:String;
+    CustomEditorPath:String;
+    CustomEditorOptions:String;
 
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
@@ -415,7 +425,7 @@ var
     Processes:ProcessList;
     ProcessesPage:TWizardPage;
     ProcessesListBox:TListBox;
-    ProcessesRefresh,ContinueButton:TButton;
+    ProcessesRefresh,ContinueButton,TestCustomEditorButton:TButton;
     PageIDBeforeInstall:Integer;
 #ifdef DEBUG_WIZARD_PAGE
     DebugWizardPage:Integer;
@@ -633,9 +643,9 @@ begin
     j:=1;
     while True do begin
         if j>Length(PreviousVersion) then begin
-	    Result:=+1;
+            Result:=+1;
             Exit;
-	end;
+        end;
         if i>Length(CurrentVersion) then begin
             Result:=-1;
             Exit;
@@ -646,7 +656,7 @@ begin
             if Current>=0 then
                 Result:=+1;
             Exit;
-	end;
+        end;
         if Current<0 then begin
             Result:=-1;
             Exit;
@@ -654,16 +664,16 @@ begin
         if Current>Previous then begin
             Result:=+1;
             Exit;
-	end;
+        end;
         if Current<Previous then begin
             Result:=-1;
             Exit;
         end;
         if j>Length(PreviousVersion) then begin
-	    if i<=Length(CurrentVersion) then
-	        Result:=+1;
+            if i<=Length(CurrentVersion) then
+                Result:=+1;
             Exit;
-	end;
+        end;
         if i>Length(CurrentVersion) then begin
             Result:=-1;
             Exit;
@@ -700,9 +710,9 @@ begin
     GetWindowsVersionEx(Version);
     if (Version.Major<6) then begin
         if SuppressibleMsgBox('Git for Windows requires Windows Vista or later.'+#13+'Click "Yes" for more details.',mbError,MB_YESNO,IDNO)=IDYES then
-	    ShellExec('open','https://gitforwindows.org/requirements.html','','',SW_SHOW,ewNoWait,ErrorCode);
-	Result:=False;
-	Exit;
+            ShellExec('open','https://gitforwindows.org/requirements.html','','',SW_SHOW,ewNoWait,ErrorCode);
+        Result:=False;
+        Exit;
     end;
     UpdateInfFilenames;
 #if BITNESS=='32'
@@ -848,7 +858,7 @@ var
 begin
     if IsOriginalUserAdmin then begin
         Log('Symbolic link permission detection failed: running as admin');
-	Result:=False;
+        Result:=False;
     end else begin
         ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
         Result:=DirExists(ExpandConstant('{tmp}\symbolic link'));
@@ -868,6 +878,15 @@ end;
 function CreatePage(var PrevPageID:Integer;const Caption,Description:String;var TabOrder,Top,Left:Integer):TWizardPage;
 begin
     Result:=CreateCustomPage(PrevPageID,Caption,Description);
+    PrevPageID:=Result.ID;
+    TabOrder:=0;
+    Top:=8;
+    Left:=4;
+end;
+
+function CreateFilePage(var PrevPageID:Integer;const Caption,Description,SubCaption:String;var TabOrder,Top,Left:Integer):TInputFileWizardPage;
+begin
+    Result:=CreateInputFilePage(PrevPageID,Caption,Description,SubCaption);
     PrevPageID:=Result.ID;
     TabOrder:=0;
     Top:=8;
@@ -1095,6 +1114,125 @@ begin
     Result:=TCheckBox(CreateRadioButtonOrCheckBox(False,Page,Caption,Description,TabOrder,Top,Left));
 end;
 
+procedure SetInputFileTop(Page:TInputFileWizardPage;Offset:Integer);
+begin
+    Page.Edits[0].Top:=Offset+Page.Edits[0].Top;
+    Page.Buttons[0].Top:=Offset+Page.Buttons[0].Top;
+    Page.PromptLabels[0].Top:=Offset+Page.PromptLabels[0].Top;
+    TestCustomEditorButton.Top:=Page.Buttons[0].Top+Page.Buttons[0].Height+ScaleY(3);
+end;
+
+procedure SetInputFileState(Page:TInputFileWizardPage;State:Boolean);
+begin
+    Page.Edits[0].Enabled:=State;
+    Page.Buttons[0].Enabled:=State;
+    Page.PromptLabels[0].Enabled:=State;
+    TestCustomEditorButton.Enabled:=State;
+end;
+
+procedure SetInputFileVisible(Page:TInputFileWizardPage;Visible:Boolean);
+begin
+    Page.Edits[0].Visible:=Visible;
+    Page.Buttons[0].Visible:=Visible;
+    Page.PromptLabels[0].Visible:=Visible;
+    TestCustomEditorButton.Visible:=Visible;
+end;
+
+function PathIsValidExecutable(Path: String):Boolean;
+begin
+    (*
+     * Add a space at the end of the string in order to rule out paths like
+     * 'FOO.exeBAR', but allow paths like 'FOO.exe --BAR'.
+     *)
+    Result:=(Path<>'') and FileExists(Path) and (Pos('.exe ', Lowercase(Path)+' ') > 0);
+end;
+
+procedure TestCustomEditor(Sender:TObject);
+var
+    InputText,OutputText:AnsiString;
+    TmpFile:String;
+    Res:Longint;
+begin
+    if not PathIsValidExecutable(CustomEditorPath) then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('Not a valid executable: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+
+    TmpFile:=ExpandConstant('{tmp}\editor-test.txt');
+    InputText:='Please modify this text, e.g. delete it.'
+    SaveStringToFile(TmpFile,InputText,False);
+
+    if not Exec(CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',SW_HIDE,ewWaitUntilTerminated,Res) then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('Could not launch: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+    if (Res<>0) then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('Exited with failure: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+
+    if not LoadStringFromFile(TmpFile,OutputText) then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('Could not read "'+TmpFile+'"',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+
+    if not DeleteFile(TmpFile) then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('Could not delete "'+TmpFile+'"',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+
+    if InputText=OutputText then begin
+        Wizardform.NextButton.Enabled:=False;
+        SuppressibleMsgBox('The file was not modified!'+#13+#10+'Does the editor require an option to wait?',mbError,MB_OK,IDOK);
+        Exit;
+    end;
+
+    Wizardform.NextButton.Enabled:=True;
+    SuppressibleMsgBox('Success!',mbInformation,MB_OK,IDOK);
+end;
+
+procedure EnableNextButtonOnValidExecutablePath(Path: String);
+begin
+    if PathIsValidExecutable(Path) then
+        Wizardform.NextButton.Enabled:=True
+    else
+        Wizardform.NextButton.Enabled:=False;
+end;
+
+procedure UpdateCustomEditorPath(Sender: TObject);
+var
+    PathLength:Integer;
+    Path:String;
+begin
+    (*
+     * Add space at the end of the string in order to rule out paths like
+     * 'FOO.exeBAR', but allow paths like 'FOO.exe --BAR'.
+     *)
+
+    Path:=EditorPage.Values[0]+' ';
+    if not WildcardMatch(Lowercase(Path), '"*.exe" *') then
+        PathLength:=Pos('.exe ',Lowercase(Path))+3
+    else begin
+        PathLength:=Pos('.exe" ',Lowercase(Path))+2;
+        Path:=Copy(Path,2,PathLength)+Copy(Path,PathLength+3,Length(Path))
+    end;
+
+    (*
+     * If the specified path does not contain '.exe' at the end,
+     * CustomEditorPath will be formed with the first three letters of Path,
+     * but that should not be a problem because the next button is enabled
+     * only when PathIsValidExecutable() returns True.
+     *)
+    CustomEditorPath:=Copy(Path,1,PathLength);
+    CustomEditorOptions:=Copy(Path,PathLength+2,Length(Path)-PathLength-2);
+    EnableNextButtonOnValidExecutablePath(CustomEditorPath);
+end;
+
 procedure EditorSelectionChanged(Sender: TObject);
 var
     i:Integer;
@@ -1107,7 +1245,15 @@ begin
         if (LblEditor[SelectedEditor][i].Cursor<>crHand) then
             LblEditor[SelectedEditor][i].Enabled:=EditorAvailable[SelectedEditor];
     end;
-    Wizardform.NextButton.Enabled:=EditorAvailable[SelectedEditor];
+    if (SelectedEditor=GE_CustomEditor) then begin
+        SetInputFileState(EditorPage,True);
+        SetInputFileVisible(EditorPage,True);
+        EnableNextButtonOnValidExecutablePath(CustomEditorPath);
+    end else begin
+        SetInputFileState(EditorPage,False);
+        SetInputFileVisible(EditorPage,False);
+        Wizardform.NextButton.Enabled:=EditorAvailable[SelectedEditor];
+    end;
 end;
 
 procedure InitializeWizard;
@@ -1126,7 +1272,7 @@ begin
      * Create a custom page for configuring the default Git editor.
      *)
 
-    EditorPage:=CreatePage(PrevPageID,'Choosing the default editor used by Git','Which editor would you like Git to use?',TabOrder,Top,Left);
+    EditorPage:=CreateFilePage(PrevPageID,'Choosing the default editor used by Git','Which editor would you like Git to use?','',TabOrder,Top,Left);
 
     CbbEditor:=TNewComboBox.Create(EditorPage);
     CbbEditor.Style:=csDropDownList;
@@ -1143,20 +1289,34 @@ begin
 
     EditorAvailable[GE_NotepadPlusPlus]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\Windows\CurrentVersion\App Paths\notepad++.exe','',NotepadPlusPlusPath);
     EditorAvailable[GE_VisualStudioCode]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
+    if (not EditorAvailable[GE_VisualStudioCode]) then begin
+        EditorAvailable[GE_VisualStudioCode]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\Code.exe\shell\open\command','',VisualStudioCodePath);
+        VisualStudioCodeUserInstallation:=True;
+    end;
     EditorAvailable[GE_VisualStudioCodeInsiders]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\Code - Insiders.exe\shell\open\command','',VisualStudioCodeInsidersPath);
+    if (not EditorAvailable[GE_VisualStudioCodeInsiders]) then begin
+        EditorAvailable[GE_VisualStudioCodeInsiders]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\Code - Insiders.exe\shell\open\command','',VisualStudioCodeInsidersPath);
+        VisualStudioCodeInsidersUserInstallation:=True;
+    end;
+    EditorAvailable[GE_SublimeText]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\sublime_text.exe\shell\open\command','',SublimeTextPath);
+    EditorAvailable[GE_Atom]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\atom.exe\shell\open\command','',AtomPath);
+    EditorAvailable[GE_CustomEditor]:=True;
 
-    if (EditorAvailable[GE_VisualStudioCode]) then begin
-        StringChangeEx(VisualStudioCodePath,' "%1"','',True);
-    end;
-    if (EditorAvailable[GE_VisualStudioCodeInsiders]) then begin
-        StringChangeEx(VisualStudioCodeInsidersPath,' "%1"','',True);
-    end;
+    // Remove `" %1"` from end and unqote the string.
+    if (EditorAvailable[GE_VisualStudioCode]) then
+        VisualStudioCodePath:=Copy(VisualStudioCodePath, 2, Length(VisualStudioCodePath) - 7);
+    if (EditorAvailable[GE_VisualStudioCodeInsiders]) then
+        VisualStudioCodeInsidersPath:=Copy(VisualStudioCodeInsidersPath, 2, Length(VisualStudioCodeInsidersPath) - 7);
+    if (EditorAvailable[GE_SublimeText]) then
+        SublimeTextPath:=Copy(SublimeTextPath, 2, Length(SublimeTextPath) - 7);
+    if (EditorAvailable[GE_Atom]) then
+        AtomPath:=Copy(AtomPath, 2, Length(AtomPath) - 7);
 
     // 1st choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use the Nano editor by default');
     Data:='<RED>(NEW!)</RED> <A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window.';
-    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode] and not EditorAvailable[GE_VisualStudioCodeInsiders]) then
+    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode] and not EditorAvailable[GE_VisualStudioCodeInsiders] and not EditorAvailable[GE_SublimeText] and not EditorAvailable[GE_Atom]) then
         Data:=Data+#13+#13+'This is the recommended option for end users if no GUI editors are installed.';
     CreateItemDescription(EditorPage,Data,Top,Left,LblEditor[GE_Nano],False);
     EditorAvailable[GE_Nano]:=True;
@@ -1175,18 +1335,54 @@ begin
     // 4th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Visual Studio Code as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False);
+    if (VisualStudioCodeUserInstallation=False) then
+        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False)
+    else
+        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False);
 
     // 5th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Visual Studio Code Insiders as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com/insiders/>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code Insiders as its default editor.',Top,Left,LblEditor[GE_VisualStudioCodeInsiders],False);
+    if (VisualStudioCodeInsidersUserInstallation=False) then
+        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com/insiders/>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code Insiders as its default editor.',Top,Left,LblEditor[GE_VisualStudioCodeInsiders],False)
+    else
+        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com/insiders/>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Visual Studio Code Insiders as its default editor.',Top,Left,LblEditor[GE_VisualStudioCodeInsiders],False);
+
+    // 6th choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use Sublime Text as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://www.sublimetext.com/>Sublime text</A> is a lightweight editor which supports a great number'+#13+'of plugins.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Sublime Text as its default editor.',Top,Left,LblEditor[GE_SublimeText],False);
+
+    // 7th choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use Atom as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://atom.io/>Atom</A> is an open source text editor which comes with builtin support'+#13+'for Git and Github.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Atom as its default editor.',Top,Left,LblEditor[GE_Atom],False);
+
+    // Custom choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Select other editor as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Use this option to select the path to Git'+#39+'s default editor.',Top,Left,LblEditor[GE_CustomEditor],False);
+
+    EditorPage.add('Location of editor (plus command-line options, if necessary):','Executable files|*.exe|All files|*.*','.exe');
+    TestCustomEditorButton:=TButton.Create(EditorPage);
+    with TestCustomEditorButton do begin
+        Parent:=EditorPage.Surface;
+        Caption:='Test Custom Editor';
+        Left:=ScaleX(Left+24);
+        OnClick:=@TestCustomEditor;
+        Width:=ScaleX(128);
+        Height:=ScaleY(21);
+    end;
+    SetInputFileTop(EditorPage, ScaleY(Top) + ScaleY(CbbEditor.Height))
+    EditorPage.Edits[0].OnChange:=@UpdateCustomEditorPath;
+    SetInputFileState(EditorPage, False);
+    SetInputFileVisible(EditorPage, False);
 
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Editor Option','VIM') of
         'Nano': CbbEditor.ItemIndex:=GE_Nano;
         'VIM': CbbEditor.ItemIndex:=GE_VIM;
-	'Notepad++': begin
+    'Notepad++': begin
             if EditorAvailable[GE_NotepadPlusPlus] then
                 CbbEditor.ItemIndex:=GE_NotepadPlusPlus
             else
@@ -1203,6 +1399,27 @@ begin
                 CbbEditor.ItemIndex:=GE_VisualStudioCodeInsiders
             else
                 CbbEditor.ItemIndex:=GE_VIM;
+        end;
+    'SublimeText': begin
+            if EditorAvailable[GE_SublimeText] then
+                CbbEditor.ItemIndex:=GE_SublimeText
+            else
+                CbbEditor.ItemIndex:=GE_VIM;
+        end;
+    'Atom': begin
+            if EditorAvailable[GE_Atom] then
+                CbbEditor.ItemIndex:=GE_Atom
+            else
+                CbbEditor.ItemIndex:=GE_VIM;
+        end;
+    'CustomEditor': begin
+            CbbEditor.ItemIndex:=GE_CustomEditor;
+            EditorPage.Values[0]:=ReplayChoice('Custom Editor Path','');
+            (*
+             * UpdateCustomEditorPath() will also check if the path is still available and
+             * enable / disable the "Next" button.
+             *)
+            UpdateCustomEditorPath(NIL);
         end;
     else
         CbbEditor.ItemIndex:=GE_VIM;
@@ -1279,13 +1496,13 @@ begin
             Width:=ScaleX(21);
             Height:=ScaleY(21);
         end;
-	Top:=Top+30;
+        Top:=Top+30;
 
         // Restore the setting chosen during a previous install.
         case ReplayChoice('SSH Option','OpenSSH') of
             'OpenSSH': RdbSSH[GS_OpenSSH].Checked:=True;
             'Plink': RdbSSH[GS_Plink].Checked:=True;
-	else
+        else
             RdbSSH[GS_OpenSSH].Checked:=True;
         end;
     end else begin
@@ -1389,9 +1606,9 @@ begin
     Data:=ReplayChoice('Enable Symlinks','Auto');
     if (Data='Auto') Or ((Data='Disabled') And (VersionCompare(PreviousGitForWindowsVersion,'2.14.1')<=0)) then begin
         if EnableSymlinksByDefault() then
-	    Data:='Enabled'
-	else
-	    Data:='Disabled';
+            Data:='Enabled'
+        else
+            Data:='Disabled';
     end;
 
     RdbExtraOptions[GP_Symlinks].Checked:=Data<>'Disabled';
@@ -1489,8 +1706,8 @@ begin
             if DirExists(AppDir) then begin
                 if not FileExists(ExpandConstant('{tmp}\blocked-file-util.exe')) then
                     ExtractTemporaryFile('blocked-file-util.exe');
-		LogPath:=ExpandConstant('{tmp}\blocking-pids.log');
-		Cmd:='/C ""'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'" 2>"'+LogPath+'""';
+                LogPath:=ExpandConstant('{tmp}\blocking-pids.log');
+                Cmd:='/C ""'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'" 2>"'+LogPath+'""';
                 if not Exec(ExpandConstant('{sys}\cmd.exe'),Cmd,'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then begin
                     Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+ReadFileAsString(LogPath);
                     if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
@@ -1564,6 +1781,16 @@ begin
 
     if (EditorPage<>NIL) and (CurPageID=EditorPage.ID) then begin
         EditorSelectionChanged(NIL);
+        (*
+         * Before continuing, we need to check one last time if the path
+         * to the custom editor (if selected) is still valid.
+         *)
+        if (CbbEditor.ItemIndex=GE_CustomEditor) and not PathIsValidExecutable(CustomEditorPath) then begin
+            Result:=False;
+            MsgBox('The path you specified is no longer available.',mbError,MB_OK);
+            Wizardform.NextButton.Enabled:=False;
+            Exit;
+        end;
     end else if (PuTTYPage<>NIL) and (CurPageID=PuTTYPage.ID) then begin
         Result:=RdbSSH[GS_OpenSSH].Checked or
             (RdbSSH[GS_Plink].Checked and FileExists(EdtPlink.Text));
@@ -1576,21 +1803,20 @@ begin
         // WizardForm exports the button just read-only.
         for i:=0 to GetArrayLength(Processes)-1 do begin
             if Processes[i].ToTerminate then begin
-	        if not TerminateProcessByID(Processes[i].ID) then begin
+                if not TerminateProcessByID(Processes[i].ID) then begin
                     SuppressibleMsgBox('Failed to terminate '+Processes[i].Name+' (pid '+IntToStr(Processes[i].ID)+')'+#13+'Please terminate it manually and press the "Refresh" button.',mbCriticalError,MB_OK,IDOK);
                     Result:=False;
                     Exit;
                 end;
-		    ;
             end else if not Processes[i].Restartable then begin
-	        if WizardSilent() and (ParamIsSet('SKIPIFINUSE') or ParamIsSet('VSNOTICE')) then begin
-		    Msg:='Skipping installation because the process '+Processes[i].Name+' (pid '+IntToStr(Processes[i].ID)+') is running, using Git for Windows'+#39+' files.';
-		    if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
-		        LogError(Msg)
-		    else
-		        Log(Msg);
-		    ExitEarlyWithSuccess();
-		end;
+                if WizardSilent() and (ParamIsSet('SKIPIFINUSE') or ParamIsSet('VSNOTICE')) then begin
+                    Msg:='Skipping installation because the process '+Processes[i].Name+' (pid '+IntToStr(Processes[i].ID)+') is running, using Git for Windows'+#39+' files.';
+                    if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
+                        LogError(Msg)
+                    else
+                        Log(Msg);
+                    ExitEarlyWithSuccess();
+                end;
                 SuppressibleMsgBox(
                     'Setup cannot continue until you close at least those applications in the list that are marked as "closing is required".'
                 ,   mbCriticalError
@@ -2176,7 +2402,7 @@ begin
     end;
 
     {
-        Set nano as default editor
+        Set the default Git editor
     }
 
     if (CbbEditor.ItemIndex=GE_Nano) then begin
@@ -2186,11 +2412,30 @@ begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+NotepadPlusPlusPath+#39+' -multiInst -notabbar -nosession -noPlugin"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Notepad++ as core.editor in the gitconfig.');
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCode)) and (VisualStudioCodePath<>'') then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not set Visual Studio Code as core.editor in the gitconfig.');
+        if (VisualStudioCodeUserInstallation=False) then begin
+            if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+                LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
+        end else begin
+            if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+                LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
+        end
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders)) and (VisualStudioCodeInsidersPath<>'') then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.');
+        if (VisualStudioCodeInsidersUserInstallation=False) then begin
+            if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+                LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
+        end else begin
+            if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+                LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
+        end
+    end else if ((CbbEditor.ItemIndex=GE_SublimeText)) and (SublimeTextPath<>'') then begin
+        if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+SublimeTextPath+#39+' -w"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set Sublime Text as core.editor in the gitconfig.');
+    end else if ((CbbEditor.ItemIndex=GE_Atom)) and (AtomPath<>'') then begin
+        if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+AtomPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set Atom as core.editor in the gitconfig.');
+    end else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then begin
+        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+CustomEditorPath+#39+' '+CustomEditorOptions+'"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set the selected editor as core.editor in the gitconfig.')
     end;
 
     {
@@ -2209,12 +2454,12 @@ begin
     if (not Exec(Cmd,ExpandConstant('>"{tmp}\post-install.log"'),AppDir,SW_HIDE,ewWaitUntilTerminated,i) or (i<>0)) and FileExists(Cmd) then begin
         if FileExists(ExpandConstant('{tmp}\post-install.log')) then
             LogError('Line {#__LINE__}: Unable to run post-install scripts:'+#13+#10+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')))
-	else
+        else
             LogError('Line {#__LINE__}: Unable to run post-install scripts; no output?');
     end else begin
         if FileExists(ExpandConstant('{tmp}\post-install.log')) then
             Log('Line {#__LINE__}: post-install scripts run successfully:'+#13+#10+ReadFileAsString(ExpandConstant('{tmp}\post-install.log')))
-	else
+        else
             LogError('Line {#__LINE__}: Unable to run post-install scripts; no error, no output?');
     end;
 
@@ -2232,7 +2477,7 @@ end;
 
 procedure RegisterPreviousData(PreviousDataKey:Integer);
 var
-    Data,Path:String;
+    Data,CustomEditorData,Path:String;
 begin
     // Git Editor options.
     Data:='';
@@ -2246,8 +2491,16 @@ begin
         Data:='VisualStudioCode';
     end else if (CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders) then begin
         Data:='VisualStudioCodeInsiders';
+    end else if (CbbEditor.ItemIndex=GE_SublimeText) then begin
+        Data:='SublimeText';
+    end else if (CbbEditor.ItemIndex=GE_Atom) then begin
+        Data:='Atom';
+    end else if (CbbEditor.ItemIndex=GE_CustomEditor) then begin
+        Data:='CustomEditor'
+        CustomEditorData:=EditorPage.Values[0];
     end;
     RecordChoice(PreviousDataKey,'Editor Option',Data);
+    RecordChoice(PreviousDataKey,'Custom Editor Path',CustomEditorData);
 
     // Git Path options.
     Data:='';

@@ -5,7 +5,7 @@ PKGBUILD eol=lf
 *.css eol=lf
 *.install eol=lf
 *.install.in eol=lf
-*.iss eol=lf
+*.iss eol=lf whitespace=tab-in-indent
 *.h eol=lf
 *.md eol=lf
 *.post eol=lf
