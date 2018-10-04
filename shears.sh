@@ -334,8 +334,10 @@ ensure_labeled () {
 generate_script () {
 	shorthead=$(git rev-parse --short $head)
 	todo=
-	if test -n "$merging"
+	if test -z "$merging"
 	then
+		rm -f "$git_dir"/SHEARS-MERGING-MESSAGE
+	else
 		from=$(git rev-parse --short "$upstream") &&
 		to=$(git rev-parse --short "$onto") &&
 		cat > "$git_dir"/SHEARS-MERGING-MESSAGE << EOF &&
