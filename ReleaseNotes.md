@@ -45,7 +45,6 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Git v2.19.1](https://github.com/git/git/blob/v2.19.1/Documentation/RelNotes/2.19.1.txt).
 * Comes with [Git LFS v2.5.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.5.2).
-* Comes with [Git Credential Manager v1.17.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.17.2).
 * When FSCache is enabled, commands such as `add`, `commit`, and `reset` [are now much faster](https://github.com/git-for-windows/git/pull/1827).
 * Sublime Text, Atom, and even the new user-specific VS Code installations [can now by used as Git's default editor](https://github.com/git-for-windows/build-extra/pull/200).
 * Comes with [Git Credential Manager v1.18.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.18.0).
