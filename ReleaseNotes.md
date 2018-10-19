@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [Git Credential Manager v1.18.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.18.1).
 * Comes with [Git Credential Manager v1.18.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.18.2).
+* Comes with [OpenSSH v7.9p1](https://www.openssh.com/txt/release-7.9).
 
 ## Changes since Git for Windows v2.19.0 (September 11th 2018)
 
