@@ -122,12 +122,13 @@ edit () {
 			 cat "$1") >"$1".new &&
 			mv -f "$1".new "$1"
 
-			exec "$GIT_EDITOR" "$@"
+			eval "$GIT_EDITOR" "$@"
+			exit
 		}
 
 		sed -e '/^noop/d' < "$1" >> "$git_dir"/SHEARS-SCRIPT &&
 		mv "$git_dir"/SHEARS-SCRIPT "$1"
-		"$GIT_EDITOR" "$@" &&
+		eval "$GIT_EDITOR" "$@" &&
 		mv "$1" "$git_dir"/SHEARS-SCRIPT &&
 		exprs="$(for command in $extra_commands
 			do
@@ -137,7 +138,9 @@ edit () {
 		eval sed $exprs < "$git_dir"/SHEARS-SCRIPT > "$1"
 		;;
 	*)
-		exec "$GIT_EDITOR" "$@"
+		eval "$GIT_EDITOR" "$@"
+		exit
+		;;
 	esac
 }
 
