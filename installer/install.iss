@@ -1324,7 +1324,7 @@ begin
     // 2nd choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Vim (the ubiquitous text editor) as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'The <A HREF=http://www.vim.org/>Vim editor</A>, while powerful, <A HREF=https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/>can be hard to use</A>. Its user interface is'+#13+'unintuitive and its key bindings are awkward.'+#13+#13+'<RED>Note:</RED> Vim is the default editor of Git for Windows only for historical reasons, and'+#13+'it is highly recommended to switch to a modern GUI editor instead.',Top,Left,LblEditor[GE_VIM],False);
+    CreateItemDescription(EditorPage,'The <A HREF=http://www.vim.org/>Vim editor</A>, while powerful, <A HREF=https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/>can be hard to use</A>. Its user interface is'+#13+'unintuitive and its key bindings are awkward.'+#13+#13+'<RED>Note:</RED> Vim is the default editor of Git for Windows only for historical reasons, and'+#13+'it is highly recommended to switch to a modern GUI editor instead.'+#13+#13+'<RED>Note:</RED> This will leave the '+#39+'core.editor'+#39+' option unset, which will make Git fall back'+#13+'to the '+#39+'EDITOR'+#39+' environment variable. The default editor is Vim - but you'+#13+'may set it to some other editor of your choice.',Top,Left,LblEditor[GE_VIM],False);
     EditorAvailable[GE_VIM]:=True;
 
     // 3rd choice
