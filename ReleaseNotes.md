@@ -37,7 +37,6 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [Git Credential Manager v1.18.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.18.1).
 * Comes with [Git Credential Manager v1.18.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.18.2).
 * Comes with [OpenSSH v7.9p1](https://www.openssh.com/txt/release-7.9).
 * The description of the editor option to choose Vim [has been clarified](https://github.com/git-for-windows/build-extra/pull/207) to state that this *unsets* `core.editor`.
