@@ -75,7 +75,7 @@ for req in mingw-w64-$ARCH-git-credential-manager $SH_FOR_REBASE \
 		mingw-w64-$ARCH-connect git-flow unzip docx2txt \
 		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt \
 		mingw-w64-$ARCH-xpdf-tools ssh-pageant mingw-w64-$ARCH-git-lfs \
-		tig nano $GIT_UPDATE_EXTRA_PACKAGES)
+		tig nano perl-JSON $GIT_UPDATE_EXTRA_PACKAGES)
 do
 	test -d /var/lib/pacman/local/$req-[0-9]* ||
 	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
@@ -90,7 +90,7 @@ git-extra openssh $UTIL_PACKAGES"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$ARCH-git-doc-html ncurses mintty vim nano
-		winpty less gnupg tar diffutils patch dos2unix which subversion
+		winpty less gnupg tar diffutils patch dos2unix which subversion perl-JSON
 		mingw-w64-$ARCH-tk mingw-w64-$ARCH-connect git-flow docx2txt
 		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt ssh-pageant
 		mingw-w64-$ARCH-git-lfs mingw-w64-$ARCH-xz tig $GIT_UPDATE_EXTRA_PACKAGES"
