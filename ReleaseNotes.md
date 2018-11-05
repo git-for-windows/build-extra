@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 * The description of the editor option to choose Vim [has been clarified](https://github.com/git-for-windows/build-extra/pull/207) to state that this *unsets* `core.editor`.
 * Comes with [cURL v7.62.0](https://curl.haxx.se/changes.html#7_62_0).
 * The type of symlinks to create (directory or file) [can now be specified via the `.gitattributes`](https://github.com/git-for-windows/git/pull/1897).
+* The FSCache feature [now uses a faster method to enumerate files](https://github.com/git-for-windows/git/pull/1908), making e.g. `git status` faster in large repositories.
 
 ## Changes since Git for Windows v2.19.0 (September 11th 2018)
 
