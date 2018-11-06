@@ -10,8 +10,8 @@ _realtag=$pkgver
 pkgdesc="Credential Manager for Git for Windows"
 arch=('any')
 project_url="https://github.com/Microsoft/Git-Credential-Manager-for-Windows"
-zip_url="${project_url}/releases/download/v${_realtag}/gcmw-v${_realver}.zip"
-src_zip_url="${project_url}/archive/v${_realtag}.zip"
+zip_url="${project_url}/releases/download/${_realtag}/gcmw-v${_realver}.zip"
+src_zip_url="${project_url}/archive/${_realtag}.zip"
 license=('MIT')
 groups=('VCS')
 
