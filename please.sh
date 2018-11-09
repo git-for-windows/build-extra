@@ -2953,10 +2953,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			"Most recent package update" \
 			"$(date --date="@$msys2_package_mtime")"
 
-		 cygwin_url="$(curl -s https://cygwin.com/ |
-			sed -n '/The most recent version of the Cygwin DLL is/{
+		 if test 2.11.2 = "$version"
+		 then
+			cygwin_url=https://cygwin.com/ml/cygwin-announce/2018-11/msg00007.html
+		 else
+		 	cygwin_url="$(curl -s https://cygwin.com/ |
+			 sed -n '/The most recent version of the Cygwin DLL is/{
 			    N;s/.*<a href="\([^"]*\)">'"$version"'<\/a>.*/\1/p
-			}')" &&
+			 }')"
+		 fi &&
+
 		 test -n "$cygwin_url" ||
 		 die "Could not retrieve Cygwin mail about v%s\n" "$version"
 
