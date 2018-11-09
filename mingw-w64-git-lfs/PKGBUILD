@@ -18,11 +18,13 @@ i686)
   zipname="git-lfs-windows-386-v$pkgver.zip"
   folder=.
   sha256sum=6cf7d4c169a17dd5b326f903708829e7471368b7e1235ab150ce77555f47b213
+  exesuffix=-windows-386
   ;;
 x86_64)
   zipname="git-lfs-windows-amd64-v$pkgver.zip"
   folder=.
   sha256sum=d5276eb61dea32b3978c2f68c5cf3ad4a45bf70f1a245ddc86b555db7299c7c9
+  exesuffix=-windows-amd64
   ;;
 esac
 
@@ -37,7 +39,7 @@ options=('!strip')
 
 package() {
   install -d -m755 $pkgdir/$MINGW_PREFIX/bin
-  install -m755 $srcdir/$folder/git-lfs.exe $pkgdir/$MINGW_PREFIX/bin/git-lfs.exe
+  install -m755 $srcdir/$folder/git-lfs$exesuffix.exe $pkgdir/$MINGW_PREFIX/bin/git-lfs.exe
   install -d -m755 $pkgdir/$MINGW_PREFIX/share/doc/git-lfs
   install -m755 $srcdir/$folder/README.md $pkgdir/$MINGW_PREFIX/share/doc/git-lfs/README.md
 }

@@ -2874,10 +2874,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			"$sha256_32" "$zip32" "$sha256_64" "$zip64" |
 		 sha256sum -c - &&
 		 dir32="$(unzip -l $zip32 |
-			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs\.exe/\1/p' |
+			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs-windows-386\.exe$/\1/p' |
 			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
 		 dir64="$(unzip -l $zip64 |
-			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs\.exe/\1/p' |
+			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs-windows-amd64\.exe/\1/p' |
 			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
 		 s1='s/\(folder=\)[^\n]*/\1' &&
 		 s2='s/\(sha256sum=\)[0-9a-f]*/\1' &&
