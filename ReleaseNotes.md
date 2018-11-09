@@ -37,12 +37,13 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [Git Credential Manager v1.18.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.18.2).
 * Comes with [OpenSSH v7.9p1](https://www.openssh.com/txt/release-7.9).
 * The description of the editor option to choose Vim [has been clarified](https://github.com/git-for-windows/build-extra/pull/207) to state that this *unsets* `core.editor`.
 * Comes with [cURL v7.62.0](https://curl.haxx.se/changes.html#7_62_0).
 * The type of symlinks to create (directory or file) [can now be specified via the `.gitattributes`](https://github.com/git-for-windows/git/pull/1897).
 * The FSCache feature [now uses a faster method to enumerate files](https://github.com/git-for-windows/git/pull/1908), making e.g. `git status` faster in large repositories.
+* Comes with [Git Credential Manager v1.18.3](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.3).
+* Comes with [Git LFS v2.6.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.6.0).
 
 ## Changes since Git for Windows v2.19.0 (September 11th 2018)
 
