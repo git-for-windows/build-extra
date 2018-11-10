@@ -45,6 +45,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git Credential Manager v1.18.3](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.3).
 * Comes with [Git LFS v2.6.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.6.0).
 
+### Bug Fixes
+
+* The 64-bit Portable Git [no longer sets `pack.packSizeLimit`](https://github.com/git-for-windows/build-extra/pull/212).
+
 ## Changes since Git for Windows v2.19.0 (September 11th 2018)
 
 ### New Features
