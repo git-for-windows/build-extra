@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 * The FSCache feature [now uses a faster method to enumerate files](https://github.com/git-for-windows/git/pull/1908), making e.g. `git status` faster in large repositories.
 * Comes with [Git Credential Manager v1.18.3](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.3).
 * Comes with [Git LFS v2.6.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.6.0).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.11.2](https://cygwin.com/ml/cygwin-announce/2018-11/msg00007.html).
 
 ### Bug Fixes
 
