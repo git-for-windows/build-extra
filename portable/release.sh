@@ -93,6 +93,8 @@ cp /mingw$BITNESS/etc/gitconfig \
 git config -f "$SCRIPT_PATH/root/mingw$BITNESS/etc/gitconfig" \
 	credential.helper manager ||
 die "Could not configure Git-Credential-Manager as default"
+test 64 != $BITNESS ||
+git config -f "$SCRIPT_PATH/root/mingw$BITNESS/etc/gitconfig" --unset pack.packSizeLimit
 
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
