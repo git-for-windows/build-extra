@@ -35,6 +35,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.19.1 (Oct 5th 2018)
 
+Please note: _Git CMD_ is deprecated as of this Git for Windows version. The default is to have `git.exe` in the `PATH` anyway, so there is no noticeable difference between CMD and Git CMD. It is impossible to turn off CMD's behavior where it picks up any `git.exe` in the current directory, so let's discourage the use of Git CMD. Users who dislike Git Bash should switch to Powershell instead.
+
 ### New Features
 
 * Comes with [OpenSSH v7.9p1](https://www.openssh.com/txt/release-7.9).
