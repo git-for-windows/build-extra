@@ -47,6 +47,7 @@ Please note: _Git CMD_ is deprecated as of this Git for Windows version. The def
 * Comes with [Git Credential Manager v1.18.3](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.3).
 * Comes with [Git LFS v2.6.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.6.0).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.11.2](https://cygwin.com/ml/cygwin-announce/2018-11/msg00007.html).
+* The FSCache feature [was optimized to become faster](https://github.com/git-for-windows/git/pull/1926).
 
 ### Bug Fixes
 
