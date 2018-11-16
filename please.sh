@@ -3459,6 +3459,7 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 		sed -i -e "/^## Changes since/{s/^/$quoted\n\n/;:1;n;b1}" \
 			"$relnotes"
 	else
+		search=$(echo $quoted | sed -r -e 's#.*Comes with \[(.* v|patch level).*#\1#')
 		sed -i -e '/^## Changes since/{
 			:1;n;
 			/^### '"$what"'/b3;
@@ -3466,12 +3467,15 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 			/^## Changes since/b2;
 			b1;
 
-			:2;s/^/### '"$what"'\n\n'"$quoted"'\n\n/;b5;
+			:2;s/^/### '"$what"'\n\n'"$quoted"'\n\n/;b7;
 
-			:3;/^\*/b4;n;b3;:4;n;/^\*/b4;
-			s/^/'"$quoted"'\n/;b5;
+			:3;/^\*/b4;n;b3;
 
-			:5;n;b5}' "$relnotes"
+			:4;/'"$search"'/b5;n;b6;:5;N;s/^.*\n//;:6;/^\*/b4;
+
+			s/^/'"$quoted"'\n/;
+
+			:7;n;b7}' "$relnotes"
 	fi ||
 	die "Could not edit release notes\n"
 
