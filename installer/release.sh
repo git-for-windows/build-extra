@@ -132,17 +132,26 @@ esac
 
 case "$LIST" in
 */libexec/git-core/git-legacy-rebase*)
-	inno_defines="$(printf "%s\n%s" "$inno_defines" \
-		"#define WITH_EXPERIMENTAL_BUILTIN_REBASE 1")"
+	case "$(git -c rebase.usebuiltin rebase -h 2>&1)" in
+	*Actions:*)
+		inno_defines="$(printf "%s\n%s" "$inno_defines" \
+			"#define WITH_EXPERIMENTAL_BUILTIN_REBASE 1")"
+		;;
+	esac
 	;;
 esac
 
 case "$LIST" in
 */libexec/git-core/git-legacy-stash*)
-	inno_defines="$(printf "%s\n%s" "$inno_defines" \
-		"#define WITH_EXPERIMENTAL_BUILTIN_STASH 1")"
+	case "$(git -c stash.usebuiltin stash -h 2>&1)" in
+	*legacy-stash:*)
+		inno_defines="$(printf "%s\n%s" "$inno_defines" \
+			"#define WITH_EXPERIMENTAL_BUILTIN_STASH 1")"
+		;;
+	esac
 	;;
 esac
+die "inno_defines: $inno_defines"
 
 GITCONFIG_PATH="$(echo "$LIST" | grep "^mingw$BITNESS/etc/gitconfig\$")"
 printf '' >programdata-config.template
