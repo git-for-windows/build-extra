@@ -3981,7 +3981,15 @@ publish () { #
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not prepare build-extra for download-stats update\n"
 
-	"$sdk64/mingw64/bin/node.exe" -v ||
+	"$sdk64/mingw64/bin/node.exe" -v || {
+		if test -f "$sdk64/mingw64/bin/libcares-3.dll" &&
+			test ! -f "$sdk64/mingw64/bin/libcares-2.dll"
+		then
+			ln "$sdk64/mingw64/bin/libcares-3.dll" \
+				"$sdk64/mingw64/bin/libcares-2.dll"
+		fi
+		"$sdk64/mingw64/bin/node.exe" -v
+	} ||
 	die "Could not execute node.exe\n"
 
 	# Required to render the release notes for the announcement mail
