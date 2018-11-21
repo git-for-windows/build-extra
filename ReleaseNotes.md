@@ -39,6 +39,7 @@ Please note: _Git CMD_ is deprecated as of this Git for Windows version. The def
 
 ### New Features
 
+* Comes with [Git v2.19.2](https://github.com/git/git/blob/v2.19.2/Documentation/RelNotes/2.19.2.txt).
 * Comes with [OpenSSH v7.9p1](https://www.openssh.com/txt/release-7.9).
 * The description of the editor option to choose Vim [has been clarified](https://github.com/git-for-windows/build-extra/pull/207) to state that this *unsets* `core.editor`.
 * Comes with [cURL v7.62.0](https://curl.haxx.se/changes.html#7_62_0).
