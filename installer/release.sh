@@ -151,7 +151,6 @@ case "$LIST" in
 	esac
 	;;
 esac
-die "inno_defines: $inno_defines"
 
 GITCONFIG_PATH="$(echo "$LIST" | grep "^mingw$BITNESS/etc/gitconfig\$")"
 printf '' >programdata-config.template
