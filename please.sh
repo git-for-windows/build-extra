@@ -2460,14 +2460,20 @@ pkg_install () {
 	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 		"pacman -U --noconfirm $files"
 
-	if test MINGW = "$type"
-	then
-		"$sdk32/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			"pacman -U --noconfirm $(pkg_files --i686)"
-	fi
-
 	process_keep_despite_upgrade "$sdk" ||
 	die 'Could not keep files as planned\n'
+
+	if test MINGW = "$type"
+	then
+		prepare_keep_despite_upgrade "$sdk32" ||
+		die 'Could not keep files as planned\n'
+
+		"$sdk32/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			"pacman -U --noconfirm $(pkg_files --i686)"
+
+		process_keep_despite_upgrade "$sdk32" ||
+		die 'Could not keep files as planned\n'
+	fi
 }
 
 install () { # <package>
