@@ -49,7 +49,7 @@ then
 	UTIL_PACKAGES="$UTIL_PACKAGES tmux libevent"
 fi
 
-this_script_dir="$(cd "$(dirname "$0")")" ||
+this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
 
 pacman_list () {
