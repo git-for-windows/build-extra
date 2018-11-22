@@ -177,6 +177,28 @@ info () { #
 		"$warning"
 }
 
+prepare_keep_despite_upgrade () { # <sdk-path>
+	keep_despite_upgrade="$(cat "${this_script_path%/*}/keep-despite-upgrade.txt")" ||
+	die 'Could not read keep-despite-upgrade.txt\n'
+
+	case "$keep_despite_upgrade" in *' '*) die 'keep-despite-upgrade.txt contains spaces!\n';; esac
+
+	test "$sdk64" = "$1" ||
+	keep_despite_upgrade="$(echo "$keep_despite_upgrade" | sed '/^mingw64/d')"
+
+	(cd "$1" &&
+	 rm -rf .keep &&
+	 mkdir -p .keep &&
+	 rsync -vauR --delete --delete-excluded $keep_despite_upgrade .keep/)
+}
+
+process_keep_despite_upgrade () { # <sdk-path>
+	(cd "$1/.keep" &&
+	 rsync -vauR ./ ../ &&
+	 cd .. &&
+	 rm -rf .keep)
+}
+
 sync () { # [--force]
 	force=
 	y_opt=y
@@ -204,6 +226,9 @@ sync () { # [--force]
 		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -lc \
 			"pacman.exe -S$y_opt" ||
 		die "Cannot run pacman in %s\n" "$sdk"
+
+		prepare_keep_despite_upgrade "$sdk" ||
+		die 'Could not keep files as planned\n'
 
 		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\bash.exe \
 			-lc "pacman.exe -Su $force --noconfirm" ||
@@ -233,6 +258,9 @@ sync () { # [--force]
 			die "Could not re-populate git-for-windows-keyring\n"
 			;;
 		esac
+
+		process_keep_despite_upgrade "$sdk" ||
+		die 'Could not copy back files-to-keep\n'
 
 		# A ruby upgrade (or something else) may require a re-install
 		# of the `asciidoctor` gem. We only do this for the 64-bit
@@ -2426,6 +2454,9 @@ pkg_install () {
 		;;
 	esac
 
+	prepare_keep_despite_upgrade "$sdk" ||
+	die 'Could not keep files as planned\n'
+
 	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 		"pacman -U --noconfirm $files"
 
@@ -2434,6 +2465,9 @@ pkg_install () {
 		"$sdk32/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			"pacman -U --noconfirm $(pkg_files --i686)"
 	fi
+
+	process_keep_despite_upgrade "$sdk" ||
+	die 'Could not keep files as planned\n'
 }
 
 install () { # <package>
