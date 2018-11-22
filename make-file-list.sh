@@ -49,7 +49,12 @@ then
 	UTIL_PACKAGES="$UTIL_PACKAGES tmux libevent"
 fi
 
+this_script_dir="$(cd "$(dirname "$0")")" ||
+die "Could not determine this script's dir"
+
 pacman_list () {
+	cat "$this_script_dir/keep-despite-upgrade.txt" 2>/dev/null
+
 	package_list=$(for arg
 		do
 			pactree -u "$arg"
