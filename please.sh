@@ -3112,7 +3112,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		;;
 	openssl)
 		version="$(curl -s https://www.openssl.org/source/ |
-		sed -n 's/.*<a href="openssl-\(1\.0\.[1-9]*[^"]*\)\.tar\.gz".*/\1/p')"
+		sed -n 's/.*<a href="openssl-\(1\.1\.1[^"]*\)\.tar\.gz".*/\1/p')"
 		test -n "$version" ||
 		die "Could not determine newest OpenSSL version\n"
 
