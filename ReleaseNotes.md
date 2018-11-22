@@ -17,7 +17,7 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
   > `MSYS_NO_PATHCONV=1 git blame -L/pathconv/ msys2_path_conv.cc`
 
   Alternatively, you can double the first slash to avoid POSIX-to-Windows path conversion, e.g. "`//usr/bin/bash.exe`".
-* Windows drives are normally recognised within the POSIX path as `/c/path/to/dir/` where `/c/` (or appropriate drive letter) is equivalent to the `C:\` Windows prefix to the `\path\to\dir`. If this is not recoginsed, revert to the `C:\path\to\dir` Windows style.
+* Windows drives are normally recognised within the POSIX path as `/c/path/to/dir/` where `/c/` (or appropriate drive letter) is equivalent to the `C:\` Windows prefix to the `\path\to\dir`. If this is not recognised, revert to the `C:\path\to\dir` Windows style.
 * Git for Windows will not allow commits containing DOS-style truncated 8.3-format filenames ending with a tilde and digit, such as `mydocu~1.txt`. A workaround is to call `git config core.protectNTFS false`, which is not advised. Instead, add a rule to .gitignore to ignore the file(s), or rename the file(s).
 * Many Windows programs (including the Windows Explorer) have problems with directory trees nested so deeply that the absolute path is longer than 260 characters. Therefore, Git for Windows refuses to check out such files by default. You can overrule this default by setting `core.longPaths`, e.g. `git clone -c core.longPaths=true ...`.
 *   Some commands are not yet supported on Windows and excluded from the installation.
