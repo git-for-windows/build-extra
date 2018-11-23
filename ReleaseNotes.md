@@ -38,7 +38,6 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html). The OpenSSH and cURL packages were rebuilt to make use of OpenSSL v1.1.1a.
-* Comes with [cURL v7.62.0](https://curl.haxx.se/changes.html#7_62_0).
 
 ## Changes since Git for Windows v2.19.1 (Oct 5th 2018)
 
