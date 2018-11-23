@@ -2826,7 +2826,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 
 		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
 
-		case "$version" in 7.58.0|7.62.0)
+		case "$version,$force_pkgrel" in 7.58.0,|7.62.0,)
 			: skip because of partially successful upgrade
 			;;
 		*)
