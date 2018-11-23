@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Git CMD [no longer picks up `git.exe` from the current directory (if any)](https://github.com/git-for-windows/git/issues/1945).
 * Git Bash [works again in 32-bit Git for Windows](https://github.com/git-for-windows/MINGW-packages/commit/deb0395d031401ffe55024fb066267e2ea8d032b).
+* Git can now [access `git://` remotes again](https://github.com/git-for-windows/git/issues/1949).
 
 ## Changes since Git for Windows v2.19.1 (Oct 5th 2018)
 
