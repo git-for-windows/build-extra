@@ -186,17 +186,21 @@ prepare_keep_despite_upgrade () { # <sdk-path>
 	test "$sdk64" = "$1" ||
 	keep_despite_upgrade="$(echo "$keep_despite_upgrade" | sed '/^mingw64/d')"
 
-	(cd "$1" &&
-	 rm -rf .keep &&
-	 mkdir -p .keep &&
-	 rsync -vauR --delete --delete-excluded $keep_despite_upgrade .keep/)
+	rm -rf "$1/.keep" &&
+	mkdir -p "$1/.keep" &&
+	for f in $keep_despite_upgrade
+	do
+		d=${f%/*}
+		test $d = $f ||
+		mkdir -p "$1/.keep/$d"
+		cp "$1/$f" "$1/.keep/$d/" ||
+		break
+	done
 }
 
 process_keep_despite_upgrade () { # <sdk-path>
-	(cd "$1/.keep" &&
-	 rsync -vauR ./ ../ &&
-	 cd .. &&
-	 rm -rf .keep)
+	cp -Ru "$1/.keep/"* "$1/" &&
+	rm -rf "$1/.keep"
 }
 
 sync () { # [--force]
