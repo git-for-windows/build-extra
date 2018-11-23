@@ -53,7 +53,13 @@ this_script_dir="$(cd "$(dirname "$0")")" ||
 die "Could not determine this script's dir"
 
 pacman_list () {
-	cat "$this_script_dir/keep-despite-upgrade.txt" 2>/dev/null
+	cat "$this_script_dir/keep-despite-upgrade.txt" 2>/dev/null |
+	if test 64 = "$BITNESS"
+	then
+		cat
+	else
+		grep -v '^mingw64/'
+	fi
 
 	package_list=$(for arg
 		do
