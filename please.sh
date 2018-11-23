@@ -1465,8 +1465,33 @@ needs_upload_permissions () {
 	die "Missing GitHub entries in ~/_netrc\n"
 }
 
-# <tag> <dir-with-files>
+# [--include-sha256sums] <tag> <dir-with-files>
 publish_prerelease () {
+	body=
+	include_sha256sums=
+	while case "$1" in
+	--include-sha256sums)
+		include_sha256sums=t
+		;;
+	-*)
+		die "Unhandled option: '%s'\n" "$1"
+		;;
+	*)
+		break
+		;;
+	esac; do shift; done
+	test $# = 2 ||
+	die "Unexpected arguments: '%s'\n" "$*"
+
+	if test -n "$include_sha256sums"
+	then
+		checksums="Filename | SHA-256\\n-------- | -------\\n$(cd "$2" &&
+			sha256sum.exe * |
+			sed -n 's/\([^ ]*\) \*\(.*\)/\2 | \1\\n/p' |
+			tr -d '\012')"
+		body="\"body\":\"Pre-release: Git $1\\n\\n$checksums\","
+	fi
+
 	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
 		--repo=git "$1" \
 		"$2"/* ||
@@ -1480,7 +1505,7 @@ publish_prerelease () {
 	die "Could not determine ID of release for %s\n" "$1"
 
 	out="$(curl --netrc --show-error -s -XPATCH -d \
-		'{"name":"'"$1"'","draft":false,"prerelease":true}' \
+		'{"name":"'"$1"'",'"$body"'"draft":false,"prerelease":true}' \
 		$url/$id)" ||
 	die "Could not edit release for %s:\n%s\n" "$1" "$out"
 }
@@ -1494,6 +1519,7 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	prerelease_prefix=prerelease-
 	only_64_bit=
 	upload=
+	include_sha256sums=
 	include_pdbs=
 	while case "$1" in
 	--force-tag)
@@ -1558,11 +1584,17 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	--include-pdbs)
 		include_pdbs=--include-pdbs
 		;;
+	--include-sha256sums)
+		include_sha256sums=--include-sha256sums
+		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
 	test $# = 1 ||
 	die "Expected 1 argument, got $#: %s\n" "$*"
+
+	test -z "$include_sha256sums" || test -n "$upload" ||
+	die "--include-sha256sums makes only sense when uploading\n"
 
 	test -n "$modes" ||
 	modes=installer
@@ -1930,7 +1962,7 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 
 	test -z "$upload" || {
 		git -C "$git_src_dir" push git-for-windows "$tag_name" &&
-		publish_prerelease "$tag_name" "$outputdir"
+		publish_prerelease $include_sha256sums "$tag_name" "$outputdir"
 	} ||
 	die "Could not publish %s\n" "$tag_name"
 }
