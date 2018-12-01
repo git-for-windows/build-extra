@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html). The OpenSSH and cURL packages were rebuilt to make use of OpenSSL v1.1.1a.
 * The FSCache feature [was further optimized in particular for very large repositories](https://github.com/git-for-windows/git/pull/1937).
+* Comes with [Heimdal v7.5.0](http://h5l.org/releases.html).
 
 ### Bug Fixes
 
