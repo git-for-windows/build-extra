@@ -3470,6 +3470,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		 -e "s/^\\(pkgrel=\\).*/\\11/" \
 			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
 		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD)
 		;;
 	*)
