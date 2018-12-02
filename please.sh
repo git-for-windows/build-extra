@@ -3454,6 +3454,24 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		# If we ever have to upgrade beyond xpdf 4.00, we will
 		# implement this part. But no sooner.
 		;;
+	mintty)
+		repo=mintty/mintty
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		version="$(echo "$release" |
+			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
+		 -e "s/^\\(pkgrel=\\).*/\\11/" \
+			PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD)
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
