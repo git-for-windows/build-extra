@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * The FSCache feature [was further optimized in particular for very large repositories](https://github.com/git-for-windows/git/pull/1937).
 * To appease certain anti-malware, MinTTY was recompiled with a patch to avoid [GCC trampolines](https://github.com/git-for-windows/MSYS2-packages/commit/63f68558c9c6a6c7765c18dacbbcac328748eb30).
 * Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [Heimdal v7.5.0](http://h5l.org/releases.html).
 
 ### Bug Fixes
 
