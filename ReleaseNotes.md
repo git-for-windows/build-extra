@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * To appease certain anti-malware, MinTTY was recompiled with a patch to avoid [GCC trampolines](https://github.com/git-for-windows/MSYS2-packages/commit/63f68558c9c6a6c7765c18dacbbcac328748eb30).
 * Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [Heimdal v7.5.0](http://h5l.org/releases.html).
+* Comes with [OpenSSH v7.9p1](https://www.openssh.com/txt/release-7.9).
 
 ### Bug Fixes
 
