@@ -2756,7 +2756,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 
 	test -z "$skip_mingw" ||
 	test openssl = "$package" ||
-	die "The --skip-mingw option is supported only for openssl\n"
+	test curl = "$package" ||
+	die "The --skip-mingw option is supported only for openssl/curl\n"
+
+	test -z "$only_mingw" || test -z "$skip_mingw" ||
+	die "--only-mingw and --skip-mingw are mutually exclusive\n"
 
 	test -z "$release_date" ||
 	test mingw-w64-git = "$package" ||
@@ -2863,7 +2867,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			: skip because of partially successful upgrade
 			;;
 		*)
-		(set_package mingw-w64-$1 &&
+		(if test -n "$skip_mingw"
+		 then
+			 exit 0
+		 fi &&
+		 set_package mingw-w64-$1 &&
 		 maybe_init_repository "$sdk64/$pkgpath" &&
 		 cd "$sdk64/$pkgpath" &&
 		 require_push_url origin &&
