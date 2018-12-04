@@ -56,7 +56,7 @@ pacman_list () {
 	cat "$this_script_dir/keep-despite-upgrade.txt" 2>/dev/null |
 	if test 64 = "$BITNESS"
 	then
-		cat
+		grep -v '^mingw32/'
 	else
 		grep -v '^mingw64/'
 	fi
