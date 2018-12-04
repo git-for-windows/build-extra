@@ -2966,19 +2966,23 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		 printf "%s *%s\n%s *%s\n" \
 			"$sha256_32" "$zip32" "$sha256_64" "$zip64" |
 		 sha256sum -c - &&
+		 exesuffix32="$(unzip -l $zip32 | sed -n 's/.*git-lfs\([^\/]*\)\.exe$/\1/p')" &&
+		 exesuffix64="$(unzip -l $zip64 | sed -n 's/.*git-lfs\([^\/]*\)\.exe$/\1/p')" &&
 		 dir32="$(unzip -l $zip32 |
-			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs-windows-386\.exe$/\1/p' |
+			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs'"$exesuffix32"'\.exe$/\1/p' |
 			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
 		 dir64="$(unzip -l $zip64 |
-			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs-windows-amd64\.exe/\1/p' |
+			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs'"$exesuffix64"'\.exe/\1/p' |
 			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
 		 s1='s/\(folder=\)[^\n]*/\1' &&
 		 s2='s/\(sha256sum=\)[0-9a-f]*/\1' &&
 		 s3='s/\(386-\|amd64-\)v\?\(\$pkgver\.zip\)/\1'$extra_v'\2/' &&
+		 s4_32='s/\(exesuffix=\).*/\1'"$exesuffix32"'/' &&
+		 s4_64='s/\(exesuffix=\).*/\1'"$exesuffix64"'/' &&
 		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
 		 -e "s/^\\(pkgrel=\\).*/\\11/" \
-		 -e "/^i686)/{N;N;N;$s1$dir32/;$s2$sha256_32/;$s3}" \
-		 -e "/^x86_64)/{N;N;N;$s1$dir64/;$s2$sha256_64/;$s3}" \
+		 -e "/^i686)/{N;N;N;N;$s1$dir32/;$s2$sha256_32/;$s3;$s4_32}" \
+		 -e "/^x86_64)/{N;N;N;N;$s1$dir64/;$s2$sha256_64/;$s3;$s4_64}" \
 			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD) &&
