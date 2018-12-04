@@ -3240,15 +3240,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		;;
 	bash)
 		url="http://git.savannah.gnu.org/cgit/bash.git/commit/?id=master" &&
-		commit_subject="$(curl $url | sed -n \
-			's/.*<div class=.commit-subject.>\([^<]*\).*/\1/p')" &&
-		case "$commit_subject" in
-		Bash-[1-9]*) ;; # okay
-		*) die "Unhandled commit subject in Bash's master: '%s'\n" "$commit_subject";;
-		esac &&
-		version="$(echo "$commit_subject" | sed -n 's/^Bash-\([^ ]*\).*/\1/p')" &&
-		patchlevel=${commit_subject##* patch } &&
-		if test "a$patchlevel" = "a$commit_subject"
+		version=4.4 &&
+		patchlevel="$(curl $url | sed -n \
+			's/.*+#define PATCHLEVEL \([1-9][0-9]*\).*/\1/p')" &&
+		if test -z "$patchlevel"
 		then
 			patchlevel=0
 		fi &&
