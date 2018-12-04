@@ -37,12 +37,9 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html). The OpenSSH, cURL and Heimdal packages were rebuilt to make use of OpenSSL v1.1.1a.
 * The FSCache feature [was further optimized in particular for very large repositories](https://github.com/git-for-windows/git/pull/1937).
 * To appease certain anti-malware, MinTTY was recompiled with a patch to avoid [GCC trampolines](https://github.com/git-for-windows/MSYS2-packages/commit/63f68558c9c6a6c7765c18dacbbcac328748eb30).
-* Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html).
-* Comes with [Heimdal v7.5.0](http://h5l.org/releases.html).
-* Comes with [OpenSSH v7.9p1](https://www.openssh.com/txt/release-7.9).
-* Comes with [cURL v7.62.0](https://curl.haxx.se/changes.html#7_62_0).
 * Comes with [Git LFS v2.6.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.6.1).
 
 ### Bug Fixes
