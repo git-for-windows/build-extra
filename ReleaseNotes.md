@@ -41,6 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * The FSCache feature [was further optimized in particular for very large repositories](https://github.com/git-for-windows/git/pull/1937).
 * To appease certain anti-malware, MinTTY was recompiled with a patch to avoid [GCC trampolines](https://github.com/git-for-windows/MSYS2-packages/commit/63f68558c9c6a6c7765c18dacbbcac328748eb30).
 * Comes with [Git LFS v2.6.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.6.1).
+* Comes with [Bash v4.4 patchlevel 023 ](https://tiswww.case.edu/php/chet/bash/NEWS).
 
 ### Bug Fixes
 
