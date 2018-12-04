@@ -53,6 +53,7 @@ this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
 
 pacman_list () {
+	test -n "$MINIMAL_GIT" ||
 	cat "$this_script_dir/keep-despite-upgrade.txt" 2>/dev/null |
 	if test 64 = "$BITNESS"
 	then
