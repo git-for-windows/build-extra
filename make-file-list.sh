@@ -139,6 +139,8 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../libexec/git-core/git-archimport$' \
 	-e '^/mingw../share/doc/git-doc/git-archimport' \
 	-e '^/mingw../libexec/git-core/git-cvsimport$' \
+	-e '^/mingw../share/doc/git-doc/git-cvsexport' \
+	-e '^/mingw../libexec/git-core/git-cvsexport' \
 	-e '^/mingw../share/doc/git-doc/git-cvsimport' \
 	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
 	-e '^/mingw../share/nghttp2/' \
