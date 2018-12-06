@@ -138,6 +138,8 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../lib/tdbc' \
 	-e '^/mingw../libexec/git-core/git-archimport$' \
 	-e '^/mingw../share/doc/git-doc/git-archimport' \
+	-e '^/mingw../libexec/git-core/git-cvsimport$' \
+	-e '^/mingw../share/doc/git-doc/git-cvsimport' \
 	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
 	-e '^/mingw../share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
