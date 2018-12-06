@@ -7,6 +7,9 @@
 @REM <percent>~fI Expands <percent>I to a fully qualified path name.
 @FOR /F "delims=" %%D in ("%~dp0") do @set cwd=%%~fD
 
+@CD "%cwd%"
+@IF ERRORLEVEL 1 GOTO DIE
+
 @REM set PATH
 @set PATH=%cwd%\mini\mingw@@BITNESS@@\bin;%PATH%
 
@@ -23,21 +26,21 @@
 @IF ERRORLEVEL 1 GOTO DIE
 
 @REM Cleaning up temporary git.exe
-@RMDIR /Q /S %cwd%\mini
+@RMDIR /Q /S mini
 @IF ERRORLEVEL 1 GOTO DIE
 
 @REM Avoid overlapping address ranges
 @IF 32 == @@BITNESS@@ @(
 	ECHO Auto-rebasing .dll files
-	CALL "%cwd%"\autorebase.bat
+	CALL autorebase.bat
 )
 
 @REM Before running a shell, let's prevent complaints about "permission denied"
 @REM from MSYS2's /etc/post-install/01-devices.post
-@MKDIR "%cwd%"\dev\shm 2> NUL
-@MKDIR "%cwd%"\dev\mqueue 2> NUL
+@MKDIR dev\shm 2> NUL
+@MKDIR dev\mqueue 2> NUL
 
-@START /B %cwd%\git-bash.exe
+@START /B git-bash.exe
 @EXIT /B 0
 
 :DIE
