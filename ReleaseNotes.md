@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Bash v4.4 patchlevel 023 ](https://tiswww.case.edu/php/chet/bash/NEWS).
 * Commands to interact with CVS repositories were considered obsolete [and have been removed](https://github.com/git-for-windows/build-extra/commit/59b521a3b).
 * The desired HTTP version (HTTP/2 or HTTP/1.1) [can now be configured via the `http.version` setting](https://github.com/git-for-windows/git/pull/1968).
+* Comes with [cURL v7.62.0](https://curl.haxx.se/changes.html#7_62_0).
 
 ### Bug Fixes
 
