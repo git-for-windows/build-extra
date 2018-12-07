@@ -1215,21 +1215,26 @@ begin
      *)
 
     Path:=EditorPage.Values[0]+' ';
-    if not WildcardMatch(Lowercase(Path), '"*.exe" *') then
-        PathLength:=Pos('.exe ',Lowercase(Path))+3
-    else begin
-        PathLength:=Pos('.exe" ',Lowercase(Path))+2;
-        Path:=Copy(Path,2,PathLength)+Copy(Path,PathLength+3,Length(Path))
-    end;
+    if Pos('.exe',Lowercase(Path))=0 then begin
+    	CustomEditorPath:=EditorPage.Values[0];
+        CustomEditorOptions:='';
+    end else begin
+        if not WildcardMatch(Lowercase(Path), '"*.exe" *') then
+            PathLength:=Pos('.exe ',Lowercase(Path))+3
+        else begin
+            PathLength:=Pos('.exe" ',Lowercase(Path))+2;
+            Path:=Copy(Path,2,PathLength)+Copy(Path,PathLength+3,Length(Path))
+        end;
 
-    (*
-     * If the specified path does not contain '.exe' at the end,
-     * CustomEditorPath will be formed with the first three letters of Path,
-     * but that should not be a problem because the next button is enabled
-     * only when PathIsValidExecutable() returns True.
-     *)
-    CustomEditorPath:=Copy(Path,1,PathLength);
-    CustomEditorOptions:=Copy(Path,PathLength+2,Length(Path)-PathLength-2);
+        (*
+         * If the specified path does not contain '.exe' at the end,
+         * CustomEditorPath will be formed with the first three letters of Path,
+         * but that should not be a problem because the next button is enabled
+         * only when PathIsValidExecutable() returns True.
+         *)
+        CustomEditorPath:=Copy(Path,1,PathLength);
+        CustomEditorOptions:=Copy(Path,PathLength+2,Length(Path)-PathLength-2);
+    end;
     EnableNextButtonOnValidExecutablePath(CustomEditorPath);
 end;
 
