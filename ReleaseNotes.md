@@ -44,7 +44,6 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Bash v4.4 patchlevel 023 ](https://tiswww.case.edu/php/chet/bash/NEWS).
 * Commands to interact with CVS repositories were considered obsolete [and have been removed](https://github.com/git-for-windows/build-extra/commit/59b521a3b).
 * The desired HTTP version (HTTP/2 or HTTP/1.1) [can now be configured via the `http.version` setting](https://github.com/git-for-windows/git/pull/1968).
-* Comes with [cURL v7.62.0](https://curl.haxx.se/changes.html#7_62_0).
 
 ### Bug Fixes
 
@@ -53,6 +52,7 @@ This package contains software from a number of other projects including Bash, z
 * Git can now [access `git://` remotes again](https://github.com/git-for-windows/git/issues/1949).
 * The confusing descriptions of the PATH options in the installer [were clarified](https://github.com/git-for-windows/build-extra/pull/216).
 * A bug in the `notepad` support in conjunction with line wrapping [was fixed](https://github.com/git-for-windows/build-extra/pull/218).
+* Comes two backported fixes to [allow NTLM/Kerberos authentication to fall back to HTTP/1.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/issues/812).
 
 ## Changes since Git for Windows v2.19.1 (Oct 5th 2018)
 
