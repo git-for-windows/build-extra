@@ -53,6 +53,7 @@ This package contains software from a number of other projects including Bash, z
 * The confusing descriptions of the PATH options in the installer [were clarified](https://github.com/git-for-windows/build-extra/pull/216).
 * A bug in the `notepad` support in conjunction with line wrapping [was fixed](https://github.com/git-for-windows/build-extra/pull/218).
 * Comes two backported fixes to [allow NTLM/Kerberos authentication to fall back to HTTP/1.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/issues/812).
+* It is [now possible to call `cmd\git.exe` via a symbolic link](https://github.com/git-for-windows/git/issues/1650).
 
 ## Changes since Git for Windows v2.19.1 (Oct 5th 2018)
 
