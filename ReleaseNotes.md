@@ -1,5 +1,5 @@
-# Git for Windows v2.19.2 Release Notes
-Latest update: November 21st 2018
+# Git for Windows v2.20.0 Release Notes
+Latest update: December 10th 2018
 
 ## Introduction
 
@@ -35,8 +35,11 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.19.2 (November 21st 2018)
 
+Please note that Git for Windows v2.19.2 was offered as a full release only for about a week, and then demoted to "pre-release" status, as it had two rather big regressions: 32-bit Git Bash crashed, and git:// was broken.
+
 ### New Features
 
+* Comes with [Git v2.20.0](https://github.com/git/git/blob/v2.20.0/Documentation/RelNotes/2.20.0.txt).
 * Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html). The OpenSSH, cURL and Heimdal packages were rebuilt to make use of OpenSSL v1.1.1a.
 * The FSCache feature [was further optimized in particular for very large repositories](https://github.com/git-for-windows/git/pull/1937).
 * To appease certain anti-malware, MinTTY was recompiled with a patch to avoid [GCC trampolines](https://github.com/git-for-windows/MSYS2-packages/commit/63f68558c9c6a6c7765c18dacbbcac328748eb30).
@@ -52,6 +55,8 @@ This package contains software from a number of other projects including Bash, z
 * Git can now [access `git://` remotes again](https://github.com/git-for-windows/git/issues/1949).
 * The confusing descriptions of the PATH options in the installer [were clarified](https://github.com/git-for-windows/build-extra/pull/216).
 * A bug in the `notepad` support in conjunction with line wrapping [was fixed](https://github.com/git-for-windows/build-extra/pull/218).
+* Comes two backported fixes to [allow NTLM/Kerberos authentication to fall back to HTTP/1.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/issues/812).
+* It is [now possible to call `cmd\git.exe` via a symbolic link](https://github.com/git-for-windows/git/issues/1650).
 
 ## Changes since Git for Windows v2.19.1 (Oct 5th 2018)
 
