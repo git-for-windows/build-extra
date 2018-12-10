@@ -39,6 +39,7 @@ Please note that Git for Windows v2.19.2 was offered as a full release only for 
 
 ### New Features
 
+* Comes with [Git v2.20.0](https://github.com/git/git/blob/v2.20.0/Documentation/RelNotes/2.20.0.txt).
 * Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html). The OpenSSH, cURL and Heimdal packages were rebuilt to make use of OpenSSL v1.1.1a.
 * The FSCache feature [was further optimized in particular for very large repositories](https://github.com/git-for-windows/git/pull/1937).
 * To appease certain anti-malware, MinTTY was recompiled with a patch to avoid [GCC trampolines](https://github.com/git-for-windows/MSYS2-packages/commit/63f68558c9c6a6c7765c18dacbbcac328748eb30).
