@@ -1137,14 +1137,76 @@ begin
     Page.PromptLabels[0].Visible:=Visible;
     TestCustomEditorButton.Visible:=Visible;
 end;
+procedure Explode(var Dest: TArrayOfString; Text: String; Separator: String);
+var
+    i, p: Integer;
+begin
+    i := 0;
+    repeat
+        SetArrayLength(Dest, i+1);
+        p := Pos(Separator,Text);
+        if p > 0 then begin
+            Dest[i] := Copy(Text, 1, p-1);
+            Text := Copy(Text, p + Length(Separator), Length(Text));
+            i := i + 1;
+        end else begin
+            Dest[i] := Text;
+            Text := '';
+        end;
+    until Length(Text)=0;
+end;
 
 function PathIsValidExecutable(Path: String):Boolean;
+var
+    PathEnv:String;
+    PathArr:TArrayOfString;
+    PathExt:String;
+    ExtArray:TArrayOfString;
+    i:Integer;
+    j:Integer;
+    ExtensionFlag:Boolean;
 begin
     (*
      * Add a space at the end of the string in order to rule out paths like
      * 'FOO.exeBAR', but allow paths like 'FOO.exe --BAR'.
      *)
-    Result:=(Path<>'') and FileExists(Path) and (Pos('.exe ', Lowercase(Path)+' ') > 0);
+    if Path='' then begin
+        Result:=False;
+    end
+    else if FileExists(Path) and (Pos('.exe ', Lowercase(Path)+' ') > 0) then begin
+        Result:=True;
+    end
+    else begin
+        PathEnv:=ExpandConstant('{%PATH|}');
+        Explode(PathArr,PathEnv, ';');
+        PathExt:=ExpandConstant('{%PATHEXT|}');
+        Explode(ExtArray,PathExt,';');
+
+        ExtensionFlag:=False;
+        for i:=0 to GetArrayLength(ExtArray)-1 do begin
+            if Pos(Lowercase(ExtArray[i])+' ', Lowercase(Path)+' ') > 0 then begin
+                ExtensionFlag:=True;
+                break;
+            end;
+        end;
+        Result:=False;
+        for i:=0 to GetArrayLength(PathArr)-1 do begin
+            if ExtensionFlag and FileExists(PathArr[i]+'\'+Path) then begin
+                Result:=True;
+                break;
+            end
+            else if not ExtensionFlag then begin
+                for j:=0 to GetArrayLength(ExtArray)-1 do begin
+                    if FileExists(PathArr[i]+'\'+Path+ExtArray[j]) then begin
+                        Result:=True;
+                        break;
+                    end;
+                end;
+                if Result then
+                    break;
+            end;
+        end;
+    end;
 end;
 
 procedure TestCustomEditor(Sender:TObject);
@@ -1163,7 +1225,7 @@ begin
     InputText:='Please modify this text, e.g. delete it.'
     SaveStringToFile(TmpFile,InputText,False);
 
-    if not Exec(CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',SW_HIDE,ewWaitUntilTerminated,Res) then begin
+    if not ShellExec('',CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',SW_HIDE,ewWaitUntilTerminated,Res) then begin
         Wizardform.NextButton.Enabled:=False;
         SuppressibleMsgBox('Could not launch: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
         Exit;
@@ -1215,26 +1277,34 @@ begin
      *)
 
     Path:=EditorPage.Values[0]+' ';
-    if Pos('.exe',Lowercase(Path))=0 then begin
-    	CustomEditorPath:=EditorPage.Values[0];
-        CustomEditorOptions:='';
-    end else begin
-        if not WildcardMatch(Lowercase(Path), '"*.exe" *') then
-            PathLength:=Pos('.exe ',Lowercase(Path))+3
-        else begin
-            PathLength:=Pos('.exe" ',Lowercase(Path))+2;
-            Path:=Copy(Path,2,PathLength)+Copy(Path,PathLength+3,Length(Path))
-        end;
-
-        (*
-         * If the specified path does not contain '.exe' at the end,
-         * CustomEditorPath will be formed with the first three letters of Path,
-         * but that should not be a problem because the next button is enabled
-         * only when PathIsValidExecutable() returns True.
-         *)
+    if WildcardMatch(Lowercase(Path), '"*.exe" *') then begin
+        PathLength:=Pos('.exe" ',Lowercase(Path))+2;
+        CustomEditorPath:=Copy(Path,2,PathLength);
+        CustomEditorOptions:=Copy(Path,PathLength+4,Length(Path));
+    end
+    else if Pos('.exe',Lowercase(Path))<>0 then begin
+        PathLength:=Pos('.exe ',Lowercase(Path))+3;
         CustomEditorPath:=Copy(Path,1,PathLength);
         CustomEditorOptions:=Copy(Path,PathLength+2,Length(Path)-PathLength-2);
+    end
+    else if WildcardMatch(Path, '"*" *') then begin
+        Path:=Copy(Path,2,Length(Path));
+        PathLength:=Pos('"',Lowercase(Path))-1;
+        CustomEditorPath:=Copy(Path,1,PathLength);
+        CustomEditorOptions:=Copy(Path,PathLength+3,Length(Path))
+    end
+    else begin
+        PathLength:=Pos(' ',Path)-1;
+        CustomEditorPath:=Copy(Path,1,PathLength);
+        CustomEditorOptions:=Copy(Path,PathLength+1,Length(Path))
     end;
+
+    (*
+     * If the specified path does not contain '.exe' at the end,
+     * CustomEditorPath will be formed with the first three letters of Path,
+     * but that should not be a problem because the next button is enabled
+     * only when PathIsValidExecutable() returns True.
+     *)
     EnableNextButtonOnValidExecutablePath(CustomEditorPath);
 end;
 
