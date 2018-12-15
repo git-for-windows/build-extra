@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.20.1](https://github.com/git/git/blob/v2.20.1/Documentation/RelNotes/2.20.1.txt).
 * Comes with [cURL v7.63.0](https://curl.haxx.se/changes.html#7_63_0).
 
 ## Changes since Git for Windows v2.19.2 (November 21st 2018)
