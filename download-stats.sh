@@ -19,8 +19,6 @@ test "--update" != "$1" || {
 }
 
 # IDs
-# v2.16.1.windows.2
-#id=${1:-9514737}
 # v2.16.1.windows.3
 #id=${1:-9555514}
 # v2.16.1.windows.4
@@ -78,7 +76,10 @@ test "--update" != "$1" || {
 # v2.20.0-rc2.windows.1
 #id=${1:-14304457}
 # v2.20.0.windows.1
-id=${1:-14440825}
+#id=${1:-14440825}
+# v2.20.1.windows.1
+id=${1:-14552143}
+# v2.11.1.mingit-prerelease.3
 # v2.11.1.mingit-prerelease.3
 # v2.11.1.mingit-prerelease.3
 # v2.11.1.mingit-prerelease.3
