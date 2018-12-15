@@ -40,6 +40,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git v2.20.1](https://github.com/git/git/blob/v2.20.1/Documentation/RelNotes/2.20.1.txt).
 * Comes with [cURL v7.63.0](https://curl.haxx.se/changes.html#7_63_0).
 
+### Bug Fixes
+
+* [Fixes](https://github.com/git-for-windows/git/pull/1983) a speed regression in the built-in rebase.
+
 ## Changes since Git for Windows v2.19.2 (November 21st 2018)
 
 Please note that Git for Windows v2.19.2 was offered as a full release only for about a week, and then demoted to "pre-release" status, as it had two rather big regressions: 32-bit Git Bash crashed, and git:// was broken.
