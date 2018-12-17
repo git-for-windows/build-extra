@@ -71,7 +71,7 @@ Please note that Git for Windows v2.19.2 was offered as a full release only for 
 
 ## Changes since Git for Windows v2.19.1 (Oct 5th 2018)
 
-Please note: Using Git from Command Prompt (cmd.exe, Git CMD) is deprecated as of this Git for Windows version. The default is to have `git.exe` in the `PATH`, so there is no noticeable difference between cmd.exe and using the _Git CMD_ start menu shortcut. It is impossible to turn off Command Prompt's behavior where it picks up any `git.exe` in the current directory, so let's discourage the use of _Git CMD_. Users who dislike Git Bash should switch to PowerShell instead.
+* The _Git CMD_ start menu shortcut is deprecated and will be dropped in future version. Note that the deprecation only affects the shortcut; `git-cmd.exe` will continue to be distributed and installed.
 
 ### New Features
 
