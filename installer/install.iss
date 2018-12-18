@@ -1144,77 +1144,53 @@ end;
     Returns 0 if none were found.
 }
 
-procedure Explode(var Dest:TArrayOfString;Text:String;Separator:String);
+function PathIsValidExecutable(var Path: String):Boolean;
 var
-    i,p:Integer;
-begin
-    i:=0;
-    repeat
-        SetArrayLength(Dest,i+1);
-        p:=Pos(Separator,Text);
-        if p > 0 then begin
-            Dest[i]:=Copy(Text,1,p-1);
-            Text:=Copy(Text,p+Length(Separator),Length(Text));
-            i:=i+1;
-        end else begin
-            Dest[i]:=Text;
-            Text:='';
-        end;
-    until Length(Text)=0;
-end;
-
-function PathIsValidExecutable(Path: String):Boolean;
-var
-    PathEnv:String;
-    PathArr:TArrayOfString;
+    Env,Path2,Ext:String;
     PathExt:String;
     ExtArray:TArrayOfString;
-    i:Integer;
+    i,Len:Integer;
     j:Integer;
     ExtensionFlag:Boolean;
 begin
-    if Path='' then begin
-        Result:=False;
+    Result:=False;
+    if Path='' then
         Exit;
-    end
-    (*
-     * Add a space at the end of the string in order to rule out paths like
-     * 'FOO.exeBAR', but allow paths like 'FOO.exe --BAR'.
-     *)
-    if FileExists(Path) and (Pos('.exe ', Lowercase(Path)+' ') > 0) then begin
-        Result:=True;
-    end
-    else begin
-        PathEnv:=ExpandConstant('{%PATH|}');
-        Explode(PathArr,PathEnv, ';');
-        PathExt:=ExpandConstant('{%PATHEXT|}');
-        Explode(ExtArray,PathExt,';');
 
-        ExtensionFlag:=False;
-        for i:=0 to GetArrayLength(ExtArray)-1 do begin
-            if Pos(Lowercase(ExtArray[i])+' ', Lowercase(Path)+' ') > 0 then begin
-                ExtensionFlag:=True;
-                break;
-            end;
-        end;
-        Result:=False;
-        for i:=0 to GetArrayLength(PathArr)-1 do begin
-            if ExtensionFlag and FileExists(PathArr[i]+'\'+Path) then begin
+    (* If Path contains only the file name, search through PATH *)
+    if Pos('\',Path)=0 then begin
+        Env:=GetEnv('PATH')+';';
+        repeat
+            i:=Pos(';',Env);
+            Path2:=Copy(Env,1,i-1)+'\'+Path;
+            Env:=Copy(Env,i+1,Length(Env));
+            if PathIsValidExecutable(Path2) then begin
+                Path:=Path2;
                 Result:=True;
-                break;
-            end
-            else if not ExtensionFlag then begin
-                for j:=0 to GetArrayLength(ExtArray)-1 do begin
-                    if FileExists(PathArr[i]+'\'+Path+ExtArray[j]) then begin
-                        Result:=True;
-                        break;
-                    end;
-                end;
-                if Result then
-                    break;
             end;
-        end;
+        until Result or (Env='');
+        Exit;
     end;
+
+    (*
+     * If Path lacks a file extension, look through PATHEXT, otherwise
+     * verify that the file extension is in PATHEXT.
+     *)
+    Env:=GetEnv('PATHEXT')+';';
+    Ext:=ExtractFileExt(Path);
+    if Ext<>'' then
+        Result:=(Pos(';'+Uppercase(Ext)+';',';'+Uppercase(Env))>0) and FileExists(Path)
+    else begin
+        repeat
+            i:=Pos(';',Env);
+            Path2:=Path+Copy(Env,1,i-1);
+            Env:=Copy(Env,i+1,Length(Env));
+            if FileExists(Path2) then begin
+                Path:=Path2;
+                Result:=True;
+            end;
+        until Result or (Env='');
+    end
 end;
 
 procedure TestCustomEditor(Sender:TObject);
