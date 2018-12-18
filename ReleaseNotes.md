@@ -39,6 +39,10 @@ This package contains software from a number of other projects including Bash, z
 
 * The custom editor setting in the installer [has been improved substantially](https://github.com/git-for-windows/build-extra/pull/221).
 
+### Bug Fixes
+
+* The `Git CMD` deprecation [was further clarified](https://github.com/git-for-windows/build-extra/pull/222) to mention that the *Start Menu item* is deprecated, not using Git from CMD.
+
 ## Changes since Git for Windows v2.20.0 (December 10th 2018)
 
 ### New Features
