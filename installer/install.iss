@@ -1229,7 +1229,7 @@ begin
     end;
 
     TmpFile:=ExpandConstant('{tmp}\editor-test.txt');
-    InputText:='Please modify this text, e.g. delete it.'
+    InputText:='Please modify this text, e.g. delete it, then save it and exit the editor.'
     SaveStringToFile(TmpFile,InputText,False);
 
     if not ShellExec('',CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',SW_HIDE,ewWaitUntilTerminated,Res) then begin
