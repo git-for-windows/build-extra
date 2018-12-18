@@ -1173,14 +1173,15 @@ var
     j:Integer;
     ExtensionFlag:Boolean;
 begin
+    if Path='' then begin
+        Result:=False;
+        Exit;
+    end
     (*
      * Add a space at the end of the string in order to rule out paths like
      * 'FOO.exeBAR', but allow paths like 'FOO.exe --BAR'.
      *)
-    if Path='' then begin
-        Result:=False;
-    end
-    else if FileExists(Path) and (Pos('.exe ', Lowercase(Path)+' ') > 0) then begin
+    if FileExists(Path) and (Pos('.exe ', Lowercase(Path)+' ') > 0) then begin
         Result:=True;
     end
     else begin
