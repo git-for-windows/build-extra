@@ -1,5 +1,6 @@
 ; Uncomment the line below to be able to compile the script from within the IDE.
 ;#define COMPILE_FROM_IDE
+; vim: sw=4 expandtab:
 
 #include "config.iss"
 
