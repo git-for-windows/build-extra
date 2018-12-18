@@ -1138,21 +1138,27 @@ begin
     Page.PromptLabels[0].Visible:=Visible;
     TestCustomEditorButton.Visible:=Visible;
 end;
-procedure Explode(var Dest: TArrayOfString; Text: String; Separator: String);
+
+{
+    Find the position of the next of the three specified tokens (if any).
+    Returns 0 if none were found.
+}
+
+procedure Explode(var Dest:TArrayOfString;Text:String;Separator:String);
 var
-    i, p: Integer;
+    i,p:Integer;
 begin
-    i := 0;
+    i:=0;
     repeat
-        SetArrayLength(Dest, i+1);
-        p := Pos(Separator,Text);
+        SetArrayLength(Dest,i+1);
+        p:=Pos(Separator,Text);
         if p > 0 then begin
-            Dest[i] := Copy(Text, 1, p-1);
-            Text := Copy(Text, p + Length(Separator), Length(Text));
-            i := i + 1;
+            Dest[i]:=Copy(Text,1,p-1);
+            Text:=Copy(Text,p+Length(Separator),Length(Text));
+            i:=i+1;
         end else begin
-            Dest[i] := Text;
-            Text := '';
+            Dest[i]:=Text;
+            Text:='';
         end;
     until Length(Text)=0;
 end;
