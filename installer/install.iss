@@ -1290,7 +1290,7 @@ begin
     end
     else if WildcardMatch(Path, '"*" *') then begin
         Path:=Copy(Path,2,Length(Path));
-        PathLength:=Pos('"',Lowercase(Path))-1;
+        PathLength:=Pos(#34,Path)-1;
         CustomEditorPath:=Copy(Path,1,PathLength);
         CustomEditorOptions:=Copy(Path,PathLength+3,Length(Path))
     end
