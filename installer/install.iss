@@ -1,5 +1,6 @@
 ; Uncomment the line below to be able to compile the script from within the IDE.
 ;#define COMPILE_FROM_IDE
+; vim: sw=4 expandtab:
 
 #include "config.iss"
 
@@ -1138,13 +1139,58 @@ begin
     TestCustomEditorButton.Visible:=Visible;
 end;
 
-function PathIsValidExecutable(Path: String):Boolean;
+{
+    Find the position of the next of the three specified tokens (if any).
+    Returns 0 if none were found.
+}
+
+function PathIsValidExecutable(var Path: String):Boolean;
+var
+    Env,Path2,Ext:String;
+    PathExt:String;
+    ExtArray:TArrayOfString;
+    i,Len:Integer;
+    j:Integer;
+    ExtensionFlag:Boolean;
 begin
+    Result:=False;
+    if Path='' then
+        Exit;
+
+    (* If Path contains only the file name, search through PATH *)
+    if Pos('\',Path)=0 then begin
+        Env:=GetEnv('PATH')+';';
+        repeat
+            i:=Pos(';',Env);
+            Path2:=Copy(Env,1,i-1)+'\'+Path;
+            Env:=Copy(Env,i+1,Length(Env));
+            if PathIsValidExecutable(Path2) then begin
+                Path:=Path2;
+                Result:=True;
+            end;
+        until Result or (Env='');
+        Exit;
+    end;
+
     (*
-     * Add a space at the end of the string in order to rule out paths like
-     * 'FOO.exeBAR', but allow paths like 'FOO.exe --BAR'.
+     * If Path lacks a file extension, look through PATHEXT, otherwise
+     * verify that the file extension is in PATHEXT.
      *)
-    Result:=(Path<>'') and FileExists(Path) and (Pos('.exe ', Lowercase(Path)+' ') > 0);
+    Env:=GetEnv('PATHEXT')+';';
+    Ext:=ExtractFileExt(Path);
+    if Ext<>'' then
+        Result:=(Pos(';'+Uppercase(Ext)+';',';'+Uppercase(Env))>0) and FileExists(Path)
+    else begin
+        repeat
+            i:=Pos(';',Env);
+            Path2:=Path+Copy(Env,1,i-1);
+            Env:=Copy(Env,i+1,Length(Env));
+            if FileExists(Path2) then begin
+                Path:=Path2;
+                Result:=True;
+            end;
+        until Result or (Env='');
+    end
 end;
 
 procedure TestCustomEditor(Sender:TObject);
@@ -1160,10 +1206,10 @@ begin
     end;
 
     TmpFile:=ExpandConstant('{tmp}\editor-test.txt');
-    InputText:='Please modify this text, e.g. delete it.'
+    InputText:='Please modify this text, e.g. delete it, then save it and exit the editor.'
     SaveStringToFile(TmpFile,InputText,False);
 
-    if not Exec(CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',SW_HIDE,ewWaitUntilTerminated,Res) then begin
+    if not ShellExec('',CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',SW_HIDE,ewWaitUntilTerminated,Res) then begin
         Wizardform.NextButton.Enabled:=False;
         SuppressibleMsgBox('Could not launch: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
         Exit;
@@ -1215,11 +1261,22 @@ begin
      *)
 
     Path:=EditorPage.Values[0]+' ';
-    if not WildcardMatch(Lowercase(Path), '"*.exe" *') then
-        PathLength:=Pos('.exe ',Lowercase(Path))+3
+    if WildcardMatch(Path, '"*" *') then begin
+        Path:=Copy(Path,2,Length(Path));
+        PathLength:=Pos(#34,Path)-1;
+        CustomEditorPath:=Copy(Path,1,PathLength);
+        CustomEditorOptions:=Copy(Path,PathLength+3,Length(Path)-PathLength-3)
+    end
     else begin
-        PathLength:=Pos('.exe" ',Lowercase(Path))+2;
-        Path:=Copy(Path,2,PathLength)+Copy(Path,PathLength+3,Length(Path))
+        Path:=EditorPage.Values[0];
+        PathLength:=Pos(' ',Path)-1;
+        if PathIsValidExecutable(Path) or (PathLength=0) then begin
+            CustomEditorPath:=Path;
+            CustomEditorOptions:=''
+        end else begin
+            CustomEditorPath:=Copy(Path,1,PathLength);
+            CustomEditorOptions:=Copy(Path,PathLength+1,Length(Path))
+        end
     end;
 
     (*
@@ -1228,8 +1285,6 @@ begin
      * but that should not be a problem because the next button is enabled
      * only when PathIsValidExecutable() returns True.
      *)
-    CustomEditorPath:=Copy(Path,1,PathLength);
-    CustomEditorOptions:=Copy(Path,PathLength+2,Length(Path)-PathLength-2);
     EnableNextButtonOnValidExecutablePath(CustomEditorPath);
 end;
 
