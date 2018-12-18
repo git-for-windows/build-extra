@@ -1261,17 +1261,7 @@ begin
      *)
 
     Path:=EditorPage.Values[0]+' ';
-    if WildcardMatch(Lowercase(Path), '"*.exe" *') then begin
-        PathLength:=Pos('.exe" ',Lowercase(Path))+2;
-        CustomEditorPath:=Copy(Path,2,PathLength);
-        CustomEditorOptions:=Copy(Path,PathLength+4,Length(Path));
-    end
-    else if Pos('.exe',Lowercase(Path))<>0 then begin
-        PathLength:=Pos('.exe ',Lowercase(Path))+3;
-        CustomEditorPath:=Copy(Path,1,PathLength);
-        CustomEditorOptions:=Copy(Path,PathLength+2,Length(Path)-PathLength-2);
-    end
-    else if WildcardMatch(Path, '"*" *') then begin
+    if WildcardMatch(Path, '"*" *') then begin
         Path:=Copy(Path,2,Length(Path));
         PathLength:=Pos(#34,Path)-1;
         CustomEditorPath:=Copy(Path,1,PathLength);
