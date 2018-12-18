@@ -1265,7 +1265,7 @@ begin
         Path:=Copy(Path,2,Length(Path));
         PathLength:=Pos(#34,Path)-1;
         CustomEditorPath:=Copy(Path,1,PathLength);
-        CustomEditorOptions:=Copy(Path,PathLength+3,Length(Path))
+        CustomEditorOptions:=Copy(Path,PathLength+3,Length(Path)-PathLength-3)
     end
     else begin
         Path:=EditorPage.Values[0];
