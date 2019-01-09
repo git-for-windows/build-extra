@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 
 * The `Git CMD` deprecation [was further clarified](https://github.com/git-for-windows/build-extra/pull/222) to mention that the *Start Menu item* is deprecated, not using Git from CMD.
 * Certain drivers/anti-malware caused `git.exe` to hang, which [has been fixed](https://github.com/git-for-windows/MINGW-packages/pull/32).
+* `git stash` [now works](https://github.com/git-for-windows/git/issues/2006) after staging files with `git add -N`.
 
 ## Changes since Git for Windows v2.20.0 (December 10th 2018)
 
