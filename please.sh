@@ -1594,7 +1594,7 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	die "Expected 1 argument, got $#: %s\n" "$*"
 
 	test -z "$include_sha256sums" || test -n "$upload" ||
-	die "--include-sha256sums makes only sense when uploading\n"
+	die "%s\n" "--include-sha256sums makes only sense when uploading"
 
 	test -n "$modes" ||
 	modes=installer
