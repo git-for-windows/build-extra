@@ -1587,6 +1587,9 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	--include-sha256sums)
 		include_sha256sums=--include-sha256sums
 		;;
+	--no-include-sha256sums)
+		include_sha256sums=
+		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
