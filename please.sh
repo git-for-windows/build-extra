@@ -1357,11 +1357,21 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 		esac
 		;;
 	 esac &&
-	 if test "$branch" != "$commit" &&
-		! git merge-base --is-ancestor $commit $branch
+	 if test "$branch" != "$commit"
 	 then
-		echo "Commit $commit is not on branch $branch; skipping" >&2
-		exit 0
+		if ! git merge-base --is-ancestor $commit $branch
+		then
+			case "$branch" in
+			upstream/pu|upstream/next)
+				echo "Commit $commit is not on branch $branch; skipping" >&2
+				exit 0
+				;;
+			*)
+				echo "Commit $commit is not on branch $branch; falling back to $branch" >&2
+				commit=$branch
+				;;
+			esac
+		fi
 	 fi &&
 	 git checkout -f "$commit" &&
 	 git reset --hard &&
