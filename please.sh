@@ -2681,7 +2681,7 @@ create_bundle_artifact () {
 }
 
 pkg_copy_artifacts () {
-	test -n "$artifactsdir" || return
+	test -n "$artifactsdir" || return 0
 	files="$(pkg_files --for-upload)" || exit
 	cp $files "$artifactsdir/" &&
 	create_bundle_artifact
