@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * The custom editor setting in the installer [has been improved substantially](https://github.com/git-for-windows/build-extra/pull/221).
+* Comes with [Git Credential Manager v1.18.4.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.4.0).
 
 ### Bug Fixes
 
