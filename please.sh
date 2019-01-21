@@ -2817,10 +2817,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p')"
 		version=${tag_name#v}
 		zip_prefix=${zip_name%$version.zip}
+		if test "$zip_prefix" = "$zip_name"
+		then
+			# The version in the tag and the zip file name differ
+			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]*/\1'$zip_name/
+		else
+			zip_replace='s/^\(zip_url=.*\/\)gcm.*\(\$.*\)/\1'$zip_prefix'\2/'
+		fi
 		src_zip_prefix=${tag_name%$version}
 		(cd "$sdk64/$pkgpath" &&
-		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" \
-		 -e 's/^\(zip_url=.*\/\)gcm.*\(\$.*\)/\1'$zip_prefix'\2/' \
+		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" -e "$zip_replace" \
 		 -e 's/^\(src_zip_url=.*\/\).*\(\$.*\)/\1'$src_zip_prefix'\2/' \
 			PKGBUILD &&
 		 updpkgsums &&
