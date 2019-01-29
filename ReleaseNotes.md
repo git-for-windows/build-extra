@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 * Certain drivers/anti-malware caused `git.exe` to hang, which [has been fixed](https://github.com/git-for-windows/MINGW-packages/pull/32).
 * `git stash` [now works](https://github.com/git-for-windows/git/issues/2006) after staging files with `git add -N`.
 * A problem with `difftool` and more than a handful modified files [has been fixed](https://github.com/git-for-windows/git/pull/2026).
+* The regression where `git-cmd <command>` would not execute the command [was fixed](https://github.com/git-for-windows/git/issues/2039).
 
 ## Changes since Git for Windows v2.20.0 (December 10th 2018)
 
