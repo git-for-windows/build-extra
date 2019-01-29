@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * A problem with `difftool` and more than a handful modified files [has been fixed](https://github.com/git-for-windows/git/pull/2026).
 * The regression where `git-cmd <command>` would not execute the command [was fixed](https://github.com/git-for-windows/git/issues/2039).
 * Portable Git [can be launched via network paths again](https://github.com/git-for-windows/git/issues/2036).
+* FSCache works again [on network drives](https://github.com/git-for-windows/git/issues/2022), in particular [when Windows 8.1 or older](https://github.com/git-for-windows/git/issues/1989) are involved.
 
 ## Changes since Git for Windows v2.20.0 (December 10th 2018)
 
