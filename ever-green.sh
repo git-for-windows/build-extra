@@ -195,13 +195,103 @@ then
 	die '`git rebase` failed to exec'
 fi
 
+not_in_ever_green="|$(git rev-list "HEAD..$current_tip" -- | tr '\n' '|')"
+contained_in_ever_green () {
+	case "$not_in_ever_green" in
+	*"|$1"*) return 1;; # no
+	*) return 0;; # yes
+	esac
+}
+
+is_merge () {
+	case "$(git show -s --format=%p "$1")" in
+	*" "*) return 0;; # yes
+	*) return 1;; # no
+	esac
+}
+
+is_fixup () {
+	case "$(git show -s --format=%s "$1")" in
+	"fixup!"*|"squash!"*) return 0;; # yes
+	*) return 1;; # no
+	esac
+}
+
+string2regex () {
+	echo "$1" | sed 's/[]\\\/[*?]/\\&/g'
+}
+
+find_commit_by_oneline () {
+	oneline="$(git show -s --format=%s "$1")"
+	regex="$(string2regex "$oneline")"
+	result="$(git rev-list --grep="^$regex" "$current_tip..HEAD" -- | tr '\n' ' ' | sed 's/ $//')"
+	case "$result" in
+	*' '*|'') return 1;; # multiple results found, or none
+	*) echo "$result"; return 0;; # found exactly one
+	esac
+}
+
+# range-diff does not include merge commits
+commit_map="$(git range-diff -s "$onto..$current_tip" "$ever_green_base.." |
+	  sed -n 's/^[^:]*: *\([^ ]*\) [!=][^:]*: *\([^ ]*\).*/|\1=\2/p')"
+map_base_commit () {
+	while true
+	do
+		test -n "$1" || return 0 # dummy
+		result="${commit_map#*|$1=}"
+		if test "$commit_map" != "$result"
+		then
+			echo "${result%%:*}"
+			return 0
+		fi
+
+		if contained_in_ever_green "$1"
+		then
+			echo "$1"
+			return 0
+		elif is_merge "$1"
+		then
+			# Try to find the merge commit by name
+			find_commit_by_oneline "$1" && return 0 ||
+			set -- "$(git rev-parse "$1"^)"
+		elif is_fixup "$1"
+		then
+			# try parent
+			set -- "$(git rev-parse "$1"^)"
+		else
+			# Fall back to 'onto'
+			echo 'onto'
+			return 0
+		fi
+	done
+}
+
 # This function rebases the new changes on top of the ever-green branch
 pick_new_changes_onto_ever_green () {
 	ever_green_tip="$(git rev-parse --verify HEAD)" ||
 	die "Could not determine the tip of the ever-green (checked-out) branch"
 
 	echo "reset $ever_green_tip"
-	make_script "$current_tip" -ki --autosquash --rebase-merges=rebase-cousins --onto "$ever_green_tip" "$previous_tip"
+	todo="$(make_script "$current_tip" -ki --autosquash --rebase-merges=no-rebase-cousins --onto "$ever_green_tip" "$previous_tip")" &&
+	to_map="$(echo "$todo" |
+		sed -n 's/^reset \([0-9a-f][0-9a-f]*\)\($\| .*\)/\1/p' |
+		sort | uniq)"
+	sed_args=
+	for commit in $to_map
+	do
+		mapped=$(map_base_commit $commit)
+		test -n "$mapped" ||
+		die "Could not map $(git show --oneline -s $commit) to anything in <ever-green>"
+		test -z "$mapped" ||
+		sed_args="$sed_args -e 's/^reset $commit/reset $mapped/'"
+	done
+
+	test -z "$sed_args" ||
+	todo="$(echo "$todo" |
+		eval sed "$sed_args")" ||
+	die "Could not edit todo via sed $sed_args"
+
+	echo "$todo"
 }
 
 replace_todo="$(git rev-parse --absolute-git-dir)/replace-todo"
