@@ -32,6 +32,7 @@ die () {
 	echo "$*" >&2
 	exit 1
 }
+THIS_SCRIPT="$(realpath "$0")"
 
 make_script () { # <tip-commit-to-rebase> <rebase-i-options>...
 	# Create throw-away worktree in order to generate todo list
@@ -131,6 +132,138 @@ nested-rebase)
 
 	test -s "$todo" ||
 	die "Aborted phase 2 of the ever-green rebase"
+
+	exit 0
+	;;
+self-test)
+	tmp_worktree=/tmp/ever-green.self-test
+	test ! -e "$tmp_worktree" || rm -rf "$tmp_worktree" || die "Could not remove $tmp_worktree"
+
+	git init "$tmp_worktree" &&
+	cd "$tmp_worktree" ||
+	die "Could not init $tmp_worktree"
+
+	git config user.name "Ever Green" &&
+	git config user.email "eve@rgre.en" ||
+	die "Could not configure committer"
+
+	# Create the following branch structure:
+	#
+	#             --------- C
+	#           /             \
+	# A - B - M - fixup D - E - N --- P - Q
+	#   \   /   \                   /   /
+	#     D       --------- fixup B - K
+	#
+	# Then add a commit F on top of A, rebase E on top of F:
+	#
+	# A - F - B' - M' - E'
+	#       \    /
+	#         D'
+	#
+	# This is our previous ever-green branch, and to make things realistic,
+	# we slip in a change into E' that was not there in E. This reflects
+	# scenarios where changes are necessary during the rebase to make things
+	# work again, e.g. when a function signature changes in F and E introduces
+	# a caller to said function.
+	#
+	# Now we want to use ever-green.sh to update the ever-green branch with
+	# respect to Q and G, so that it looks like this:
+	#
+	#                       C"
+	#                     /    \
+	# A - F - G - B" - M" - E" - N" - Q"
+	#           \    /    \         /
+	#             D"        K" ----
+	#
+	# where B" contains the fixup and E" is actually a rebased E' (instead
+	# of a rebased E that would not have that extra change).
+
+	test_commit () { # <mark> <parent(s)> <commit-message> [<file-name> [<contents>]]
+		printf '%s\n' \
+			'commit refs/heads/master' \
+			"mark :$1" \
+			"committer Ever Green <eve@rgre.en> $((1234567890+$1)) +0000" \
+			'data <<EOM' \
+			"$3" \
+			'EOM'
+		test -z "$2" || {
+			first=${2% *}
+			echo "from :$first"
+			for parent in ${2#$first}
+			do
+				echo "merge :$parent"
+			done
+		}
+		test "a$4" = "a-" ||
+		printf '%s\n' \
+			"M 100644 inline ${4:-$3}" \
+			'data <<EOD' \
+			"${5:-${4:-$3}}" \
+			'EOD'
+		printf '%s\n' \
+			"reset refs/tags/$(echo "$3" |
+				sed 's/[^a-zA-Z0-9][^a-zA-Z0-9]*/-/g')" \
+			"from :$1"
+	}
+
+	git fast-import <<-EOF || die "Could not import initial history"
+	$(test_commit 1 '' A)
+	$(test_commit 2 1 B)
+	$(test_commit 3 1 D)
+	$(test_commit 4 '2 3' M D)
+	$(test_commit 5 4 C)
+	$(test_commit 6 4 'fixup! D' D changed)
+	$(test_commit 7 6 E)
+	$(test_commit 8 '5 7' N E)
+	$(test_commit 9 4 'fixup! B' B fixed-up)
+	$(test_commit 10 '8 9' P B fixed-up)
+	$(test_commit 11 9 K)
+	$(test_commit 12 '10 11' Q K)
+	$(test_commit 20 1 F)
+	$(test_commit 21 20 G)
+	EOF
+
+	git checkout -b ever-green E &&
+	GIT_SEQUENCE_EDITOR=true git rebase --autosquash -ir F &&
+	echo "E1" >E &&
+	git commit --amend -m E1 E ||
+	die "Could not create previous ever-green"
+	git tag pre-rebase
+
+	GIT_SEQUENCE_EDITOR=true \
+	"$THIS_SCRIPT" --current-tip=Q --previous-tip=E --ever-green-base=F --onto=G ||
+	die "Could not update ever-green branch"
+
+	git log --graph --format=%s --boundary A..ever-green >actual &&
+	cat >expect <<-\EOF
+	* Q
+	|\
+	| * K
+	*  | N
+	|\  \
+	| * | E1
+	| |/
+	* | C
+	|/
+	* M
+	|\
+	| * D
+	* | B
+	|/
+	* G
+	* F
+	o A
+	EOF
+	git -P diff --no-index -w expect actual ||
+	die "Unexpected graph"
+
+	test changed = "$(git show ever-green:D)" ||
+	die "Lost amendment to D"
+	test fixed-up = "$(git show ever-green:B)" ||
+	die "Lost amendment to B"
+	test E1 = "$(git show ever-green:E)" ||
+	die "Lost amendment to E"
 
 	exit 0
 	;;
@@ -301,7 +434,6 @@ die "Could not generate todo list for $previous_tip..$current_tip"
 help="$(extract_todo_help "$replace_todo")" ||
 die "Could not extract todo help from $replace_todo"
 
-THIS_SCRIPT="$(realpath "$0")"
 test 0 = $(git rev-list --count "$ever_green_tip".."$onto") || {
 	cat >>"$replace_todo" <<-EOF
 
