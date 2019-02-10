@@ -93,6 +93,12 @@ replace-todo-script)
 	;;
 nested-rebase)
 	shift
+
+	case "$1" in
+	--merging=*) merging="${1#*=}"; shift;;
+	*) merging=;;
+	esac
+
 	todo="$(git rev-parse --git-path rebase-merge/git-rebase-todo)" &&
 	help="$(extract_todo_help "$todo")" &&
 	mv -f "$todo" "$todo.save" ||
@@ -106,6 +112,10 @@ nested-rebase)
 
 	echo "# Now let's rebase the ever-green branch onto the upstream branch" >"$todo" &&
 	echo "reset $onto" >>"$todo" &&
+	if test -n "$merging"
+	then
+		echo "exec git merge -s ours -m \"\$(cat \"\$GIT_DIR\"/merging-rebase-message)\" \"$merging\"" >>"$todo"
+	fi &&
 	make_script HEAD "$@" >>"$todo" ||
 	die "Could not retrieve new todo list"
 
@@ -301,34 +311,93 @@ Options:
 --onto=<commit>
 	Specify the tip of the upstream branch on which the ever-green branch
 	is based
+
+--merging-rebase
+	Perform a merging-rebase; The ever-green branch must already be a
+	merging rebase
 "
 
 ever_green_base=
 current_tip=
 previous_tip=
 onto=
+merging=
 while case "$1" in
 --ever-green-base=*) ever_green_base="${1#*=}";;
 --current=*|--current-tip=*) current_tip="${1#*=}";;
 --previous=*|--previous-tip=*) previous_tip="${1#*=}";;
 --onto=*) onto="${1#*=}";;
+--merging|--merging-rebase) merging=t;;
+--merging=*|--merging-rebase=*) merging=t; current_tip="${1#*=}";;
+--no-merging-rebase) merging=;;
 '') break;;
 *) die "Unhandled parameter: $1
 $usage";;
 esac; do shift; done
 
-test -n "$ever_green_base" || die "Need base commit of the ever-green branch"
 test -n "$current_tip" || die "Need current tip commit of the original branch"
-test -n "$previous_tip" || die "Need previous tip commit of the original branch"
 test -n "$onto" || die "Need onto"
 
-if test 0 = $(git rev-list --count "$previous_tip..$current_tip" -- )
+if test -z "$merging"
+then
+	test -n "$ever_green_base" || die "Need base commit of the ever-green branch"
+	test -n "$previous_tip" || die "Need previous tip commit of the original branch"
+
+	current_base=
+else
+	test -z "$ever_green_base" || die "--merging and --ever-green-base=<commit> are incompatible"
+	test -z "$previous_tip" || die "--merging and --previous-tip=<commit> are incompatible"
+
+	# automagically determine previous tip, ever-green base from merging-rebase's start commit
+	previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "..$current_tip")" ||
+	die "Failed to look for a new merging-rebase"
+
+	if test -n "$previous_tip"
+	then
+		# The original branch was merging-rebased in the meantime, so we ignore any existing ever-green state
+		current_base="$previous_tip"
+		git reset --hard "$current_base" ||
+		die "Cannot roll back to $current_base"
+
+		ever_green_base="$(git rev-parse --verify HEAD)" ||
+		die "Could not determine HEAD"
+	else
+		ever_green_base="$(git rev-list -1 --grep='^Start the merging-rebase' "$current_tip..")" ||
+		die "Failed to look for previous merging-rebase"
+
+		if test -z "$ever_green_base"
+		then
+			die "Ever-green branch was not merging-rebased"
+		else
+			previous_tip="$(git rev-parse --verify "$ever_green_base"^2)" ||
+			die "Could not determine previous tip from $ever_green_base"
+
+			current_base="$(git cat-file commit "$ever_green_base" |
+				sed -n 's/^This commit starts the rebase of \([^ ]*\) to .*/\1/p')"
+			test -n "$current_base" ||
+			die "Could not determine the base commit of the original branch thicket from $ever_green_base"
+		fi
+	fi
+	cat >"$(git rev-parse --git-dir)/merging-rebase-message" <<-EOF
+	Start the merging-rebase to $onto
+
+	This commit starts the rebase of $(git rev-parse --short "$current_base") to $(git rev-parse --short "$onto")
+	EOF
+fi
+
+
+current_has_new_commits=
+test 0 = $(git rev-list --count "$previous_tip..$current_tip" ^HEAD -- ) ||
+current_has_new_commits=t
+
+# Let's fall through if we have to create a merging-rebase
+if test -z "$merging" && test -z "$current_has_new_commits"
 then
 	exec git rebase -kir --autosquash --onto "$onto" "$ever_green_base"
 	die '`git rebase` failed to exec'
 fi
 
-not_in_ever_green="|$(git rev-list "HEAD..$current_tip" -- | tr '\n' '|')"
+not_in_ever_green="|$(git rev-list "${current_base:-HEAD}..$current_tip" -- | tr '\n' '|')"
 contained_in_ever_green () {
 	case "$not_in_ever_green" in
 	*"|$1"*) return 1;; # no
@@ -365,7 +434,7 @@ find_commit_by_oneline () {
 }
 
 # range-diff does not include merge commits
-commit_map="$(git range-diff -s "$onto..$current_tip" "$ever_green_base.." |
+commit_map="$(git range-diff -s "${current_base:-$onto}..$current_tip" "$ever_green_base.." |
 	  sed -n 's/^[^:]*: *\([^ ]*\) [!=][^:]*: *\([^ ]*\).*/|\1=\2/p')"
 map_base_commit () {
 	while true
@@ -428,17 +497,23 @@ pick_new_changes_onto_ever_green () {
 }
 
 replace_todo="$(git rev-parse --absolute-git-dir)/replace-todo"
-pick_new_changes_onto_ever_green >"$replace_todo" ||
-die "Could not generate todo list for $previous_tip..$current_tip"
+if test -z "$current_has_new_commits"
+then
+	: >"$replace_todo"
+	help=
+else
+	pick_new_changes_onto_ever_green >"$replace_todo" ||
+	die "Could not generate todo list for $previous_tip..$current_tip"
 
-help="$(extract_todo_help "$replace_todo")" ||
-die "Could not extract todo help from $replace_todo"
+	help="$(extract_todo_help "$replace_todo")" ||
+	die "Could not extract todo help from $replace_todo"
+fi
 
 test 0 = $(git rev-list --count "$ever_green_tip".."$onto") || {
 	cat >>"$replace_todo" <<-EOF
 
 	# Now perform the rebase onto upstream
-	exec "$THIS_SCRIPT" nested-rebase -kir --autosquash --onto "$onto" "$ever_green_base"
+	exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --onto "$onto" "$ever_green_base"
 	EOF
 }
 
