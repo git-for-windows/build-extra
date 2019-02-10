@@ -146,6 +146,7 @@ nested-rebase)
 	exit 0
 	;;
 self-test)
+	exec </dev/null
 	tmp_worktree=/tmp/ever-green.self-test
 	test ! -e "$tmp_worktree" || rm -rf "$tmp_worktree" || die "Could not remove $tmp_worktree"
 
@@ -241,7 +242,6 @@ self-test)
 	die "Could not create previous ever-green"
 	git tag pre-rebase
 
-	GIT_SEQUENCE_EDITOR=true \
 	"$THIS_SCRIPT" --current-tip=Q --previous-tip=E --ever-green-base=F --onto=G ||
 	die "Could not update ever-green branch"
 
@@ -529,6 +529,10 @@ EOF
 test -z "$help" ||
 echo "$help" >>"$replace_todo" ||
 die "Could not append rebase help text to $replace_todo"
+
+# In non-interactive mode, skip editor
+test -t 0 ||
+export GIT_SEQUENCE_EDITOR=true
 
 export ORIGINAL_GIT_SEQUENCE_EDITOR="$GIT_SEQUENCE_EDITOR"
 test -n "$ORIGINAL_GIT_SEQUENCE_EDITOR" || {
