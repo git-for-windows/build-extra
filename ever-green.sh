@@ -385,6 +385,9 @@ else
 	EOF
 fi
 
+# We do not expect fixup!/squash! commits in the ever-green branch
+test -z "$(git log "$ever_green_base.." | sed -n '/^ *$/{N;/\n    \(fixup\|squash\)!/p}')" ||
+die "Ever-green branches cannot have fixup!/squash! commits"
 
 current_has_new_commits=
 test 0 = $(git rev-list --count "$previous_tip..$current_tip" ^HEAD -- ) ||
@@ -516,6 +519,12 @@ test 0 = $(git rev-list --count "$ever_green_tip".."$onto") || {
 	exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --onto "$onto" "$ever_green_base"
 	EOF
 }
+
+cat >>"$replace_todo" <<EOF
+
+# error on fixup!/squash! commits in the ever-green branch
+exec test -z "\$(git log "$onto.." ${merging:+"^HEAD^{/^Start\\ the\\ merging-rebase}"} | sed -n '/^ *$/{N;/\n    \(fixup\|squash\)!/p}')" || { echo "Ever-green branches cannot contain fixup!/squash! commits" >&2; exit 1; }
+EOF
 
 test -z "$help" ||
 echo "$help" >>"$replace_todo" ||
