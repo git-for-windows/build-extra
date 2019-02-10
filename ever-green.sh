@@ -86,4 +86,10 @@ test -n "$current_tip" || die "Need current tip commit of the original branch"
 test -n "$previous_tip" || die "Need previous tip commit of the original branch"
 test -n "$onto" || die "Need onto"
 
+if test 0 = $(git rev-list --count "$previous_tip..$current_tip" -- )
+then
+	exec git rebase -kir --autosquash --onto "$onto" "$ever_green_base"
+	die '`git rebase` failed to exec'
+fi
+
 die "TODO"
