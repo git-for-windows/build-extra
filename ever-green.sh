@@ -315,6 +315,10 @@ Options:
 --merging-rebase
 	Perform a merging-rebase; The ever-green branch must already be a
 	merging rebase
+
+--initial
+	Start rebasing the ever-green branch, right after creating it from the
+	tip commit of the original branch
 "
 
 ever_green_base=
@@ -322,6 +326,7 @@ current_tip=
 previous_tip=
 onto=
 merging=
+initial=
 while case "$1" in
 --ever-green-base=*) ever_green_base="${1#*=}";;
 --current=*|--current-tip=*) current_tip="${1#*=}";;
@@ -330,13 +335,42 @@ while case "$1" in
 --merging|--merging-rebase) merging=t;;
 --merging=*|--merging-rebase=*) merging=t; current_tip="${1#*=}";;
 --no-merging-rebase) merging=;;
+--initial) initial=t;;
 '') break;;
 *) die "Unhandled parameter: $1
 $usage";;
 esac; do shift; done
 
-test -n "$current_tip" || die "Need current tip commit of the original branch"
 test -n "$onto" || die "Need onto"
+
+if test -n "$initial"
+then
+	test -z "$current_tip" || die "--initial and --current-tip=<commit> are incompatible"
+	current_tip="$(git rev-parse --verify HEAD)" ||
+	die "Could not parse HEAD"
+
+	if test -n "$merging" && test -z "$previous_tip"
+	then
+		previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "$current_tip")" ||
+		die "Failed to look for a new merging-rebase"
+	fi
+
+	test -n "$previous_tip" ||
+	previous_tip="$(git merge-base -a HEAD "$onto")" ||
+	die "Could not find merge base between HEAD and $onto"
+	case "$previous_tip" in
+	''|*' '*) die "Could not determine unique merge base between HEAD and $onto, please use --previous-tip=<commit> to provide one";;
+	esac
+
+	git reset --hard "$previous_tip" ||
+	die "Could not rewind to $previous_tip"
+
+	test -z "$ever_green_base" || die "--initial and --ever-green-base=<commit> are incompatible"
+	test -n "$merging" ||
+	ever_green_base="$previous_tip"
+fi
+
+test -n "$current_tip" || die "Need current tip commit of the original branch"
 
 if test -z "$merging"
 then
@@ -346,11 +380,18 @@ then
 	current_base=
 else
 	test -z "$ever_green_base" || die "--merging and --ever-green-base=<commit> are incompatible"
-	test -z "$previous_tip" || die "--merging and --previous-tip=<commit> are incompatible"
+
+	if test -z "$initial" && test -n "$previous_tip"
+	then
+		die "--merging and --previous-tip=<commit> are incompatible"
+	fi
 
 	# automagically determine previous tip, ever-green base from merging-rebase's start commit
-	previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "..$current_tip")" ||
-	die "Failed to look for a new merging-rebase"
+	if test -z "$previous_tip"
+	then
+		previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "..$current_tip")" ||
+		die "Failed to look for a new merging-rebase"
+	fi
 
 	if test -n "$previous_tip"
 	then
