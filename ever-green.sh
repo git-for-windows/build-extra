@@ -290,6 +290,65 @@ self-test)
 	test E1 = "$(git show ever-green:E)" ||
 	die "Lost amendment to E"
 
+	# Now, let's do the same for merging-rebases
+	git checkout -b merging-ever-green E &&
+	"$THIS_SCRIPT" --initial --merging --onto=F &&
+	echo "E1" >E &&
+	git commit --amend -m E1 E ||
+	die "Could not create previous ever-green"
+	git tag merging-pre-rebase
+
+	git log --graph --format=%s --boundary A..merging-ever-green ^E -- >actual &&
+	cat >expect <<-\EOF
+	* E1
+	* M
+	|\
+	| * D
+	* | B
+	|/
+	*   Start the merging-rebase to F
+	|\
+	* | F
+	o | A
+	 /
+	o E
+	EOF
+	git -P diff --no-index -w expect actual ||
+	die "Unexpected graph"
+
+	"$THIS_SCRIPT" --current-tip=Q --merging --onto=G ||
+	die "Could not update ever-green branch"
+
+	git log --graph --format=%s --boundary A..merging-ever-green ^Q -- >actual &&
+	cat >expect <<-\EOF
+	* Q
+	|\
+	| * K
+	*  | N
+	|\  \
+	| * | E1
+	| |/
+	* | C
+	|/
+	* M
+	|\
+	| * D
+	* | B
+	|/
+	*   Start the merging-rebase to G
+	|\
+	* | G
+	* | F
+	o | A
+	 /
+	o Q
+	EOF
+	git -P diff --no-index -w expect actual ||
+	die "Unexpected graph"
+
+	git -P diff --exit-code ever-green -- ||
+	die "Incorrect tree"
+
 	exit 0
 	;;
 esac
