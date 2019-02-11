@@ -552,8 +552,13 @@ find_commit_by_oneline () {
 }
 
 # range-diff does not include merge commits
-commit_map="$(git range-diff -s "${current_base:-$onto}..$current_tip" "$ever_green_base.." |
-	  sed -n 's/^[^:]*: *\([^ ]*\) [!=][^:]*: *\([^ ]*\).*/|\1=\2/p')"
+if test 0 = "$(git rev-list --count "$ever_green_base..")"
+then
+	commit_map=
+else
+	commit_map="$(git range-diff -s "${current_base:-$onto}..$current_tip" "$ever_green_base.." |
+		  sed -n 's/^[^:]*: *\([^ ]*\) [!=][^:]*: *\([^ ]*\).*/|\1=\2/p')"
+fi
 map_base_commit () {
 	while true
 	do
