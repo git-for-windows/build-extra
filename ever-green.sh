@@ -235,12 +235,27 @@ self-test)
 	$(test_commit 21 20 G)
 	EOF
 
+	# Start ever-green branch
 	git checkout -b ever-green E &&
-	GIT_SEQUENCE_EDITOR=true git rebase --autosquash -ir F &&
+	"$THIS_SCRIPT" --initial --onto=F &&
 	echo "E1" >E &&
 	git commit --amend -m E1 E ||
 	die "Could not create previous ever-green"
 	git tag pre-rebase
+
+	git log --graph --format=%s --boundary A..ever-green >actual &&
+	cat >expect <<-\EOF
+	* E1
+	* M
+	|\
+	| * D
+	* | B
+	|/
+	* F
+	o A
+	EOF
+	git -P diff --no-index -w expect actual ||
+	die "Unexpected graph"
 
 	"$THIS_SCRIPT" --current-tip=Q --previous-tip=E --ever-green-base=F --onto=G ||
 	die "Could not update ever-green branch"
