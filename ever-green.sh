@@ -627,13 +627,23 @@ else
 	die "Could not extract todo help from $replace_todo"
 fi
 
-test 0 = $(git rev-list --count "$ever_green_tip".."$onto") || {
+if test 0 = $(git rev-list --count "$ever_green_tip".."$onto")
+then
+	test -n "$current_has_new_commmits" || {
+		test -z "$initial" ||
+		git reset --hard "$current_tip" ||
+		die "Could not reset to $current_tip"
+
+		echo "Nothing needs to be done" >&2
+		exit 0
+	}
+else
 	cat >>"$replace_todo" <<-EOF
 
 	# Now perform the rebase onto upstream
 	exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --onto "$onto" "$ever_green_base"
 	EOF
-}
+fi
 
 cat >>"$replace_todo" <<EOF
 
