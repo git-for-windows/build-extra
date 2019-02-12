@@ -2912,7 +2912,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 
 		url=https://curl.haxx.se/changes.html &&
 		url="$url$(echo "#$version" | tr . _)" &&
-		relnotes_feature='Comes with [cURL v'$version']('"$url"').'
+		v="$version${force_pkgrel:+ ($force_pkgrel)}" &&
+		relnotes_feature='Comes with [cURL v'$v']('"$url"').'
 		;;
 	mingw-w64-git)
 		finalize $delete_existing_tag $release_date $use_branch \
