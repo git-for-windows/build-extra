@@ -82,6 +82,20 @@ extract_todo_help () {
 	echo "$help"
 }
 
+continue_rebase () {
+	while true
+	do
+		git diff-files --quiet ||
+		die "There are unstaged changes; Cannot continue"
+
+		git diff-index --quiet HEAD ||
+		GIT_EDITOR=true git commit ||
+		die "Could not commit staged changes"
+
+		git rebase --continue && break
+	done
+}
+
 case "$1" in
 replace-todo-script)
 	shift
@@ -143,6 +157,10 @@ nested-rebase)
 	test -s "$todo" ||
 	die "Aborted phase 2 of the ever-green rebase"
 
+	exit 0
+	;;
+continue-rebase)
+	continue_rebase
 	exit 0
 	;;
 self-test)
@@ -673,5 +691,5 @@ test -n "$ORIGINAL_GIT_SEQUENCE_EDITOR" || {
 	die "Could not determine editor"
 }
 export GIT_SEQUENCE_EDITOR="\"$THIS_SCRIPT\" replace-todo-script"
-exec git rebase -kir HEAD ||
-die "Could not start the 2-phase rebase"
+git rebase -kir HEAD ||
+continue_rebase
