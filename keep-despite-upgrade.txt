@@ -1,8 +1,8 @@
 mingw32/bin/libeay32.dll
-mingw32/bin/libidn2-0.dll
+mingw32/bin/libidn2-4.dll
 mingw32/bin/ssleay32.dll
 mingw64/bin/libeay32.dll
-mingw64/bin/libidn2-0.dll
+mingw64/bin/libidn2-4.dll
 mingw64/bin/ssleay32.dll
 usr/bin/msys-crypto-1.0.0.dll
 usr/bin/msys-ssl-1.0.0.dll
