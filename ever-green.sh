@@ -83,16 +83,33 @@ extract_todo_help () {
 }
 
 continue_rebase () {
+	test -n "$ORIGINAL_GIT_EDITOR" ||
+	ORIGINAL_GIT_EDITOR="$(git var GIT_EDITOR)"
+	test -n "$ORIGINAL_GIT_EDITOR" ||
+	die "Could not determine editor"
+	export ORIGINAL_GIT_EDITOR
+
+	export GIT_EDITOR="\"$THIS_SCRIPT\" fixup-quietly" ||
+	die "Could not override editor"
+
 	while true
 	do
+		msgnum="$(cat "$(git rev-parse --git-dir)/rebase-merge/msgnum")" ||
+		die "Could not determine msgnum"
+
+		git rev-parse --verify HEAD >"$(git rev-parse --git-dir)/cur-head" ||
+		die "Could not record current HEAD"
+
 		git diff-files --quiet ||
 		die "There are unstaged changes; Cannot continue"
 
-		git diff-index --quiet HEAD ||
-		GIT_EDITOR=true git commit ||
-		die "Could not commit staged changes"
-
 		git rebase --continue && break
+
+		test "$msgnum" != "$(cat "$(git rev-parse --git-dir)/rebase-merge/msgnum")" ||
+		exit 1
+
+		test ! -f "$(git rev-parse --git-dir)/rebase-merge/stopped-sha" ||
+		exit 1
 	done
 }
 
@@ -124,7 +141,7 @@ nested-rebase)
 	onto="$(git rev-parse "${onto%% *}")" ||
 	die "Invalid onto: '$*'"
 
-	echo "# Now let's rebase the ever-green branch onto the upstream branch" >"$todo" &&
+	echo "# Now let's rebase the ever-green branch onto $onto" >"$todo" &&
 	echo "reset $onto" >>"$todo" &&
 	if test -n "$merging"
 	then
@@ -156,6 +173,16 @@ nested-rebase)
 
 	test -s "$todo" ||
 	die "Aborted phase 2 of the ever-green rebase"
+
+	exit 0
+	;;
+fixup-quietly)
+	test "$(git rev-parse HEAD)" != "$(cat "$(git rev-parse --git-dir)/cur-head")" ||
+	exit 0
+
+	shift
+	eval "$ORIGINAL_GIT_EDITOR" "$1" ||
+	die "Could not execute $ORIGINAL_GIT_EDITOR!"
 
 	exit 0
 	;;
@@ -640,32 +667,45 @@ pick_new_changes_onto_ever_green () {
 replace_todo="$(git rev-parse --absolute-git-dir)/replace-todo"
 if test -z "$current_has_new_commits"
 then
-	: >"$replace_todo"
-	help=
-else
-	pick_new_changes_onto_ever_green >"$replace_todo" ||
-	die "Could not generate todo list for $previous_tip..$current_tip"
-
-	help="$(extract_todo_help "$replace_todo")" ||
-	die "Could not extract todo help from $replace_todo"
-fi
-
-if test 0 = $(git rev-list --count "$ever_green_tip".."$onto")
-then
-	test -n "$current_has_new_commmits" || {
+	if test 0 = $(git rev-list --count "$ever_green_tip".."$onto")
+	then
 		test -z "$initial" ||
 		git reset --hard "$current_tip" ||
 		die "Could not reset to $current_tip"
 
 		echo "Nothing needs to be done" >&2
 		exit 0
-	}
-else
-	cat >>"$replace_todo" <<-EOF
+	fi
 
-	# Now perform the rebase onto upstream
-	exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --onto "$onto" "$ever_green_base"
-	EOF
+	# No new changes: let's rebase onto upstream right away!
+	echo "# Rebase the ever-green branch onto $onto" >"$replace_todo" &&
+	echo "reset $onto" >>"$replace_todo" &&
+	if test -n "$merging"
+	then
+		echo "exec git merge -s ours -m \"\$(cat \"\$GIT_DIR\"/merging-rebase-message)\" \"$current_tip\"" >>"$replace_todo"
+	fi &&
+	make_script HEAD -ir --autosquash --onto "$onto" "$ever_green_base" >>"$replace_todo" ||
+	die "Could not generate new todo list"
+
+	help="$(extract_todo_help "$replace_todo")" ||
+	die "Could not extract help text from $replace_todo"
+else
+	pick_new_changes_onto_ever_green >"$replace_todo" ||
+	die "Could not generate todo list for $previous_tip..$current_tip"
+
+	help="$(extract_todo_help "$replace_todo")" ||
+	die "Could not extract todo help from $replace_todo"
+
+	if test 0 -lt $(git rev-list --count "$ever_green_tip".."$onto")
+	then
+		# The second rebase's todo list can only be generated after the first one is done
+
+		cat >>"$replace_todo" <<-EOF
+
+		# Now perform the rebase onto $onto
+		exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --onto "$onto" "$ever_green_base"
+		EOF
+	fi
 fi
 
 cat >>"$replace_todo" <<EOF
