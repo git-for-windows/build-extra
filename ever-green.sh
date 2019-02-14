@@ -85,6 +85,9 @@ extract_todo_help () {
 continue_rebase () {
 	while true
 	do
+		msgnum="$(cat "$(git rev-parse --git-dir)/rebase-merge/msgnum")" ||
+		die "Could not determine msgnum"
+
 		git diff-files --quiet ||
 		die "There are unstaged changes; Cannot continue"
 
@@ -93,6 +96,12 @@ continue_rebase () {
 		die "Could not commit staged changes"
 
 		git rebase --continue && break
+
+		test "$msgnum" != "$(cat "$(git rev-parse --git-dir)/rebase-merge/msgnum")" ||
+		exit 1
+
+		test ! -f "$(git rev-parse --git-dir)/rebase-merge/stopped-sha" ||
+		exit 1
 	done
 }
 
