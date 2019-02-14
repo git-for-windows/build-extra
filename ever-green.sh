@@ -141,7 +141,7 @@ nested-rebase)
 	onto="$(git rev-parse "${onto%% *}")" ||
 	die "Invalid onto: '$*'"
 
-	echo "# Now let's rebase the ever-green branch onto the upstream branch" >"$todo" &&
+	echo "# Now let's rebase the ever-green branch onto $onto" >"$todo" &&
 	echo "reset $onto" >>"$todo" &&
 	if test -n "$merging"
 	then
@@ -690,7 +690,7 @@ then
 else
 	cat >>"$replace_todo" <<-EOF
 
-	# Now perform the rebase onto upstream
+	# Now perform the rebase onto $onto
 	exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --onto "$onto" "$ever_green_base"
 	EOF
 fi
