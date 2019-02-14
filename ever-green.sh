@@ -83,17 +83,25 @@ extract_todo_help () {
 }
 
 continue_rebase () {
+	test -n "$ORIGINAL_GIT_EDITOR" ||
+	ORIGINAL_GIT_EDITOR="$(git var GIT_EDITOR)"
+	test -n "$ORIGINAL_GIT_EDITOR" ||
+	die "Could not determine editor"
+	export ORIGINAL_GIT_EDITOR
+
+	export GIT_EDITOR="\"$THIS_SCRIPT\" fixup-quietly" ||
+	die "Could not override editor"
+
 	while true
 	do
 		msgnum="$(cat "$(git rev-parse --git-dir)/rebase-merge/msgnum")" ||
 		die "Could not determine msgnum"
 
+		git rev-parse --verify HEAD >"$(git rev-parse --git-dir)/cur-head" ||
+		die "Could not record current HEAD"
+
 		git diff-files --quiet ||
 		die "There are unstaged changes; Cannot continue"
-
-		git diff-index --quiet HEAD ||
-		GIT_EDITOR=true git commit ||
-		die "Could not commit staged changes"
 
 		git rebase --continue && break
 
@@ -165,6 +173,16 @@ nested-rebase)
 
 	test -s "$todo" ||
 	die "Aborted phase 2 of the ever-green rebase"
+
+	exit 0
+	;;
+fixup-quietly)
+	test "$(git rev-parse HEAD)" != "$(cat "$(git rev-parse --git-dir)/cur-head")" ||
+	exit 0
+
+	shift
+	eval "$ORIGINAL_GIT_EDITOR" "$1" ||
+	die "Could not execute $ORIGINAL_GIT_EDITOR!"
 
 	exit 0
 	;;
