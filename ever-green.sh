@@ -667,32 +667,45 @@ pick_new_changes_onto_ever_green () {
 replace_todo="$(git rev-parse --absolute-git-dir)/replace-todo"
 if test -z "$current_has_new_commits"
 then
-	: >"$replace_todo"
-	help=
-else
-	pick_new_changes_onto_ever_green >"$replace_todo" ||
-	die "Could not generate todo list for $previous_tip..$current_tip"
-
-	help="$(extract_todo_help "$replace_todo")" ||
-	die "Could not extract todo help from $replace_todo"
-fi
-
-if test 0 = $(git rev-list --count "$ever_green_tip".."$onto")
-then
-	test -n "$current_has_new_commmits" || {
+	if test 0 = $(git rev-list --count "$ever_green_tip".."$onto")
+	then
 		test -z "$initial" ||
 		git reset --hard "$current_tip" ||
 		die "Could not reset to $current_tip"
 
 		echo "Nothing needs to be done" >&2
 		exit 0
-	}
-else
-	cat >>"$replace_todo" <<-EOF
+	fi
 
-	# Now perform the rebase onto $onto
-	exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --onto "$onto" "$ever_green_base"
-	EOF
+	# No new changes: let's rebase onto upstream right away!
+	echo "# Rebase the ever-green branch onto $onto" >"$replace_todo" &&
+	echo "reset $onto" >>"$replace_todo" &&
+	if test -n "$merging"
+	then
+		echo "exec git merge -s ours -m \"\$(cat \"\$GIT_DIR\"/merging-rebase-message)\" \"$current_tip\"" >>"$replace_todo"
+	fi &&
+	make_script HEAD -ir --autosquash --onto "$onto" "$ever_green_base" >>"$replace_todo" ||
+	die "Could not generate new todo list"
+
+	help="$(extract_todo_help "$replace_todo")" ||
+	die "Could not extract help text from $replace_todo"
+else
+	pick_new_changes_onto_ever_green >"$replace_todo" ||
+	die "Could not generate todo list for $previous_tip..$current_tip"
+
+	help="$(extract_todo_help "$replace_todo")" ||
+	die "Could not extract todo help from $replace_todo"
+
+	if test 0 -lt $(git rev-list --count "$ever_green_tip".."$onto")
+	then
+		# The second rebase's todo list can only be generated after the first one is done
+
+		cat >>"$replace_todo" <<-EOF
+
+		# Now perform the rebase onto $onto
+		exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --onto "$onto" "$ever_green_base"
+		EOF
+	fi
 fi
 
 cat >>"$replace_todo" <<EOF
