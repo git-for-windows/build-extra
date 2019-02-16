@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * The custom editor setting in the installer [has been improved substantially](https://github.com/git-for-windows/build-extra/pull/221).
 * Comes with [Git Credential Manager v1.18.4.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.4.0).
 * Comes with [cURL v7.64.0](https://curl.haxx.se/changes.html#7_64_0).
+* Comes with [Git LFS v2.7.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.7.0).
 
 ### Bug Fixes
 
