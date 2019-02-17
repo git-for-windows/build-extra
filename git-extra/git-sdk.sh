@@ -117,7 +117,14 @@ sdk () {
 		;;
 	init)
 		sdk init-lazy "$2" &&
-		git -C "$src_cdup_dir" pull origin master &&
+		if test refs/heads/master = \
+				"$(git -C "$src_cdup_dir" symbolic-ref HEAD)" &&
+			{ git -C "$src_cdup_dir" diff-files --quiet &&
+			  git -C "$src_cdup_dir" diff-index --quiet HEAD ||
+			  test ! -s "$src_cdup_dir"/.git/index; }
+		then
+			git -C "$src_cdup_dir" pull origin master
+		fi &&
 		if test git = "$2" && test ! -f "$src_dir/config.mak"
 		then
 			cat >"$src_dir/config.mak" <<-\EOF
