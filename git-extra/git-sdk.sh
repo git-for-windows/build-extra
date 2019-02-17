@@ -124,6 +124,34 @@ sdk () {
 		sdk init "$2" &&
 		cd "$src_dir" ||
 		sdk die "Could not change directory to '$2'"
+
+		case "$(uname -m)" in
+		i686)
+			MSYSTEM=MINGW32
+			first_path=/mingw32/bin
+			;;
+		x86_64)
+			MSYSTEM=MINGW64
+			first_path=/mingw64/bin
+			;;
+		*)
+			sdk die "Could not determine bitness"
+			return 1
+			;;
+		esac
+
+		second_path=/usr/bin
+		case "$PWD" in
+		*/MSYS2-packages/*)
+			MSYSTEM=MSYS
+			second_path=$first_path
+			first_path=/usr/bin:/opt/bin
+			;;
+		esac
+
+		PATH="$first_path:$second_path:$(echo "$PATH" |
+			sed -e "s|:\($first_path\|$second_path\)/\?:|:|g")"
+		return $?
 		;;
 	init)
 		sdk init-lazy "$2" &&
