@@ -36,15 +36,23 @@ sdk () {
 		    are the same as for the 'cd' command.
 
 		build <project>: builds one of the following: git, git-and-installer.
+
+		reload: reload the 'sdk' function.
 		EOF
 		;;
 	welcome)
+		test -z "$GIT_SDK_WELCOME_SHOWN" || {
+			echo 'Reloaded the `sdk` function' >&2
+			return 0
+		}
 		cat >&2 <<-EOF
 		Welcome to the Git for Windows SDK!
 
 		The common tasks are automated via the \`sdk\` function;
 		See \`sdk help\` for details.
 		EOF
+		GIT_SDK_WELCOME_SHOWN=t
+		return 0
 		;;
 	create-desktop-icon)
 		force=t &&
@@ -152,12 +160,17 @@ EOF
 			;;
 		esac
 		;;
+	reload)
+		. "$GIT_SDK_SH_PATH"
+		return $?
+		;;
 	*)
 		printf "Usage: sdk <command> [<argument>...]\n\n" >&2 &&
 		sdk help
 		;;
 	esac
 }
+GIT_SDK_SH_PATH="$(realpath "$BASH_SOURCE")"
 
 case $- in
 *i*)
