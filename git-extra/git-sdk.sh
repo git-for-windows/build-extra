@@ -84,7 +84,8 @@ sdk () {
 		echo "build cd create-desktop-icon init"
 		;;
 	valid_projects)
-		echo "build-extra git git-extra MINGW-packages MSYS2-packages"
+		printf "%s " build-extra git git-extra MINGW-packages \
+			MSYS2-packages msys2-runtime
 		;;
 	# here start the commands
 	init-lazy)
@@ -103,6 +104,15 @@ sdk () {
 		git-extra)
 			sdk init-lazy build-extra &&
 			src_dir="$src_dir/$2" ||
+			return 1
+			;;
+		msys2-runtime)
+			sdk init MSYS2-packages &&
+			(cd "$src_dir/$2" &&
+			 test -d src/msys2-runtime ||
+			 makepkg --nobuild --syncdeps --noconfirm) &&
+			src_dir="$src_dir/msys2-runtime/src/msys2-runtime" &&
+			src_cdup_dir="$src_dir" ||
 			return 1
 			;;
 		*)
@@ -135,6 +145,19 @@ sdk () {
 			BASIC_LDFLAGS := $(filter-out $(ASLR_OPTION),$(BASIC_LDFLAGS))
 			endif
 			EOF
+		elif test msys2-runtime = "$2"
+		then
+			remotes="$(git -C "$src_cdup_dir"  remote -v)"
+			case "$remotes" in *"cygwin	"*) ;;
+			*) git -C "$src_cdup_dir" remote add -f cygwin \
+				https://github.com/Cygwin/cygwin;; esac
+			case "$remotes" in *"msys2	"*) ;;
+			*) git -C "$src_cdup_dir" remote add -f msys2 \
+				https://github.com/Alexpux/Cygwin;; esac
+			case "$remotes" in *"git-for-windows	"*) ;;
+			*) git -C "$src_cdup_dir" remote add -f \
+				git-for-windows \
+				https://github.com/git-for-windows/$2;; esac
 		fi
 		;;
 	build)
