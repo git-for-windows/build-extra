@@ -36,15 +36,23 @@ sdk () {
 		    are the same as for the 'cd' command.
 
 		build <project>: builds one of the following: git, git-and-installer.
+
+		reload: reload the 'sdk' function.
 		EOF
 		;;
 	welcome)
+		test -z "$GIT_SDK_WELCOME_SHOWN" || {
+			echo 'Reloaded the `sdk` function' >&2
+			return 0
+		}
 		cat >&2 <<-EOF
 		Welcome to the Git for Windows SDK!
 
 		The common tasks are automated via the \`sdk\` function;
 		See \`sdk help\` for details.
 		EOF
+		GIT_SDK_WELCOME_SHOWN=t
+		return 0
 		;;
 	create-desktop-icon)
 		force=t &&
@@ -76,7 +84,8 @@ sdk () {
 		echo "build cd create-desktop-icon init"
 		;;
 	valid_projects)
-		echo "build-extra git git-extra MINGW-packages MSYS2-packages"
+		printf "%s " build-extra git git-extra MINGW-packages \
+			MSYS2-packages msys2-runtime
 		;;
 	# here start the commands
 	init-lazy)
@@ -97,6 +106,15 @@ sdk () {
 			src_dir="$src_dir/$2" ||
 			return 1
 			;;
+		msys2-runtime)
+			sdk init MSYS2-packages &&
+			(cd "$src_dir/$2" &&
+			 test -d src/msys2-runtime ||
+			 makepkg --nobuild --syncdeps --noconfirm) &&
+			src_dir="$src_dir/msys2-runtime/src/msys2-runtime" &&
+			src_cdup_dir="$src_dir" ||
+			return 1
+			;;
 		*)
 			sdk die "Unhandled repository: $2" >&2
 			;;
@@ -106,10 +124,45 @@ sdk () {
 		sdk init "$2" &&
 		cd "$src_dir" ||
 		sdk die "Could not change directory to '$2'"
+
+		case "$(uname -m)" in
+		i686)
+			MSYSTEM=MINGW32
+			first_path=/mingw32/bin
+			;;
+		x86_64)
+			MSYSTEM=MINGW64
+			first_path=/mingw64/bin
+			;;
+		*)
+			sdk die "Could not determine bitness"
+			return 1
+			;;
+		esac
+
+		second_path=/usr/bin
+		case "$PWD" in
+		*/MSYS2-packages/*)
+			MSYSTEM=MSYS
+			second_path=$first_path
+			first_path=/usr/bin:/opt/bin
+			;;
+		esac
+
+		PATH="$first_path:$second_path:$(echo "$PATH" |
+			sed -e "s|:\($first_path\|$second_path\)/\?:|:|g")"
+		return $?
 		;;
 	init)
 		sdk init-lazy "$2" &&
-		git -C "$src_cdup_dir" pull origin master &&
+		if test refs/heads/master = \
+				"$(git -C "$src_cdup_dir" symbolic-ref HEAD)" &&
+			{ git -C "$src_cdup_dir" diff-files --quiet &&
+			  git -C "$src_cdup_dir" diff-index --quiet HEAD ||
+			  test ! -s "$src_cdup_dir"/.git/index; }
+		then
+			git -C "$src_cdup_dir" pull origin master
+		fi &&
 		if test git = "$2" && test ! -f "$src_dir/config.mak"
 		then
 			cat >"$src_dir/config.mak" <<-\EOF
@@ -120,6 +173,19 @@ sdk () {
 			BASIC_LDFLAGS := $(filter-out $(ASLR_OPTION),$(BASIC_LDFLAGS))
 			endif
 			EOF
+		elif test msys2-runtime = "$2"
+		then
+			remotes="$(git -C "$src_cdup_dir"  remote -v)"
+			case "$remotes" in *"cygwin	"*) ;;
+			*) git -C "$src_cdup_dir" remote add -f cygwin \
+				https://github.com/Cygwin/cygwin;; esac
+			case "$remotes" in *"msys2	"*) ;;
+			*) git -C "$src_cdup_dir" remote add -f msys2 \
+				https://github.com/Alexpux/Cygwin;; esac
+			case "$remotes" in *"git-for-windows	"*) ;;
+			*) git -C "$src_cdup_dir" remote add -f \
+				git-for-windows \
+				https://github.com/git-for-windows/$2;; esac
 		fi
 		;;
 	build)
@@ -140,6 +206,15 @@ sdk () {
 			"$src_dir"/installer/release.sh "${3:-0-test}"
 			;;
 		*)
+			if test -f PKGBUILD
+			then
+				case "$MSYSTEM" in
+				MSYS) makepkg --syncdeps --noconfirm;;
+				MINGW*) makepkg-mingw --syncdeps --noconfirm;;
+				esac
+				return #?
+			fi
+
 			cat >&2 <<EOF
 sdk build <project>
 
@@ -152,12 +227,17 @@ EOF
 			;;
 		esac
 		;;
+	reload)
+		. "$GIT_SDK_SH_PATH"
+		return $?
+		;;
 	*)
 		printf "Usage: sdk <command> [<argument>...]\n\n" >&2 &&
 		sdk help
 		;;
 	esac
 }
+GIT_SDK_SH_PATH="$(realpath "$BASH_SOURCE")"
 
 case $- in
 *i*)
