@@ -361,7 +361,7 @@ const
 #endif
 
 var
-    AppDir:String;
+    AppDir,UninstallAppPath,UninstallString:String;
 
     // The options chosen at install time, to be written to /etc/install-options.txt
     ChosenOptions:String;
@@ -1348,6 +1348,8 @@ begin
     end;
 end;
 
+procedure QueryUninstallValues; forward;
+
 procedure InitializeWizard;
 var
     PrevPageID,TabOrder,TopOfLabels,Top,Left:Integer;
@@ -1355,6 +1357,7 @@ var
     BtnPlink:TButton;
     Data:String;
 begin
+    QueryUninstallValues();
 
     ChosenOptions:='';
 
@@ -1980,10 +1983,10 @@ begin
     end;
 end;
 
-procedure CleanupWhenUpgrading;
+procedure QueryUninstallValues;
 var
-    Domain,ErrorCode:Integer;
-    Key,Path,ProgramData,UninstallString:String;
+    Domain:Integer;
+    Key,Path:String;
 begin
     Key:='Microsoft\Windows\CurrentVersion\Uninstall\Git_is1';
     if RegKeyExists(HKEY_LOCAL_MACHINE,'Software\Wow6432Node\'+Key) then begin
@@ -2001,20 +2004,38 @@ begin
     end else
         Domain:=-1;
     if Domain<>-1 then begin
-        if RegQueryStringValue(Domain,Key,'Inno Setup: App Path',Path) then begin
-            ProgramData:=ExpandConstant('{commonappdata}');
-            if FileExists(Path+'\etc\gitconfig') and not FileExists(ProgramData+'\Git\config') then begin
-                if not ForceDirectories(ProgramData+'\Git') then
-                    LogError('Could not initialize Windows-wide Git config.')
-                else if not FileCopy(Path+'\etc\gitconfig',ProgramData+'\Git\config',False) then
-                    LogError('Could not copy old Git config to Windows-wide location.');
-            end;
+        if not RegQueryStringValue(Domain,Key,'Inno Setup: App Path',UninstallAppPath) then
+            UninstallAppPath:='';
+        if not RegQueryStringValue(Domain,Key,'UninstallString',UninstallString) then
+            UninstallString:='';
+    end else begin
+        UninstallAppPath:='';
+        UninstallString:='';
+    end;
+end;
+
+procedure CleanupWhenUpgrading;
+var
+    ErrorCode:Integer;
+    ProgramData:String;
+begin
+    if UninstallAppPath<>'' then begin
+        ProgramData:=ExpandConstant('{commonappdata}');
+        if FileExists(UninstallAppPath+'\etc\gitconfig') and not FileExists(ProgramData+'\Git\config') then begin
+            if not ForceDirectories(ProgramData+'\Git') then
+                LogError('Could not initialize Windows-wide Git config.')
+            else if not FileCopy(UninstallAppPath+'\etc\gitconfig',ProgramData+'\Git\config',False) then
+                LogError('Could not copy old Git config to Windows-wide location.');
         end;
 
-        if RegQueryStringValue(Domain,Key,'UninstallString',UninstallString) then
-            // Using ShellExec() here, in case privilege elevation is required
-            if not ShellExec('',UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
-                LogError('Could not uninstall previous version. Trying to continue anyway.');
+        if FileExists(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig') then begin
+        end;
+    end;
+
+    if UninstallString<>'' then begin
+        // Using ShellExec() here, in case privilege elevation is required
+        if not ShellExec('',UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
+            LogError('Could not uninstall previous version. Trying to continue anyway.');
     end;
 end;
 
