@@ -2238,10 +2238,6 @@ begin
     if FileExists(ProgramData+'\Git\config') then begin
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config pack.packsizelimit)\" && if test 2g = \"$value\"; then git config -f config --unset pack.packsizelimit; fi"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to remove packsize limit from ProgramData config');
-#if BITNESS=='32'
-        if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system pack.packsizelimit 2g',AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-            LogError('Unable to limit packsize to 2GB');
-#endif
         Cmd:=AppDir+'/';
         StringChangeEx(Cmd,'\','/',True);
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config http.sslcainfo)\" && case \"$value\" in \"'+Cmd+'\"/*|\"C:/Program Files/Git/\"*|\"c:/Program Files/Git/\"*) git config -f config --unset http.sslcainfo;; esac"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
@@ -2463,8 +2459,6 @@ begin
     }
 
     if not IsComponentSelected('gitlfs') then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --remove-section filter.lfs','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not disable Git LFS in the gitconfig.');
         if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') then
             LogError('Line {#__LINE__}: Unable to delete "git-lfs.exe".');
     end;

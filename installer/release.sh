@@ -150,28 +150,24 @@ esac
 GITCONFIG_PATH="$(echo "$LIST" | grep "^mingw$BITNESS/etc/gitconfig\$")"
 printf '' >programdata-config.template
 test -z "$GITCONFIG_PATH" || {
-	cp "/$GITCONFIG_PATH" gitconfig.system &&
 	cp "/$GITCONFIG_PATH" programdata-config.template &&
-	keys="$(git config -f gitconfig.system -l --name-only)" &&
+	keys="$(git config -f programdata-config.template -l --name-only)" &&
+	gitconfig="$LF[Code]${LF}function GitSystemConfigSet(Key,Value:String):Boolean; forward;$LF" &&
+	gitconfig="$gitconfig${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}" &&
 	for key in $keys
 	do
 		case "$key" in
-		pack.packsizelimit)
-			# remove from both, will be configured by installer
-			git config -f programdata-config.template \
-				--unset "$key" &&
-			git config -f gitconfig.system --unset "$key" ||
-			break
-			;;
-		diff.astextplain.*|filter.lfs.*|http.sslcainfo)
-			# keep in the system-wide config
-			git config -f programdata-config.template \
-				--unset "$key" ||
-			break
-			;;
-		*)
-			# move to the ProgramData template
-			git config -f gitconfig.system --unset "$key" ||
+		pack.packsizelimit|diff.astextplain.*|filter.lfs.*|http.sslcainfo)
+			# set in the system-wide config
+			value="$(git config -f programdata-config.template "$key")" &&
+			case "$key$value" in *"'"*) die "Cannot handle $key=$value because of the single quote";; esac &&
+			git config -f programdata-config.template --unset "$key" &&
+			case "$key" in
+			filter.lfs.*) extra=" IsComponentSelected('gitlfs') And";;
+			pack.packsizelimit) test $BITNESS = 32 || continue; value=2g;;
+			*) extra=;;
+			esac &&
+			gitconfig="$gitconfig$LF    if$extra not GitSystemConfigSet('$key','$value') then$LF        Result:=False;" ||
 			break
 			;;
 		esac || break
@@ -180,13 +176,14 @@ test -z "$GITCONFIG_PATH" || {
 	sed -i '/^\[/{:1;$d;N;/^.[^[]*$/b;s/^.*\[/[/;b1}' \
 		programdata-config.template ||
 	die "Could not split gitconfig"
+
+	gitconfig="$gitconfig${LF}end;$LF"
+	inno_defines="$inno_defines$LF$gitconfig"
+
 	LIST="$(echo "$LIST" | grep -v "^$GITCONFIG_PATH\$")"
 }
 
-printf '%s%s%s\n%s\n' \
-	'Source: {#SourcePath}\gitconfig.system; DestName: gitconfig; ' \
-	  "DestDir: {app}\\mingw$BITNESS\\etc; Flags: replacesameversion restartreplace; " \
-	  'AfterInstall: DeleteFromVirtualStore' \
+printf '%s\n' \
 	'Source: {#SourcePath}\programdata-config.template; Flags: dontcopy' \
 	>>file-list.iss ||
 die "Could not append gitconfig to file list"
