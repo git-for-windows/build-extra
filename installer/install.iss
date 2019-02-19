@@ -362,6 +362,7 @@ const
 
 var
     AppDir,UninstallAppPath,UninstallString:String;
+    InferredDefaultKeys,InferredDefaultValues:TStringList;
 
     // The options chosen at install time, to be written to /etc/install-options.txt
     ChosenOptions:String;
@@ -655,6 +656,93 @@ begin
     end;
 end;
 
+procedure RecordInferredDefault(Key,Value:String);
+var
+    i:Integer;
+begin
+    i:=InferredDefaultKeys.IndexOf(Key); // cannot use .Find because the list is not sorted
+    if (i>=0) then
+        InferredDefaultValues[i]:=Value
+    else begin
+        i:=InferredDefaultKeys.Add(Key);
+        InferredDefaultValues.Add(Value)
+    end;
+end;
+
+function GetDefaultsFromGitSystemConfig():Boolean;
+var
+    TmpFile,Key,Value:String;
+    FileContents:AnsiString;
+    Values:TArrayOfString;
+    c,i,j,k:Integer;
+begin
+    TmpFile:=ExpandConstant('{tmp}\git-config-get.txt');
+    if not Exec(ExpandConstant('{cmd}'),'/C .\{#MINGW_BITNESS}\bin\git.exe config -l -z --system >'+#34+TmpFile+#34,
+                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+        LogError('Unable to get system config');
+
+    if not LoadStringFromFile(TmpFile,FileContents) then begin
+        LogError('Could not read '+#34+TmpFile+#34);
+        Result:=False;
+        Exit;
+    end;
+
+    if not DeleteFile(TmpFile) then begin
+        LogError('Could not read '+#34+TmpFile+#34);
+        Result:=False;
+        Exit;
+    end;
+
+    // Split NUL-delimited key/value pairs, extract LF that denotes end of key
+    Value:=FileContents;
+    i:=1; j:=i; k:=i;
+    while (j<=Length(FileContents)) do begin
+        c:=Ord(FileContents[j]);
+        if (c=10) then
+            k:=j
+        else if (c=0) then begin
+            if (i<>k) then begin // Ignore keys without values
+                Key:=Copy(FileContents,i,k-i);
+                Value:=Copy(FileContents,k+1,j-k-1);
+                case Key of
+                    'http.sslbackend':
+                        case Value of
+                            'schannel': RecordInferredDefault('CURL Option','WinSSL');
+                            'openssl': RecordInferredDefault('CURL Option','OpenSSL');
+                        end;
+                    'core.autocrlf':
+                        case Value of
+                            'true': RecordInferredDefault('CRLF Option','CRLFAlways');
+                            'false': RecordInferredDefault('CRLF Option','CRLFCommitAsIs');
+                            'input': RecordInferredDefault('CRLF Option','LFOnly');
+                        end;
+                    'core.fscache':
+                        case Value of
+                            'true': RecordInferredDefault('Performance Tweaks FSCache','Enabled');
+                            'false': RecordInferredDefault('Performance Tweaks FSCache','Disabled');
+                        end;
+                    'credential.helper':
+                        case Value of
+                            'manager': RecordInferredDefault('Use Credential Manager','Enabled');
+                        else RecordInferredDefault('Use Credential Manager','Disabled');
+                        end;
+                    'core.symlinks':
+                        case Value of
+                            'true': RecordInferredDefault('Enable Symlinks','Enabled');
+                            'false': RecordInferredDefault('Enable Symlinks','Disabled');
+                        end;
+                end;
+            end;
+            i:=j+1;
+            j:=i;
+            k:=i;
+        end;
+        j:=j+1;
+    end;
+
+    Result:=True;
+end;
+
 {
     Setup event functions
 }
@@ -797,6 +885,7 @@ end;
 function ReplayChoice(Key,Default:String):String;
 var
     NoSpaces:String;
+    i:Integer;
 begin
     NoSpaces:=Key;
     StringChangeEx(NoSpaces,' ','',True);
@@ -809,9 +898,14 @@ begin
         // Use settings from the user provided INF.
         // .inf files do not like keys with spaces.
         Result:=LoadInfString('Setup',NoSpaces,Default)
-    else
-        // Restore the settings chosen during a previous install.
-        Result:=GetPreviousData(Key,Default);
+    else begin
+        i:=InferredDefaultKeys.IndexOf(Key); // cannot use .Find because the list is not sorted
+        if (i>=0) then
+            Result:=InferredDefaultValues[i]
+        else
+            // Restore the settings chosen during a previous install.
+            Result:=GetPreviousData(Key,Default);
+    end;
 end;
 
 function ReadFileAsString(Path:String):String;
@@ -1357,7 +1451,11 @@ var
     BtnPlink:TButton;
     Data:String;
 begin
+    InferredDefaultKeys:=TStringList.Create;
+    InferredDefaultValues:=TStringList.Create;
     QueryUninstallValues();
+    AppDir:=UninstallAppPath;
+    GetDefaultsFromGitSystemConfig();
 
     ChosenOptions:='';
 
