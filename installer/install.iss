@@ -361,6 +361,8 @@ const
 #endif
 
 var
+    AppDir:String;
+
     // The options chosen at install time, to be written to /etc/install-options.txt
     ChosenOptions:String;
 
@@ -461,11 +463,10 @@ end;
 
 procedure DeleteContextMenuEntries;
 var
-    AppDir,Command:String;
+    Command:String;
     RootKey,i:Integer;
     Keys:TArrayOfString;
 begin
-    AppDir:=ExpandConstant('{app}');
 
     if IsAdminLoggedOn then begin
         RootKey:=HKEY_LOCAL_MACHINE;
@@ -1751,7 +1752,7 @@ end;
 
 function ShouldSkipPage(PageID:Integer):Boolean;
 var
-    AppDir,Msg,Cmd,LogPath:String;
+    Msg,Cmd,LogPath:String;
     Res:Longint;
 begin
     if (ProcessesPage<>NIL) and (PageID=ProcessesPage.ID) then begin
@@ -1912,7 +1913,7 @@ end;
 // git-wrapper.exe is already copied to {app}\tmp.
 procedure HardlinkOrCopyGit(FileName:String;Builtin:Boolean);
 var
-    AppDir,GitTarget:String;
+    GitTarget:String;
     LinkCreated:Boolean;
 begin
     if FileExists(FileName) and (not DeleteFile(FileName)) then begin
@@ -1920,7 +1921,6 @@ begin
         Exit;
     end;
 
-    AppDir:=ExpandConstant('{app}');
     if Builtin then
         GitTarget:=AppDir+'\{#MINGW_BITNESS}\bin\git.exe'
     else
@@ -2004,9 +2004,8 @@ end;
 procedure MaybeHardlinkDLLFiles;
 var
     FindRec: TFindRec;
-    AppDir,Bin,LibExec:String;
+    Bin,LibExec:String;
 begin
-    AppDir:=ExpandConstant('{app}');
     Bin:=AppDir+'\{#MINGW_BITNESS}\bin\';
     LibExec:=AppDir+'\{#MINGW_BITNESS}\libexec\git-core\';
 
@@ -2095,7 +2094,7 @@ end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
 var
-    AppDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
+    ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
     BuiltIns,ImageNames,EnvPath:TArrayOfString;
     Count,i:Longint;
     RootKey:Integer;
@@ -2754,7 +2753,7 @@ end;
 // function.
 procedure CurUninstallStepChanged(CurUninstallStep:TUninstallStep);
 var
-    AppDir,FileName,PathOption:String;
+    FileName,PathOption:String;
     EnvPath:TArrayOfString;
     i:Longint;
 begin
