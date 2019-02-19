@@ -14,7 +14,7 @@ optdepends=('vim' 'filesystem')
 install='git-extra.install'
 pkgver() {
   cd "$startdir"
-  test ! -f "$(git rev-parse --git-path shallow)" || git fetch --unshallow
+  test ! -f "$(git rev-parse --git-path shallow)" || git -c http.sslbackend fetch --unshallow
   rev="$(git rev-list -1 HEAD -- .)"
   test -n "$(git show . |
     sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]/p')" ||
