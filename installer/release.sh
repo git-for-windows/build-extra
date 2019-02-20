@@ -14,6 +14,8 @@ inno_defines=
 skip_files=
 test_installer=
 include_pdbs=
+LF='
+'
 while test $# -gt 0
 do
 	case "$1" in
@@ -24,8 +26,7 @@ do
 		skip_files=t
 		;;
 	--window-title-version=*)
-		inno_defines="$(printf "%s\n%s" "$inno_defines" \
-			"#define WINDOW_TITLE_VERSION '${1#*=}'")"
+		inno_defines="$inno_defines$LF#define WINDOW_TITLE_VERSION '${1#*=}'"
 		;;
 	-d=*|--debug-wizard-page=*|-d)
 		case "$1" in *=*) page="${1#*=}";; *) shift; page="$1";; esac
@@ -37,17 +38,14 @@ do
 			sed -n -e 's/:TWizardPage;$//p' -e 's/:TInputFileWizardPage;$//p' <install.iss >&2
 			exit 1
 		fi
-		inno_defines="$(printf "%s\n%s\n%s" "$inno_defines" \
-			"#define DEBUG_WIZARD_PAGE '$page'" \
-			"#define OUTPUT_TO_TEMP ''")"
+		inno_defines="$inno_defines$LF#define DEBUG_WIZARD_PAGE '$page'$LF#define OUTPUT_TO_TEMP ''"
 		skip_files=t
 		;;
 	--output=*)
 		output_directory="$(cygpath -m "${1#*=}")" ||
 		die "Directory inaccessible: '${1#*=}'"
 
-		inno_defines="$(printf "%s\n%s" "$inno_defines" \
-			"#define OUTPUT_DIRECTORY '$output_directory'")"
+		inno_defines="$inno_defines$LF#define OUTPUT_DIRECTORY '$output_directory'"
 		;;
 	--include-pdbs)
 		include_pdbs=t
@@ -125,8 +123,7 @@ die "Could not write to file-list.iss"
 
 case "$LIST" in
 */libexec/git-core/git-legacy-difftool*)
-	inno_defines="$(printf "%s\n%s" "$inno_defines" \
-		"#define WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL 1")"
+	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL 1"
 	;;
 esac
 
@@ -134,8 +131,7 @@ case "$LIST" in
 */libexec/git-core/git-legacy-rebase*)
 	case "$(git -c rebase.usebuiltin rebase -h 2>&1)" in
 	*Actions:*)
-		inno_defines="$(printf "%s\n%s" "$inno_defines" \
-			"#define WITH_EXPERIMENTAL_BUILTIN_REBASE 1")"
+		inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_BUILTIN_REBASE 1"
 		;;
 	esac
 	;;
@@ -145,8 +141,7 @@ case "$LIST" in
 */libexec/git-core/git-legacy-stash*)
 	case "$(git -c stash.usebuiltin stash -h 2>&1)" in
 	*legacy-stash:*)
-		inno_defines="$(printf "%s\n%s" "$inno_defines" \
-			"#define WITH_EXPERIMENTAL_BUILTIN_STASH 1")"
+		inno_defines="$inno_defines#LF#define WITH_EXPERIMENTAL_BUILTIN_STASH 1"
 		;;
 	esac
 	;;
