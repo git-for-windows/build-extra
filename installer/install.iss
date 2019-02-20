@@ -2394,7 +2394,7 @@ begin
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config http.sslcainfo)\" && case \"$value\" in \"'+Cmd+'\"/*|\"C:/Program Files/Git/\"*|\"c:/Program Files/Git/\"*) git config -f config --unset http.sslcainfo;; esac"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to delete http.sslCAInfo from ProgramData config');
         if not RdbCurlVariant[GC_WinSSL].Checked then begin
-            Cmd:=AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
+            Cmd:=AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt';
             StringChangeEx(Cmd,'\','/',True);
             GitSystemConfigSet('http.sslCAInfo',Cmd);
          end else
