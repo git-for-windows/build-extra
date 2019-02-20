@@ -2230,14 +2230,10 @@ begin
         Configure http.sslBackend according to the user's choice.
     }
 
-    if RdbCurlVariant[GC_WinSSL].Checked then begin
-        Cmd:='schannel';
-    end else begin
-        Cmd:='openssl';
-    end;
-    if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system http.sslBackend '+Cmd,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-        LogError('Unable to configure the HTTPS backend: '+Cmd);
+    if RdbCurlVariant[GC_WinSSL].Checked then
+        GitSystemConfigSet('http.sslBackend','schannel')
+    else
+        GitSystemConfigSet('http.sslBackend','openssl');
 
     if FileExists(ProgramData+'\Git\config') then begin
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config pack.packsizelimit)\" && if test 2g = \"$value\"; then git config -f config --unset pack.packsizelimit; fi"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
@@ -2251,11 +2247,9 @@ begin
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config http.sslcainfo)\" && case \"$value\" in \"'+Cmd+'\"/*|\"C:/Program Files/Git/\"*|\"c:/Program Files/Git/\"*) git config -f config --unset http.sslcainfo;; esac"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to delete http.sslCAInfo from ProgramData config');
         if not RdbCurlVariant[GC_WinSSL].Checked then begin
-            Cmd:='http.sslCAInfo "'+AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
+            Cmd:=AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
             StringChangeEx(Cmd,'\','/',True);
-            if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+Cmd,
-                    AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-                LogError('Unable to configure SSL CA info: ' + Cmd);
+            GitSystemConfigSet('http.sslCAInfo',Cmd);
          end else begin
             if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system --unset http.sslCAInfo',
                     AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
@@ -2298,12 +2292,8 @@ begin
             LogError('Unable to enable the extra option: ' + Cmd);
     end;
 
-    if RdbExtraOptions[GP_GCM].checked then begin
-        Cmd:='credential.helper manager';
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config --system ' + Cmd,
-                    AppDir, SW_HIDE, ewWaitUntilTerminated, i) then
-            LogError('Unable to enable the extra option: ' + Cmd);
-    end;
+    if RdbExtraOptions[GP_GCM].checked then
+        GitSystemConfigSet('credential.helper','manager');
 
     if RdbExtraOptions[GP_Symlinks].checked then
         Cmd:='core.symlinks true'
@@ -2318,30 +2308,27 @@ begin
     }
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
-    if RdbExperimentalOptions[GP_BuiltinDifftool].checked then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system difftool.useBuiltin true','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure difftool.useBuiltin')
-    end else begin
+    if RdbExperimentalOptions[GP_BuiltinDifftool].checked then
+        GitSystemConfigSet('difftool.useBuiltin','true')
+    else begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset difftool.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
         LogError('Could not configure difftool.useBuiltin')
     end;
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_REBASE
-    if RdbExperimentalOptions[GP_BuiltinRebase].checked then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system rebase.useBuiltin true','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure rebase.useBuiltin')
-    end else begin
+    if RdbExperimentalOptions[GP_BuiltinRebase].checked then
+        GitSystemConfigSet('rebase.useBuiltin','true')
+    else begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset rebase.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
         LogError('Could not configure rebase.useBuiltin')
     end;
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_STASH
-    if RdbExperimentalOptions[GP_BuiltinStash].checked then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system stash.useBuiltin true','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure stash.useBuiltin')
-    end else begin
+    if RdbExperimentalOptions[GP_BuiltinStash].checked then
+        GitSystemConfigSet('stash.useBuiltin','true')
+    else begin
         if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset stash.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
         LogError('Could not configure stash.useBuiltin')
     end;
@@ -2486,25 +2473,21 @@ begin
         Set the default Git editor
     }
 
-    if (CbbEditor.ItemIndex=GE_Nano) then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor nano.exe','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not set GNU nano as core.editor in the gitconfig.');
-    end else if ((CbbEditor.ItemIndex=GE_NotepadPlusPlus)) and (NotepadPlusPlusPath<>'') then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+NotepadPlusPlusPath+#39+' -multiInst -notabbar -nosession -noPlugin"','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not set Notepad++ as core.editor in the gitconfig.');
-    end else if ((CbbEditor.ItemIndex=GE_VisualStudioCode)) and (VisualStudioCodePath<>'') then begin
-        if (VisualStudioCodeUserInstallation=False) then begin
-            if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
-                LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
-        end else begin
+    if (CbbEditor.ItemIndex=GE_Nano) then
+        GitSystemConfigSet('core.editor','nano.exe')
+    else if ((CbbEditor.ItemIndex=GE_NotepadPlusPlus)) and (NotepadPlusPlusPath<>'') then
+        GitSystemConfigSet('core.editor','"'+#39+NotepadPlusPlusPath+#39+' -multiInst -notabbar -nosession -noPlugin"')
+    else if ((CbbEditor.ItemIndex=GE_VisualStudioCode)) and (VisualStudioCodePath<>'') then begin
+        if (VisualStudioCodeUserInstallation=False) then
+            GitSystemConfigSet('core.editor','"'+#39+VisualStudioCodePath+#39+' --wait"')
+        else begin
             if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
         end
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders)) and (VisualStudioCodeInsidersPath<>'') then begin
-        if (VisualStudioCodeInsidersUserInstallation=False) then begin
-            if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
-                LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
-        end else begin
+        if (VisualStudioCodeInsidersUserInstallation=False) then
+            GitSystemConfigSet('core.editor','"'+#39+VisualStudioCodeInsidersPath+#39+' --wait"')
+        else begin
             if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
         end
@@ -2514,10 +2497,8 @@ begin
     end else if ((CbbEditor.ItemIndex=GE_Atom)) and (AtomPath<>'') then begin
         if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+AtomPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Atom as core.editor in the gitconfig.');
-    end else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+CustomEditorPath+#39+' '+CustomEditorOptions+'"','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not set the selected editor as core.editor in the gitconfig.')
-    end;
+    end else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then
+        GitSystemConfigSet('core.editor','"'+#39+CustomEditorPath+#39+' '+CustomEditorOptions+'"');
 
     {
         Install a scheduled task to try to auto-update Git for Windows
