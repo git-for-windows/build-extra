@@ -56,6 +56,7 @@ This package contains software from a number of other projects including Bash, z
 * Portable Git [can be launched via network paths again](https://github.com/git-for-windows/git/issues/2036).
 * FSCache works again [on network drives](https://github.com/git-for-windows/git/issues/2022), in particular [when Windows 8.1 or older](https://github.com/git-for-windows/git/issues/1989) are involved.
 * Partially hidden text in the `Path` options page in the installer [is no longer hidden](https://github.com/git-for-windows/git/issues/2049).
+* Comes with a version of OpenSSL v1.1.1a that's been [patched to remove a potential infinite loop](https://github.com/git-for-windows/MSYS2-packages/commit/80b90d2fb01834a867f25db89de60fae03f63367). This fixes hanging issues with `git svn` when interacting with repositories via HTTPS.
 
 ## Changes since Git for Windows v2.20.0 (December 10th 2018)
 
