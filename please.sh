@@ -518,6 +518,10 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/MINGW-packages/mingw-w64-xpdf
 		;;
+	serf)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
@@ -3174,7 +3178,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			}')"
 		version=${newest#* }
 		test -n "$version" ||
-		die "Could not determine newest cURL version\n"
+		die "Could not determine newest OpenSSH version\n"
 		url=$url/${newest% *}
 		relnotes_feature='Comes with [OpenSSH v'$version']('"$url"').'
 		sha256="$(echo "$notes" |
@@ -3526,6 +3530,29 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		url=https://github.com/$repo/releases/tag/$version &&
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
 		relnotes_feature="Comes with [$package $v]($url)."
+		;;
+	serf)
+		url=https://serf.apache.org/download
+		notes="$(curl -s $url)" ||
+		die 'Could not obtain download page from %s\n' \
+			"$url"
+		version="$(echo "$notes" |
+			sed -n 's|.*The latest stable release of Serf is \(<b>\)\?\([1-9][.0-9]*\).*|\2|p')"
+		test -n "$version" ||
+		die "Could not determine newest serf version\n"
+		url=https://svn.apache.org/repos/asf/serf/trunk/CHANGES
+		relnotes_feature='Comes with [serf v'$version']('"$url"').'
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
+		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+
+		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
+		die "Could not update $sdk32/$pkgpath"
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
