@@ -619,6 +619,33 @@ begin
     end;
 end;
 
+function ShellQuote(Value:String):String;
+begin
+    // Sadly, we cannot use the '\'' trick used throughout Git's
+    // source code, as InnoSetup quotes those in a way that
+    // git.exe does not understand them.
+    //
+    // So we try to imitate quote_arg_msvc() in Git's
+    // compat/mingw.c instead: \ => \\, followed by " => \",
+    // then surround with double quotes.
+    StringChangeEx(Value,#92,#92+#92,True);
+    StringChangeEx(Value,#34,#92+#34,True);
+    Result:=#34+Value+#34;
+end;
+
+function GitSystemConfigSet(Key,Value:String):Boolean;
+var
+    i:Integer;
+begin
+    if Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+ShellQuote(Key)+' '+ShellQuote(Value),
+                AppDir,SW_HIDE,ewWaitUntilTerminated,i) And (i=0) then
+        Result:=True
+    else begin
+        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(i));
+        Result:=False;
+    end;
+end;
+
 {
     Setup event functions
 }
