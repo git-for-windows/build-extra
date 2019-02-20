@@ -637,7 +637,16 @@ function GitSystemConfigSet(Key,Value:String):Boolean;
 var
     i:Integer;
 begin
-    if Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+ShellQuote(Key)+' '+ShellQuote(Value),
+    if (Value=#0) then begin
+        if Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system --unset '+Key,
+                AppDir,SW_HIDE,ewWaitUntilTerminated,i) And ((i=0) Or (i=5)) then
+            // exit code 5 means it was already unset, so that's okay
+            Result:=True
+        else begin
+            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(i));
+            Result:=False
+        end
+    end else if Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+ShellQuote(Key)+' '+ShellQuote(Value),
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) And (i=0) then
         Result:=True
     else begin
@@ -2246,11 +2255,8 @@ begin
             Cmd:=AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
             StringChangeEx(Cmd,'\','/',True);
             GitSystemConfigSet('http.sslCAInfo',Cmd);
-         end else begin
-            if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system --unset http.sslCAInfo',
-                    AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-                LogError('Unable to unset SSL CA info');
-         end;
+         end else
+            GitSystemConfigSet('http.sslCAInfo',#0);
     end;
 
     {
@@ -2306,28 +2312,22 @@ begin
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     if RdbExperimentalOptions[GP_BuiltinDifftool].checked then
         GitSystemConfigSet('difftool.useBuiltin','true')
-    else begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset difftool.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure difftool.useBuiltin')
-    end;
+    else
+        GitSystemConfigSet('difftool.useBuiltin',#0);
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_REBASE
     if RdbExperimentalOptions[GP_BuiltinRebase].checked then
         GitSystemConfigSet('rebase.useBuiltin','true')
-    else begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset rebase.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure rebase.useBuiltin')
-    end;
+    else
+        GitSystemConfigSet('rebase.useBuiltin',#0);
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_STASH
     if RdbExperimentalOptions[GP_BuiltinStash].checked then
         GitSystemConfigSet('stash.useBuiltin','true')
-    else begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset stash.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure stash.useBuiltin')
-    end;
+    else
+        GitSystemConfigSet('stash.useBuiltin',#0);
 #endif
 
     {
