@@ -3500,6 +3500,33 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		 updpkgsums &&
 		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD)
 		;;
+	git-flow)
+		repo=petervanderdoes/gitflow-avh
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		version="$(echo "$release" |
+			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 grep "sha256sums.*$sha256" PKGBUILD &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
+		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+
+		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
+		die "Could not update $sdk32/$pkgpath"
+
+		url=https://github.com/$repo/releases/tag/$version &&
+		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
+		relnotes_feature="Comes with [$package $v]($url)."
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
