@@ -172,7 +172,6 @@ test -z "$GITCONFIG_PATH" || {
 			;;
 		esac || break
 	done &&
-	sed -i '/^\[/{:1;$d;N;/^.[^[]*$/b;s/^.*\[/[/;b1}' gitconfig.system &&
 	sed -i '/^\[/{:1;$d;N;/^.[^[]*$/b;s/^.*\[/[/;b1}' \
 		programdata-config.template ||
 	die "Could not split gitconfig"
