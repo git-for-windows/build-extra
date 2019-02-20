@@ -361,6 +361,9 @@ const
 #endif
 
 var
+    AppDir,UninstallAppPath,UninstallString:String;
+    InferredDefaultKeys,InferredDefaultValues:TStringList;
+
     // The options chosen at install time, to be written to /etc/install-options.txt
     ChosenOptions:String;
 
@@ -461,11 +464,10 @@ end;
 
 procedure DeleteContextMenuEntries;
 var
-    AppDir,Command:String;
+    Command:String;
     RootKey,i:Integer;
     Keys:TArrayOfString;
 begin
-    AppDir:=ExpandConstant('{app}');
 
     if IsAdminLoggedOn then begin
         RootKey:=HKEY_LOCAL_MACHINE;
@@ -618,6 +620,140 @@ begin
     end;
 end;
 
+function ShellQuote(Value:String):String;
+begin
+    // Sadly, we cannot use the '\'' trick used throughout Git's
+    // source code, as InnoSetup quotes those in a way that
+    // git.exe does not understand them.
+    //
+    // So we try to imitate quote_arg_msvc() in Git's
+    // compat/mingw.c instead: \ => \\, followed by " => \",
+    // then surround with double quotes.
+    StringChangeEx(Value,#92,#92+#92,True);
+    StringChangeEx(Value,#34,#92+#34,True);
+    Result:=#34+Value+#34;
+end;
+
+function GitSystemConfigSet(Key,Value:String):Boolean;
+var
+    i:Integer;
+begin
+    if (Value=#0) then begin
+        if Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system --unset '+Key,
+                AppDir,SW_HIDE,ewWaitUntilTerminated,i) And ((i=0) Or (i=5)) then
+            // exit code 5 means it was already unset, so that's okay
+            Result:=True
+        else begin
+            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(i));
+            Result:=False
+        end
+    end else if Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+ShellQuote(Key)+' '+ShellQuote(Value),
+                AppDir,SW_HIDE,ewWaitUntilTerminated,i) And (i=0) then
+        Result:=True
+    else begin
+        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(i));
+        Result:=False;
+    end;
+end;
+
+procedure RecordInferredDefault(Key,Value:String);
+var
+    i:Integer;
+begin
+    i:=InferredDefaultKeys.IndexOf(Key); // cannot use .Find because the list is not sorted
+    if (i>=0) then
+        InferredDefaultValues[i]:=Value
+    else begin
+        i:=InferredDefaultKeys.Add(Key);
+        InferredDefaultValues.Add(Value)
+    end;
+end;
+
+function GetDefaultsFromGitConfig(WhichOne:String):Boolean;
+var
+    ExtraOptions,TmpFile,Key,Value:String;
+    FileContents:AnsiString;
+    Values:TArrayOfString;
+    c,i,j,k:Integer;
+begin
+    case WhichOne of
+    'ProgramData': ExtraOptions:='-f "'+ExpandConstant('{commonappdata}\Git\config')+'"';
+    'system': ExtraOptions:='--system';
+    else
+        begin
+            LogError('Invalid config type: '+WhichOne);
+            Result:=False;
+            Exit
+        end
+    end;
+
+    TmpFile:=ExpandConstant('{tmp}\git-config-get.txt');
+    if not Exec(ExpandConstant('{cmd}'),'/C .\{#MINGW_BITNESS}\bin\git.exe config -l -z '+ExtraOptions+' >'+#34+TmpFile+#34,
+                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
+        LogError('Unable to get system config');
+
+    if not LoadStringFromFile(TmpFile,FileContents) then begin
+        LogError('Could not read '+#34+TmpFile+#34);
+        Result:=False;
+        Exit;
+    end;
+
+    if not DeleteFile(TmpFile) then begin
+        LogError('Could not read '+#34+TmpFile+#34);
+        Result:=False;
+        Exit;
+    end;
+
+    // Split NUL-delimited key/value pairs, extract LF that denotes end of key
+    Value:=FileContents;
+    i:=1; j:=i; k:=i;
+    while (j<=Length(FileContents)) do begin
+        c:=Ord(FileContents[j]);
+        if (c=10) then
+            k:=j
+        else if (c=0) then begin
+            if (i<>k) then begin // Ignore keys without values
+                Key:=Copy(FileContents,i,k-i);
+                Value:=Copy(FileContents,k+1,j-k-1);
+                case Key of
+                    'http.sslbackend':
+                        case Value of
+                            'schannel': RecordInferredDefault('CURL Option','WinSSL');
+                            'openssl': RecordInferredDefault('CURL Option','OpenSSL');
+                        end;
+                    'core.autocrlf':
+                        case Value of
+                            'true': RecordInferredDefault('CRLF Option','CRLFAlways');
+                            'false': RecordInferredDefault('CRLF Option','CRLFCommitAsIs');
+                            'input': RecordInferredDefault('CRLF Option','LFOnly');
+                        end;
+                    'core.fscache':
+                        case Value of
+                            'true': RecordInferredDefault('Performance Tweaks FSCache','Enabled');
+                            'false': RecordInferredDefault('Performance Tweaks FSCache','Disabled');
+                        end;
+                    'credential.helper':
+                        case Value of
+                            'manager': RecordInferredDefault('Use Credential Manager','Enabled');
+                        else RecordInferredDefault('Use Credential Manager','Disabled');
+                        end;
+                    'core.symlinks':
+                        case Value of
+                            'true': RecordInferredDefault('Enable Symlinks','Enabled');
+                            'false': RecordInferredDefault('Enable Symlinks','Disabled');
+                        end;
+                end;
+            end;
+            i:=j+1;
+            j:=i;
+            k:=i;
+        end;
+        j:=j+1;
+    end;
+
+    Result:=True;
+end;
+
 {
     Setup event functions
 }
@@ -760,6 +896,7 @@ end;
 function ReplayChoice(Key,Default:String):String;
 var
     NoSpaces:String;
+    i:Integer;
 begin
     NoSpaces:=Key;
     StringChangeEx(NoSpaces,' ','',True);
@@ -772,9 +909,14 @@ begin
         // Use settings from the user provided INF.
         // .inf files do not like keys with spaces.
         Result:=LoadInfString('Setup',NoSpaces,Default)
-    else
-        // Restore the settings chosen during a previous install.
-        Result:=GetPreviousData(Key,Default);
+    else begin
+        i:=InferredDefaultKeys.IndexOf(Key); // cannot use .Find because the list is not sorted
+        if (i>=0) then
+            Result:=InferredDefaultValues[i]
+        else
+            // Restore the settings chosen during a previous install.
+            Result:=GetPreviousData(Key,Default);
+    end;
 end;
 
 function ReadFileAsString(Path:String):String;
@@ -1311,6 +1453,8 @@ begin
     end;
 end;
 
+procedure QueryUninstallValues; forward;
+
 procedure InitializeWizard;
 var
     PrevPageID,TabOrder,TopOfLabels,Top,Left:Integer;
@@ -1318,6 +1462,12 @@ var
     BtnPlink:TButton;
     Data:String;
 begin
+    InferredDefaultKeys:=TStringList.Create;
+    InferredDefaultValues:=TStringList.Create;
+    QueryUninstallValues();
+    AppDir:=UninstallAppPath;
+    GetDefaultsFromGitConfig('ProgramData');
+    GetDefaultsFromGitConfig('system');
 
     ChosenOptions:='';
 
@@ -1751,7 +1901,7 @@ end;
 
 function ShouldSkipPage(PageID:Integer):Boolean;
 var
-    AppDir,Msg,Cmd,LogPath:String;
+    Msg,Cmd,LogPath:String;
     Res:Longint;
 begin
     if (ProcessesPage<>NIL) and (PageID=ProcessesPage.ID) then begin
@@ -1912,7 +2062,7 @@ end;
 // git-wrapper.exe is already copied to {app}\tmp.
 procedure HardlinkOrCopyGit(FileName:String;Builtin:Boolean);
 var
-    AppDir,GitTarget:String;
+    GitTarget:String;
     LinkCreated:Boolean;
 begin
     if FileExists(FileName) and (not DeleteFile(FileName)) then begin
@@ -1920,7 +2070,6 @@ begin
         Exit;
     end;
 
-    AppDir:=ExpandConstant('{app}');
     if Builtin then
         GitTarget:=AppDir+'\{#MINGW_BITNESS}\bin\git.exe'
     else
@@ -1944,10 +2093,10 @@ begin
     end;
 end;
 
-procedure CleanupWhenUpgrading;
+procedure QueryUninstallValues;
 var
-    Domain,ErrorCode:Integer;
-    Key,Path,ProgramData,UninstallString:String;
+    Domain:Integer;
+    Key,Path:String;
 begin
     Key:='Microsoft\Windows\CurrentVersion\Uninstall\Git_is1';
     if RegKeyExists(HKEY_LOCAL_MACHINE,'Software\Wow6432Node\'+Key) then begin
@@ -1965,20 +2114,41 @@ begin
     end else
         Domain:=-1;
     if Domain<>-1 then begin
-        if RegQueryStringValue(Domain,Key,'Inno Setup: App Path',Path) then begin
-            ProgramData:=ExpandConstant('{commonappdata}');
-            if FileExists(Path+'\etc\gitconfig') and not FileExists(ProgramData+'\Git\config') then begin
-                if not ForceDirectories(ProgramData+'\Git') then
-                    LogError('Could not initialize Windows-wide Git config.')
-                else if not FileCopy(Path+'\etc\gitconfig',ProgramData+'\Git\config',False) then
-                    LogError('Could not copy old Git config to Windows-wide location.');
-            end;
+        if not RegQueryStringValue(Domain,Key,'Inno Setup: App Path',UninstallAppPath) then
+            UninstallAppPath:='';
+        if not RegQueryStringValue(Domain,Key,'UninstallString',UninstallString) then
+            UninstallString:='';
+    end else begin
+        UninstallAppPath:='';
+        UninstallString:='';
+    end;
+end;
+
+procedure CleanupWhenUpgrading;
+var
+    ErrorCode:Integer;
+    ProgramData:String;
+begin
+    if UninstallAppPath<>'' then begin
+        // Save a copy of the system config so that we can copy it back later
+        if FileExists(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig') and
+            (not FileCopy(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig',ExpandConstant('{tmp}\gitconfig.system'),True)) then
+            LogError('Could not save system config; continuing anyway');
+
+        ProgramData:=ExpandConstant('{commonappdata}');
+        if FileExists(UninstallAppPath+'\etc\gitconfig') and not FileExists(ProgramData+'\Git\config') then begin
+            if not ForceDirectories(ProgramData+'\Git') then
+                LogError('Could not initialize Windows-wide Git config.')
+            else if not FileCopy(UninstallAppPath+'\etc\gitconfig',ProgramData+'\Git\config',False) then
+                LogError('Could not copy old Git config to Windows-wide location.');
         end;
 
-        if RegQueryStringValue(Domain,Key,'UninstallString',UninstallString) then
-            // Using ShellExec() here, in case privilege elevation is required
-            if not ShellExec('',UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
-                LogError('Could not uninstall previous version. Trying to continue anyway.');
+    end;
+
+    if UninstallString<>'' then begin
+        // Using ShellExec() here, in case privilege elevation is required
+        if not ShellExec('',UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
+            LogError('Could not uninstall previous version. Trying to continue anyway.');
     end;
 end;
 
@@ -2004,9 +2174,8 @@ end;
 procedure MaybeHardlinkDLLFiles;
 var
     FindRec: TFindRec;
-    AppDir,Bin,LibExec:String;
+    Bin,LibExec:String;
 begin
-    AppDir:=ExpandConstant('{app}');
     Bin:=AppDir+'\{#MINGW_BITNESS}\bin\';
     LibExec:=AppDir+'\{#MINGW_BITNESS}\libexec\git-core\';
 
@@ -2095,7 +2264,7 @@ end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
 var
-    AppDir,ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
+    ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
     BuiltIns,ImageNames,EnvPath:TArrayOfString;
     Count,i:Longint;
     RootKey:Integer;
@@ -2186,7 +2355,7 @@ begin
     end else
         LogError('Line {#__LINE__}: Unable to read file "{#MINGW_BITNESS}\{#APP_BUILTINS}".');
 
-    // Create default system wide git config file
+    // Create default ProgramData git config file
     if not FileExists(ProgramData + '\Git\config') then begin
         if not DirExists(ProgramData + '\Git') then begin
             if not CreateDir(ProgramData + '\Git') then begin
@@ -2200,41 +2369,36 @@ begin
         end;
     end;
 
+    // Copy previous system wide git config file, if any
+    if FileExists(ExpandConstant('{tmp}\gitconfig.system')) then begin
+        if (not ForceDirectories(AppDir+'\{#MINGW_BITNESS}\etc')) then
+            LogError('Failed to create \{#MINGW_BITNESS}\etc; continuing anyway')
+        else
+            FileCopy(ExpandConstant('{tmp}\gitconfig.system'),AppDir+'\{#MINGW_BITNESS}\etc\gitconfig',True)
+    end;
+
     {
         Configure http.sslBackend according to the user's choice.
     }
 
-    if RdbCurlVariant[GC_WinSSL].Checked then begin
-        Cmd:='schannel';
-    end else begin
-        Cmd:='openssl';
-    end;
-    if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system http.sslBackend '+Cmd,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-        LogError('Unable to configure the HTTPS backend: '+Cmd);
+    if RdbCurlVariant[GC_WinSSL].Checked then
+        GitSystemConfigSet('http.sslBackend','schannel')
+    else
+        GitSystemConfigSet('http.sslBackend','openssl');
 
     if FileExists(ProgramData+'\Git\config') then begin
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config pack.packsizelimit)\" && if test 2g = \"$value\"; then git config -f config --unset pack.packsizelimit; fi"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to remove packsize limit from ProgramData config');
-#if BITNESS=='32'
-        if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system pack.packsizelimit 2g',AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-            LogError('Unable to limit packsize to 2GB');
-#endif
         Cmd:=AppDir+'/';
         StringChangeEx(Cmd,'\','/',True);
         if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config http.sslcainfo)\" && case \"$value\" in \"'+Cmd+'\"/*|\"C:/Program Files/Git/\"*|\"c:/Program Files/Git/\"*) git config -f config --unset http.sslcainfo;; esac"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
             LogError('Unable to delete http.sslCAInfo from ProgramData config');
         if not RdbCurlVariant[GC_WinSSL].Checked then begin
-            Cmd:='http.sslCAInfo "'+AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
+            Cmd:=AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt"';
             StringChangeEx(Cmd,'\','/',True);
-            if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+Cmd,
-                    AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-                LogError('Unable to configure SSL CA info: ' + Cmd);
-         end else begin
-            if not Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system --unset http.sslCAInfo',
-                    AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-                LogError('Unable to unset SSL CA info');
-         end;
+            GitSystemConfigSet('http.sslCAInfo',Cmd);
+         end else
+            GitSystemConfigSet('http.sslCAInfo',#0);
     end;
 
     {
@@ -2272,12 +2436,8 @@ begin
             LogError('Unable to enable the extra option: ' + Cmd);
     end;
 
-    if RdbExtraOptions[GP_GCM].checked then begin
-        Cmd:='credential.helper manager';
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config --system ' + Cmd,
-                    AppDir, SW_HIDE, ewWaitUntilTerminated, i) then
-            LogError('Unable to enable the extra option: ' + Cmd);
-    end;
+    if RdbExtraOptions[GP_GCM].checked then
+        GitSystemConfigSet('credential.helper','manager');
 
     if RdbExtraOptions[GP_Symlinks].checked then
         Cmd:='core.symlinks true'
@@ -2292,33 +2452,24 @@ begin
     }
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
-    if RdbExperimentalOptions[GP_BuiltinDifftool].checked then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system difftool.useBuiltin true','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure difftool.useBuiltin')
-    end else begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset difftool.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure difftool.useBuiltin')
-    end;
+    if RdbExperimentalOptions[GP_BuiltinDifftool].checked then
+        GitSystemConfigSet('difftool.useBuiltin','true')
+    else
+        GitSystemConfigSet('difftool.useBuiltin',#0);
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_REBASE
-    if RdbExperimentalOptions[GP_BuiltinRebase].checked then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system rebase.useBuiltin true','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure rebase.useBuiltin')
-    end else begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset rebase.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure rebase.useBuiltin')
-    end;
+    if RdbExperimentalOptions[GP_BuiltinRebase].checked then
+        GitSystemConfigSet('rebase.useBuiltin','true')
+    else
+        GitSystemConfigSet('rebase.useBuiltin',#0);
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_STASH
-    if RdbExperimentalOptions[GP_BuiltinStash].checked then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system stash.useBuiltin true','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure stash.useBuiltin')
-    end else begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --unset stash.useBuiltin','',SW_HIDE,ewWaitUntilTerminated, i) then
-        LogError('Could not configure stash.useBuiltin')
-    end;
+    if RdbExperimentalOptions[GP_BuiltinStash].checked then
+        GitSystemConfigSet('stash.useBuiltin','true')
+    else
+        GitSystemConfigSet('stash.useBuiltin',#0);
 #endif
 
     {
@@ -2450,8 +2601,6 @@ begin
     }
 
     if not IsComponentSelected('gitlfs') then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system --remove-section filter.lfs','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not disable Git LFS in the gitconfig.');
         if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') then
             LogError('Line {#__LINE__}: Unable to delete "git-lfs.exe".');
     end;
@@ -2460,25 +2609,21 @@ begin
         Set the default Git editor
     }
 
-    if (CbbEditor.ItemIndex=GE_Nano) then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor nano.exe','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not set GNU nano as core.editor in the gitconfig.');
-    end else if ((CbbEditor.ItemIndex=GE_NotepadPlusPlus)) and (NotepadPlusPlusPath<>'') then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+NotepadPlusPlusPath+#39+' -multiInst -notabbar -nosession -noPlugin"','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not set Notepad++ as core.editor in the gitconfig.');
-    end else if ((CbbEditor.ItemIndex=GE_VisualStudioCode)) and (VisualStudioCodePath<>'') then begin
-        if (VisualStudioCodeUserInstallation=False) then begin
-            if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
-                LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
-        end else begin
+    if (CbbEditor.ItemIndex=GE_Nano) then
+        GitSystemConfigSet('core.editor','nano.exe')
+    else if ((CbbEditor.ItemIndex=GE_NotepadPlusPlus)) and (NotepadPlusPlusPath<>'') then
+        GitSystemConfigSet('core.editor','"'+#39+NotepadPlusPlusPath+#39+' -multiInst -notabbar -nosession -noPlugin"')
+    else if ((CbbEditor.ItemIndex=GE_VisualStudioCode)) and (VisualStudioCodePath<>'') then begin
+        if (VisualStudioCodeUserInstallation=False) then
+            GitSystemConfigSet('core.editor','"'+#39+VisualStudioCodePath+#39+' --wait"')
+        else begin
             if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+VisualStudioCodePath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
         end
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders)) and (VisualStudioCodeInsidersPath<>'') then begin
-        if (VisualStudioCodeInsidersUserInstallation=False) then begin
-            if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
-                LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
-        end else begin
+        if (VisualStudioCodeInsidersUserInstallation=False) then
+            GitSystemConfigSet('core.editor','"'+#39+VisualStudioCodeInsidersPath+#39+' --wait"')
+        else begin
             if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+VisualStudioCodeInsidersPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
                 LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
         end
@@ -2488,10 +2633,8 @@ begin
     end else if ((CbbEditor.ItemIndex=GE_Atom)) and (AtomPath<>'') then begin
         if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "'+#39+AtomPath+#39+' --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Atom as core.editor in the gitconfig.');
-    end else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then begin
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --system core.editor "'+#39+CustomEditorPath+#39+' '+CustomEditorOptions+'"','',SW_HIDE,ewWaitUntilTerminated, i) then
-            LogError('Could not set the selected editor as core.editor in the gitconfig.')
-    end;
+    end else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then
+        GitSystemConfigSet('core.editor','"'+#39+CustomEditorPath+#39+' '+CustomEditorOptions+'"');
 
     {
         Install a scheduled task to try to auto-update Git for Windows
@@ -2754,7 +2897,7 @@ end;
 // function.
 procedure CurUninstallStepChanged(CurUninstallStep:TUninstallStep);
 var
-    AppDir,FileName,PathOption:String;
+    FileName,PathOption:String;
     EnvPath:TArrayOfString;
     i:Longint;
 begin
