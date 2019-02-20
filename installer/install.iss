@@ -669,15 +669,26 @@ begin
     end;
 end;
 
-function GetDefaultsFromGitSystemConfig():Boolean;
+function GetDefaultsFromGitConfig(WhichOne:String):Boolean;
 var
-    TmpFile,Key,Value:String;
+    ExtraOptions,TmpFile,Key,Value:String;
     FileContents:AnsiString;
     Values:TArrayOfString;
     c,i,j,k:Integer;
 begin
+    case WhichOne of
+    'ProgramData': ExtraOptions:='-f "'+ExpandConstant('{commonappdata}\Git\config')+'"';
+    'system': ExtraOptions:='--system';
+    else
+        begin
+            LogError('Invalid config type: '+WhichOne);
+            Result:=False;
+            Exit
+        end
+    end;
+
     TmpFile:=ExpandConstant('{tmp}\git-config-get.txt');
-    if not Exec(ExpandConstant('{cmd}'),'/C .\{#MINGW_BITNESS}\bin\git.exe config -l -z --system >'+#34+TmpFile+#34,
+    if not Exec(ExpandConstant('{cmd}'),'/C .\{#MINGW_BITNESS}\bin\git.exe config -l -z '+ExtraOptions+' >'+#34+TmpFile+#34,
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
         LogError('Unable to get system config');
 
@@ -1455,7 +1466,8 @@ begin
     InferredDefaultValues:=TStringList.Create;
     QueryUninstallValues();
     AppDir:=UninstallAppPath;
-    GetDefaultsFromGitSystemConfig();
+    GetDefaultsFromGitConfig('ProgramData');
+    GetDefaultsFromGitConfig('system');
 
     ChosenOptions:='';
 
