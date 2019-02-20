@@ -2130,6 +2130,11 @@ var
     ProgramData:String;
 begin
     if UninstallAppPath<>'' then begin
+        // Save a copy of the system config so that we can copy it back later
+        if FileExists(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig') and
+            (not FileCopy(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig',ExpandConstant('{tmp}\gitconfig.system'),True)) then
+            LogError('Could not save system config; continuing anyway');
+
         ProgramData:=ExpandConstant('{commonappdata}');
         if FileExists(UninstallAppPath+'\etc\gitconfig') and not FileExists(ProgramData+'\Git\config') then begin
             if not ForceDirectories(ProgramData+'\Git') then
@@ -2138,8 +2143,6 @@ begin
                 LogError('Could not copy old Git config to Windows-wide location.');
         end;
 
-        if FileExists(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig') then begin
-        end;
     end;
 
     if UninstallString<>'' then begin
@@ -2352,7 +2355,7 @@ begin
     end else
         LogError('Line {#__LINE__}: Unable to read file "{#MINGW_BITNESS}\{#APP_BUILTINS}".');
 
-    // Create default system wide git config file
+    // Create default ProgramData git config file
     if not FileExists(ProgramData + '\Git\config') then begin
         if not DirExists(ProgramData + '\Git') then begin
             if not CreateDir(ProgramData + '\Git') then begin
@@ -2364,6 +2367,14 @@ begin
         if not FileCopy(ExpandConstant('{tmp}\programdata-config.template'), ProgramData + '\Git\config', True) then begin
             Log('Line {#__LINE__}: Creating initial "' + ProgramData + '\Git\config" failed.');
         end;
+    end;
+
+    // Copy previous system wide git config file, if any
+    if FileExists(ExpandConstant('{tmp}\gitconfig.system')) then begin
+        if (not ForceDirectories(AppDir+'\{#MINGW_BITNESS}\etc')) then
+            LogError('Failed to create \{#MINGW_BITNESS}\etc; continuing anyway')
+        else
+            FileCopy(ExpandConstant('{tmp}\gitconfig.system'),AppDir+'\{#MINGW_BITNESS}\etc\gitconfig',True)
     end;
 
     {
