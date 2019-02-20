@@ -41,8 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git Credential Manager v1.18.4.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.4.0).
 * Comes with [cURL v7.64.0](https://curl.haxx.se/changes.html#7_64_0).
 * Comes with [Git LFS v2.7.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.7.0).
-* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.0](https://cygwin.com/ml/cygwin-announce/2019-02/msg00010.html).
-* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.1](https://cygwin.com/ml/cygwin-announce/2019-02/msg00014.html).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.1](https://cygwin.com/ml/cygwin-announce/2019-02/msg00014.html) (including the changes of [Cygwin 3.0.0](https://cygwin.com/ml/cygwin-announce/2019-02/msg00010.html) since the previous Git for Windows version).
 * Comes with [git-flow v1.12.0](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.0).
 * Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
