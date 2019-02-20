@@ -44,7 +44,6 @@ This package contains software from a number of other projects including Bash, z
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.1](https://cygwin.com/ml/cygwin-announce/2019-02/msg00014.html) (including the changes of [Cygwin 3.0.0](https://cygwin.com/ml/cygwin-announce/2019-02/msg00010.html) since the previous Git for Windows version).
 * Comes with [git-flow v1.12.0](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.0).
 * `git archive` [no longer requires `gzip` to generate `.tgz` archives](https://github.com/git-for-windows/git/pull/2077) (this means in particular that it works in MinGit).
-* Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
 ### Bug Fixes
 
