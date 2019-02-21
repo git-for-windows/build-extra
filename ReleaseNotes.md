@@ -44,7 +44,6 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git LFS v2.7.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.7.0).
 * Comes with [git-flow v1.12.0](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.0).
 * `git archive` [no longer requires `gzip` to generate `.tgz` archives](https://github.com/git-for-windows/git/pull/2077) (this means in particular that it works in MinGit).
-* Fixes [an obscure `git svn` hang](https://github.com/git-for-windows/git/issues/1993).
 
 ### Bug Fixes
 
@@ -56,6 +55,7 @@ This package contains software from a number of other projects including Bash, z
 * Portable Git [can be launched via network paths again](https://github.com/git-for-windows/git/issues/2036).
 * FSCache works again [on network drives](https://github.com/git-for-windows/git/issues/2022), in particular [when Windows 8.1 or older](https://github.com/git-for-windows/git/issues/1989) are involved.
 * Partially hidden text in the `Path` options page in the installer [is no longer hidden](https://github.com/git-for-windows/git/issues/2049).
+* Fixes [an obscure `git svn` hang](https://github.com/git-for-windows/git/issues/1993).
 
 ## Changes since Git for Windows v2.20.0 (December 10th 2018)
 
