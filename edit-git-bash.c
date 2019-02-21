@@ -79,7 +79,7 @@ int main(int argc, char **argv)
 #ifdef DEBUG
 	LPTSTR cmdLine = GetCommandLineW();
 	fwprintf(stderr, L"Command Line: %s\n", cmdLine);
-	
+
 	wargv = CommandLineToArgvW(cmdLine, &wargc);
 
 	for (int i = 1; i < wargc; ++i)
