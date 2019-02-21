@@ -99,6 +99,6 @@ int main(int argc, char **argv)
 	if (result)
 		fwprintf(stderr, L"Error editing %s: %d\n", wargv[1], result);
 
-	return !!result;
+	return result;
 }
 #endif
