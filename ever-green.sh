@@ -602,7 +602,7 @@ then
 	commit_map=
 else
 	commit_map="$(git range-diff -s "${current_base:-$onto}..$current_tip" "$ever_green_base.." |
-		  sed -n 's/^[^:]*: *\([^ ]*\) [!=][^:]*: *\([^ ]*\).*/|\1=\2/p')"
+		  sed -n 's/^[^:]*: *\([^ ]*\) [!=][^:]*: *\([^ ]*\).*/|\1=\2:/p')"
 fi
 map_base_commit () {
 	while true
