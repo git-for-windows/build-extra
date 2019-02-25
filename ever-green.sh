@@ -696,7 +696,7 @@ else
 	help="$(extract_todo_help "$replace_todo")" ||
 	die "Could not extract todo help from $replace_todo"
 
-	if test 0 -lt $(git rev-list --count "$ever_green_tip".."$onto")
+	if test -n "$merging" || test 0 -lt $(git rev-list --count "$ever_green_tip".."$onto")
 	then
 		# The second rebase's todo list can only be generated after the first one is done
 
