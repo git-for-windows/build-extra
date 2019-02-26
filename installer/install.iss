@@ -379,6 +379,7 @@ var
 
     VisualStudioCodeUserInstallation:Boolean;
     VisualStudioCodeInsidersUserInstallation:Boolean;
+    SublimeTextUserInstallation:Boolean;
 
     NotepadPlusPlusPath:String;
     VisualStudioCodePath:String;
@@ -1503,7 +1504,12 @@ begin
         EditorAvailable[GE_VisualStudioCodeInsiders]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\Code - Insiders.exe\shell\open\command','',VisualStudioCodeInsidersPath);
         VisualStudioCodeInsidersUserInstallation:=True;
     end;
-    EditorAvailable[GE_SublimeText]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\sublime_text.exe\shell\open\command','',SublimeTextPath);
+    SublimeTextPath:=ExpandConstant('{pf}\Sublime Text 3\subl.exe');
+    EditorAvailable[GE_SublimeText]:=PathIsValidExecutable(SublimeTextPath);
+    if (not EditorAvailable[GE_SublimeText]) then begin
+        EditorAvailable[GE_SublimeText]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\sublime_text.exe\shell\open\command','',SublimeTextPath);
+        SublimeTextUserInstallation:=True;
+    end;
     EditorAvailable[GE_Atom]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\atom.exe\shell\open\command','',AtomPath);
     EditorAvailable[GE_CustomEditor]:=True;
 
@@ -1514,7 +1520,7 @@ begin
     if (EditorAvailable[GE_VisualStudioCodeInsiders]) then
         // Extract <path> from "<path>" "%1"
         VisualStudioCodeInsidersPath:=Copy(VisualStudioCodeInsidersPath, 2, Length(VisualStudioCodeInsidersPath) - 7);
-    if (EditorAvailable[GE_SublimeText]) then
+    if (EditorAvailable[GE_SublimeText]) and SublimeTextUserInstallation then
         // Extract <path> from "<path>" "%1"
         SublimeTextPath:=Copy(SublimeTextPath, 2, Length(SublimeTextPath) - 7);
     if (EditorAvailable[GE_Atom]) then
@@ -1560,7 +1566,10 @@ begin
     // 6th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Sublime Text as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://www.sublimetext.com/>Sublime text</A> is a lightweight editor which supports a great number'+#13+'of plugins.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Sublime Text as its default editor.',Top,Left,LblEditor[GE_SublimeText],False);
+    if (SublimeTextUserInstallation=False) then
+        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://www.sublimetext.com/>Sublime text</A> is a lightweight editor which supports a great number'+#13+'of plugins.'+#13+#13+'Use this option to let Git use Sublime Text as its default editor.',Top,Left,LblEditor[GE_SublimeText],False)
+    else
+        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://www.sublimetext.com/>Sublime text</A> is a lightweight editor which supports a great number'+#13+'of plugins.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Sublime Text as its default editor.',Top,Left,LblEditor[GE_SublimeText],False);
 
     // 7th choice
     Top:=TopOfLabels;
@@ -2632,7 +2641,9 @@ begin
                 LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
         end
     end else if ((CbbEditor.ItemIndex=GE_SublimeText)) and (SublimeTextPath<>'') then begin
-        if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+SublimeTextPath+'\" -w"','',SW_HIDE,ewWaitUntilTerminated, i) then
+        if (SublimeTextUserInstallation=False) then
+            GitSystemConfigSet('core.editor','"'+SublimeTextPath+'" -w')
+        else if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+SublimeTextPath+'\" -w"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Sublime Text as core.editor in the gitconfig.');
     end else if ((CbbEditor.ItemIndex=GE_Atom)) and (AtomPath<>'') then begin
         if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+AtomPath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
