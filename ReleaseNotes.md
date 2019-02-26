@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git LFS v2.7.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.7.0).
 * Comes with [git-flow v1.12.0](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.0).
 * `git archive` [no longer requires `gzip` to generate `.tgz` archives](https://github.com/git-for-windows/git/pull/2077) (this means in particular that it works in MinGit).
+* System-wide Sublime Text installations [are now detected](https://github.com/git-for-windows/build-extra/commit/396b283cc6231589b0b034d4ca4b241b25163e9a) and offered on the editor wizard page.
 
 ### Bug Fixes
 
