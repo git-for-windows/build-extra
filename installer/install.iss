@@ -1509,12 +1509,16 @@ begin
 
     // Remove `" %1"` from end and unqote the string.
     if (EditorAvailable[GE_VisualStudioCode]) then
+        // Extract <path> from "<path>" "%1"
         VisualStudioCodePath:=Copy(VisualStudioCodePath, 2, Length(VisualStudioCodePath) - 7);
     if (EditorAvailable[GE_VisualStudioCodeInsiders]) then
+        // Extract <path> from "<path>" "%1"
         VisualStudioCodeInsidersPath:=Copy(VisualStudioCodeInsidersPath, 2, Length(VisualStudioCodeInsidersPath) - 7);
     if (EditorAvailable[GE_SublimeText]) then
+        // Extract <path> from "<path>" "%1"
         SublimeTextPath:=Copy(SublimeTextPath, 2, Length(SublimeTextPath) - 7);
     if (EditorAvailable[GE_Atom]) then
+        // Extract <path> from "<path>" "%1"
         AtomPath:=Copy(AtomPath, 2, Length(AtomPath) - 7);
 
     // 1st choice
