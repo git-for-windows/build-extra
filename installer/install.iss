@@ -2629,17 +2629,13 @@ begin
     else if ((CbbEditor.ItemIndex=GE_VisualStudioCode)) and (VisualStudioCodePath<>'') then begin
         if (VisualStudioCodeUserInstallation=False) then
             GitSystemConfigSet('core.editor','"'+VisualStudioCodePath+'" --wait')
-        else begin
-            if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+VisualStudioCodePath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
-                LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
-        end
+        else if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+VisualStudioCodePath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set Visual Studio Code as core.editor in the gitconfig.')
     end else if ((CbbEditor.ItemIndex=GE_VisualStudioCodeInsiders)) and (VisualStudioCodeInsidersPath<>'') then begin
         if (VisualStudioCodeInsidersUserInstallation=False) then
             GitSystemConfigSet('core.editor','"'+VisualStudioCodeInsidersPath+'" --wait')
-        else begin
-            if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+VisualStudioCodeInsidersPath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
-                LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
-        end
+        else if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+VisualStudioCodeInsidersPath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set Visual Studio Code Insiders as core.editor in the gitconfig.')
     end else if ((CbbEditor.ItemIndex=GE_SublimeText)) and (SublimeTextPath<>'') then begin
         if (SublimeTextUserInstallation=False) then
             GitSystemConfigSet('core.editor','"'+SublimeTextPath+'" -w')
