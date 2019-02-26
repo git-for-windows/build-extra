@@ -3648,7 +3648,7 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 		sed -i -e "/^## Changes since/{s/^/$quoted\n\n/;:1;n;b1}" \
 			"$relnotes"
 	else
-		search=$(echo "$quoted" | sed -r -e 's#.*Comes with \[(.* v|patch level).*#\1#')
+		search=$(echo "$quoted" | sed -r -e 's#.*Comes with \[(.* v|patch level).*#\1#' -e 's#[][]#\\&#g')
 		sed -i -e '/^## Changes since/{
 			:1;n;
 			/^### '"$what"'/b3;
