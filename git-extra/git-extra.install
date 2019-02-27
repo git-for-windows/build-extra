@@ -236,6 +236,10 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	grep -q '^set titlecolor' /etc/nanorc ||
 	sed -i -e '/Paint the interface elements/,/root.s .nanorc/s/^# //' \
 		-e 's/^# \(include .*nanorc"\)$/\1/' /etc/nanorc
+
+	# Do not require /usr/bin/cmd in /usr/bin/start
+	grep -q '^"\$COMSPEC" ' /usr/bin/start ||
+	sed -i 's/^cmd /"$COMSPEC" /' /usr/bin/start
 }
 
 post_upgrade () {
