@@ -81,7 +81,7 @@ sdk () {
 		;;
 	# for completion
 	valid_commands)
-		echo "build cd create-desktop-icon init"
+		echo "build cd create-desktop-icon init reload"
 		;;
 	valid_projects)
 		printf "%s " build-extra git git-extra MINGW-packages \
