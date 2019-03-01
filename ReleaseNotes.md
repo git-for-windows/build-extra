@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [git-flow v1.12.1](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.1).
+* Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/fcc3187b11b9d0e979a702503104cfaac8b5eab4) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.1](https://cygwin.com/ml/cygwin-announce/2019-02/msg00014.html).
 
 ## Changes since Git for Windows v2.20.1 (December 15th 2018)
 
