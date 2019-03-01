@@ -206,13 +206,15 @@ sdk () {
 			"$src_dir"/installer/release.sh "${3:-0-test}"
 			;;
 		*)
+			sdk cd "$2" ||
+			return $?
 			if test -f PKGBUILD
 			then
 				case "$MSYSTEM" in
 				MSYS) makepkg --syncdeps --noconfirm;;
 				MINGW*) makepkg-mingw --syncdeps --noconfirm;;
 				esac
-				return #?
+				return $?
 			fi
 
 			cat >&2 <<EOF
