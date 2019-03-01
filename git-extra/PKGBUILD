@@ -75,7 +75,7 @@ sha256sums=('9efaf8dccc08c7cddc58cb589bab5aac5c0894661175a344ca02b2aa849382bd'
             'ebd1d20aa94be11c6b9bec7d33614d32016343d282c4716d0561ab41407c99bf'
             '97e89689d91747ddb5ee873ae864aebcbb8d0364a52fa198db1e439ee2965b9b'
             '2199a518823de64a581854b9173f5f06cab191cfde50f04f3628200127690a4f'
-            'e5c09f16ec4f9a176fa126d31d5c6e61678c105ab7e0f27275b6f7c522ba8a26')
+            'cb94337eb02684b15b75c15d0a75169c6c15c69ec9ee4b35fa99bfe1fb64f9da')
 
 prepare() {
   test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
