@@ -100,6 +100,8 @@ die "Could not build edit-git-bash.exe"
 
 if test t = "$skip_files"
 then
+	# make sure the file exists, as the installer wants it
+	touch package-versions.txt
 	LIST=
 else
 	echo "Generating file list to be included in the installer ..."
