@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [git-flow v1.12.1](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.1).
+* Comes with [gawk v4.2.1 (2)](http://git.savannah.gnu.org/cgit/gawk.git/plain/NEWS?h=gawk-4.2.1).
 
 ### Bug Fixes
 
