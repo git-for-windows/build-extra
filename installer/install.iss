@@ -1651,10 +1651,10 @@ begin
     PathPage:=CreatePage(PrevPageID,'Adjusting your PATH environment','How would you like to use Git from the command line?',TabOrder,Top,Left);
 
     // 1st choice
-    RdbPath[GP_BashOnly]:=CreateRadioButton(PathPage,'Use Git from Git Bash only','This is the safest choice as your PATH will not be modified at all. You will only be'+#13+'able to use the Git command line tools from Git Bash.',TabOrder,Top,Left);
+    RdbPath[GP_BashOnly]:=CreateRadioButton(PathPage,'Use Git from Git Bash only','This is the most cautious choice as your PATH will not be modified at all. You will'+#13+'only be able to use the Git command line tools from Git Bash.',TabOrder,Top,Left);
 
     // 2nd choice
-    RdbPath[GP_Cmd]:=CreateRadioButton(PathPage,'Git from the command line and also from 3rd-party software','This option is considered safe as it only adds some minimal Git wrappers to your'+#13+'PATH to avoid cluttering your environment with optional Unix tools.'+#13+'You will be able to use Git from Git Bash, the Command Prompt and the Windows'+#13+'PowerShell as well as any third-party software looking for Git in PATH.',TabOrder,Top,Left);
+    RdbPath[GP_Cmd]:=CreateRadioButton(PathPage,'(Recommended) Git from the command line and also from 3rd-party software','This option is considered safe as it only adds some minimal Git wrappers to your'+#13+'PATH to avoid cluttering your environment with optional Unix tools.'+#13+'You will be able to use Git from Git Bash, the Command Prompt and the Windows'+#13+'PowerShell as well as any third-party software looking for Git in PATH.',TabOrder,Top,Left);
 
     // 3rd choice
     RdbPath[GP_CmdTools]:=CreateRadioButton(PathPage,'Use Git and optional Unix tools from the Command Prompt','Both Git and the optional Unix tools will be added to your PATH.'+#13+'<RED>Warning: This will override Windows tools like "find" and "sort". Only'+#13+'use this option if you understand the implications.</RED>',TabOrder,Top,Left);
