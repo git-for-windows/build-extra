@@ -222,6 +222,7 @@ Supported projects:
 	git
 	installer [<version>]
 	git-and-installer [<version>]
+	msys2-runtime
 EOF
 			return 1
 			;;
