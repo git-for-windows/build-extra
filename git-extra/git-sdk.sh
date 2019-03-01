@@ -156,7 +156,7 @@ sdk () {
 	init)
 		sdk init-lazy "$2" &&
 		if test refs/heads/master = \
-				"$(git -C "$src_cdup_dir" symbolic-ref HEAD)" &&
+				"$(git -C "$src_cdup_dir" symbolic-ref HEAD >/dev/null 2>&1)" &&
 			{ git -C "$src_cdup_dir" diff-files --quiet &&
 			  git -C "$src_cdup_dir" diff-index --quiet HEAD ||
 			  test ! -s "$src_cdup_dir"/.git/index; }
