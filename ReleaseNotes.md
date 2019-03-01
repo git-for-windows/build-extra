@@ -40,6 +40,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [git-flow v1.12.1](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.1).
 
+### Bug Fixes
+
+* Git for Windows' updater [is now accessible](https://github.com/git-for-windows/build-extra/pull/234), i.e. it can be read by a screen reader.
+
 ## Changes since Git for Windows v2.20.1 (December 15th 2018)
 
 ### New Features
