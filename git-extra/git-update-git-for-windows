@@ -221,7 +221,7 @@ update_git_for_windows () {
 				# toast not activated, failed, toasts
 				# unsupported, WinToast init failed or toast
 				# not launched: fall back to using GUI
-				git gui--askyesno \
+				git askyesno \
 					--title "Git Update Available" \
 					"Download and install $name$warn?" || {
 				    git config --global \
@@ -237,7 +237,7 @@ update_git_for_windows () {
 			esac
 		elif test -n "$use_gui"
 		then
-			git gui--askyesno --title "Git Update Available" \
+			git askyesno --title "Git Update Available" \
 				"Download and install $name$warn?" || {
 				git config --global \
 					winUpdater.recentlySeenVersion "$latest"
