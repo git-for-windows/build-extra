@@ -522,6 +522,10 @@ set_package () {
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
+	gnupg)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
@@ -3542,6 +3546,30 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		die "Could not determine newest $package version\n"
 		url=https://svn.apache.org/repos/asf/serf/trunk/CHANGES
 		relnotes_feature='Comes with ['$package' v'$version']('"$url"').'
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
+		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+
+		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
+		die "Could not update $sdk32/$pkgpath"
+		;;
+	gnupg)
+		url=https://gnupg.org/
+		notes="$(curl -s $url)" ||
+		die 'Could not obtain download page from %s\n' \
+			"$url"
+		version="$(echo "$notes" |
+			sed -n '/^<h3[^>]*>GnuPG [^ ]* released/{s|^[^>]*>GnuPG \([^ ]*\) .*|\1|p;q}')"
+		test -n "$version" ||
+		die "Could not determine newest $package version\n"
+		url="$(echo "$notes" |
+			sed -n '/^<h3[^>]*>GnuPG '"$version"'/{:1;N;/<a href=/{s|.*<a href="\([^"]*\).*|\1|p;q};b1}')"
+		relnotes_feature='Comes with ['"$package"' v'$version']('"$url"').'
 
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
