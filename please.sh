@@ -3570,7 +3570,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
 		url="$(echo "$notes" |
 			sed -n '/^<h3[^>]*>GnuPG '"$version"'/{:1;N;/<a href=/{s|.*<a href="\([^"]*\).*|\1|p;q};b1}')"
-		relnotes_feature='Comes with ['"$package"' v'"$v"']('"$url"').'
+		relnotes_feature='Comes with [GNU Privacy Guard v'"$v"']('"$url"').'
 
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
