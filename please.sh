@@ -3539,9 +3539,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		version="$(echo "$notes" |
 			sed -n 's|.*The latest stable release of Serf is \(<b>\)\?\([1-9][.0-9]*\).*|\2|p')"
 		test -n "$version" ||
-		die "Could not determine newest serf version\n"
+		die "Could not determine newest $package version\n"
 		url=https://svn.apache.org/repos/asf/serf/trunk/CHANGES
-		relnotes_feature='Comes with [serf v'$version']('"$url"').'
+		relnotes_feature='Comes with ['$package' v'$version']('"$url"').'
 
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
