@@ -3086,6 +3086,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			 sed -n '/The most recent version of the Cygwin DLL is/{
 			    N;s/.*<a href="\([^"]*\)">'"$version"'<\/a>.*/\1/p
 			 }')"
+			test -n "$cygwin_url" ||
+			cygwin_url="$(curl -Lis https://cygwin.com/ml/cygwin-announce/current |
+			 sed -ne '/^Location: /{s/^Location: //;x}' \
+			  -e '/<a \(name=[^ ]* \)\?href=[^>]*>cygwin '"$(echo "$version" |
+				sed 's/\./\\&/g')"'/{s/.* href="\([^"]*\).*/\1/;H;x;s/\n//;p;q}')"
 		 fi &&
 
 		 test -n "$cygwin_url" ||
