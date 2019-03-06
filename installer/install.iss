@@ -38,11 +38,10 @@ OutputDir={#GetEnv('USERPROFILE')}
 #endif
 #endif
 SolidCompression=yes
-#ifdef SOURCE_DIR
-SourceDir={#SOURCE_DIR}
-#else
-SourceDir={#SourcePath}\..\..\..\..
+#ifndef SOURCE_DIR
+#define SOURCE_DIR SourcePath+'\..\..\..\..'
 #endif
+SourceDir={#SOURCE_DIR}
 #if BITNESS=='64'
 ArchitecturesInstallIn64BitMode=x64
 #endif
@@ -50,13 +49,17 @@ ArchitecturesInstallIn64BitMode=x64
 SignTool=signtool
 #endif
 
+#define FILE_VERSION GetFileVersion(SOURCE_DIR+'\'+MINGW_BITNESS+'\bin\git.exe')
+#define PROD_VERSION GetStringFileInfo(SOURCE_DIR+'\'+MINGW_BITNESS \
+				+'\bin\git.exe', 'ProductVersion')
+
 ; Installer-related
 AllowNoIcons=yes
 AppName={#APP_NAME}
 AppPublisher=The Git Development Community
 AppPublisherURL={#APP_URL}
 AppSupportURL={#APP_CONTACT_URL}
-AppVersion={#APP_VERSION}
+AppVersion={#PROD_VERSION}
 ChangesAssociations=yes
 ChangesEnvironment=yes
 CloseApplications=no
@@ -73,11 +76,7 @@ PrivilegesRequired=none
 #endif
 UninstallDisplayIcon={app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 #ifndef COMPILE_FROM_IDE
-#if Pos('-',APP_VERSION)>0
-VersionInfoVersion={#Copy(APP_VERSION,1,Pos('-',APP_VERSION)-1)}
-#else
-VersionInfoVersion={#APP_VERSION}
-#endif
+VersionInfoVersion={#FILE_VERSION}
 #endif
 
 ; Cosmetic
