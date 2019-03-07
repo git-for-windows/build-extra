@@ -108,7 +108,7 @@ continue_rebase () {
 		test "$msgnum" != "$(cat "$(git rev-parse --git-dir)/rebase-merge/msgnum")" ||
 		exit 1
 
-		test ! -f "$(git rev-parse --git-dir)/rebase-merge/stopped-sha" ||
+		test -f "$(git rev-parse --git-dir)/rebase-merge/stopped-sha" ||
 		exit 1
 	done
 }
