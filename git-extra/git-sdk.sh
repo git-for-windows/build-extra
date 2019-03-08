@@ -81,7 +81,7 @@ sdk () {
 		;;
 	# for completion
 	valid_commands)
-		echo "build cd create-desktop-icon init"
+		echo "build cd create-desktop-icon init reload"
 		;;
 	valid_projects)
 		printf "%s " build-extra git git-extra MINGW-packages \
@@ -205,14 +205,37 @@ sdk () {
 			sdk init build-extra &&
 			"$src_dir"/installer/release.sh "${3:-0-test}"
 			;;
+		msys2-runtime)
+			sdk cd "$2" ||
+			return $?
+
+			if test refs/heads/makepkg = "$(git symbolic-ref HEAD)" &&
+				{ git -C diff-files --quiet &&
+				  git -C diff-index --quiet HEAD ||
+				  test ! -s .git/index; }
+			then
+				# no local changes
+				cd "$src_cdup_dir" &&
+				makepkg --syncdeps --noconfirm
+				return $?
+			fi
+
+			# Build the current branch
+			uname_m="$(uname -m)" &&
+			cd "../build-$uname_m-pc-msys/$uname_m-pc-msys/winsup/cygwin" &&
+			make -j$(nproc)
+			return $?
+			;;
 		*)
+			sdk cd "$2" ||
+			return $?
 			if test -f PKGBUILD
 			then
 				case "$MSYSTEM" in
 				MSYS) makepkg --syncdeps --noconfirm;;
 				MINGW*) makepkg-mingw --syncdeps --noconfirm;;
 				esac
-				return #?
+				return $?
 			fi
 
 			cat >&2 <<EOF
@@ -222,6 +245,7 @@ Supported projects:
 	git
 	installer [<version>]
 	git-and-installer [<version>]
+	msys2-runtime
 EOF
 			return 1
 			;;
