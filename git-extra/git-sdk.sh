@@ -87,6 +87,10 @@ sdk () {
 		printf "%s " build-extra git git-extra MINGW-packages \
 			MSYS2-packages msys2-runtime
 		;;
+	valid_build_targets)
+		printf "%s " git-and-installer $(sdk valid_projects | tr ' ' '\n' |
+			grep -v '^\(build-extra\|\(MINGW\|MSYS2\)-packages\)')
+		;;
 	# here start the commands
 	init-lazy)
 		case "$2" in
