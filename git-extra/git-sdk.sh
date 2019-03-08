@@ -142,7 +142,7 @@ sdk () {
 
 		second_path=/usr/bin
 		case "$PWD" in
-		*/MSYS2-packages/*)
+		*/MSYS2-packages|*/MSYS2-packages/*)
 			MSYSTEM=MSYS
 			second_path=$first_path
 			first_path=/usr/bin:/opt/bin
