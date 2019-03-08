@@ -99,7 +99,8 @@ sdk () {
 			grep -v '^\(build-extra\|\(MINGW\|MSYS2\)-packages\)')
 		;;
 	valid_edit_targets)
-		printf "%s " git-sdk.sh sdk.completion ReleaseNotes.md
+		printf "%s " git-sdk.sh sdk.completion ReleaseNotes.md \
+			install.iss
 		;;
 	# here start the commands
 	init-lazy)
@@ -279,6 +280,10 @@ EOF
 			;;
 		ReleaseNotes.md)
 			sdk cd build-extra &&
+			sdk git-editor "$2"
+			;;
+		install.iss)
+			sdk cd installer &&
 			sdk git-editor "$2"
 			;;
 		*)
