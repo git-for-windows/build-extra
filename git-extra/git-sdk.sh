@@ -38,6 +38,9 @@ sdk () {
 		build <project>: builds one of the following:
 		$(sdk valid_build_targets | sdk fmt_list)
 
+		edit <file>: edit a well-known file. Well-known files are:
+		$(sdk valid_edit_targets | sdk fmt_list)
+
 		reload: reload the 'sdk' function.
 		EOF
 		;;
@@ -85,7 +88,7 @@ sdk () {
 		;;
 	# for completion
 	valid_commands)
-		echo "build cd create-desktop-icon init reload"
+		echo "build cd create-desktop-icon init edit reload"
 		;;
 	valid_projects)
 		printf "%s " build-extra git git-extra MINGW-packages \
@@ -94,6 +97,9 @@ sdk () {
 	valid_build_targets)
 		printf "%s " git-and-installer $(sdk valid_projects | tr ' ' '\n' |
 			grep -v '^\(build-extra\|\(MINGW\|MSYS2\)-packages\)')
+		;;
+	valid_edit_targets)
+		printf "%s " git-sdk.sh sdk.completion ReleaseNotes.md
 		;;
 	# here start the commands
 	init-lazy)
@@ -258,6 +264,27 @@ EOF
 			return 1
 			;;
 		esac
+		;;
+	git-editor)
+		# Cannot use `git config -e -f "$2", as that would cd up to the
+		# top-level if the file is in a subdirectory of a Git worktree
+		eval "$(git var GIT_EDITOR)" "$2"
+		;;
+	edit)
+		case "$2" in
+		git-sdk.sh|sdk.completion)
+			sdk cd git-extra &&
+			sdk git-editor "$2" &&
+			. "$2"
+			;;
+		ReleaseNotes.md)
+			sdk cd build-extra &&
+			sdk git-editor "$2"
+			;;
+		*)
+			sdk die "Not a valid edit target: $2"
+			;;
+		esac || return $?
 		;;
 	reload)
 		shift
