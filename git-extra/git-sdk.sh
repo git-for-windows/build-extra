@@ -89,7 +89,7 @@ sdk () {
 		;;
 	valid_projects)
 		printf "%s " build-extra git git-extra MINGW-packages \
-			MSYS2-packages msys2-runtime
+			MSYS2-packages msys2-runtime installer
 		;;
 	valid_build_targets)
 		printf "%s " git-and-installer $(sdk valid_projects | tr ' ' '\n' |
@@ -109,7 +109,7 @@ sdk () {
 				https://github.com/git-for-windows/"$2" ||
 			sdk die "Could not initialize $src_dir"
 			;;
-		git-extra)
+		git-extra|installer)
 			sdk init-lazy build-extra &&
 			src_dir="$src_dir/$2" ||
 			return 1
@@ -203,8 +203,8 @@ sdk () {
 			make -C "$src_dir" -j$(nproc) DEVELOPER=1
 			;;
 		installer)
-			sdk init build-extra &&
-			"$src_dir"/installer/release.sh "${3:-0-test}"
+			sdk init "$2" &&
+			"$src_dir"/release.sh "${3:-0-test}"
 			;;
 		git-and-installer)
 			sdk build git &&
