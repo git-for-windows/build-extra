@@ -29,13 +29,17 @@ sdk () {
 		create-desktop-icon: install a desktop icon that starts the Git for
 		    Windows SDK Bash.
 
-		cd <project>: initialize/update a worktree and cd into it. Known projects
-		    are: git, git-extra, build-extra, MINGW-packages, MSYS2-packages.
+		cd <project>: initialize/update a worktree and cd into it. Known projects:
+		$(sdk valid_projects | sdk fmt_list)
 
 		init <project>: initialize and/or update a worktree. Known projects
 		    are the same as for the 'cd' command.
 
-		build <project>: builds one of the following: git, git-and-installer.
+		build <project>: builds one of the following:
+		$(sdk valid_build_targets | sdk fmt_list)
+
+		edit <file>: edit a well-known file. Well-known files are:
+		$(sdk valid_edit_targets | sdk fmt_list)
 
 		reload: reload the 'sdk' function.
 		EOF
@@ -79,13 +83,24 @@ sdk () {
 		echo "$*" >&2
 		return 1
 		;;
+	fmt_list)
+		fmt -w 64 | sed 's/^/\t/'
+		;;
 	# for completion
 	valid_commands)
-		echo "build cd create-desktop-icon init reload"
+		echo "build cd create-desktop-icon init edit reload"
 		;;
 	valid_projects)
 		printf "%s " build-extra git git-extra MINGW-packages \
-			MSYS2-packages msys2-runtime
+			MSYS2-packages msys2-runtime installer
+		;;
+	valid_build_targets)
+		printf "%s " git-and-installer $(sdk valid_projects | tr ' ' '\n' |
+			grep -v '^\(build-extra\|\(MINGW\|MSYS2\)-packages\)')
+		;;
+	valid_edit_targets)
+		printf "%s " git-sdk.sh sdk.completion ReleaseNotes.md \
+			install.iss
 		;;
 	# here start the commands
 	init-lazy)
@@ -101,7 +116,7 @@ sdk () {
 				https://github.com/git-for-windows/"$2" ||
 			sdk die "Could not initialize $src_dir"
 			;;
-		git-extra)
+		git-extra|installer)
 			sdk init-lazy build-extra &&
 			src_dir="$src_dir/$2" ||
 			return 1
@@ -142,7 +157,7 @@ sdk () {
 
 		second_path=/usr/bin
 		case "$PWD" in
-		*/MSYS2-packages/*)
+		*/MSYS2-packages|*/MSYS2-packages/*)
 			MSYSTEM=MSYS
 			second_path=$first_path
 			first_path=/usr/bin:/opt/bin
@@ -195,8 +210,8 @@ sdk () {
 			make -C "$src_dir" -j$(nproc) DEVELOPER=1
 			;;
 		installer)
-			sdk init build-extra &&
-			"$src_dir"/installer/release.sh "${3:-0-test}"
+			sdk init "$2" &&
+			"$src_dir"/release.sh "${3:-0-test}"
 			;;
 		git-and-installer)
 			sdk build git &&
@@ -251,8 +266,50 @@ EOF
 			;;
 		esac
 		;;
+	git-editor)
+		# Cannot use `git config -e -f "$2", as that would cd up to the
+		# top-level if the file is in a subdirectory of a Git worktree
+		eval "$(git var GIT_EDITOR)" "$2"
+		;;
+	edit)
+		case "$2" in
+		git-sdk.sh|sdk.completion)
+			sdk cd git-extra &&
+			sdk git-editor "$2" &&
+			. "$2"
+			;;
+		ReleaseNotes.md)
+			sdk cd build-extra &&
+			sdk git-editor "$2"
+			;;
+		install.iss)
+			sdk cd installer &&
+			sdk git-editor "$2"
+			;;
+		*)
+			sdk die "Not a valid edit target: $2"
+			;;
+		esac || return $?
+		;;
 	reload)
-		. "$GIT_SDK_SH_PATH"
+		shift
+		case "$*" in
+		--experimental)
+			sdk init git-extra &&
+			. "$src_dir"/sdk.completion &&
+			. "$src_dir"/git-sdk.sh
+			;;
+		--system)
+			. /usr/share/bash-completion/completions/sdk &&
+			. /etc/profile.d/git-sdk.sh
+			;;
+		'')
+			. "$GIT_SDK_SH_PATH"
+			;;
+		*)
+			sdk die "Unhandled option: '$*'"
+			;;
+		esac
 		return $?
 		;;
 	*)
