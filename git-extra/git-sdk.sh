@@ -29,13 +29,14 @@ sdk () {
 		create-desktop-icon: install a desktop icon that starts the Git for
 		    Windows SDK Bash.
 
-		cd <project>: initialize/update a worktree and cd into it. Known projects
-		    are: git, git-extra, build-extra, MINGW-packages, MSYS2-packages.
+		cd <project>: initialize/update a worktree and cd into it. Known projects:
+		$(sdk valid_projects | sdk fmt_list)
 
 		init <project>: initialize and/or update a worktree. Known projects
 		    are the same as for the 'cd' command.
 
-		build <project>: builds one of the following: git, git-and-installer.
+		build <project>: builds one of the following:
+		$(sdk valid_build_targets | sdk fmt_list)
 
 		reload: reload the 'sdk' function.
 		EOF
@@ -78,6 +79,9 @@ sdk () {
 		shift
 		echo "$*" >&2
 		return 1
+		;;
+	fmt_list)
+		fmt -w 64 | sed 's/^/\t/'
 		;;
 	# for completion
 	valid_commands)
