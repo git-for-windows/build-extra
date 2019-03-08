@@ -252,7 +252,24 @@ EOF
 		esac
 		;;
 	reload)
-		. "$GIT_SDK_SH_PATH"
+		shift
+		case "$*" in
+		--experimental)
+			sdk init git-extra &&
+			. "$src_dir"/sdk.completion &&
+			. "$src_dir"/git-sdk.sh
+			;;
+		--system)
+			. /usr/share/bash-completion/completions/sdk &&
+			. /etc/profile.d/git-sdk.sh
+			;;
+		'')
+			. "$GIT_SDK_SH_PATH"
+			;;
+		*)
+			sdk die "Unhandled option: '$*'"
+			;;
+		esac
 		return $?
 		;;
 	*)
