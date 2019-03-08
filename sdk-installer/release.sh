@@ -48,10 +48,13 @@ do
 	exes_and_dlls="$exes_and_dlls$file "
 
         for dll in $(ldd "$BIN_DIR/$file" |
-		sed -n "s|.*> $BIN_DIR/\\([^ ]*\\).*|\\1|p")
+		sed -ne "s|.*> $BIN_DIR/\\([^ ]*\\).*|\\1|p" \
+			-e "s|.*> ${BIN_DIR%bin}\\(libexec/git-core/[^ ]*\\).*|../\\1|p")
         do
                 case " $exes_and_dlls $todo " in
                 *" $dll "*) ;; # already found/queued
+                *" ${dll#../libexec/git-core/} "*) ;; # already found/queued
+                *" ../libexec/git-core/$dll "*) ;; # already found/queued
                 *) test ! -f "$BIN_DIR/$dll" || todo="$todo$dll ";;
                 esac
         done
