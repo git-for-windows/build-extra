@@ -90,6 +90,30 @@ count_other_bashes () {
 	wc -l
 }
 
+# Write HTTP GET response to stdout and return error code. This is equivalent
+# to curl --fail, except that we output the response body to stderr in case of
+# an HTTP error status.
+http_get () {
+	url=$1
+	output=$(mktemp -t gfw-httpget-XXXXXXXX.txt)
+	code=$(curl \
+		--silent \
+		--show-error \
+		--output "$output" \
+		--write-out '%{http_code}' \
+		"$url") || return $?
+	fdout=1
+	ret=0
+	if test "$code" -ge 400
+	then
+		fdout=2
+		ret=22
+	fi
+	cat "$output" >&"$fdout"
+	rm -f "$output"
+	return "$ret"
+}
+
 # The main function of this script
 
 update_git_for_windows () {
@@ -139,14 +163,14 @@ update_git_for_windows () {
 	esac
 
 	releases_url=https://api.github.com/repos/git-for-windows/git/releases
-	releases=$(curl --silent $releases_url/latest) ||
+	releases=$(http_get $releases_url/latest) ||
 	case $?,"$proxy" in
 	7,)
 		proxy="$(proxy-lookup.exe https://api.github.com)" &&
-		test -n "$proxy"
+		test -n "$proxy" &&
 		export https_proxy="$proxy" &&
 		echo "Using proxy $https_proxy as per lookup" >&2 &&
-		releases=$(curl --silent $releases_url/latest) ||
+		releases=$(http_get $releases_url/latest) ||
 		return
 		;;
 	*)
