@@ -89,10 +89,7 @@ die "Could not copy post-install script"
 
 mkdir -p "$SCRIPT_PATH/root/mingw$BITNESS/etc" &&
 cp /mingw$BITNESS/etc/gitconfig \
-	"$SCRIPT_PATH/root/mingw$BITNESS/etc/gitconfig" &&
-git config -f "$SCRIPT_PATH/root/mingw$BITNESS/etc/gitconfig" \
-	credential.helper manager ||
-die "Could not configure Git-Credential-Manager as default"
+	"$SCRIPT_PATH/root/mingw$BITNESS/etc/gitconfig"
 test 64 != $BITNESS ||
 git config -f "$SCRIPT_PATH/root/mingw$BITNESS/etc/gitconfig" --unset pack.packSizeLimit
 
