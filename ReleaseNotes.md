@@ -38,11 +38,11 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [git-flow v1.12.1](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.1).
 * The `awk` included in Git for Windows [now includes extensions](https://github.com/git-for-windows/build-extra/pull/232) such as `inplace`.
 * Comes with [GNU Privacy Guard v2.2.13](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000434.html), specifically [patched to handle Windows paths](https://github.com/git-for-windows/MSYS2-packages/pull/33).
 * The file/product version stored in the installer's `.exe` file [now matches the version of the included `git.exe` file's](https://github.com/git-for-windows/build-extra/pull/235).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.3](https://cygwin.com/ml/cygwin-announce/2019-03/msg00008.html).
+* Comes with [git-flow v1.12.2](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.2).
 
 ### Bug Fixes
 
