@@ -3524,6 +3524,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		test -n "$version" ||
 		die "Could not determine version of %s\n" "$package"
 
+		# git-flow 1.12.2 was somehow released as tag only, without
+		# release notes, so we would only find 1.12.1...
+		# see https://github.com/petervanderdoes/gitflow-avh/issues/406
+		# for details.
+		test 1.12.1 != "$version" ||
+		version=1.12.2
+
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
