@@ -2830,7 +2830,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			# The version in the tag and the zip file name differ
 			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]*/\1'$zip_name/
 		else
-			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]/\1'$zip_prefix'${_realver}.zip/'
+			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]*/\1'$zip_prefix'${_realver}.zip/'
 		fi
 		src_zip_prefix=${tag_name%$version}
 		(cd "$sdk64/$pkgpath" &&
