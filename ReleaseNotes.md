@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Git for Windows' updater [is now accessible](https://github.com/git-for-windows/build-extra/pull/234), i.e. it can be read by a screen reader.
+* `git update-git-for-windows` (i.e. the auto updater of Git for Windows) now [reports correctly when it failed to access the GitHub API](https://github.com/git-for-windows/build-extra/pull/239).
 
 ## Changes since Git for Windows v2.20.1 (December 15th 2018)
 
