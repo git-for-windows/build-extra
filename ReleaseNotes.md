@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 * The file/product version stored in the installer's `.exe` file [now matches the version of the included `git.exe` file's](https://github.com/git-for-windows/build-extra/pull/235).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.3](https://cygwin.com/ml/cygwin-announce/2019-03/msg00008.html).
 * Comes with [git-flow v1.12.2](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.2).
+* Comes with [Git Credential Manager v1.18.5](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.5).
 
 ### Bug Fixes
 
