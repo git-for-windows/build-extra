@@ -84,7 +84,7 @@ extract_todo_help () {
 
 continue_rebase () {
 	test -n "$ORIGINAL_GIT_EDITOR" ||
-	ORIGINAL_GIT_EDITOR="$(git var GIT_EDITOR)"
+	ORIGINAL_GIT_EDITOR="$(git var GIT_EDITOR 2>/dev/null || echo false)"
 	test -n "$ORIGINAL_GIT_EDITOR" ||
 	die "Could not determine editor"
 	export ORIGINAL_GIT_EDITOR
@@ -164,7 +164,7 @@ nested-rebase)
 		test -n "$ORIGINAL_GIT_SEQUENCE_EDITOR" ||
 		ORIGINAL_GIT_SEQUENCE_EDITOR="$(git config sequence.editor)"
 		test -n "$ORIGINAL_GIT_SEQUENCE_EDITOR" ||
-			ORIGINAL_GIT_SEQUENCE_EDITOR="$(git var GIT_EDITOR)"
+			ORIGINAL_GIT_SEQUENCE_EDITOR="$(git var GIT_EDITOR 2>/dev/null || echo false)"
 		test -n "$ORIGINAL_GIT_SEQUENCE_EDITOR" ||
 		die "Could not determine editor"
 	fi
@@ -726,7 +726,7 @@ export ORIGINAL_GIT_SEQUENCE_EDITOR="$GIT_SEQUENCE_EDITOR"
 test -n "$ORIGINAL_GIT_SEQUENCE_EDITOR" || {
 	ORIGINAL_GIT_SEQUENCE_EDITOR="$(git config sequence.editor)"
 	test -n "$ORIGINAL_GIT_SEQUENCE_EDITOR" ||
-	ORIGINAL_GIT_SEQUENCE_EDITOR="$(git var GIT_EDITOR)"
+	ORIGINAL_GIT_SEQUENCE_EDITOR="$(git var GIT_EDITOR 2>/dev/null || echo false)"
 	test -n "$ORIGINAL_GIT_SEQUENCE_EDITOR" ||
 	die "Could not determine editor"
 }
