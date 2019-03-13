@@ -162,15 +162,15 @@ update_git_for_windows () {
 		;;
 	esac
 
-	releases_url=https://api.github.com/repos/git-for-windows/git/releases
-	releases=$(http_get $releases_url/latest) ||
+	latest_tag_url=https://gitforwindows.org/latest-tag.txt
+	latest_tag=$(http_get $latest_tag_url) ||
 	case $?,"$proxy" in
 	7,)
-		proxy="$(proxy-lookup.exe https://api.github.com)" &&
+		proxy="$(proxy-lookup.exe https://gitforwindows.org)" &&
 		test -n "$proxy" &&
 		export https_proxy="$proxy" &&
 		echo "Using proxy $https_proxy as per lookup" >&2 &&
-		releases=$(http_get $releases_url/latest) ||
+		latest_tag=$(http_get $latest_tag_url) ||
 		return
 		;;
 	*)
@@ -178,9 +178,7 @@ update_git_for_windows () {
 		;;
 	esac
 
-	latest=$(echo "$releases" |
-		grep '"tag_name": "v' |
-		sed -E 's/.*"tag_name": "v([^"]*).*/\1/')
+	latest=${latest_tag#v}
 	# Did we ask about this version already?
 	recently_seen="$(git config --global winUpdater.recentlySeenVersion)"
 	test -n "$quiet" && test "x$recently_seen" = "x$latest" && return
@@ -205,6 +203,8 @@ update_git_for_windows () {
 	esac
 
 	echo "Update $latest is available" >&2
+	releases_url=https://api.github.com/repos/git-for-windows/git/releases
+	releases=$(http_get $releases_url/latest) || return
 	download=$(echo "$releases" |
 		grep '"browser_download_url": "' |
 		grep "$bit\-bit\.exe" |
