@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.3](https://cygwin.com/ml/cygwin-announce/2019-03/msg00008.html).
 * Comes with [git-flow v1.12.2](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.2).
 * Comes with [Git Credential Manager v1.18.5](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.5).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.4](https://cygwin.com/ml/cygwin-announce/2019-03/msg00016.html).
 
 ### Bug Fixes
 
