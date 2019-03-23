@@ -53,7 +53,7 @@ x86_64)
 esac
 VERSION=$1
 shift
-TARGET="$output_directory"/PortableBash-"$VERSION"-"$BITNESS"-bit.7z.exe
+TARGET="$output_directory"/PortableMSYS2-"$VERSION"-"$BITNESS"-bit.7z.exe
 OPTS7="-m0=lzma -mx=9 -md=$MD_ARG -mfb=273 -ms=256M "
 TMPPACK=/tmp.7z
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
@@ -63,8 +63,6 @@ case "$SCRIPT_PATH" in
 	die "This script cannot handle spaces in $SCRIPT_PATH"
 	;;
 esac
-
-echo $SCRIPT_PATH/root
 
 # Generate a couple of files dynamically
 
@@ -128,7 +126,7 @@ LIST="$LIST $SCRIPT_PATH/root/*"
 
 # Make the self-extracting package
 
-type 7za ||
+type 7za > /dev/null ||
 pacman -Sy --noconfirm p7zip ||
 die "Could not install 7-Zip"
 
