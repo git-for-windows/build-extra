@@ -1,6 +1,6 @@
 #!/bin/sh
 
-# Build the portable Git for Windows.
+# Build the portable MSYS2
 
 die () {
 	echo "$*" >&1
