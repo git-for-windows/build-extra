@@ -10,14 +10,6 @@ test -n "$BITNESS" ||
 die "Need ARCH and BITNESS to be set"
 
 pacman_list () {
-#	cat "$this_script_dir/keep-despite-upgrade.txt" 2>/dev/null |
-#	if test 64 = "$BITNESS"
-#	then
-#		grep -v '^mingw32/'
-#	else
-#		grep -v '^mingw64/'
-#	fi
- 
 	package_list=$(for arg
 		do
 			pactree -u "$arg"
@@ -31,8 +23,6 @@ pacman_list () {
 	then
 		pacman -Q $package_list >"$PACKAGE_VERSIONS_FILE"
 	fi &&
-#echo $package_list
-#exit
 	pacman -Ql $package_list |
 	grep -v '/$' |
 	sed 's/^[^ ]* //'
@@ -134,6 +124,5 @@ sed 's/^\///'
 # TODO - need this?
 test -z "$PACKAGE_VERSIONS_FILE" ||
 pacman -Q filesystem $SH_FOR_REBASE rebase \
-	$(test -n "$MINIMAL_GIT" || echo util-linux unzip \
-		mingw-w64-$ARCH-xpdf-tools) \
+	util-linux unzip mingw-w64-$ARCH-xpdf-tools \
 	>>"$PACKAGE_VERSIONS_FILE"
