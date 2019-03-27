@@ -91,8 +91,35 @@ sdk () {
 		echo "build cd create-desktop-icon init edit reload"
 		;;
 	valid_projects)
-		printf "%s " build-extra git git-extra MINGW-packages \
-			MSYS2-packages msys2-runtime installer
+		printf "%s " git git-extra msys2-runtime installer \
+			build-extra MINGW-packages MSYS2-packages \
+			mingw-w64-busybox \
+			mingw-w64-curl \
+			mingw-w64-cv2pdb \
+			mingw-w64-git \
+			mingw-w64-git-credential-manager \
+			mingw-w64-git-lfs \
+			mingw-w64-git-sizer \
+			mingw-w64-wintoast \
+			bash \
+			curl \
+			gawk \
+			git-flow \
+			gnupg \
+			heimdal \
+			mintty \
+			nodejs \
+			openssh \
+			openssl \
+			perl \
+			perl-HTML-Parser \
+			perl-Locale-Gettext \
+			perl-Net-SSLeay \
+			perl-TermReadKey \
+			perl-XML-Parser \
+			perl-YAML-Syck \
+			subversion \
+			tig
 		;;
 	valid_build_targets)
 		printf "%s " git-and-installer $(sdk valid_projects | tr ' ' '\n' |
@@ -116,11 +143,6 @@ sdk () {
 				https://github.com/git-for-windows/"$2" ||
 			sdk die "Could not initialize $src_dir"
 			;;
-		git-extra|installer)
-			sdk init-lazy build-extra &&
-			src_dir="$src_dir/$2" ||
-			return 1
-			;;
 		msys2-runtime)
 			sdk init MSYS2-packages &&
 			(cd "$src_dir/$2" &&
@@ -130,8 +152,24 @@ sdk () {
 			src_cdup_dir="$src_dir" ||
 			return 1
 			;;
+		git-extra|git-for-windows-keyring|mingw-w64-cv2pdb|\
+		mingw-w64-git-credential-manager|mingw-w64-git-lfs|\
+		mingw-w64-git-sizer|mingw-w64-wintoast|installer)
+			sdk init-lazy build-extra &&
+			src_dir="$src_dir/$2" ||
+			return 1
+			;;
+		mingw-w64-*)
+			sdk init MINGW-packages &&
+			src_dir="$src_cdup_dir/$2" &&
+			test -d "$src_dir" ||
+			return 1
+			;;
 		*)
-			sdk die "Unhandled repository: $2" >&2
+			sdk init MSYS2-packages &&
+			src_dir="$src_cdup_dir/$2" &&
+			test -d "$src_dir" ||
+			return 1
 			;;
 		esac
 		;;
