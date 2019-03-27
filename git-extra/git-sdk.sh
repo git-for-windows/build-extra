@@ -339,7 +339,7 @@ EOF
 			sdk git-editor "$src_dir/$2" &&
 			. "$src_dir/$2"
 			;;
-		ReleaseNotes.md)
+		ReleaseNotes.md|please.sh)
 			sdk $cmd build-extra &&
 			sdk git-editor "$src_dir/$2"
 			;;
