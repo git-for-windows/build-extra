@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git Credential Manager v1.18.5](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.5).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.4](https://cygwin.com/ml/cygwin-announce/2019-03/msg00016.html).
 * Comes with [GNU Privacy Guard vv2.2.14](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000435.html), specifically [patched to handle Windows paths](https://github.com/git-for-windows/MSYS2-packages/pull/33).
+* Comes with [cURL v7.64.1](https://curl.haxx.se/changes.html#7_64_1).
 
 ### Bug Fixes
 
