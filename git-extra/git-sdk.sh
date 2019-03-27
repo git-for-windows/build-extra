@@ -181,26 +181,33 @@ sdk () {
 		case "$(uname -m)" in
 		i686)
 			MSYSTEM=MINGW32
-			first_path=/mingw32/bin
+			MINGW_MOUNT_POINT=/mingw32
 			;;
 		x86_64)
 			MSYSTEM=MINGW64
-			first_path=/mingw64/bin
+			MINGW_MOUNT_POINT=/mingw64
 			;;
 		*)
 			sdk die "Could not determine bitness"
 			return 1
 			;;
 		esac
-
+		PKG_CONFIG_PATH="${MINGW_MOUNT_POINT}/lib/pkgconfig:${MINGW_MOUNT_POINT}/share/pkgconfig"
+		ACLOCAL_PATH="${MINGW_MOUNT_POINT}/share/aclocal:/usr/share/aclocal"
+		MANPATH="${MINGW_MOUNT_POINT}/local/man:${MINGW_MOUNT_POINT}/share/man:${MANPATH}"
+		first_path=$MINGW_MOUNT_POINT/bin
 		second_path=/usr/bin
+
 		case "$PWD" in
 		*/MSYS2-packages|*/MSYS2-packages/*)
 			MSYSTEM=MSYS
+			unset MINGW_MOUNT_POINT
+			PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/share/pkgconfig:/lib/pkgconfig"
 			second_path=$first_path
 			first_path=/usr/bin:/opt/bin
 			;;
 		esac
+		. /etc/msystem
 
 		PATH="$first_path:$second_path:$(echo "$PATH" |
 			sed -e "s|:\($first_path\|$second_path\)/\?:|:|g")"
