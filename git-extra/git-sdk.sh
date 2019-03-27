@@ -242,6 +242,16 @@ sdk () {
 		fi
 		;;
 	build)
+		if test -z "$2"
+		then
+			set -- "$1" "$(basename "$PWD")" &&
+			sdk init-lazy "$2" &&
+			test "a$PWD" = "a$src_dir" || {
+				sdk die "$PWD seems not to be a known project"
+				return $?
+			}
+		fi
+
 		case "$2" in
 		git)
 			sdk init git &&
