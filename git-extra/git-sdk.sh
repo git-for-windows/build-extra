@@ -320,19 +320,25 @@ EOF
 		eval "$(git var GIT_EDITOR)" "$2"
 		;;
 	edit)
+		cmd=init-lazy
+		test --cd != "$2" || {
+			cmd=cd
+			shift
+		}
+
 		case "$2" in
 		git-sdk.sh|sdk.completion)
-			sdk cd git-extra &&
-			sdk git-editor "$2" &&
-			. "$2"
+			sdk $cmd git-extra &&
+			sdk git-editor "$src_dir/$2" &&
+			. "$src_dir/$2"
 			;;
 		ReleaseNotes.md)
-			sdk cd build-extra &&
-			sdk git-editor "$2"
+			sdk $cmd build-extra &&
+			sdk git-editor "$src_dir/$2"
 			;;
 		install.iss)
-			sdk cd installer &&
-			sdk git-editor "$2"
+			sdk $cmd installer &&
+			sdk git-editor "$src_dir/$2"
 			;;
 		*)
 			sdk die "Not a valid edit target: $2"
