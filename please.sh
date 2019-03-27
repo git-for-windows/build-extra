@@ -3571,18 +3571,32 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		die "Could not update $sdk32/$pkgpath"
 		;;
 	gnupg)
-		url=https://gnupg.org/
-		notes="$(curl -s $url)" ||
-		die 'Could not obtain download page from %s\n' \
-			"$url"
-		version="$(echo "$notes" |
-			sed -n '/^<h3[^>]*>GnuPG [^ ]* released/{s|^[^>]*>GnuPG \([^ ]*\) .*|\1|p;q}')"
+		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=tags'
+		tags="$(curl -s "$url")" ||
+		die 'Could not obtain download page from %s\n' "$url"
+		version="$(echo "$tags" |
+			sed -n '/ href=[^>]*>gnupg-[1-9][.0-9]*</{s/.*>gnupg-\([.0-9]*\).*/\1/p;q}')"
 		test -n "$version" ||
 		die "Could not determine newest $package version\n"
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
-		url="$(echo "$notes" |
-			sed -n '/^<h3[^>]*>GnuPG '"$version"'/{:1;N;/<a href=/{s|.*<a href="\([^"]*\).*|\1|p;q};b1}')"
-		relnotes_feature='Comes with [GNU Privacy Guard v'"$v"']('"$url"').'
+
+		announce_url=
+		url2=https://lists.gnupg.org/pipermail/gnupg-announce/
+		mails="$(curl -s "$url2")" ||
+		die 'Could not obtain download page from %s\n' "$url2"
+		for d in $(echo "$mails" | sed -n 's/.*<A href="\(2[^/]*\/date.html\).*/\1/p')
+		do
+			m="$(curl -s "$url2/$d")" ||
+			die "Could not download %s\n" "$url2$d"
+			m="$(echo "$m" |
+				sed -n '/<A HREF.*>.*GnuPG 2.2.15 released/{s/.* HREF="\([^"]*\).*/\1/p;q}')"
+			test -n "$m" || continue
+			announce_url="$url2${d%/*}/$m"
+			break
+		done
+		test -n "$announce_url" ||
+		die "Did not find announcement mail for GNU Privacy Guard %s\n" "$v"
+		relnotes_feature='Comes with [GNU Privacy Guard v'"$v"']('"$announce_url"').'
 
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
