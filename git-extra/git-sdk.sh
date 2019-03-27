@@ -91,8 +91,35 @@ sdk () {
 		echo "build cd create-desktop-icon init edit reload"
 		;;
 	valid_projects)
-		printf "%s " build-extra git git-extra MINGW-packages \
-			MSYS2-packages msys2-runtime installer
+		printf "%s " git git-extra msys2-runtime installer \
+			build-extra MINGW-packages MSYS2-packages \
+			mingw-w64-busybox \
+			mingw-w64-curl \
+			mingw-w64-cv2pdb \
+			mingw-w64-git \
+			mingw-w64-git-credential-manager \
+			mingw-w64-git-lfs \
+			mingw-w64-git-sizer \
+			mingw-w64-wintoast \
+			bash \
+			curl \
+			gawk \
+			git-flow \
+			gnupg \
+			heimdal \
+			mintty \
+			nodejs \
+			openssh \
+			openssl \
+			perl \
+			perl-HTML-Parser \
+			perl-Locale-Gettext \
+			perl-Net-SSLeay \
+			perl-TermReadKey \
+			perl-XML-Parser \
+			perl-YAML-Syck \
+			subversion \
+			tig
 		;;
 	valid_build_targets)
 		printf "%s " git-and-installer $(sdk valid_projects | tr ' ' '\n' |
@@ -116,11 +143,6 @@ sdk () {
 				https://github.com/git-for-windows/"$2" ||
 			sdk die "Could not initialize $src_dir"
 			;;
-		git-extra|installer)
-			sdk init-lazy build-extra &&
-			src_dir="$src_dir/$2" ||
-			return 1
-			;;
 		msys2-runtime)
 			sdk init MSYS2-packages &&
 			(cd "$src_dir/$2" &&
@@ -130,8 +152,24 @@ sdk () {
 			src_cdup_dir="$src_dir" ||
 			return 1
 			;;
+		git-extra|git-for-windows-keyring|mingw-w64-cv2pdb|\
+		mingw-w64-git-credential-manager|mingw-w64-git-lfs|\
+		mingw-w64-git-sizer|mingw-w64-wintoast|installer)
+			sdk init-lazy build-extra &&
+			src_dir="$src_dir/$2" ||
+			return 1
+			;;
+		mingw-w64-*)
+			sdk init MINGW-packages &&
+			src_dir="$src_cdup_dir/$2" &&
+			test -d "$src_dir" ||
+			return 1
+			;;
 		*)
-			sdk die "Unhandled repository: $2" >&2
+			sdk init MSYS2-packages &&
+			src_dir="$src_cdup_dir/$2" &&
+			test -d "$src_dir" ||
+			return 1
 			;;
 		esac
 		;;
@@ -143,26 +181,33 @@ sdk () {
 		case "$(uname -m)" in
 		i686)
 			MSYSTEM=MINGW32
-			first_path=/mingw32/bin
+			MINGW_MOUNT_POINT=/mingw32
 			;;
 		x86_64)
 			MSYSTEM=MINGW64
-			first_path=/mingw64/bin
+			MINGW_MOUNT_POINT=/mingw64
 			;;
 		*)
 			sdk die "Could not determine bitness"
 			return 1
 			;;
 		esac
-
+		PKG_CONFIG_PATH="${MINGW_MOUNT_POINT}/lib/pkgconfig:${MINGW_MOUNT_POINT}/share/pkgconfig"
+		ACLOCAL_PATH="${MINGW_MOUNT_POINT}/share/aclocal:/usr/share/aclocal"
+		MANPATH="${MINGW_MOUNT_POINT}/local/man:${MINGW_MOUNT_POINT}/share/man:${MANPATH}"
+		first_path=$MINGW_MOUNT_POINT/bin
 		second_path=/usr/bin
+
 		case "$PWD" in
 		*/MSYS2-packages|*/MSYS2-packages/*)
 			MSYSTEM=MSYS
+			unset MINGW_MOUNT_POINT
+			PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/share/pkgconfig:/lib/pkgconfig"
 			second_path=$first_path
 			first_path=/usr/bin:/opt/bin
 			;;
 		esac
+		. /etc/msystem
 
 		PATH="$first_path:$second_path:$(echo "$PATH" |
 			sed -e "s|:\($first_path\|$second_path\)/\?:|:|g")"
@@ -204,6 +249,16 @@ sdk () {
 		fi
 		;;
 	build)
+		if test -z "$2"
+		then
+			set -- "$1" "$(basename "$PWD")" &&
+			sdk init-lazy "$2" &&
+			test "a$PWD" = "a$src_dir" || {
+				sdk die "$PWD seems not to be a known project"
+				return $?
+			}
+		fi
+
 		case "$2" in
 		git)
 			sdk init git &&
@@ -272,19 +327,25 @@ EOF
 		eval "$(git var GIT_EDITOR)" "$2"
 		;;
 	edit)
+		cmd=init-lazy
+		test --cd != "$2" || {
+			cmd=cd
+			shift
+		}
+
 		case "$2" in
 		git-sdk.sh|sdk.completion)
-			sdk cd git-extra &&
-			sdk git-editor "$2" &&
-			. "$2"
+			sdk $cmd git-extra &&
+			sdk git-editor "$src_dir/$2" &&
+			. "$src_dir/$2"
 			;;
 		ReleaseNotes.md)
-			sdk cd build-extra &&
-			sdk git-editor "$2"
+			sdk $cmd build-extra &&
+			sdk git-editor "$src_dir/$2"
 			;;
 		install.iss)
-			sdk cd installer &&
-			sdk git-editor "$2"
+			sdk $cmd installer &&
+			sdk git-editor "$src_dir/$2"
 			;;
 		*)
 			sdk die "Not a valid edit target: $2"
