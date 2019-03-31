@@ -11,6 +11,7 @@ static LPWSTR persist_to_config_option;
 
 #define ID_ENTER   IDOK
 #define ID_ABORT   IDCANCEL
+#define ID_ESCAPE  1000
 #define ID_PERSIST 1001
 #define ID_USER    2000
 
@@ -613,6 +614,11 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 			SendMessage(hwnd, WM_CLOSE, 0, 0);
 		} else if (wParam == ID_ABORT) {
 			SendMessage(hwnd, WM_CLOSE, 0, 0);
+		} else if (LOWORD(wParam) == ID_ESCAPE) {
+			int res = MessageBoxW(main_window, L"Are you sure you want to quit?",
+					      L"Quit?", MB_OKCANCEL);
+			if (res == IDOK)
+				SendMessage(hwnd, WM_CLOSE, 0, 0);
 		} else if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) >= ID_USER) {
 			selected_helper = LOWORD(wParam) - ID_USER;
 		} else if (wParam == ID_PERSIST) {
@@ -629,11 +635,16 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 	return DefWindowProcW(hwnd, message, wParam, lParam);
 }
 
+static ACCEL accelerators[] = {
+	{ FVIRTKEY, VK_ESCAPE, ID_ESCAPE }
+};
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		    PWSTR lpCmdLine, int nCmdShow)
 {
 	WNDCLASSW window_class = { 0 };
 	MSG message;
+	HACCEL accelerator_handle;
 
 	window_class.lpszClassName = L"CredentialHelperSelector";
 	window_class.hInstance = hInstance;
@@ -663,12 +674,18 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				    CW_USEDEFAULT, CW_USEDEFAULT,
 				    width, height, 0, 0, hInstance, 0);
 
+	accelerator_handle =
+		CreateAcceleratorTableW(accelerators,
+					sizeof(accelerators) / sizeof(accelerators[0]));
+
 	while (GetMessage(&message, NULL, 0, 0)) {
-		if (IsDialogMessage(main_window, &message))
+		if (TranslateAcceleratorW(main_window, accelerator_handle, &message) || IsDialogMessage(main_window, &message))
 			continue;
 		TranslateMessage(&message);
 		DispatchMessage(&message);
 	}
+
+	DestroyAcceleratorTable(accelerator_handle);
 
 	if (!aborted) {
 		if (selected_helper < 0 || selected_helper >= helper_nr)
