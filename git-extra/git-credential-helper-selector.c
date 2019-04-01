@@ -9,6 +9,148 @@ static size_t helper_nr, selected_helper;
 #define ID_ABORT   IDCANCEL
 #define ID_USER    2000
 
+static LPWSTR parse_script_interpreter(LPWSTR path)
+{
+#define MAX_SHEBANG 100
+	static WCHAR wbuf[2 * MAX_SHEBANG + 16];
+	char buf[MAX_SHEBANG + 5];
+	DWORD len = 0, eol = 0, count;
+	HANDLE h;
+
+	/* Skip detection for .exe, .bat, and .cmd */
+	count = wcslen(path);
+	if (count > 4 && path[count - 4] == L'.' &&
+	    (!wcscmp(path + count - 3, L"exe") ||
+	     !wcscmp(path + count - 3, L"bat") ||
+	     !wcscmp(path + count - 3, L"cmd")))
+		return NULL;
+
+	h = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, NULL,
+			OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+	if (h == INVALID_HANDLE_VALUE)
+		return NULL;
+
+	while (len < MAX_SHEBANG && eol == len) {
+		if (!ReadFile(h, buf + len, MAX_SHEBANG - len,
+			      &count, NULL))
+			break;
+		len += count;
+		if (len > 2 && (buf[0] != '#' || buf[1] != '!'))
+			break;
+		for (; eol < len; eol++)
+			if (buf[eol] == '\r' || buf[eol] == L'\n')
+				break;
+	}
+	CloseHandle(h);
+
+	if (eol == len || buf[0] != '#' || buf[1] != '!')
+		return NULL;
+
+	for (len = eol; len > 0; len--)
+		if (buf[len - 1] == L'\\' || buf[len - 1] == L'/')
+			break;
+	if (len > 0) {
+		eol -= len;
+		memmove(buf, buf + len, eol * sizeof(WCHAR));
+	}
+	strcpy(buf + eol, ".exe");
+	MultiByteToWideChar(CP_UTF8, 0, buf, eol + 5, wbuf, MAX_SHEBANG);
+
+	return wbuf;
+}
+
+static LPWSTR find_exe(LPWSTR exe_name)
+{
+	static LPWSTR path;
+	static size_t alloc;
+	WCHAR env[_MAX_ENV + 1], *p;
+	size_t exe_name_len = wcslen(exe_name), env_size;
+
+	env_size = GetEnvironmentVariableW(L"PATH", env, _MAX_ENV + 1);
+	if (!env_size || env_size > _MAX_ENV) {
+		MessageBoxW(NULL, L"PATH too large", L"Error", MB_OK);
+		exit(1);
+	}
+
+	for (p = env; *p; ) {
+		WCHAR *q = wcschr(p, L';');
+		DWORD res;
+		size_t len = q ? q - p : wcslen(p);
+
+		if (!len)
+			goto next_path_component;
+
+		if (len + exe_name_len + 2 >= alloc) {
+			alloc = len + exe_name_len + 64;
+			path = realloc(path, alloc * sizeof(WCHAR));
+			if (!path) {
+				MessageBoxW(NULL, L"Out of memory!", L"Error",
+					    MB_OK);
+				exit(1);
+			}
+		}
+
+		memcpy(path, p, len * sizeof(WCHAR));
+		if (path[len - 1] != L'\\')
+			path[len++] = L'\\';
+		wcscpy(path + len, exe_name);
+
+		res = GetFileAttributesW(path);
+		if (res != INVALID_FILE_ATTRIBUTES &&
+		    !(res & FILE_ATTRIBUTE_DIRECTORY))
+			return path;
+
+next_path_component:
+		if (!q)
+			break;
+		p = q + 1;
+	}
+	MessageBoxW(NULL, L"Could not find exe", exe_name, MB_OK);
+	exit(1);
+}
+
+static int spawn_process(LPWSTR exe, LPWSTR cmdline)
+{
+	STARTUPINFOW si;
+	PROCESS_INFORMATION pi;
+	DWORD exit_code;
+	int res = 0;
+
+	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
+	ZeroMemory(&si, sizeof(STARTUPINFO));
+
+	si.cb = sizeof(si);
+	si.dwFlags = STARTF_USESTDHANDLES;
+	si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+	si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+	si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+
+	if (!CreateProcessW(exe, cmdline,
+			    NULL, NULL, TRUE,
+			    CREATE_NO_WINDOW,
+			    NULL, NULL,
+			    &si, &pi)) {
+		fwprintf(stderr, L"Could not spawn `%s`: %d\n",
+			 cmdline, (int)GetLastError());
+		res = -1;
+		goto spawn_process_finish;
+	}
+	CloseHandle(si.hStdInput);
+	CloseHandle(si.hStdOutput);
+	CloseHandle(pi.hThread);
+	WaitForSingleObject(pi.hProcess, INFINITE);
+
+	if (!GetExitCodeProcess(pi.hProcess, &exit_code))
+		return 1;
+	if (exit_code)
+		res = exit_code;
+
+spawn_process_finish:
+	CloseHandle(pi.hProcess);
+
+	return res;
+}
+
 static int discover_helpers(void)
 {
 	WCHAR *pattern_suffix = L"\\git-credential-*";
@@ -215,6 +357,53 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	while (GetMessage(&message, NULL, 0, 0)) {
 		TranslateMessage(&message);
 		DispatchMessage(&message);
+	}
+
+	if (!aborted) {
+		if (selected_helper < 0 || selected_helper >= helper_nr)
+			aborted = 1;
+		else {
+			size_t command_len = wcslen(lpCmdLine), helper_len, interpreter_len = 0, alloc;
+			LPWSTR helper, exe, cmdline, interpreter, p;
+
+			if (!selected_helper)
+				return 1; /* no helper */
+
+			exe = helper = helper_path[selected_helper];
+			helper_len = wcslen(helper);
+			alloc = helper_len + command_len + 2;
+
+			interpreter = parse_script_interpreter(helper);
+			if (interpreter) {
+				interpreter_len = wcslen(interpreter);
+				alloc += interpreter_len + 1;
+				exe = find_exe(interpreter);
+			}
+
+			cmdline = malloc(alloc * sizeof(WCHAR));
+			if (!cmdline) {
+				MessageBoxW(NULL, L"Out of memory!",
+					    L"Error", MB_OK);
+				exit(1);
+			}
+
+			p = cmdline;
+			if (interpreter) {
+				wcscpy(p, interpreter);
+				p[interpreter_len] = L' ';
+				p += interpreter_len + 1;
+			}
+			wcscpy(p, helper);
+			if (command_len) {
+				p[helper_len] = L' ';
+				wcscpy(p + helper_len + 1, lpCmdLine);
+			}
+
+			aborted = spawn_process(exe, cmdline);
+			if (aborted < 0)
+				aborted = 1;
+			free(cmdline);
+		}
 	}
 
 	return aborted;
