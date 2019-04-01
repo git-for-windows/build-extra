@@ -1,12 +1,16 @@
 #include <windows.h>
 #include <stdio.h>
+#include <wchar.h>
 
 static HINSTANCE instance;
 static LPWSTR *helper_name, *helper_path, previously_selected_helper;
 static size_t helper_nr, selected_helper;
+static int persist;
+static LPWSTR persist_to_config_option;
 
 #define ID_ENTER   IDOK
 #define ID_ABORT   IDCANCEL
+#define ID_PERSIST 1001
 #define ID_USER    2000
 
 static LPWSTR parse_script_interpreter(LPWSTR path)
@@ -268,6 +272,169 @@ static int write_config(void)
 	return spawn_process(find_exe(L"git.exe"), command_line, 0, 0, NULL);
 }
 
+static LPWSTR quote(LPWSTR string)
+{
+	LPWSTR result, p, q;
+	int needs_quotes = !*string;
+	size_t len = 0;
+
+	for (p = string; *p; p++, len++) {
+		if (*p == L'"')
+			len++;
+		else if (wcschr(L" \t\r\n*?{'", *p))
+			needs_quotes = 1;
+		else if (*p == L'\\') {
+			LPWSTR end = p;
+			while (end[1] == L'\\')
+				end++;
+			len += end - p;
+			if (end[1] == L'"')
+				len += end - p + 1;
+			p = end;
+		}
+	}
+
+	if (!needs_quotes && len == p - string)
+		return string;
+
+	q = result = malloc((len + 3) * sizeof(WCHAR));
+	*(q++) = L'"';
+	for (p = string; *p; p++) {
+		if (*p == L'"')
+			*(q++) = L'\\';
+		else if (*p == L'\\') {
+			LPWSTR end = p;
+			while (end[1] == L'\\')
+				end++;
+			if (end != p) {
+				memcpy(q, p, (end - p) * sizeof(WCHAR));
+				q += end - p;
+			}
+			if (end[1] == L'"') {
+				memcpy(q, p, (end - p + 1) * sizeof(WCHAR));
+				q += end - p + 1;
+			}
+			p = end;
+		}
+		*(q++) = *p;
+	}
+	wcscpy(q, L"\"");
+	return result;
+}
+
+static int path_ends_with(LPWSTR bread, LPWSTR crumb)
+{
+	size_t len1 = wcslen(bread), len2 = wcslen(crumb);
+
+	return len1 >= len2 && !wcsicmp(bread + len1 - len2, crumb);
+}
+
+static int can_write_lock_file(LPWSTR path)
+{
+	size_t len = wcslen(path);
+	LPWSTR lock_file = malloc((len + 6) * sizeof(WCHAR));
+	HANDLE h;
+	FILE_DISPOSITION_INFO info = { TRUE };
+
+	if (!lock_file) {
+		MessageBoxW(NULL, L"Out of memory!", L"Error", MB_OK);
+		exit(1);
+	}
+	wcscpy(lock_file, path);
+	wcscpy(lock_file + len, L".lock");
+
+	h = CreateFileW(lock_file, GENERIC_WRITE | DELETE, FILE_SHARE_WRITE,
+			NULL, CREATE_NEW, FILE_ATTRIBUTE_NORMAL, NULL);
+	free(lock_file);
+	if (h == INVALID_HANDLE_VALUE)
+		return 0;
+
+	SetFileInformationByHandle(h, FileDispositionInfo, &info, sizeof(info));
+	CloseHandle(h);
+	return 1;
+}
+
+static int discover_config_to_persist_to(void)
+{
+	/*
+	 * If this helper is configured as credential.helper, we use the same
+	 * config to persist the choice (by overriding that setting).
+	 *
+	 * Otherwise, we first test whether we can write to the system config,
+	 * and use it if we can. We fall back to the user config if everything
+	 * else fails.
+	 */
+	LPWSTR git_exe = find_exe(L"git.exe"), output, tab, quoted;
+	size_t len;
+	WCHAR git_editor_backup[_MAX_ENV + 1];
+	int git_editor_unset = 1, res;
+
+	res = spawn_process(git_exe,
+			    L"git config --show-origin credential.helper",
+			    0, 0, &output);
+	if (!res && !wcsncmp(output, L"file:", 5) &&
+	    (tab = wcschr(output, L'\t')) &&
+	    (!wcscmp(tab + 1, L"helper-selector") ||
+	     path_ends_with(tab + 1, L"\\git-credential-helper-selector.exe"))) {
+		/*
+		 * If it is relative, we might not be in the correct
+		 * directory... Make sure that we are!
+		 */
+		if (!(output[5] == L'/' || output[5] == L'\\' ||
+		      (iswalpha(output[5]) && output[6] == L':'))) {
+			LPWSTR toplevel;
+			if (spawn_process(git_exe, L"git rev-parse --show-cdup",
+					  0, 0, &toplevel) == 0 && toplevel[0])
+				_wchdir(toplevel);
+			free(toplevel);
+		}
+		*tab = L'\0';
+		if (can_write_lock_file(output + 5)) {
+			quoted = quote(output + 5);
+			if (quoted == output + 5)
+				quoted = wcsdup(quoted);
+			free(output);
+			len = 4 + wcslen(quoted);
+			persist_to_config_option = malloc(len * sizeof(WCHAR));
+			if (!persist_to_config_option) {
+				MessageBoxW(NULL, L"Out of memory!", L"Error", MB_OK);
+				exit(1);
+			}
+			swprintf(persist_to_config_option, len, L"-f %s", quoted);
+			free(quoted);
+			return 0;
+		}
+	}
+	free(output);
+
+	/* Now figure out where the system config is */
+	SetLastError(ERROR_SUCCESS);
+	if (GetEnvironmentVariableW(L"GIT_EDITOR", git_editor_backup, _MAX_ENV + 1) ||
+	    GetLastError() == ERROR_SUCCESS)
+		git_editor_unset = 0;
+	SetEnvironmentVariableW(L"GIT_EDITOR", L"echo");
+	res = spawn_process(git_exe, L"git -c "
+			    "advice.waitingForEditor=0 config --system -e",
+			    0, 0, &output);
+	SetEnvironmentVariableW(L"GIT_EDITOR", git_editor_unset ? NULL : git_editor_backup);
+	if (!res && can_write_lock_file(output))
+		persist_to_config_option = L"--system";
+	else
+		persist_to_config_option = L"--global";
+	free(output);
+	return 0;
+}
+
+static int persist_choice(void)
+{
+	WCHAR command_line[65536];
+
+	swprintf(command_line, 65535, L"git config %s credential.helper %s",
+		 persist_to_config_option,
+		 quote(selected_helper ? helper_path[selected_helper] : L""));
+	return spawn_process(find_exe(L"git.exe"), command_line, 0, 0, NULL);
+}
+
 static int discover_helpers(void)
 {
 	WCHAR *pattern_suffix = L"\\git-credential-*";
@@ -413,10 +580,18 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 			}
 		}
 
+		CreateWindowW(L"Button", L"Always use this from now on",
+			      WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+			      2 * offset_x,
+			      4 * offset_y + line_height * helper_nr,
+			      width - 2 * offset_x,
+			      line_height + line_offset_y,
+			      hwnd, (HMENU) ID_PERSIST, NULL, NULL);
+
 		CreateWindowW(L"Button", L"Select",
 			      WS_VISIBLE | WS_CHILD,
 			      width - 2 * (button_width + offset_x),
-			      5 * offset_y + line_height * helper_nr,
+			      5 * offset_y + line_height * (helper_nr + 1),
 			      button_width,
 			      line_height + line_offset_y,
 			      hwnd, (HMENU) ID_ENTER, NULL, NULL);
@@ -424,7 +599,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 		CreateWindowW(L"Button", L"Cancel",
 			      WS_VISIBLE | WS_CHILD,
 			      width - (button_width + offset_x),
-			      5 * offset_y + line_height * helper_nr,
+			      5 * offset_y + line_height * (helper_nr + 1),
 			      button_width,
 			      line_height + line_offset_y,
 			      hwnd, (HMENU) ID_ABORT, NULL, NULL);
@@ -439,6 +614,9 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 			SendMessage(hwnd, WM_CLOSE, 0, 0);
 		} else if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) >= ID_USER) {
 			selected_helper = LOWORD(wParam) - ID_USER;
+		} else if (wParam == ID_PERSIST) {
+			persist = !IsDlgButtonChecked(hwnd, ID_PERSIST);
+			CheckDlgButton(hwnd, ID_PERSIST, persist ? BST_CHECKED : BST_UNCHECKED);
 		}
 		break;
 
@@ -467,6 +645,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return 1;
 	}
 
+	if (discover_config_to_persist_to() < 0) {
+		MessageBoxW(NULL, L"Could not discover config source", L"Error", MB_OK);
+		return 1;
+	}
+
 	if (discover_helpers() < 0) {
 		MessageBoxW(NULL, L"Could not discover credential helpers", L"Error", MB_OK);
 		return 1;
@@ -491,7 +674,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			size_t command_len = wcslen(lpCmdLine), helper_len, interpreter_len = 0, alloc;
 			LPWSTR helper, exe, cmdline, interpreter, p;
 
-			write_config();
+			if (persist)
+				persist_choice();
+			else
+				write_config();
 
 			if (!selected_helper)
 				return 1; /* no helper */
