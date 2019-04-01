@@ -1,4 +1,5 @@
 #include <windows.h>
+#include <stdio.h>
 
 static HINSTANCE instance;
 static LPWSTR *helper_name, *helper_path;
@@ -10,20 +11,104 @@ static size_t helper_nr, selected_helper;
 
 static int discover_helpers(void)
 {
-	/* TODO: walk `PATH` to populate these */
-	helper_nr = 2;
-	helper_name = malloc(helper_nr * sizeof(*helper_name));
-	helper_path = malloc(helper_nr * sizeof(*helper_path));
+	WCHAR *pattern_suffix = L"\\git-credential-*";
+	size_t alloc = 16, env_size, pattern_len, pattern_suffix_len = wcslen(pattern_suffix);
+	WCHAR env[_MAX_ENV + 1], pattern[_MAX_ENV + 1 + pattern_suffix_len], *p;
+	HANDLE h;
+	WIN32_FIND_DATAW find_data;
+
+	env_size = GetEnvironmentVariableW(L"PATH", env, _MAX_ENV + 1);
+	if (!env_size || env_size > _MAX_ENV) {
+		MessageBoxW(NULL, L"PATH too large", L"Error", MB_OK);
+		return -1;
+	}
+
+	helper_nr = 1;
+	helper_name = malloc(alloc * sizeof(*helper_name));
+	helper_path = malloc(alloc * sizeof(*helper_path));
 	if (!helper_name || !helper_path) {
+out_of_memory:
+		free(helper_name);
+		free(helper_path);
 		MessageBoxW(NULL, L"Out of memory!", L"Error", MB_OK);
 		return -1;
 	}
 	helper_name[0] = L"<no helper>";
 	helper_path[0] = L"<none>";
-	helper_name[1] = L"manager";
-	helper_path[1] = L"C:\\Program Files\\Git\\mingw64\\libexec\\git-core\\git-credential-manager.exe";
+	selected_helper = 0;
 
-	selected_helper = 1;
+	for (p = env; *p; ) {
+		WCHAR *q = wcschr(p, L';');
+
+		pattern_len = q ? q - p : wcslen(p);
+		if (pattern_len > 0 && p[pattern_len - 1] == L'\\')
+			pattern_len--;
+		p[pattern_len] = '\0';
+		memcpy(pattern, p, pattern_len * sizeof(WCHAR));
+		wcscpy(pattern + pattern_len, pattern_suffix);
+		h = FindFirstFileW(pattern, &find_data);
+		while (h != INVALID_HANDLE_VALUE) {
+			size_t len = wcslen(find_data.cFileName), i;
+
+			if (len < pattern_suffix_len - 2 || wcsncmp(pattern_suffix + 1, find_data.cFileName, pattern_suffix_len - 2)) {
+				fwprintf(stderr, L"Unexpected entry: '%s'\n", find_data.cFileName);
+				fflush(stderr);
+				goto next_file;
+			}
+			if (len > 5 && !wcscmp(find_data.cFileName + len - 5, L".html"))
+				goto next_file; /* skip e.g. git-credential-manager.html */
+			if (len > 4 && !wcscmp(find_data.cFileName + len - 4, L".pdb"))
+				goto next_file; /* skip e.g. git-credential-store.pdb */
+
+			if (helper_nr + 1 >= alloc) {
+				alloc += 16;
+				if (helper_nr + 1 >= alloc)
+					alloc = helper_nr + 16;
+				helper_name = realloc(helper_name, alloc * sizeof(*helper_name));
+				helper_path = realloc(helper_path, alloc * sizeof(*helper_path));
+				if (!helper_name || !helper_path)
+					goto out_of_memory;
+			}
+
+			helper_path[helper_nr] = malloc((pattern_len + 1 + len + 1) * sizeof(WCHAR));
+			if (!helper_path[helper_nr])
+				goto out_of_memory;
+			memcpy(helper_path[helper_nr], pattern, pattern_len * sizeof(WCHAR));
+			helper_path[helper_nr][pattern_len] = L'\\';
+			memcpy(helper_path[helper_nr] + pattern_len + 1, find_data.cFileName, (len + 1) * sizeof(WCHAR));
+
+			helper_name[helper_nr] = malloc((len + 1 - (pattern_suffix_len - 2)) * sizeof(WCHAR));
+			if (!helper_name[helper_nr])
+				goto out_of_memory;
+			memcpy(helper_name[helper_nr], find_data.cFileName + pattern_suffix_len - 2, (len + 1 - (pattern_suffix_len - 2)) * sizeof(WCHAR));
+			if (len - (pattern_suffix_len - 2) > 4 && !wcscmp(helper_name[helper_nr] + len - (pattern_suffix_len - 2) - 4, L".exe")) {
+				len -= 4;
+				helper_name[helper_nr][len - (pattern_suffix_len - 2)] = L'\0';
+			}
+
+			/* Avoid duplicate entries for duplicate PATH entries (i.e. the very same path) */
+			for (i = 0; i < helper_nr; i++)
+				if (!wcscmp(helper_path[i], helper_path[helper_nr]))
+					goto next_file;
+
+			/* Special-case Git Credential Manager */
+			if (!selected_helper && !wcscmp(helper_name[helper_nr], L"manager"))
+				selected_helper = helper_nr;
+
+			helper_nr++;
+
+next_file:
+			if (!FindNextFileW(h, &find_data))
+				break;
+		}
+
+		if (h != INVALID_HANDLE_VALUE)
+			FindClose(h);
+
+		if (!q)
+			break;
+		p = q + 1;
+	}
 
 	return 0;
 }
