@@ -3,6 +3,7 @@
 #include <wchar.h>
 
 static HINSTANCE instance;
+static HWND main_window;
 static LPWSTR *helper_name, *helper_path, previously_selected_helper;
 static size_t helper_nr, selected_helper;
 static int persist;
@@ -589,7 +590,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 			      hwnd, (HMENU) ID_PERSIST, NULL, NULL);
 
 		CreateWindowW(L"Button", L"Select",
-			      WS_VISIBLE | WS_CHILD,
+			      WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 			      width - 2 * (button_width + offset_x),
 			      5 * offset_y + line_height * (helper_nr + 1),
 			      button_width,
@@ -657,12 +658,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	instance = hInstance;
 	RegisterClassW(&window_class);
-	CreateWindowW(window_class.lpszClassName, L"CredentialHelperSelector",
-		      WS_OVERLAPPEDWINDOW | WS_VISIBLE,
-		      CW_USEDEFAULT, CW_USEDEFAULT,
-		      width, height, 0, 0, hInstance, 0);
+	main_window = CreateWindowW(window_class.lpszClassName, L"CredentialHelperSelector",
+				    WS_OVERLAPPEDWINDOW | WS_VISIBLE,
+				    CW_USEDEFAULT, CW_USEDEFAULT,
+				    width, height, 0, 0, hInstance, 0);
 
 	while (GetMessage(&message, NULL, 0, 0)) {
+		if (IsDialogMessage(main_window, &message))
+			continue;
 		TranslateMessage(&message);
 		DispatchMessage(&message);
 	}
