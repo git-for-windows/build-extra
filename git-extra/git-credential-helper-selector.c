@@ -605,7 +605,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 		for (i = 0; i < helper_nr; i++) {
 			HWND hwnd2 = CreateWindowW(L"Button", helper_name[i],
 						   WS_CHILD | WS_VISIBLE |
-						   BS_AUTORADIOBUTTON,
+						   BS_AUTORADIOBUTTON | BS_NOTIFY,
 						   2 * offset_x,
 						   3 * offset_y + line_height * i,
 						   width - 4 * offset_x,
@@ -659,6 +659,10 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 				SendMessage(hwnd, WM_CLOSE, 0, 0);
 		} else if (HIWORD(wParam) == BN_CLICKED && LOWORD(wParam) >= ID_USER) {
 			selected_helper = LOWORD(wParam) - ID_USER;
+		} else if (HIWORD(wParam) == BN_DBLCLK && LOWORD(wParam) >= ID_USER) {
+			aborted = 0;
+			selected_helper = LOWORD(wParam) - ID_USER;
+			SendMessage(main_window, WM_CLOSE, 0, 0);
 		} else if (wParam == ID_PERSIST) {
 			persist = !IsDlgButtonChecked(hwnd, ID_PERSIST);
 			CheckDlgButton(hwnd, ID_PERSIST, persist ? BST_CHECKED : BST_UNCHECKED);
