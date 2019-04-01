@@ -562,7 +562,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 		GetClientRect(hwnd, &rect);
 		width = rect.right - rect.left;
 		CreateWindowW(L"Button", L"Select a credential helper",
-			      WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
+			      WS_TABSTOP | WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
 			      offset_x, offset_y,
 			      width - 2 * offset_x,
 			      line_height * helper_nr + 3 * offset_y,
@@ -583,7 +583,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 		}
 
 		CreateWindowW(L"Button", L"Always use this from now on",
-			      WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
+			      WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
 			      2 * offset_x,
 			      4 * offset_y + line_height * helper_nr,
 			      width - 2 * offset_x,
@@ -591,7 +591,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 			      hwnd, (HMENU) ID_PERSIST, NULL, NULL);
 
 		CreateWindowW(L"Button", L"Select",
-			      WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
+			      WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 			      width - 2 * (button_width + offset_x),
 			      5 * offset_y + line_height * (helper_nr + 1),
 			      button_width,
@@ -599,7 +599,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 			      hwnd, (HMENU) ID_ENTER, NULL, NULL);
 
 		CreateWindowW(L"Button", L"Cancel",
-			      WS_VISIBLE | WS_CHILD,
+			      WS_TABSTOP | WS_VISIBLE | WS_CHILD,
 			      width - (button_width + offset_x),
 			      5 * offset_y + line_height * (helper_nr + 1),
 			      button_width,
