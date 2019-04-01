@@ -1,6 +1,7 @@
 #include <windows.h>
 #include <stdio.h>
 #include <wchar.h>
+#include <commctrl.h>
 
 static HINSTANCE instance;
 static HWND main_window;
@@ -544,8 +545,34 @@ next_file:
 	return 0;
 }
 
-static int aborted = 1;
+static void create_tooltip(HWND hwnd, LPWSTR tooltip_text) {
+	static INITCOMMONCONTROLSEX iccex;
+	static DWORD tooltip_nr;
+	HWND tooltip;
+	TOOLINFOW toolinfo = { 0 };
 
+	if (!iccex.dwSize) {
+		iccex.dwICC = ICC_WIN95_CLASSES;
+		iccex.dwSize = sizeof(INITCOMMONCONTROLSEX);
+		InitCommonControlsEx(&iccex);
+	}
+
+	tooltip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
+				 WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
+				 CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+				 hwnd, NULL, instance, NULL);
+
+	GetClientRect(hwnd, &toolinfo.rect);
+	toolinfo.cbSize = sizeof(toolinfo);
+	toolinfo.uFlags = TTF_SUBCLASS;
+	toolinfo.hwnd = hwnd;
+	toolinfo.uId = tooltip_nr++;
+	toolinfo.lpszText = tooltip_text;
+
+	SendMessage(tooltip, TTM_ADDTOOL, 0, (LPARAM) &toolinfo);
+}
+
+static int aborted = 1;
 static int width = 400, height = 300;
 static int offset_x = 10, offset_y = 10;
 static int line_height = 25, line_offset_y = 5, button_width = 75;
@@ -576,6 +603,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 						   width - 4 * offset_x,
 						   line_height + line_offset_y,
 						   hwnd, (HMENU)(ID_USER + i), instance, NULL);
+			create_tooltip(hwnd2, helper_path[i]);
 			if (i == selected_helper) {
 				SendMessage(hwnd2, BM_SETCHECK, BST_CHECKED, 1);
 				SetFocus(hwnd2);

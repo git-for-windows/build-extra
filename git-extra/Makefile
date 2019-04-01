@@ -1,5 +1,6 @@
 BUILDDIR ?= .
 SRCDIR ?= .
+WINDRES ?= windres
 CFLAGS ?= -Wall
 CXXFLAGS ?= -Wall
 
@@ -13,6 +14,9 @@ $(BUILDDIR)/create-shortcut.exe: $(BUILDDIR)/create-shortcut.o
 
 $(BUILDDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) -c $(CFLAGS) $< -o $@
+
+$(BUILDDIR)/%.res: $(SRCDIR)/%.rc
+	$(WINDRES) --input $< --output $@ --output-format coff
 
 $(BUILDDIR)/WhoUses.exe: $(BUILDDIR)/WhoUses.o $(BUILDDIR)/SystemInfo.o
 	$(CXX) $(CXXFLAGS) -o $@ $^
@@ -37,7 +41,8 @@ $(BUILDDIR)/git-askyesno.exe: $(BUILDDIR)/git-askyesno.o
 $(BUILDDIR)/git-credential-helper-selector.o: CFLAGS += -DUNICODE
 
 $(BUILDDIR)/git-credential-helper-selector.exe: \
-	$(BUILDDIR)/git-credential-helper-selector.o
+	$(BUILDDIR)/git-credential-helper-selector.o \
+	$(BUILDDIR)/git-credential-helper-selector.res
 	$(CC) -municode $(CFLAGS) -o $@ $^ -lgdi32 -lcomctl32
 clean:
 	$(RM) $(BUILDDIR)/create-shortcut.exe $(BUILDDIR)/create-shortcut.o
