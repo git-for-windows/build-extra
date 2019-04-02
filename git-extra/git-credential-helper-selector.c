@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 static HINSTANCE instance;
-static LPWSTR *helper_name, *helper_path;
+static LPWSTR *helper_name, *helper_path, previously_selected_helper;
 static size_t helper_nr, selected_helper;
 
 #define ID_ENTER   IDOK
@@ -109,21 +109,82 @@ next_path_component:
 	exit(1);
 }
 
-static int spawn_process(LPWSTR exe, LPWSTR cmdline)
+struct capture_stdout_data {
+	HANDLE handle;
+	char *buffer;
+	size_t len, alloc;
+};
+
+static DWORD WINAPI capture_stdout(LPVOID lParam)
 {
+	struct capture_stdout_data *data = lParam;
+
+	for (;;) {
+		DWORD count;
+
+		if (data->len + 8192 > data->alloc) {
+			data->alloc = data->len + 8192;
+			data->buffer = realloc(data->buffer, data->alloc);
+			if (!data->buffer) {
+				MessageBoxW(NULL, L"Out of memory!", L"Error", MB_OK);
+				CloseHandle(data->handle);
+				return -1;
+			}
+		}
+		if (!ReadFile(data->handle, data->buffer + data->len, 8192, &count, NULL))
+			break;
+		data->len += count;
+	}
+	data->buffer[data->len] = '\0';
+
+	CloseHandle(data->handle);
+	return 0;
+}
+
+static int spawn_process(LPWSTR exe, LPWSTR cmdline,
+			 int exit_code_may_be_nonzero,
+			 int pipe_thru_stdin_and_stdout,
+			 LPWSTR *capture_output)
+{
+	struct capture_stdout_data data = { NULL };
 	STARTUPINFOW si;
 	PROCESS_INFORMATION pi;
 	DWORD exit_code;
 	int res = 0;
+
+	if (pipe_thru_stdin_and_stdout && capture_output) {
+		fwprintf(stderr, L"cannot pipe through *and* capture\n");
+		exit(1);
+	}
 
 	ZeroMemory(&pi, sizeof(PROCESS_INFORMATION));
 	ZeroMemory(&si, sizeof(STARTUPINFO));
 
 	si.cb = sizeof(si);
 	si.dwFlags = STARTF_USESTDHANDLES;
-	si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
-	si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
 	si.hStdError = GetStdHandle(STD_ERROR_HANDLE);
+
+	if (pipe_thru_stdin_and_stdout)
+		si.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
+	else
+		si.hStdInput = INVALID_HANDLE_VALUE;
+
+	if (!capture_output)
+		si.hStdOutput = GetStdHandle(STD_OUTPUT_HANDLE);
+	else {
+		if (!CreatePipe(&data.handle, &si.hStdOutput, NULL, 8192))
+			return -1;
+
+		/* Make handle intended for the child inheritable */
+		if (!DuplicateHandle(GetCurrentProcess(), si.hStdOutput,
+				     GetCurrentProcess(), &si.hStdOutput,
+				     DUPLICATE_SAME_ACCESS, TRUE,
+				     DUPLICATE_CLOSE_SOURCE))
+			return -1;
+
+		if (!CreateThread(NULL, 0, capture_stdout, &data, 0, NULL))
+			return -1;
+	}
 
 	if (!CreateProcessW(exe, cmdline,
 			    NULL, NULL, TRUE,
@@ -135,20 +196,76 @@ static int spawn_process(LPWSTR exe, LPWSTR cmdline)
 		res = -1;
 		goto spawn_process_finish;
 	}
-	CloseHandle(si.hStdInput);
-	CloseHandle(si.hStdOutput);
+	if (pipe_thru_stdin_and_stdout)
+		CloseHandle(si.hStdInput);
+	if (pipe_thru_stdin_and_stdout || capture_output)
+		CloseHandle(si.hStdOutput);
 	CloseHandle(pi.hThread);
 	WaitForSingleObject(pi.hProcess, INFINITE);
 
 	if (!GetExitCodeProcess(pi.hProcess, &exit_code))
 		return 1;
-	if (exit_code)
+	if (!exit_code_may_be_nonzero && exit_code)
 		res = exit_code;
+
+	if (capture_output && data.len && !res) {
+		size_t wcs_alloc = 2 * data.len + 1, wcs_len;
+
+		*capture_output = malloc(wcs_alloc * sizeof(WCHAR));
+		if (!*capture_output) {
+			MessageBoxW(NULL, L"Out of memory!", L"Error", MB_OK);
+			res = -1;
+			goto spawn_process_finish;
+		}
+
+		while (data.len > 0 &&
+		       (data.buffer[data.len - 1] == '\r' || data.buffer[data.len - 1] == '\n'))
+			data.len--;
+
+		SetLastError(ERROR_SUCCESS);
+		wcs_len = !data.len ? 0 :
+			MultiByteToWideChar(CP_UTF8, 0, data.buffer, data.len,
+					    *capture_output, wcs_alloc);
+		(*capture_output)[wcs_len] = L'\0';
+		if (!wcs_len && data.len) {
+			WCHAR err[65536];
+			swprintf(err, 65535,
+				 L"Could not convert output of `%s` to Unicode",
+				 cmdline);
+			err[65535] = L'\0';
+			MessageBoxW(NULL, err, L"Error", MB_OK);
+			res = -1;
+		}
+	}
 
 spawn_process_finish:
 	CloseHandle(pi.hProcess);
+	free(data.buffer);
 
 	return res;
+}
+
+static int read_config(int exit_code_may_be_nonzero)
+{
+	LPWSTR output;
+	int res;
+
+	res = spawn_process(find_exe(L"git.exe"),
+			    L"git config credential.helperselector.selected",
+			    exit_code_may_be_nonzero, 0, &output);
+	if (!res)
+		previously_selected_helper = output;
+
+	return res;
+}
+
+static int write_config(void)
+{
+	WCHAR command_line[32768];
+
+	swprintf(command_line, sizeof(command_line) / sizeof(*command_line) - 1,
+		 L"git config --global credential.helperselector.selected \"%s\"", helper_name[selected_helper]);
+	return spawn_process(find_exe(L"git.exe"), command_line, 0, 0, NULL);
 }
 
 static int discover_helpers(void)
@@ -178,6 +295,9 @@ out_of_memory:
 	helper_name[0] = L"<no helper>";
 	helper_path[0] = L"<none>";
 	selected_helper = 0;
+
+	if (!previously_selected_helper)
+		previously_selected_helper = L"manager";
 
 	for (p = env; *p; ) {
 		WCHAR *q = wcschr(p, L';');
@@ -234,7 +354,7 @@ out_of_memory:
 					goto next_file;
 
 			/* Special-case Git Credential Manager */
-			if (!selected_helper && !wcscmp(helper_name[helper_nr], L"manager"))
+			if (!selected_helper && !wcscmp(helper_name[helper_nr], previously_selected_helper))
 				selected_helper = helper_nr;
 
 			helper_nr++;
@@ -342,6 +462,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	window_class.hbrBackground = GetSysColorBrush(COLOR_3DFACE);
 	window_class.hCursor = LoadCursor(0, IDC_ARROW);
 
+	if (read_config(1) < 0) {
+		MessageBoxW(NULL, L"Could not read Git config", L"Error", MB_OK);
+		return 1;
+	}
+
 	if (discover_helpers() < 0) {
 		MessageBoxW(NULL, L"Could not discover credential helpers", L"Error", MB_OK);
 		return 1;
@@ -365,6 +490,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		else {
 			size_t command_len = wcslen(lpCmdLine), helper_len, interpreter_len = 0, alloc;
 			LPWSTR helper, exe, cmdline, interpreter, p;
+
+			write_config();
 
 			if (!selected_helper)
 				return 1; /* no helper */
@@ -399,7 +526,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 				wcscpy(p + helper_len + 1, lpCmdLine);
 			}
 
-			aborted = spawn_process(exe, cmdline);
+			aborted = spawn_process(exe, cmdline, 0, 1, NULL);
 			if (aborted < 0)
 				aborted = 1;
 			free(cmdline);
