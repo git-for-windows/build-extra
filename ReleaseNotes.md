@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [GNU Privacy Guard vv2.2.15](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000436.html), specifically [patched to handle Windows paths](https://github.com/git-for-windows/MSYS2-packages/pull/33).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.5](https://cygwin.com/ml/cygwin-announce/2019-03/msg00051.html).
 * Comes with [OpenSSL v1.1.1b](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.6](https://cygwin.com/ml/cygwin-announce/2019-04/msg00012.html).
 
 ### Bug Fixes
 
