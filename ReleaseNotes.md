@@ -40,15 +40,11 @@ This package contains software from a number of other projects including Bash, z
 
 * The `awk` included in Git for Windows [now includes extensions](https://github.com/git-for-windows/build-extra/pull/232) such as `inplace`.
 * The file/product version stored in the installer's `.exe` file [now matches the version of the included `git.exe` file's](https://github.com/git-for-windows/build-extra/pull/235).
-* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.3](https://cygwin.com/ml/cygwin-announce/2019-03/msg00008.html).
 * Comes with [git-flow v1.12.2](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.2).
 * Comes with [Git Credential Manager v1.18.5](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.5).
-* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.4](https://cygwin.com/ml/cygwin-announce/2019-03/msg00016.html).
 * Comes with [cURL v7.64.1](https://curl.haxx.se/changes.html#7_64_1).
 * Comes with [GNU Privacy Guard vv2.2.15](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000436.html), specifically [patched to handle Windows paths](https://github.com/git-for-windows/MSYS2-packages/pull/33).
-* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.5](https://cygwin.com/ml/cygwin-announce/2019-03/msg00051.html).
 * Comes with [OpenSSL v1.1.1b](https://www.openssl.org/news/openssl-1.1.1-notes.html).
-* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.6](https://cygwin.com/ml/cygwin-announce/2019-04/msg00012.html).
 
 ### Bug Fixes
 
