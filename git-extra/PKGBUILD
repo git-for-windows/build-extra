@@ -48,7 +48,8 @@ source=('inputrc'
         'blocked-file-util.c'
         'zzz_rm_stackdumps.sh'
         'proxy-lookup.c'
-        'git-askyesno.c')
+        'git-askyesno.c'
+        'update-via-pacman.bat')
 sha256sums=('9efaf8dccc08c7cddc58cb589bab5aac5c0894661175a344ca02b2aa849382bd'
             'c26d22aaa1d3dc615d474e0d60c5c0f19598d61d9205e19ec87aac1b28bb07c1'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
@@ -130,5 +131,6 @@ package() {
   install -m755 astextplain $pkgdir/usr/bin
   install -m755 git-update-git-for-windows $pkgdir${MINGW_PREFIX}/libexec/git-core
   install -m755 git-update $pkgdir${MINGW_PREFIX}/libexec/git-core
+  install -m755 update-via-pacman.bat $pkgdir
   install -m755 zzz_rm_stackdumps.sh $pkgdir/usr/share/makepkg/lint_package
 }
