@@ -177,6 +177,32 @@ info () { #
 		"$warning"
 }
 
+prepare_keep_despite_upgrade () { # <sdk-path>
+	keep_despite_upgrade="$(cat "${this_script_path%/*}/keep-despite-upgrade.txt")" ||
+	die 'Could not read keep-despite-upgrade.txt\n'
+
+	case "$keep_despite_upgrade" in *' '*) die 'keep-despite-upgrade.txt contains spaces!\n';; esac
+
+	test "$sdk64" = "$1" ||
+	keep_despite_upgrade="$(echo "$keep_despite_upgrade" | sed '/^mingw64/d')"
+
+	rm -rf "$1/.keep" &&
+	mkdir -p "$1/.keep" &&
+	for f in $keep_despite_upgrade
+	do
+		d=${f%/*}
+		test $d = $f ||
+		mkdir -p "$1/.keep/$d"
+		cp "$1/$f" "$1/.keep/$d/" ||
+		break
+	done
+}
+
+process_keep_despite_upgrade () { # <sdk-path>
+	cp -Ru "$1/.keep/"* "$1/" &&
+	rm -rf "$1/.keep"
+}
+
 sync () { # [--force]
 	force=
 	y_opt=y
@@ -204,6 +230,9 @@ sync () { # [--force]
 		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -lc \
 			"pacman.exe -S$y_opt" ||
 		die "Cannot run pacman in %s\n" "$sdk"
+
+		prepare_keep_despite_upgrade "$sdk" ||
+		die 'Could not keep files as planned\n'
 
 		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\bash.exe \
 			-lc "pacman.exe -Su $force --noconfirm" ||
@@ -233,6 +262,9 @@ sync () { # [--force]
 			die "Could not re-populate git-for-windows-keyring\n"
 			;;
 		esac
+
+		process_keep_despite_upgrade "$sdk" ||
+		die 'Could not copy back files-to-keep\n'
 
 		# A ruby upgrade (or something else) may require a re-install
 		# of the `asciidoctor` gem. We only do this for the 64-bit
@@ -485,6 +517,14 @@ set_package () {
 		package=mingw-w64-xpdf-tools
 		type=MINGW
 		pkgpath=/usr/src/MINGW-packages/mingw-w64-xpdf
+		;;
+	serf)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
+	gnupg)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
 	*)
 		die "Unknown package: %s\n" "$package"
@@ -1325,11 +1365,21 @@ test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-commen
 		esac
 		;;
 	 esac &&
-	 if test "$branch" != "$commit" &&
-		! git merge-base --is-ancestor $commit $branch
+	 if test "$branch" != "$commit"
 	 then
-		echo "Commit $commit is not on branch $branch; skipping" >&2
-		exit 0
+		if ! git merge-base --is-ancestor $commit $branch
+		then
+			case "$branch" in
+			upstream/pu|upstream/next)
+				echo "Commit $commit is not on branch $branch; skipping" >&2
+				exit 0
+				;;
+			*)
+				echo "Commit $commit is not on branch $branch; falling back to $branch" >&2
+				commit=$branch
+				;;
+			esac
+		fi
 	 fi &&
 	 git checkout -f "$commit" &&
 	 git reset --hard &&
@@ -1433,8 +1483,33 @@ needs_upload_permissions () {
 	die "Missing GitHub entries in ~/_netrc\n"
 }
 
-# <tag> <dir-with-files>
+# [--include-sha256sums] <tag> <dir-with-files>
 publish_prerelease () {
+	body=
+	include_sha256sums=
+	while case "$1" in
+	--include-sha256sums)
+		include_sha256sums=t
+		;;
+	-*)
+		die "Unhandled option: '%s'\n" "$1"
+		;;
+	*)
+		break
+		;;
+	esac; do shift; done
+	test $# = 2 ||
+	die "Unexpected arguments: '%s'\n" "$*"
+
+	if test -n "$include_sha256sums"
+	then
+		checksums="Filename | SHA-256\\n-------- | -------\\n$(cd "$2" &&
+			sha256sum.exe * |
+			sed -n 's/\([^ ]*\) \*\(.*\)/\2 | \1\\n/p' |
+			tr -d '\012')"
+		body="\"body\":\"Pre-release: Git $1\\n\\n$checksums\","
+	fi
+
 	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
 		--repo=git "$1" \
 		"$2"/* ||
@@ -1448,7 +1523,7 @@ publish_prerelease () {
 	die "Could not determine ID of release for %s\n" "$1"
 
 	out="$(curl --netrc --show-error -s -XPATCH -d \
-		'{"name":"'"$1"'","draft":false,"prerelease":true}' \
+		'{"name":"'"$1"'",'"$body"'"draft":false,"prerelease":true}' \
 		$url/$id)" ||
 	die "Could not edit release for %s:\n%s\n" "$1" "$out"
 }
@@ -1462,6 +1537,7 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	prerelease_prefix=prerelease-
 	only_64_bit=
 	upload=
+	include_sha256sums=
 	include_pdbs=
 	while case "$1" in
 	--force-tag)
@@ -1526,11 +1602,20 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	--include-pdbs)
 		include_pdbs=--include-pdbs
 		;;
+	--include-sha256sums)
+		include_sha256sums=--include-sha256sums
+		;;
+	--no-include-sha256sums)
+		include_sha256sums=
+		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
 	test $# = 1 ||
 	die "Expected 1 argument, got $#: %s\n" "$*"
+
+	test -z "$include_sha256sums" || test -n "$upload" ||
+	die "%s\n" "--include-sha256sums makes only sense when uploading"
 
 	test -n "$modes" ||
 	modes=installer
@@ -1898,7 +1983,7 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 
 	test -z "$upload" || {
 		git -C "$git_src_dir" push git-for-windows "$tag_name" &&
-		publish_prerelease "$tag_name" "$outputdir"
+		publish_prerelease $include_sha256sums "$tag_name" "$outputdir"
 	} ||
 	die "Could not publish %s\n" "$tag_name"
 }
@@ -2341,8 +2426,8 @@ version_from_pkgbuild () { # <PKGBUILD>
 	sed -ne \
 		'/^_basever=/{N;N;s/.*=\([0-9].*\)\n.*\npkgrel=\(.*\)/\1-\2/p}' \
 		-e '/^_ver=/{N;N;N;s/.*=\([.0-9]*\)\([a-z][a-z]*\)\n.*\n.*\npkgrel=\(.*\)/\1.\2-\3/p}' \
-		-e '/^pkgver=/{N;s/.*=\([0-9].*\)\npkgrel=\(.*\).*/\1-\2/p;N;s/.*=\([0-9].*\)\n.*\npkgrel=\(.*\).*/\1-\2/p}' \
-		-e '/^pkgver=/{N;N;s/[^=]*=\([0-9].*\)\npkgrel=\([0-9]*\).*/\1-\2/p}' \
+		-e '/^pkgver=/{N;N;s/.*=\([0-9].*\)\npkgrel=\([0-9]*\)\nepoch=\([0-9\*\)/\3~\1-\2/p;s/.*=\([0-9].*\)\npkgrel=\([0-9]*\).*/\1-\2/p;N;s/.*=\([0-9].*\)\n.*\npkgrel=\(.*\).*/\1-\2/p}' \
+		-e '/^pkgver=/{N;N;s/[^=]*=\([0-9].*\)\npkgrel=\([0-9]*\)\nepoch=\([0-9]*\).*/\3~\1-\2/p;s/[^=]*=\([0-9].*\)\npkgrel=\([0-9]*\).*/\1-\2/p}' \
 		-e '/^_basever=/{N;s/^_basever=\([0-9].*\)\n_patchlevel=\([0-9]*\) .*\n.*\npkgrel=\([0-9]*\).*/\1.\2-\3/p}' \
 		<"$1"
 }
@@ -2426,13 +2511,25 @@ pkg_install () {
 		;;
 	esac
 
+	prepare_keep_despite_upgrade "$sdk" ||
+	die 'Could not keep files as planned\n'
+
 	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 		"pacman -U --noconfirm $files"
 
+	process_keep_despite_upgrade "$sdk" ||
+	die 'Could not keep files as planned\n'
+
 	if test MINGW = "$type"
 	then
+		prepare_keep_despite_upgrade "$sdk32" ||
+		die 'Could not keep files as planned\n'
+
 		"$sdk32/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			"pacman -U --noconfirm $(pkg_files --i686)"
+
+		process_keep_despite_upgrade "$sdk32" ||
+		die 'Could not keep files as planned\n'
 	fi
 }
 
@@ -2592,7 +2689,7 @@ create_bundle_artifact () {
 }
 
 pkg_copy_artifacts () {
-	test -n "$artifactsdir" || return
+	test -n "$artifactsdir" || return 0
 	files="$(pkg_files --for-upload)" || exit
 	cp $files "$artifactsdir/" &&
 	create_bundle_artifact
@@ -2620,6 +2717,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	force_pkgrel=
 	cleanbuild=
 	only_mingw=
+	skip_mingw=
 	while case "$1" in
 	--directory=*)
 		artifactsdir="$(cygpath -am "${1#*=}")" || exit
@@ -2639,6 +2737,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		;;
 	--only-mingw)
 		only_mingw=t
+		;;
+	--skip-mingw)
+		skip_mingw=t
 		;;
 	-f|--force)
 		force=--force
@@ -2673,6 +2774,14 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	test -z "$only_mingw" ||
 	test curl = "$package" ||
 	die "The --only-mingw option is supported only for curl\n"
+
+	test -z "$skip_mingw" ||
+	test openssl = "$package" ||
+	test curl = "$package" ||
+	die "The --skip-mingw option is supported only for openssl/curl\n"
+
+	test -z "$only_mingw" || test -z "$skip_mingw" ||
+	die "--only-mingw and --skip-mingw are mutually exclusive\n"
 
 	test -z "$release_date" ||
 	test mingw-w64-git = "$package" ||
@@ -2716,10 +2825,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p')"
 		version=${tag_name#v}
 		zip_prefix=${zip_name%$version.zip}
+		if test "$zip_prefix" = "$zip_name"
+		then
+			# The version in the tag and the zip file name differ
+			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]*/\1'$zip_name/
+		else
+			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]*/\1'$zip_prefix'${_realver}.zip/'
+		fi
 		src_zip_prefix=${tag_name%$version}
 		(cd "$sdk64/$pkgpath" &&
-		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" \
-		 -e 's/^\(zip_url=.*\/\)gcm.*\(\$.*\)/\1'$zip_prefix'\2/' \
+		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" -e "$zip_replace" \
 		 -e 's/^\(src_zip_url=.*\/\).*\(\$.*\)/\1'$src_zip_prefix'\2/' \
 			PKGBUILD &&
 		 updpkgsums &&
@@ -2763,6 +2878,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 
 		ensure_gpg_key B71E12C2 || exit
 
+		test -n "$only_mingw" ||
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
@@ -2774,11 +2890,15 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 
 		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
 
-		case "$version" in 7.58.0|7.62.0)
+		case "$version,$force_pkgrel" in 7.58.0,|7.62.0,)
 			: skip because of partially successful upgrade
 			;;
 		*)
-		(set_package mingw-w64-$1 &&
+		(if test -n "$skip_mingw"
+		 then
+			 exit 0
+		 fi &&
+		 set_package mingw-w64-$1 &&
 		 maybe_init_repository "$sdk64/$pkgpath" &&
 		 cd "$sdk64/$pkgpath" &&
 		 require_push_url origin &&
@@ -2800,7 +2920,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 
 		url=https://curl.haxx.se/changes.html &&
 		url="$url$(echo "#$version" | tr . _)" &&
-		relnotes_feature='Comes with [cURL v'$version']('"$url"').'
+		v="$version${force_pkgrel:+ ($force_pkgrel)}" &&
+		relnotes_feature='Comes with [cURL v'$v']('"$url"').'
 		;;
 	mingw-w64-git)
 		finalize $delete_existing_tag $release_date $use_branch \
@@ -2832,7 +2953,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		# Git LFS sometimes lists SHA-256 sums below, sometimes
 		# above the file names. Work around that particular issue
 		if test -n "$(echo "$release" |
-			grep "$needle1"'.*\\n[0-9a-z]\{64\}"$')"
+			grep "$needle1"'.*\\n[0-9a-z]\{64\}\(\\r\)\?\(\\n\)\?"$')"
 		then
 			# The SHA-256 sums are listed below the file names
 			needle2="$version\\.zip[^0-9a-f]*\\([0-9a-f]*\\).*"
@@ -2873,19 +2994,23 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		 printf "%s *%s\n%s *%s\n" \
 			"$sha256_32" "$zip32" "$sha256_64" "$zip64" |
 		 sha256sum -c - &&
+		 exesuffix32="$(unzip -l $zip32 | sed -n 's/.*git-lfs\([^\/]*\)\.exe$/\1/p')" &&
+		 exesuffix64="$(unzip -l $zip64 | sed -n 's/.*git-lfs\([^\/]*\)\.exe$/\1/p')" &&
 		 dir32="$(unzip -l $zip32 |
-			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs-windows-386\.exe$/\1/p' |
+			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs'"$exesuffix32"'\.exe$/\1/p' |
 			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
 		 dir64="$(unzip -l $zip64 |
-			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs-windows-amd64\.exe/\1/p' |
+			 sed -n 's/^.\{28\} *\(.*\)\/\?git-lfs'"$exesuffix64"'\.exe/\1/p' |
 			 sed -e 's/^$/./' -e 's/\//\\&/g')" &&
 		 s1='s/\(folder=\)[^\n]*/\1' &&
 		 s2='s/\(sha256sum=\)[0-9a-f]*/\1' &&
 		 s3='s/\(386-\|amd64-\)v\?\(\$pkgver\.zip\)/\1'$extra_v'\2/' &&
+		 s4_32='s/\(exesuffix=\).*/\1'"$exesuffix32"'/' &&
+		 s4_64='s/\(exesuffix=\).*/\1'"$exesuffix64"'/' &&
 		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
 		 -e "s/^\\(pkgrel=\\).*/\\11/" \
-		 -e "/^i686)/{N;N;N;$s1$dir32/;$s2$sha256_32/;$s3}" \
-		 -e "/^x86_64)/{N;N;N;$s1$dir64/;$s2$sha256_64/;$s3}" \
+		 -e "/^i686)/{N;N;N;N;$s1$dir32/;$s2$sha256_32/;$s3;$s4_32}" \
+		 -e "/^x86_64)/{N;N;N;N;$s1$dir64/;$s2$sha256_64/;$s3;$s4_64}" \
 			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD) &&
@@ -2961,6 +3086,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			 sed -n '/The most recent version of the Cygwin DLL is/{
 			    N;s/.*<a href="\([^"]*\)">'"$version"'<\/a>.*/\1/p
 			 }')"
+			test -n "$cygwin_url" ||
+			cygwin_url="$(curl -Lis https://cygwin.com/ml/cygwin-announce/current |
+			 sed -ne '/^Location: /{s/^Location: //;x}' \
+			  -e '/<a \(name=[^ ]* \)\?href=[^>]*>cygwin '"$(echo "$version" |
+				sed 's/\./\\&/g')"'/{s/.* href="\([^"]*\).*/\1/;H;x;s/\n//;p;q}')"
 		 fi &&
 
 		 test -n "$cygwin_url" ||
@@ -3057,7 +3187,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			}')"
 		version=${newest#* }
 		test -n "$version" ||
-		die "Could not determine newest cURL version\n"
+		die "Could not determine newest OpenSSH version\n"
 		url=$url/${newest% *}
 		relnotes_feature='Comes with [OpenSSH v'$version']('"$url"').'
 		sha256="$(echo "$notes" |
@@ -3078,7 +3208,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		;;
 	openssl)
 		version="$(curl -s https://www.openssl.org/source/ |
-		sed -n 's/.*<a href="openssl-\(1\.0\.[1-9]*[^"]*\)\.tar\.gz".*/\1/p')"
+		sed -n 's/.*<a href="openssl-\(1\.1\.1[^"]*\)\.tar\.gz".*/\1/p')"
 		test -n "$version" ||
 		die "Could not determine newest OpenSSL version\n"
 
@@ -3097,7 +3227,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 
 		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
 
-		(set_package mingw-w64-$1 &&
+		(if test -n "$skip_mingw"
+		 then
+			 exit 0
+		 fi &&
+		 set_package mingw-w64-$1 &&
 		 maybe_init_repository "$sdk64/$pkgpath" &&
 		 cd "$sdk64/$pkgpath" &&
 		 require_push_url origin &&
@@ -3139,15 +3273,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		;;
 	bash)
 		url="http://git.savannah.gnu.org/cgit/bash.git/commit/?id=master" &&
-		commit_subject="$(curl $url | sed -n \
-			's/.*<div class=.commit-subject.>\([^<]*\).*/\1/p')" &&
-		case "$commit_subject" in
-		Bash-[1-9]*) ;; # okay
-		*) die "Unhandled commit subject in Bash's master: '%s'\n" "$commit_subject";;
-		esac &&
-		version="$(echo "$commit_subject" | sed -n 's/^Bash-\([^ ]*\).*/\1/p')" &&
-		patchlevel=${commit_subject##* patch } &&
-		if test "a$patchlevel" = "a$commit_subject"
+		version=4.4 &&
+		patchlevel="$(curl $url | sed -n \
+			's/.*+#define PATCHLEVEL \([1-9][0-9]*\).*/\1/p')" &&
+		if test -z "$patchlevel"
 		then
 			patchlevel=0
 		fi &&
@@ -3176,7 +3305,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		die "Could not determine latest Heimdal version\n"
 
 		# 7.5.0 is the initial version shipped by Git for Windows
-		test 7.5.0 = $ver ||
+		test 7.5.0 = "$ver$force_pkgrel" ||
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$ver/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
@@ -3365,6 +3494,121 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		# If we ever have to upgrade beyond xpdf 4.00, we will
 		# implement this part. But no sooner.
 		;;
+	mintty)
+		repo=mintty/mintty
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		version="$(echo "$release" |
+			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
+		 -e "s/^\\(pkgrel=\\).*/\\11/" \
+			PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD)
+		;;
+	git-flow)
+		repo=petervanderdoes/gitflow-avh
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		version="$(echo "$release" |
+			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+
+		# git-flow 1.12.2 was somehow released as tag only, without
+		# release notes, so we would only find 1.12.1...
+		# see https://github.com/petervanderdoes/gitflow-avh/issues/406
+		# for details.
+		test 1.12.1 != "$version" ||
+		version=1.12.2
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 grep "sha256sums.*$sha256" PKGBUILD &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
+		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+
+		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
+		die "Could not update $sdk32/$pkgpath"
+
+		url=https://github.com/$repo/releases/tag/$version &&
+		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
+		relnotes_feature="Comes with [$package $v]($url)."
+		;;
+	serf)
+		url=https://serf.apache.org/download
+		notes="$(curl -s $url)" ||
+		die 'Could not obtain download page from %s\n' \
+			"$url"
+		version="$(echo "$notes" |
+			sed -n 's|.*The latest stable release of Serf is \(<b>\)\?\([1-9][.0-9]*\).*|\2|p')"
+		test -n "$version" ||
+		die "Could not determine newest $package version\n"
+		url=https://svn.apache.org/repos/asf/serf/trunk/CHANGES
+		relnotes_feature='Comes with ['$package' v'$version']('"$url"').'
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
+		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+
+		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
+		die "Could not update $sdk32/$pkgpath"
+		;;
+	gnupg)
+		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=tags'
+		tags="$(curl -s "$url")" ||
+		die 'Could not obtain download page from %s\n' "$url"
+		version="$(echo "$tags" |
+			sed -n '/ href=[^>]*>gnupg-[1-9][.0-9]*</{s/.*>gnupg-\([.0-9]*\).*/\1/p;q}')"
+		test -n "$version" ||
+		die "Could not determine newest $package version\n"
+		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
+
+		announce_url=
+		url2=https://lists.gnupg.org/pipermail/gnupg-announce/
+		mails="$(curl -s "$url2")" ||
+		die 'Could not obtain download page from %s\n' "$url2"
+		for d in $(echo "$mails" | sed -n 's/.*<A href="\(2[^/]*\/date.html\).*/\1/p')
+		do
+			m="$(curl -s "$url2/$d")" ||
+			die "Could not download %s\n" "$url2$d"
+			m="$(echo "$m" |
+				sed -n '/<A HREF.*>.*GnuPG 2.2.15 released/{s/.* HREF="\([^"]*\).*/\1/p;q}')"
+			test -n "$m" || continue
+			announce_url="$url2${d%/*}/$m"
+			break
+		done
+		test -n "$announce_url" ||
+		die "Did not find announcement mail for GNU Privacy Guard %s\n" "$v"
+		relnotes_feature='Comes with [GNU Privacy Guard v'"$v"']('"$announce_url"').'
+
+		(cd "$sdk64/$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
+		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+
+		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
+		die "Could not update $sdk32/$pkgpath"
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
@@ -3459,7 +3703,7 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 		sed -i -e "/^## Changes since/{s/^/$quoted\n\n/;:1;n;b1}" \
 			"$relnotes"
 	else
-		search=$(echo $quoted | sed -r -e 's#.*Comes with \[(.* v|patch level).*#\1#')
+		search=$(echo "$quoted" | sed -r -e 's#.*Comes with \[(.* v|patch level).*#\1#' -e 's#[][]#\\&#g')
 		sed -i -e '/^## Changes since/{
 			:1;n;
 			/^### '"$what"'/b3;
@@ -3981,7 +4225,15 @@ publish () { #
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not prepare build-extra for download-stats update\n"
 
-	"$sdk64/mingw64/bin/node.exe" -v ||
+	"$sdk64/mingw64/bin/node.exe" -v || {
+		if test -f "$sdk64/mingw64/bin/libcares-3.dll" &&
+			test ! -f "$sdk64/mingw64/bin/libcares-2.dll"
+		then
+			ln "$sdk64/mingw64/bin/libcares-3.dll" \
+				"$sdk64/mingw64/bin/libcares-2.dll"
+		fi
+		"$sdk64/mingw64/bin/node.exe" -v
+	} ||
 	die "Could not execute node.exe\n"
 
 	# Required to render the release notes for the announcement mail

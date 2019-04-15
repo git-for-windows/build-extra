@@ -90,6 +90,30 @@ count_other_bashes () {
 	wc -l
 }
 
+# Write HTTP GET response to stdout and return error code. This is equivalent
+# to curl --fail, except that we output the response body to stderr in case of
+# an HTTP error status.
+http_get () {
+	url=$1
+	output=$(mktemp -t gfw-httpget-XXXXXXXX.txt)
+	code=$(curl \
+		--silent \
+		--show-error \
+		--output "$output" \
+		--write-out '%{http_code}' \
+		"$url") || return $?
+	fdout=1
+	ret=0
+	if test "$code" -ge 400
+	then
+		fdout=2
+		ret=22
+	fi
+	cat "$output" >&"$fdout"
+	rm -f "$output"
+	return "$ret"
+}
+
 # The main function of this script
 
 update_git_for_windows () {
@@ -138,15 +162,15 @@ update_git_for_windows () {
 		;;
 	esac
 
-	releases_url=https://api.github.com/repos/git-for-windows/git/releases
-	releases=$(curl --silent $releases_url/latest) ||
+	latest_tag_url=https://gitforwindows.org/latest-tag.txt
+	latest_tag=$(http_get $latest_tag_url) ||
 	case $?,"$proxy" in
 	7,)
-		proxy="$(proxy-lookup.exe https://api.github.com)" &&
-		test -n "$proxy"
+		proxy="$(proxy-lookup.exe https://gitforwindows.org)" &&
+		test -n "$proxy" &&
 		export https_proxy="$proxy" &&
 		echo "Using proxy $https_proxy as per lookup" >&2 &&
-		releases=$(curl --silent $releases_url/latest) ||
+		latest_tag=$(http_get $latest_tag_url) ||
 		return
 		;;
 	*)
@@ -154,9 +178,7 @@ update_git_for_windows () {
 		;;
 	esac
 
-	latest=$(echo "$releases" |
-		grep '"tag_name": "v' |
-		sed -E 's/.*"tag_name": "v([^"]*).*/\1/')
+	latest=${latest_tag#v}
 	# Did we ask about this version already?
 	recently_seen="$(git config --global winUpdater.recentlySeenVersion)"
 	test -n "$quiet" && test "x$recently_seen" = "x$latest" && return
@@ -181,6 +203,8 @@ update_git_for_windows () {
 	esac
 
 	echo "Update $latest is available" >&2
+	releases_url=https://api.github.com/repos/git-for-windows/git/releases
+	releases=$(http_get $releases_url/latest) || return
 	download=$(echo "$releases" |
 		grep '"browser_download_url": "' |
 		grep "$bit\-bit\.exe" |
@@ -221,7 +245,7 @@ update_git_for_windows () {
 				# toast not activated, failed, toasts
 				# unsupported, WinToast init failed or toast
 				# not launched: fall back to using GUI
-				git gui--askyesno \
+				git askyesno \
 					--title "Git Update Available" \
 					"Download and install $name$warn?" || {
 				    git config --global \
@@ -237,7 +261,7 @@ update_git_for_windows () {
 			esac
 		elif test -n "$use_gui"
 		then
-			git gui--askyesno --title "Git Update Available" \
+			git askyesno --title "Git Update Available" \
 				"Download and install $name$warn?" || {
 				git config --global \
 					winUpdater.recentlySeenVersion "$latest"

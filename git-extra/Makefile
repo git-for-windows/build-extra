@@ -4,7 +4,8 @@ CFLAGS ?= -Wall
 CXXFLAGS ?= -Wall
 
 all: $(BUILDDIR)/create-shortcut.exe $(BUILDDIR)/WhoUses.exe \
-	$(BUILDDIR)/blocked-file-util.exe $(BUILDDIR)/proxy-lookup.exe
+	$(BUILDDIR)/blocked-file-util.exe $(BUILDDIR)/proxy-lookup.exe \
+	$(BUILDDIR)/git-askyesno.exe
 
 $(BUILDDIR)/create-shortcut.exe: $(BUILDDIR)/create-shortcut.o
 	$(CC) $(CFLAGS) -o $@ $^ -luuid -lole32
@@ -26,6 +27,11 @@ $(BUILDDIR)/blocked-file-util.exe: $(BUILDDIR)/blocked-file-util.o
 
 $(BUILDDIR)/proxy-lookup.exe: $(BUILDDIR)/proxy-lookup.o
 	$(CC) $(CFLAGS) -o $@ $^ -lshell32 -lwinhttp
+
+$(BUILDDIR)/git-askyesno.o: CFLAGS += -DUNICODE
+
+$(BUILDDIR)/git-askyesno.exe: $(BUILDDIR)/git-askyesno.o
+	$(CC) -municode $(CFLAGS) -o $@ $^
 
 clean:
 	$(RM) $(BUILDDIR)/create-shortcut.exe $(BUILDDIR)/create-shortcut.o

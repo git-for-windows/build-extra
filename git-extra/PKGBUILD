@@ -2,7 +2,7 @@
 
 pkgname=('git-extra')
 _ver_base=1.1
-pkgver=1.1.327.10b58d8
+pkgver=1.1.372.c4786c4
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('i686' 'x86_64')
@@ -14,7 +14,7 @@ optdepends=('vim' 'filesystem')
 install='git-extra.install'
 pkgver() {
   cd "$startdir"
-  test ! -f "$(git rev-parse --git-path shallow)" || git fetch --unshallow
+  test ! -f "$(git rev-parse --git-path shallow)" || git -c http.sslbackend fetch --unshallow
   rev="$(git rev-list -1 HEAD -- .)"
   test -n "$(git show . |
     sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]/p')" ||
@@ -47,15 +47,17 @@ source=('inputrc'
         'git-update'
         'blocked-file-util.c'
         'zzz_rm_stackdumps.sh'
-        'proxy-lookup.c')
+        'proxy-lookup.c'
+        'git-askyesno.c'
+        'update-via-pacman.bat')
 sha256sums=('9efaf8dccc08c7cddc58cb589bab5aac5c0894661175a344ca02b2aa849382bd'
             'c26d22aaa1d3dc615d474e0d60c5c0f19598d61d9205e19ec87aac1b28bb07c1'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
             '17c90698d4dd52dd9f383e72aee54ecea0f62520baf56722de5c83285507c0d9'
-            '694b07404618d616aa316a632090ce64f2f89df3cc62b9d949efc0c2569b016e'
+            '3cd83627f1d20e1108533419fcf33c657cbcf777c3dc39fa7f13748b7d63858a'
             'a9ada325a279ce460aeb663a715e4c335d8972f497d48d97ff5524053b1fb43a'
             'ad295ceb2c66aaf5fec85705110f701924eb6733b68663aaa52a90b950f03caa'
-            'b042b772cf66c4d213617770100c6fa84b04947d477b14c8af0cd0f1992357df'
+            '15b101d6ace1179de71e125e930a004f261cb8a6df4811f80390c3d258ebfc09'
             'd212e1bbe75a9f81443126701324c9c44c3ed5750dd9822eba754a1799ed13b3'
             '402c51eba82453a76f5110f4754bb1005df507a6e4532574c2b9627ff4e1dc81'
             'd9024bab283ebb67b5d39d49ee5d2592e170abf1f92d3db34edcdd7eeed0b6b9'
@@ -67,13 +69,15 @@ sha256sums=('9efaf8dccc08c7cddc58cb589bab5aac5c0894661175a344ca02b2aa849382bd'
             '683ab066be19cb4defec470ebd53f165ca5dbf761fd40c13aee8abe31ba42803'
             '1cf2c13fb97c51375a76ed479362c3cbcdb51ab4d3a745e8d2c3a780badd8d46'
             '37e3412480f0fc5b742406d569baa1a6c572f5be16650ae70c65169c5fd4a8e3'
-            'ec9f90ba1da2c5040ad3198aed01240c78062e9d72d197ecda706978fc547f15'
-            '0df1de94f20047a854d1e201597c3d4ebcc5f7389f272fb031f7424de009e19a'
-            '591d64c5b906cb315bafd5c157c5a9286d1ba3ce54be121ddecfa4ab3607ed93'
+            '568f26b812141cc5094dd434f8f9a85570d3805f4f46e02bf2e22916ca9bd40e'
+            '22f41610dea842890955032af30efdb60e80f310e95a04e57ab36b10e0376923'
+            '4c6e9d619234052e1808fedacad7f01ecfe024e3757da4918c3683a7e847185f'
             '15b40ab72dea884f659cfbe441e9a40b2d8d63e490a3c14824a55607368e476d'
             'ebd1d20aa94be11c6b9bec7d33614d32016343d282c4716d0561ab41407c99bf'
             '97e89689d91747ddb5ee873ae864aebcbb8d0364a52fa198db1e439ee2965b9b'
-            '2199a518823de64a581854b9173f5f06cab191cfde50f04f3628200127690a4f')
+            '2199a518823de64a581854b9173f5f06cab191cfde50f04f3628200127690a4f'
+            'cb94337eb02684b15b75c15d0a75169c6c15c69ec9ee4b35fa99bfe1fb64f9da'
+            'c4cb705fcf117157e2648751212aac29f2f256ee54caa9b6eec5aef0474aec29')
 
 prepare() {
   test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
@@ -116,6 +120,7 @@ package() {
   install -m755 $builddir/WhoUses.exe $pkgdir${MINGW_PREFIX}/bin
   install -m755 $builddir/blocked-file-util.exe $pkgdir${MINGW_PREFIX}/bin
   install -m755 $builddir/proxy-lookup.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/git-askyesno.exe $pkgdir${MINGW_PREFIX}/bin
   install -m755 git-prompt.sh $pkgdir/etc/profile.d
   install -m755 aliases.sh $pkgdir/etc/profile.d
   install -m755 env.sh $pkgdir/etc/profile.d
@@ -127,5 +132,6 @@ package() {
   install -m755 astextplain $pkgdir/usr/bin
   install -m755 git-update-git-for-windows $pkgdir${MINGW_PREFIX}/libexec/git-core
   install -m755 git-update $pkgdir${MINGW_PREFIX}/libexec/git-core
+  install -m755 update-via-pacman.bat $pkgdir
   install -m755 zzz_rm_stackdumps.sh $pkgdir/usr/share/makepkg/lint_package
 }

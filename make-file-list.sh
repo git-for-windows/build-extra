@@ -49,7 +49,19 @@ then
 	UTIL_PACKAGES="$UTIL_PACKAGES tmux libevent"
 fi
 
+this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
+die "Could not determine this script's dir"
+
 pacman_list () {
+	test -n "$MINIMAL_GIT" ||
+	cat "$this_script_dir/keep-despite-upgrade.txt" 2>/dev/null |
+	if test 64 = "$BITNESS"
+	then
+		grep -v '^mingw32/'
+	else
+		grep -v '^mingw64/'
+	fi
+
 	package_list=$(for arg
 		do
 			pactree -u "$arg"
@@ -100,11 +112,12 @@ pacman_list $packages "$@" |
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '/man/' -e '/pkgconfig/' -e '/emacs/' \
 	-e '^/usr/lib/python' -e '^/usr/lib/ruby' \
-	-e '^/usr/share/awk' -e '^/usr/share/subversion' \
+	-e '^/usr/share/subversion' \
 	-e '^/etc/skel/' -e '^/mingw../etc/skel/' \
 	-e '^/usr/bin/svn' \
 	-e '^/usr/bin/xml.*exe$' \
 	-e '^/usr/bin/xslt.*$' \
+	-e '^/mingw../share/doc/openssl/' \
 	-e '^/mingw../share/doc/gettext/' \
 	-e '^/mingw../share/doc/lib' \
 	-e '^/mingw../share/doc/pcre2\?/' \
@@ -125,6 +138,10 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../lib/tdbc' \
 	-e '^/mingw../libexec/git-core/git-archimport$' \
 	-e '^/mingw../share/doc/git-doc/git-archimport' \
+	-e '^/mingw../libexec/git-core/git-cvsimport$' \
+	-e '^/mingw../share/doc/git-doc/git-cvsexport' \
+	-e '^/mingw../libexec/git-core/git-cvsexport' \
+	-e '^/mingw../share/doc/git-doc/git-cvsimport' \
 	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
 	-e '^/mingw../share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
@@ -138,6 +155,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/share/perl5/core_perl/CPAN/' \
 	-e '^/usr/share/perl5/core_perl/TAP/' \
 	-e '^/usr/share/vim/vim74/lang/' \
+	-e '^/update-via-pacman.bat$' \
 	-e '^/etc/profile.d/git-sdk.sh$' |
 if test -n "$WITH_L10N" && test -z "$MINIMAL_GIT"
 then

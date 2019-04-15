@@ -142,7 +142,7 @@ echo "Creating archive" &&
  echo 'GUIMode="1"' &&
  echo 'InstallPath="%%S\\PortableGit"' &&
  echo 'OverwriteMode="0"' &&
- echo "RunProgram=\"git-bash.exe --no-needs-console --hide --no-cd --command=post-install.bat\"" &&
+ echo "RunProgram=\"git-bash.exe --needs-console --hide --no-cd --command=post-install.bat\"" &&
  echo ';!@InstallEnd@!' &&
  cat "$TMPPACK") > "$TARGET" &&
 echo "Success! You will find the new installer at \"$TARGET\"." &&

@@ -1,5 +1,5 @@
-# Git for Windows v2.19.1 Release Notes
-Latest update: Oct 5th 2018
+# Git for Windows v2.21.0 Release Notes
+Latest update: February 26th 2019
 
 ## Introduction
 
@@ -17,12 +17,13 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
   > `MSYS_NO_PATHCONV=1 git blame -L/pathconv/ msys2_path_conv.cc`
 
   Alternatively, you can double the first slash to avoid POSIX-to-Windows path conversion, e.g. "`//usr/bin/bash.exe`".
-* Windows drives are normally recognised within the POSIX path as `/c/path/to/dir/` where `/c/` (or appropriate drive letter) is equivalent to the `C:\` Windows prefix to the `\path\to\dir`. If this is not recoginsed, revert to the `C:\path\to\dir` Windows style.
+* Windows drives are normally recognised within the POSIX path as `/c/path/to/dir/` where `/c/` (or appropriate drive letter) is equivalent to the `C:\` Windows prefix to the `\path\to\dir`. If this is not recognised, revert to the `C:\path\to\dir` Windows style.
 * Git for Windows will not allow commits containing DOS-style truncated 8.3-format filenames ending with a tilde and digit, such as `mydocu~1.txt`. A workaround is to call `git config core.protectNTFS false`, which is not advised. Instead, add a rule to .gitignore to ignore the file(s), or rename the file(s).
 * Many Windows programs (including the Windows Explorer) have problems with directory trees nested so deeply that the absolute path is longer than 260 characters. Therefore, Git for Windows refuses to check out such files by default. You can overrule this default by setting `core.longPaths`, e.g. `git clone -c core.longPaths=true ...`.
 *   Some commands are not yet supported on Windows and excluded from the installation.
 *   As Git for Windows is shipped without Python support, all Git commands requiring Python are not yet supported; e.g. `git p4`.
 *   The Quick Launch icon will only be installed for the user running setup (typically the Administrator). This is a technical restriction and will not change.
+*   The git-core executable file(s) are typically double-counted by Windows Explorer. In fact, repeated files are hard linked, so do not take up the space indicated (#1977).
 
 Should you encounter other problems, please search [the bug tracker](https://github.com/git-for-windows/git/issues) and [the mailing list](http://groups.google.com/group/git-for-windows), chances are that the problem was reported already. If it has not been reported, please follow [our bug reporting guidelines](https://github.com/git-for-windows/git/wiki/Issue-reporting-guidelines) and [report the bug](https://github.com/git-for-windows/git/issues/new).
 
@@ -33,12 +34,94 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
-## Changes since Git for Windows v2.19.1 (Oct 5th 2018)
-
-Please note: _Git CMD_ is deprecated as of this Git for Windows version. The default is to have `git.exe` in the `PATH` anyway, so there is no noticeable difference between CMD and Git CMD. It is impossible to turn off CMD's behavior where it picks up any `git.exe` in the current directory, so let's discourage the use of Git CMD. Users who dislike Git Bash should switch to Powershell instead.
+## Changes since Git for Windows v2.21.0 (February 26th 2019)
 
 ### New Features
 
+* The `awk` included in Git for Windows [now includes extensions](https://github.com/git-for-windows/build-extra/pull/232) such as `inplace`.
+* The file/product version stored in the installer's `.exe` file [now matches the version of the included `git.exe` file's](https://github.com/git-for-windows/build-extra/pull/235).
+* Comes with [git-flow v1.12.2](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.2).
+* Comes with [Git Credential Manager v1.18.5](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.5).
+* Comes with [cURL v7.64.1](https://curl.haxx.se/changes.html#7_64_1).
+* Comes with [GNU Privacy Guard vv2.2.15](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000436.html), specifically [patched to handle Windows paths](https://github.com/git-for-windows/MSYS2-packages/pull/33).
+* Comes with [OpenSSL v1.1.1b](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/1c8b1f5d16a54d50d872a01b76351e5e4656d7d9) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.6](https://cygwin.com/ml/cygwin-announce/2019-04/msg00012.html).
+
+### Bug Fixes
+
+* Git for Windows' updater [is now accessible](https://github.com/git-for-windows/build-extra/pull/234), i.e. it can be read by a screen reader.
+* `git update-git-for-windows` (i.e. the auto updater of Git for Windows) now [reports correctly when it failed to access the GitHub API](https://github.com/git-for-windows/build-extra/pull/239).
+* Git for Windows' updater [no longer runs into GitHub API rate limits](https://github.com/git-for-windows/build-extra/pull/242) (this used to be quite common in enterprise scenarios, where many users would share one IP as far as GitHub is concerned).
+
+## Changes since Git for Windows v2.20.1 (December 15th 2018)
+
+### New Features
+
+* Comes with [Git v2.21.0](https://github.com/git/git/blob/v2.21.0/Documentation/RelNotes/2.21.0.txt).
+* The custom editor setting in the installer [has been improved substantially](https://github.com/git-for-windows/build-extra/pull/221).
+* Comes with [Git Credential Manager v1.18.4.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.4.0).
+* Comes with [cURL v7.64.0](https://curl.haxx.se/changes.html#7_64_0).
+* Comes with [git-flow v1.12.0](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.0).
+* `git archive` [no longer requires `gzip` to generate `.tgz` archives](https://github.com/git-for-windows/git/pull/2077) (this means in particular that it works in MinGit).
+* System-wide Sublime Text installations [are now detected](https://github.com/git-for-windows/build-extra/commit/396b283cc6231589b0b034d4ca4b241b25163e9a) and offered on the editor wizard page.
+* Comes with [Git LFS v2.7.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.7.1).
+
+### Bug Fixes
+
+* The `Git CMD` deprecation [was further clarified](https://github.com/git-for-windows/build-extra/pull/222) to mention that the *Start Menu item* is deprecated, not using Git from CMD.
+* Certain drivers/anti-malware caused `git.exe` to hang, which [has been fixed](https://github.com/git-for-windows/MINGW-packages/pull/32).
+* `git stash` [now works](https://github.com/git-for-windows/git/issues/2006) after staging files with `git add -N`.
+* A problem with `difftool` and more than a handful modified files [has been fixed](https://github.com/git-for-windows/git/pull/2026).
+* The regression where `git-cmd <command>` would not execute the command [was fixed](https://github.com/git-for-windows/git/issues/2039).
+* Portable Git [can be launched via network paths again](https://github.com/git-for-windows/git/issues/2036).
+* FSCache works again [on network drives](https://github.com/git-for-windows/git/issues/2022), in particular [when Windows 8.1 or older](https://github.com/git-for-windows/git/issues/1989) are involved.
+* Partially hidden text in the `Path` options page in the installer [is no longer hidden](https://github.com/git-for-windows/git/issues/2049).
+* Fixes [an obscure `git svn` hang](https://github.com/git-for-windows/git/issues/1993).
+* The installer [now configures editors so that the built-in rebase can use them](https://github.com/git-for-windows/git/issues/2011).
+
+## Changes since Git for Windows v2.20.0 (December 10th 2018)
+
+### New Features
+
+* Comes with [Git v2.20.1](https://github.com/git/git/blob/v2.20.1/Documentation/RelNotes/2.20.1.txt).
+* Comes with [cURL v7.63.0](https://curl.haxx.se/changes.html#7_63_0).
+
+### Bug Fixes
+
+* [Fixes](https://github.com/git-for-windows/git/pull/1983) a speed regression in the built-in rebase.
+
+## Changes since Git for Windows v2.19.2 (November 21st 2018)
+
+Please note that Git for Windows v2.19.2 was offered as a full release only for about a week, and then demoted to "pre-release" status, as it had two rather big regressions: 32-bit Git Bash crashed, and git:// was broken.
+
+### New Features
+
+* Comes with [Git v2.20.0](https://github.com/git/git/blob/v2.20.0/Documentation/RelNotes/2.20.0.txt).
+* Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html). The OpenSSH, cURL and Heimdal packages were rebuilt to make use of OpenSSL v1.1.1a.
+* The FSCache feature [was further optimized in particular for very large repositories](https://github.com/git-for-windows/git/pull/1937).
+* To appease certain anti-malware, MinTTY was recompiled with a patch to avoid [GCC trampolines](https://github.com/git-for-windows/MSYS2-packages/commit/63f68558c9c6a6c7765c18dacbbcac328748eb30).
+* Comes with [Git LFS v2.6.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.6.1).
+* Comes with [Bash v4.4 patchlevel 023 ](https://tiswww.case.edu/php/chet/bash/NEWS).
+* Commands to interact with CVS repositories were considered obsolete [and have been removed](https://github.com/git-for-windows/build-extra/commit/59b521a3b).
+* The desired HTTP version (HTTP/2 or HTTP/1.1) [can now be configured via the `http.version` setting](https://github.com/git-for-windows/git/pull/1968).
+
+### Bug Fixes
+
+* Git CMD [no longer picks up `git.exe` from the current directory (if any)](https://github.com/git-for-windows/git/issues/1945).
+* Git Bash [works again in 32-bit Git for Windows](https://github.com/git-for-windows/MINGW-packages/commit/deb0395d031401ffe55024fb066267e2ea8d032b).
+* Git can now [access `git://` remotes again](https://github.com/git-for-windows/git/issues/1949).
+* The confusing descriptions of the PATH options in the installer [were clarified](https://github.com/git-for-windows/build-extra/pull/216).
+* A bug in the `notepad` support in conjunction with line wrapping [was fixed](https://github.com/git-for-windows/build-extra/pull/218).
+* Comes two backported fixes to [allow NTLM/Kerberos authentication to fall back to HTTP/1.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/issues/812).
+* It is [now possible to call `cmd\git.exe` via a symbolic link](https://github.com/git-for-windows/git/issues/1650).
+
+## Changes since Git for Windows v2.19.1 (Oct 5th 2018)
+
+* The _Git CMD_ start menu shortcut is deprecated and will be dropped in future version. Note that the deprecation only affects the shortcut; `git-cmd.exe` will continue to be distributed and installed.
+
+### New Features
+
+* Comes with [Git v2.19.2](https://github.com/git/git/blob/v2.19.2/Documentation/RelNotes/2.19.2.txt).
 * Comes with [OpenSSH v7.9p1](https://www.openssh.com/txt/release-7.9).
 * The description of the editor option to choose Vim [has been clarified](https://github.com/git-for-windows/build-extra/pull/207) to state that this *unsets* `core.editor`.
 * Comes with [cURL v7.62.0](https://curl.haxx.se/changes.html#7_62_0).
@@ -47,6 +130,7 @@ Please note: _Git CMD_ is deprecated as of this Git for Windows version. The def
 * Comes with [Git Credential Manager v1.18.3](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.3).
 * Comes with [Git LFS v2.6.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.6.0).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.11.2](https://cygwin.com/ml/cygwin-announce/2018-11/msg00007.html).
+* The FSCache feature [was optimized to become faster](https://github.com/git-for-windows/git/pull/1926).
 
 ### Bug Fixes
 
