@@ -8,7 +8,7 @@ static HWND main_window;
 static LPWSTR *helper_name, *helper_path, previously_selected_helper;
 static size_t helper_nr, selected_helper;
 static int persist;
-static LPWSTR persist_to_config_option;
+static LPWSTR persist_to_config_option, persist_tooltip;
 
 #define ID_ENTER   IDOK
 #define ID_ABORT   IDCANCEL
@@ -368,7 +368,7 @@ static int discover_config_to_persist_to(void)
 	 * else fails.
 	 */
 	LPWSTR git_exe = find_exe(L"git.exe"), output, tab, quoted;
-	size_t len;
+	size_t len, len2;
 	WCHAR git_editor_backup[_MAX_ENV + 1];
 	int git_editor_unset = 1, res;
 
@@ -396,15 +396,19 @@ static int discover_config_to_persist_to(void)
 			quoted = quote(output + 5);
 			if (quoted == output + 5)
 				quoted = wcsdup(quoted);
-			free(output);
 			len = 4 + wcslen(quoted);
 			persist_to_config_option = malloc(len * sizeof(WCHAR));
-			if (!persist_to_config_option) {
+			len2 = 30 + wcslen(output + 5);
+			persist_tooltip = malloc(len2 * sizeof(WCHAR));
+			if (!persist_to_config_option || !persist_tooltip) {
 				MessageBoxW(NULL, L"Out of memory!", L"Error", MB_OK);
 				exit(1);
 			}
 			swprintf(persist_to_config_option, len, L"-f %s", quoted);
 			free(quoted);
+			swprintf(persist_tooltip, len2,
+				 L"Set credential.helper in '%s'", output + 5);
+			free(output);
 			return 0;
 		}
 	}
@@ -420,10 +424,13 @@ static int discover_config_to_persist_to(void)
 			    "advice.waitingForEditor=0 config --system -e",
 			    0, 0, &output);
 	SetEnvironmentVariableW(L"GIT_EDITOR", git_editor_unset ? NULL : git_editor_backup);
-	if (!res && can_write_lock_file(output))
+	if (!res && can_write_lock_file(output)) {
 		persist_to_config_option = L"--system";
-	else
+		persist_tooltip = L"Set credential.helper in the system config";
+	} else {
 		persist_to_config_option = L"--global";
+		persist_tooltip = L"Set credential.helper in the user config";
+	}
 	free(output);
 	return 0;
 }
@@ -584,6 +591,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 	case WM_CREATE: {
 		RECT rect;
 		int width;
+		HWND hwnd3;
 		size_t i;
 
 		GetClientRect(hwnd, &rect);
@@ -610,13 +618,15 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 			}
 		}
 
-		CreateWindowW(L"Button", L"Always use this from now on",
-			      WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_CHECKBOX,
-			      2 * offset_x,
-			      4 * offset_y + line_height * helper_nr,
-			      width - 2 * offset_x,
-			      line_height + line_offset_y,
-			      hwnd, (HMENU) ID_PERSIST, NULL, NULL);
+		hwnd3 = CreateWindowW(L"Button", L"Always use this from now on",
+				      WS_TABSTOP | WS_VISIBLE | WS_CHILD |
+				      BS_CHECKBOX,
+				      2 * offset_x,
+				      4 * offset_y + line_height * helper_nr,
+				      width - 2 * offset_x,
+				      line_height + line_offset_y,
+				      hwnd, (HMENU) ID_PERSIST, NULL, NULL);
+		create_tooltip(hwnd3, persist_tooltip);
 
 		CreateWindowW(L"Button", L"Select",
 			      WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
