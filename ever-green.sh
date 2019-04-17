@@ -145,13 +145,22 @@ nested-rebase)
 	echo "reset $onto" >>"$todo" &&
 	if test -n "$merging"
 	then
-		echo "exec git merge -s ours -m \"\$(cat \"\$GIT_DIR\"/merging-rebase-message)\" \"$merging\"" >>"$todo"
+		cat >>"$todo" <<-EOF
+		exec git merge -s ours -m "\$(cat "\$GIT_DIR/merging-rebase-message")" "$merging"
+		exec git replace --graft HEAD HEAD^
+		exec exit 123 # force re-reading of replacement objects
+		EOF
 	fi &&
 	make_script HEAD "$@" >>"$todo" ||
 	die "Could not retrieve new todo list"
 
 	help="$(extract_todo_help "$todo")" &&
 	cat "$todo.save" >>"$todo" &&
+	if test -n "$merging"
+	then
+		echo "exec git replace --delete 'HEAD^{/^Start the merging-rebase}'" >>"$todo" ||
+		die "Could not append exec line to reset the replace ref"
+	fi &&
 	echo "$help" >>"$todo" ||
 	die "Could not append saved todo commands"
 
@@ -237,9 +246,9 @@ self-test)
 	# Now, let's make things *even* more realistic by adding *quite* a bit
 	# of local work:
 	#
-	#             --------- C
-	#           /             \
-	# A - B - M - fixup D - E - N --- P - Q
+	#             --------- C         R - S
+	#           /             \             \
+	# A - B - M - fixup D - E - N --- P - Q - T
 	#   \   /   \                   /   /
 	#     D       --------- fixup B - K
 	#
@@ -248,22 +257,29 @@ self-test)
 	#
 	# A - F - G
 	#
-	# At this stage, the tip of the local branch is Q, the tip of the
+	# At this stage, the tip of the local branch is S, the tip of the
 	# remote branch is G, and the (outdated) ever-green branch's tip is E'.
 	#
 	# Now we want to use ever-green.sh to update the ever-green branch, so
 	# that it looks like this:
 	#
-	#                       C"
-	#                     /    \
-	# A - F - G - B" - M" - E" - N" - Q"
+	#                       C"     R - S
+	#                     /    \         \
+	# A - F - G - B" - M" - E" - N" - Q" - T"
 	#           \    /    \         /
 	#             D"        K" ----
 	#
 	# where B" contains the fixup and E" is actually a rebased E' (instead
 	# of a rebased E that would not have that extra change).
+	#
+	# Note that we do *not* want the cousins R and S to be rewritten; they
+	# should stay the exact same. This reflects the situation where we want
+	# to merge a branch from git.git's pu branch thicket into Git for
+	# Windows' master branch, and then use the ever-green.sh script to rebase
+	# on top of a newer pu branch thicket.
 
 	test_commit () { # <mark> <parent(s)> <commit-message> [<file-name> [<contents>]]
+		test -n "$2" || echo "reset refs/heads/master"
 		printf '%s\n' \
 			'commit refs/heads/master' \
 			"mark :$1" \
@@ -306,6 +322,9 @@ self-test)
 	$(test_commit 12 '10 11' Q K)
 	$(test_commit 20 1 F)
 	$(test_commit 21 20 G)
+	$(test_commit 22 '' R)
+	$(test_commit 23 22 S)
+	$(test_commit 24 '12 23' T)
 	EOF
 
 	# Start ever-green branch
@@ -330,11 +349,15 @@ self-test)
 	git -P diff --no-index -w expect actual ||
 	die "Unexpected graph"
 
-	"$THIS_SCRIPT" --current-tip=Q --previous-tip=E --ever-green-base=F --onto=G ||
+	"$THIS_SCRIPT" --current-tip=T --previous-tip=E --ever-green-base=F --onto=G ||
 	die "Could not update ever-green branch"
 
 	git log --graph --format=%s --boundary A..ever-green >actual &&
 	cat >expect <<-\EOF
+	* T
+	|\
+	| * S
+	| * R
 	* Q
 	|\
 	| * K
@@ -362,6 +385,8 @@ self-test)
 	die "Lost amendment to B"
 	test E1 = "$(git show ever-green:E)" ||
 	die "Lost amendment to E"
+	test 0 = $(git rev-list --count ever-green^2...S --) ||
+	die "S was rewritten"
 
 	# Now, let's do the same for merging-rebases
 	git checkout -b merging-ever-green E &&
@@ -389,38 +414,45 @@ self-test)
 	git -P diff --no-index -w expect actual ||
 	die "Unexpected graph"
 
-	"$THIS_SCRIPT" --current-tip=Q --merging --onto=G ||
+	"$THIS_SCRIPT" --current-tip=T --merging --onto=G ||
 	die "Could not update ever-green branch"
 
-	git log --graph --format=%s --boundary A..merging-ever-green ^Q -- >actual &&
+	git log --graph --format=%s --boundary A..merging-ever-green ^T -- >actual &&
 	cat >expect <<-\EOF
-	* Q
+	*   T
 	|\
-	| * K
-	*  | N
-	|\  \
-	| * | E1
-	| |/
-	* | C
+	* \   Q
+	|\ \
+	| * | K
+	* | |   N
+	|\ \ \
+	| * | | E1
+	| |/ /
+	* | | C
+	|/ /
+	* |   M
+	|\ \
+	| * | D
+	* | | B
+	|/ /
+	* |   Start the merging-rebase to G
+	|\ \
+	* | | G
+	* | | F
+	o | | A
+	 / /
+	o | T
 	|/
-	* M
-	|\
-	| * D
-	* | B
-	|/
-	*   Start the merging-rebase to G
-	|\
-	* | G
-	* | F
-	o | A
-	 /
-	o Q
+	o S
 	EOF
 	git -P diff --no-index -w expect actual ||
 	die "Unexpected graph"
 
 	git -P diff --exit-code ever-green -- ||
 	die "Incorrect tree"
+
+	test 0 = $(git rev-list --count merging-ever-green^2...S --) ||
+	die "S was rewritten"
 
 	exit 0
 	;;
@@ -710,13 +742,23 @@ then
 	echo "reset $onto" >>"$replace_todo" &&
 	if test -n "$merging"
 	then
-		echo "exec git merge -s ours -m \"\$(cat \"\$GIT_DIR\"/merging-rebase-message)\" \"$current_tip\"" >>"$replace_todo"
+		cat >>"$replace_todo" <<-EOF
+		exec git merge -s ours -m "\$(cat "\$GIT_DIR/merging-rebase-message")" "$current_tip"
+		exec git replace --graft HEAD HEAD^
+		exec exit 123 # force re-reading of replacement objects
+		EOF
 	fi &&
-	make_script HEAD -ir --autosquash --rebase-merges=rebase-cousins --onto "$onto" "$ever_green_base" >>"$replace_todo" ||
+	make_script HEAD -ir --autosquash --onto "$onto" "$ever_green_base" >>"$replace_todo" ||
 	die "Could not generate new todo list"
 
 	help="$(extract_todo_help "$replace_todo")" ||
 	die "Could not extract help text from $replace_todo"
+
+	if test -n "$merging"
+	then
+		echo "exec git replace --delete 'HEAD^{/^Start the merging-rebase}'" >>"$replace_todo" ||
+		die "Could not append exec line to reset the replace ref"
+	fi
 else
 	pick_new_changes_onto_ever_green >"$replace_todo" ||
 	die "Could not generate todo list for $previous_tip..$current_tip"
@@ -731,7 +773,7 @@ else
 		cat >>"$replace_todo" <<-EOF
 
 		# Now perform the rebase onto $onto
-		exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --rebase-merges=rebase-cousins --onto "$onto" "$ever_green_base"
+		exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --onto "$onto" "$ever_green_base"
 		EOF
 	fi
 fi
