@@ -470,7 +470,7 @@ then
 
 	if test -n "$merging" && test -z "$previous_tip"
 	then
-		previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "$current_tip")" ||
+		previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "$current_tip" --)" ||
 		die "Failed to look for a new merging-rebase"
 	fi
 
@@ -508,7 +508,7 @@ else
 	# automagically determine previous tip, ever-green base from merging-rebase's start commit
 	if test -z "$previous_tip"
 	then
-		previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "..$current_tip")" ||
+		previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "..$current_tip" --)" ||
 		die "Failed to look for a new merging-rebase"
 	fi
 
@@ -522,7 +522,7 @@ else
 		ever_green_base="$(git rev-parse --verify HEAD)" ||
 		die "Could not determine HEAD"
 	else
-		ever_green_base="$(git rev-list -1 --grep='^Start the merging-rebase' "$current_tip..")" ||
+		ever_green_base="$(git rev-list -1 --grep='^Start the merging-rebase' "$current_tip.." --)" ||
 		die "Failed to look for previous merging-rebase"
 
 		if test -z "$ever_green_base"
@@ -550,7 +550,7 @@ test -z "$(git log "$ever_green_base.." | sed -n '/^ *$/{N;/\n    \(fixup\|squas
 die "Ever-green branches cannot have fixup!/squash! commits"
 
 current_has_new_commits=
-test 0 = $(git rev-list --count "$previous_tip..$current_tip" ^HEAD -- ) ||
+test 0 = $(git rev-list --count "$previous_tip..$current_tip" ^HEAD --) ||
 current_has_new_commits=t
 
 # Let's fall through if we have to create a merging-rebase
@@ -597,7 +597,7 @@ find_commit_by_oneline () {
 }
 
 # range-diff does not include merge commits
-if test 0 = "$(git rev-list --count "$ever_green_base..")"
+if test 0 = "$(git rev-list --count "$ever_green_base.." --)"
 then
 	commit_map=
 else
@@ -667,7 +667,7 @@ pick_new_changes_onto_ever_green () {
 replace_todo="$(git rev-parse --absolute-git-dir)/replace-todo"
 if test -z "$current_has_new_commits"
 then
-	if test 0 = $(git rev-list --count "$ever_green_tip".."$onto")
+	if test 0 = $(git rev-list --count "$ever_green_tip".."$onto" --)
 	then
 		test -z "$initial" ||
 		git reset --hard "$current_tip" ||
@@ -696,7 +696,7 @@ else
 	help="$(extract_todo_help "$replace_todo")" ||
 	die "Could not extract todo help from $replace_todo"
 
-	if test -n "$merging" || test 0 -lt $(git rev-list --count "$ever_green_tip".."$onto")
+	if test -n "$merging" || test 0 -lt $(git rev-list --count "$ever_green_tip".."$onto" --)
 	then
 		# The second rebase's todo list can only be generated after the first one is done
 
