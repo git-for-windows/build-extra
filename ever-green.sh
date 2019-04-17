@@ -204,7 +204,38 @@ self-test)
 	git config user.email "eve@rgre.en" ||
 	die "Could not configure committer"
 
-	# Create the following branch structure:
+	# Let's assume that we have a local branch and a remote branch, and we
+	# want to keep developing the local branch, all the while the remote
+	# branch is also advancing.
+	#
+	# The idea of an ever-green branch is to be a continuously-updated
+	# branch that reflects what the local branch would look like, after
+	# rebasing it to the remote branch.
+	#
+	# So what does this look like? Assume that we have this local branch:
+	#
+	# A - B - M - fixup D - E
+	#   \   /
+	#     D
+	#
+	# where A is the revision from the remote branch on which the local
+	# branch was based. Then, let's assume that the remote branch added a
+	# new commit, F. The ever-green branch would now look like this:
+	#
+	# A - F - B' - M' - E'
+	#       \    /
+	#         D'
+	#
+	# Obviously, the fixup for D would have been squashed into D while
+	# updating the ever-green branch.
+	#
+	# To make things realistic, we slip in a change into E' that was not
+	# there in E. This reflects scenarios where changes are necessary
+	# during the rebase to make things work again, e.g. when a function
+	# signature changes in F and E introduces a caller to said function.
+	#
+	# Now, let's make things *even* more realistic by adding *quite* a bit
+	# of local work:
 	#
 	#             --------- C
 	#           /             \
@@ -212,20 +243,16 @@ self-test)
 	#   \   /   \                   /   /
 	#     D       --------- fixup B - K
 	#
-	# Then add a commit F on top of A, rebase E on top of F:
+	# And let's also throw in another remote commit: the remote branch now
+	# looks like this:
 	#
-	# A - F - B' - M' - E'
-	#       \    /
-	#         D'
+	# A - F - G
 	#
-	# This is our previous ever-green branch, and to make things realistic,
-	# we slip in a change into E' that was not there in E. This reflects
-	# scenarios where changes are necessary during the rebase to make things
-	# work again, e.g. when a function signature changes in F and E introduces
-	# a caller to said function.
+	# At this stage, the tip of the local branch is Q, the tip of the
+	# remote branch is G, and the (outdated) ever-green branch's tip is E'.
 	#
-	# Now we want to use ever-green.sh to update the ever-green branch with
-	# respect to Q and G, so that it looks like this:
+	# Now we want to use ever-green.sh to update the ever-green branch, so
+	# that it looks like this:
 	#
 	#                       C"
 	#                     /    \
