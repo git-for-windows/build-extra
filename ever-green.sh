@@ -196,7 +196,8 @@ self-test)
 	test ! -e "$tmp_worktree" || rm -rf "$tmp_worktree" || die "Could not remove $tmp_worktree"
 
 	git init "$tmp_worktree" &&
-	cd "$tmp_worktree" ||
+	cd "$tmp_worktree" &&
+	git config core.autocrlf false ||
 	die "Could not init $tmp_worktree"
 
 	git config user.name "Ever Green" &&
