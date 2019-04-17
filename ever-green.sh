@@ -712,7 +712,7 @@ then
 	then
 		echo "exec git merge -s ours -m \"\$(cat \"\$GIT_DIR\"/merging-rebase-message)\" \"$current_tip\"" >>"$replace_todo"
 	fi &&
-	make_script HEAD -ir --autosquash --onto "$onto" "$ever_green_base" >>"$replace_todo" ||
+	make_script HEAD -ir --autosquash --rebase-merges=rebase-cousins --onto "$onto" "$ever_green_base" >>"$replace_todo" ||
 	die "Could not generate new todo list"
 
 	help="$(extract_todo_help "$replace_todo")" ||
@@ -731,7 +731,7 @@ else
 		cat >>"$replace_todo" <<-EOF
 
 		# Now perform the rebase onto $onto
-		exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --onto "$onto" "$ever_green_base"
+		exec "$THIS_SCRIPT" nested-rebase ${merging:+--merging="$current_tip"} -kir --autosquash --rebase-merges=rebase-cousins --onto "$onto" "$ever_green_base"
 		EOF
 	fi
 fi
