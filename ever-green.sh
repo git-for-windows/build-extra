@@ -781,7 +781,7 @@ fi
 cat >>"$replace_todo" <<EOF
 
 # error on fixup!/squash! commits in the ever-green branch
-exec test -z "\$(git log "$onto.." ${merging:+"^HEAD^{/^Start.the.merging-rebase}"} | sed -n '/^ *$/{N;/\n    \(fixup\|squash\)!/p}')" || { echo "Ever-green branches cannot contain fixup!/squash! commits" >&2; exit 1; }
+exec test -z "\$(git log "$onto.." $(test -z "$merging" || echo ^HEAD^{/^Start.the.merging-rebase}) | sed -n '/^ *$/{N;/\n    \(fixup\|squash\)!/p}')" || { echo "Ever-green branches cannot contain fixup!/squash! commits" >&2; exit 1; }
 EOF
 
 test -z "$help" ||
