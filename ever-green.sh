@@ -145,13 +145,22 @@ nested-rebase)
 	echo "reset $onto" >>"$todo" &&
 	if test -n "$merging"
 	then
-		echo "exec git merge -s ours -m \"\$(cat \"\$GIT_DIR\"/merging-rebase-message)\" \"$merging\"" >>"$todo"
+		cat >>"$todo" <<-EOF
+		exec git merge -s ours -m "\$(cat "\$GIT_DIR/merging-rebase-message")" "$merging"
+		exec git replace --graft HEAD HEAD^
+		exec exit 123 # force re-reading of replacement objects
+		EOF
 	fi &&
 	make_script HEAD "$@" >>"$todo" ||
 	die "Could not retrieve new todo list"
 
 	help="$(extract_todo_help "$todo")" &&
 	cat "$todo.save" >>"$todo" &&
+	if test -n "$merging"
+	then
+		echo "exec git replace --delete 'HEAD^{/^Start the merging-rebase}'" >>"$todo" ||
+		die "Could not append exec line to reset the replace ref"
+	fi &&
 	echo "$help" >>"$todo" ||
 	die "Could not append saved todo commands"
 
@@ -196,46 +205,81 @@ self-test)
 	test ! -e "$tmp_worktree" || rm -rf "$tmp_worktree" || die "Could not remove $tmp_worktree"
 
 	git init "$tmp_worktree" &&
-	cd "$tmp_worktree" ||
+	cd "$tmp_worktree" &&
+	git config core.autocrlf false ||
 	die "Could not init $tmp_worktree"
 
 	git config user.name "Ever Green" &&
 	git config user.email "eve@rgre.en" ||
 	die "Could not configure committer"
 
-	# Create the following branch structure:
+	# Let's assume that we have a local branch and a remote branch, and we
+	# want to keep developing the local branch, all the while the remote
+	# branch is also advancing.
 	#
-	#             --------- C
-	#           /             \
-	# A - B - M - fixup D - E - N --- P - Q
-	#   \   /   \                   /   /
-	#     D       --------- fixup B - K
+	# The idea of an ever-green branch is to be a continuously-updated
+	# branch that reflects what the local branch would look like, after
+	# rebasing it to the remote branch.
 	#
-	# Then add a commit F on top of A, rebase E on top of F:
+	# So what does this look like? Assume that we have this local branch:
+	#
+	# A - B - M - fixup D - E
+	#   \   /
+	#     D
+	#
+	# where A is the revision from the remote branch on which the local
+	# branch was based. Then, let's assume that the remote branch added a
+	# new commit, F. The ever-green branch would now look like this:
 	#
 	# A - F - B' - M' - E'
 	#       \    /
 	#         D'
 	#
-	# This is our previous ever-green branch, and to make things realistic,
-	# we slip in a change into E' that was not there in E. This reflects
-	# scenarios where changes are necessary during the rebase to make things
-	# work again, e.g. when a function signature changes in F and E introduces
-	# a caller to said function.
+	# Obviously, the fixup for D would have been squashed into D while
+	# updating the ever-green branch.
 	#
-	# Now we want to use ever-green.sh to update the ever-green branch with
-	# respect to Q and G, so that it looks like this:
+	# To make things realistic, we slip in a change into E' that was not
+	# there in E. This reflects scenarios where changes are necessary
+	# during the rebase to make things work again, e.g. when a function
+	# signature changes in F and E introduces a caller to said function.
 	#
-	#                       C"
-	#                     /    \
-	# A - F - G - B" - M" - E" - N" - Q"
+	# Now, let's make things *even* more realistic by adding *quite* a bit
+	# of local work:
+	#
+	#             --------- C         R - S
+	#           /             \             \
+	# A - B - M - fixup D - E - N --- P - Q - T
+	#   \   /   \                   /   /
+	#     D       --------- fixup B - K
+	#
+	# And let's also throw in another remote commit: the remote branch now
+	# looks like this:
+	#
+	# A - F - G
+	#
+	# At this stage, the tip of the local branch is S, the tip of the
+	# remote branch is G, and the (outdated) ever-green branch's tip is E'.
+	#
+	# Now we want to use ever-green.sh to update the ever-green branch, so
+	# that it looks like this:
+	#
+	#                       C"     R - S
+	#                     /    \         \
+	# A - F - G - B" - M" - E" - N" - Q" - T"
 	#           \    /    \         /
 	#             D"        K" ----
 	#
 	# where B" contains the fixup and E" is actually a rebased E' (instead
 	# of a rebased E that would not have that extra change).
+	#
+	# Note that we do *not* want the cousins R and S to be rewritten; they
+	# should stay the exact same. This reflects the situation where we want
+	# to merge a branch from git.git's pu branch thicket into Git for
+	# Windows' master branch, and then use the ever-green.sh script to rebase
+	# on top of a newer pu branch thicket.
 
 	test_commit () { # <mark> <parent(s)> <commit-message> [<file-name> [<contents>]]
+		test -n "$2" || echo "reset refs/heads/master"
 		printf '%s\n' \
 			'commit refs/heads/master' \
 			"mark :$1" \
@@ -278,6 +322,9 @@ self-test)
 	$(test_commit 12 '10 11' Q K)
 	$(test_commit 20 1 F)
 	$(test_commit 21 20 G)
+	$(test_commit 22 '' R)
+	$(test_commit 23 22 S)
+	$(test_commit 24 '12 23' T)
 	EOF
 
 	# Start ever-green branch
@@ -302,11 +349,15 @@ self-test)
 	git -P diff --no-index -w expect actual ||
 	die "Unexpected graph"
 
-	"$THIS_SCRIPT" --current-tip=Q --previous-tip=E --ever-green-base=F --onto=G ||
+	"$THIS_SCRIPT" --current-tip=T --previous-tip=E --ever-green-base=F --onto=G ||
 	die "Could not update ever-green branch"
 
 	git log --graph --format=%s --boundary A..ever-green >actual &&
 	cat >expect <<-\EOF
+	* T
+	|\
+	| * S
+	| * R
 	* Q
 	|\
 	| * K
@@ -334,6 +385,8 @@ self-test)
 	die "Lost amendment to B"
 	test E1 = "$(git show ever-green:E)" ||
 	die "Lost amendment to E"
+	test 0 = $(git rev-list --count ever-green^2...S --) ||
+	die "S was rewritten"
 
 	# Now, let's do the same for merging-rebases
 	git checkout -b merging-ever-green E &&
@@ -361,38 +414,45 @@ self-test)
 	git -P diff --no-index -w expect actual ||
 	die "Unexpected graph"
 
-	"$THIS_SCRIPT" --current-tip=Q --merging --onto=G ||
+	"$THIS_SCRIPT" --current-tip=T --merging --onto=G ||
 	die "Could not update ever-green branch"
 
-	git log --graph --format=%s --boundary A..merging-ever-green ^Q -- >actual &&
+	git log --graph --format=%s --boundary A..merging-ever-green ^T -- >actual &&
 	cat >expect <<-\EOF
-	* Q
+	*   T
 	|\
-	| * K
-	*  | N
-	|\  \
-	| * | E1
-	| |/
-	* | C
+	* \   Q
+	|\ \
+	| * | K
+	* | |   N
+	|\ \ \
+	| * | | E1
+	| |/ /
+	* | | C
+	|/ /
+	* |   M
+	|\ \
+	| * | D
+	* | | B
+	|/ /
+	* |   Start the merging-rebase to G
+	|\ \
+	* | | G
+	* | | F
+	o | | A
+	 / /
+	o | T
 	|/
-	* M
-	|\
-	| * D
-	* | B
-	|/
-	*   Start the merging-rebase to G
-	|\
-	* | G
-	* | F
-	o | A
-	 /
-	o Q
+	o S
 	EOF
 	git -P diff --no-index -w expect actual ||
 	die "Unexpected graph"
 
 	git -P diff --exit-code ever-green -- ||
 	die "Incorrect tree"
+
+	test 0 = $(git rev-list --count merging-ever-green^2...S --) ||
+	die "S was rewritten"
 
 	exit 0
 	;;
@@ -470,7 +530,7 @@ then
 
 	if test -n "$merging" && test -z "$previous_tip"
 	then
-		previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "$current_tip")" ||
+		previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "$current_tip" --)" ||
 		die "Failed to look for a new merging-rebase"
 	fi
 
@@ -508,7 +568,7 @@ else
 	# automagically determine previous tip, ever-green base from merging-rebase's start commit
 	if test -z "$previous_tip"
 	then
-		previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "..$current_tip")" ||
+		previous_tip="$(git rev-list -1 --grep='^Start the merging-rebase' "..$current_tip" --)" ||
 		die "Failed to look for a new merging-rebase"
 	fi
 
@@ -522,7 +582,7 @@ else
 		ever_green_base="$(git rev-parse --verify HEAD)" ||
 		die "Could not determine HEAD"
 	else
-		ever_green_base="$(git rev-list -1 --grep='^Start the merging-rebase' "$current_tip..")" ||
+		ever_green_base="$(git rev-list -1 --grep='^Start the merging-rebase' "$current_tip.." --)" ||
 		die "Failed to look for previous merging-rebase"
 
 		if test -z "$ever_green_base"
@@ -550,7 +610,7 @@ test -z "$(git log "$ever_green_base.." | sed -n '/^ *$/{N;/\n    \(fixup\|squas
 die "Ever-green branches cannot have fixup!/squash! commits"
 
 current_has_new_commits=
-test 0 = $(git rev-list --count "$previous_tip..$current_tip" ^HEAD -- ) ||
+test 0 = $(git rev-list --count "$previous_tip..$current_tip" ^HEAD --) ||
 current_has_new_commits=t
 
 # Let's fall through if we have to create a merging-rebase
@@ -597,7 +657,7 @@ find_commit_by_oneline () {
 }
 
 # range-diff does not include merge commits
-if test 0 = "$(git rev-list --count "$ever_green_base..")"
+if test 0 = "$(git rev-list --count "$ever_green_base.." --)"
 then
 	commit_map=
 else
@@ -667,7 +727,7 @@ pick_new_changes_onto_ever_green () {
 replace_todo="$(git rev-parse --absolute-git-dir)/replace-todo"
 if test -z "$current_has_new_commits"
 then
-	if test 0 = $(git rev-list --count "$ever_green_tip".."$onto")
+	if test 0 = $(git rev-list --count "$ever_green_tip".."$onto" --)
 	then
 		test -z "$initial" ||
 		git reset --hard "$current_tip" ||
@@ -682,13 +742,23 @@ then
 	echo "reset $onto" >>"$replace_todo" &&
 	if test -n "$merging"
 	then
-		echo "exec git merge -s ours -m \"\$(cat \"\$GIT_DIR\"/merging-rebase-message)\" \"$current_tip\"" >>"$replace_todo"
+		cat >>"$replace_todo" <<-EOF
+		exec git merge -s ours -m "\$(cat "\$GIT_DIR/merging-rebase-message")" "$current_tip"
+		exec git replace --graft HEAD HEAD^
+		exec exit 123 # force re-reading of replacement objects
+		EOF
 	fi &&
 	make_script HEAD -ir --autosquash --onto "$onto" "$ever_green_base" >>"$replace_todo" ||
 	die "Could not generate new todo list"
 
 	help="$(extract_todo_help "$replace_todo")" ||
 	die "Could not extract help text from $replace_todo"
+
+	if test -n "$merging"
+	then
+		echo "exec git replace --delete 'HEAD^{/^Start the merging-rebase}'" >>"$replace_todo" ||
+		die "Could not append exec line to reset the replace ref"
+	fi
 else
 	pick_new_changes_onto_ever_green >"$replace_todo" ||
 	die "Could not generate todo list for $previous_tip..$current_tip"
@@ -696,7 +766,7 @@ else
 	help="$(extract_todo_help "$replace_todo")" ||
 	die "Could not extract todo help from $replace_todo"
 
-	if test -n "$merging" || test 0 -lt $(git rev-list --count "$ever_green_tip".."$onto")
+	if test -n "$merging" || test 0 -lt $(git rev-list --count "$ever_green_tip".."$onto" --)
 	then
 		# The second rebase's todo list can only be generated after the first one is done
 
@@ -711,7 +781,7 @@ fi
 cat >>"$replace_todo" <<EOF
 
 # error on fixup!/squash! commits in the ever-green branch
-exec test -z "\$(git log "$onto.." ${merging:+^HEAD^{/^Start.the.merging-rebase}} | sed -n '/^ *$/{N;/\n    \(fixup\|squash\)!/p}')" || { echo "Ever-green branches cannot contain fixup!/squash! commits" >&2; exit 1; }
+exec test -z "\$(git log "$onto.." ${merging:+"^HEAD^{/^Start.the.merging-rebase}"} | sed -n '/^ *$/{N;/\n    \(fixup\|squash\)!/p}')" || { echo "Ever-green branches cannot contain fixup!/squash! commits" >&2; exit 1; }
 EOF
 
 test -z "$help" ||
