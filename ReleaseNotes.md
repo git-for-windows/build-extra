@@ -53,6 +53,7 @@ This package contains software from a number of other projects including Bash, z
 * Git for Windows' updater [is now accessible](https://github.com/git-for-windows/build-extra/pull/234), i.e. it can be read by a screen reader.
 * `git update-git-for-windows` (i.e. the auto updater of Git for Windows) now [reports correctly when it failed to access the GitHub API](https://github.com/git-for-windows/build-extra/pull/239).
 * Git for Windows' updater [no longer runs into GitHub API rate limits](https://github.com/git-for-windows/build-extra/pull/242) (this used to be quite common in enterprise scenarios, where many users would share one IP as far as GitHub is concerned).
+* gitk [no longer fails with "filename too long"](https://github.com/git-for-windows/git/pull/2170) when there are 1,000+ branches/tags.
 
 ## Changes since Git for Windows v2.20.1 (December 15th 2018)
 
