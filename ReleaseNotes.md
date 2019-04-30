@@ -47,6 +47,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSL v1.1.1b](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [OpenSSH v8.0p1](https://www.openssh.com/txt/release-8.0).
 * Comes with [Git LFS v2.7.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.7.2).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.7](https://cygwin.com/ml/cygwin-announce/2019-04/msg00030.html).
 
 ### Bug Fixes
 
