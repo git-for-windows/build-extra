@@ -198,7 +198,12 @@ prepare_keep_despite_upgrade () { # <sdk-path>
 	done
 }
 
-process_keep_despite_upgrade () { # <sdk-path>
+process_keep_despite_upgrade () { # [--keep] <sdk-path>
+	test --keep != "$1" || {
+		cp -Ru "$1/.keep/"* "$1/"
+		return $?
+	}
+
 	cp -Ru "$1/.keep/"* "$1/" &&
 	rm -rf "$1/.keep"
 }
@@ -243,6 +248,9 @@ sync () { # [--force]
 			pacman-key --populate git-for-windows' ||
 		die "Could not re-populate git-for-windows-keyring\n"
 
+		process_keep_despite_upgrade --keep "$sdk" ||
+		die 'Could not copy back files-to-keep\n'
+
 		case "$(tail -c 16384 "$sdk/var/log/pacman.log" |
 			grep '\[PACMAN\] starting .* system upgrade' |
 			tail -n 1)" in
@@ -254,6 +262,9 @@ sync () { # [--force]
 				--command=usr\\bin\\bash.exe -l \
 				-c 'pacman -Su '$force' --noconfirm' ||
 			die "Cannot update packages in %s\n" "$sdk"
+
+			process_keep_despite_upgrade --keep "$sdk" ||
+			die 'Could not copy back files-to-keep\n'
 
 			"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
 				pacman-key --list-keys BB3AA74136C569BB \
