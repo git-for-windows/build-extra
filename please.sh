@@ -200,7 +200,7 @@ prepare_keep_despite_upgrade () { # <sdk-path>
 
 process_keep_despite_upgrade () { # [--keep] <sdk-path>
 	test --keep != "$1" || {
-		cp -Ru "$1/.keep/"* "$1/"
+		cp -Ru "$2/.keep/"* "$2/"
 		return $?
 	}
 
