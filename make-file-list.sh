@@ -243,7 +243,7 @@ else
 		-e '^/usr/\(lib\|share\)/terminfo/' -e '^/usr/share/tabset/' \
 		-e "^\\($(echo $EXTRA_FILE_EXCLUDES |
 			sed 's/ /\\|/g')\\)\$"
-fi | sort |
+fi | sort | uniq |
 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|screen.*|xterm.*)$)' |
 sed 's/^\///'
 
