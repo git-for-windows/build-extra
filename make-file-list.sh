@@ -243,9 +243,9 @@ else
 		-e '^/usr/\(lib\|share\)/terminfo/' -e '^/usr/share/tabset/' \
 		-e "^\\($(echo $EXTRA_FILE_EXCLUDES |
 			sed 's/ /\\|/g')\\)\$"
-fi | sort | uniq |
+fi |
 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|screen.*|xterm.*)$)' |
-sed 's/^\///'
+sed 's/^\///' | sort | uniq
 
 test -z "$PACKAGE_VERSIONS_FILE" ||
 pacman -Q filesystem $SH_FOR_REBASE rebase \
