@@ -1,3 +1,8 @@
+for c in $(find "$HOME/bash_completion.d" -name "*-completion.bash" -type f 2> /dev/null)
+do
+	. $c
+done
+
 if test -f /etc/profile.d/git-sdk.sh
 then
 	TITLEPREFIX=SDK-${MSYSTEM#MINGW}
