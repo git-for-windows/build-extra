@@ -143,7 +143,7 @@ case "$LIST" in
 */libexec/git-core/git-legacy-stash*)
 	case "$(git -c stash.usebuiltin stash -h 2>&1)" in
 	*legacy-stash:*)
-		inno_defines="$inno_defines#LF#define WITH_EXPERIMENTAL_BUILTIN_STASH 1"
+		inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_BUILTIN_STASH 1"
 		;;
 	esac
 	;;
