@@ -149,6 +149,12 @@ case "$LIST" in
 	;;
 esac
 
+if test "$(GIT_CONFIG_NOSYSTEM=1 HOME=. git add --patch=123 2>&1)" != \
+	"$(git -c add.interactive.usebuiltin=1 add --patch=123 2>&1)"
+then
+	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_BUILTIN_ADD_I 1"
+fi
+
 GITCONFIG_PATH="$(echo "$LIST" | grep "^mingw$BITNESS/etc/gitconfig\$")"
 printf '' >programdata-config.template
 test -z "$GITCONFIG_PATH" || {

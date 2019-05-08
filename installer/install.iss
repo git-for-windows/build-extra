@@ -352,11 +352,16 @@ const
 #define HAVE_EXPERIMENTAL_OPTIONS 1
 #endif
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_ADD_I
+#define HAVE_EXPERIMENTAL_OPTIONS 1
+#endif
+
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Experimental options
     GP_BuiltinDifftool = 1;
     GP_BuiltinRebase   = 2;
     GP_BuiltinStash    = 3;
+    GP_BuiltinAddI     = 4;
 #endif
 
 var
@@ -416,7 +421,7 @@ var
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Wizard page and variables for the experimental options.
     ExperimentalOptionsPage:TWizardPage;
-    RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_BuiltinStash] of TCheckBox;
+    RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_BuiltinAddI] of TCheckBox;
 #endif
 
     // Mapping controls to hyperlinks
@@ -1861,6 +1866,14 @@ begin
     RdbExperimentalOptions[GP_BuiltinStash].Checked:=ReplayChoice('Enable Builtin Stash','Auto')='Disabled';
 #endif
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_ADD_I
+    // 4th option
+    RdbExperimentalOptions[GP_BuiltinAddI]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in add -i/-p','<RED>(NEW!)</RED> Use the experimental built-in interactive add ("git add -i" or "git add -p").'+#13+'This makes it faster (especially the startup!), but it is not yet considered robust.',TabOrder,Top,Left);
+
+    // Restore the settings chosen during a previous install
+    RdbExperimentalOptions[GP_BuiltinAddI].Checked:=ReplayChoice('Enable Builtin Interactive Add','Auto')='Disabled';
+#endif
+
 #endif
 
     (*
@@ -2484,6 +2497,13 @@ begin
         GitSystemConfigSet('stash.useBuiltin',#0);
 #endif
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_ADD_I
+    if RdbExperimentalOptions[GP_BuiltinAddI].checked then
+        GitSystemConfigSet('add.interactive.useBuiltin','true')
+    else
+        GitSystemConfigSet('add.interactive.useBuiltin',#0);
+#endif
+
     {
         Modify the environment
 
@@ -2796,6 +2816,14 @@ begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Enable Builtin Stash',Data);
+#endif
+
+#ifdef WITH_EXPERIMENTAL_BUILTIN_ADD_I
+    Data:='Disabled';
+    if RdbExperimentalOptions[GP_BuiltinAddI].Checked then begin
+        Data:='Enabled';
+    end;
+    RecordChoice(PreviousDataKey,'Enable Builtin Interactive Add',Data);
 #endif
 
     Path:=ExpandConstant('{app}\etc\install-options.txt');
