@@ -59,6 +59,7 @@ This package contains software from a number of other projects including Bash, z
 * Two workarounds from the Git for Windows 1.x era (concerning reading credentials via GUI and fetching via `git://`) [were considered obsolete](https://github.com/git-for-windows/git/pull/2178).
 * `git difftool --no-index` [can now be run outside of Git worktrees](https://github.com/git-for-windows/git/pull/2175).
 * `gitk` [now works correctly](https://github.com/git-for-windows/git/pull/2170) in the presence of a large number of branches/tags.
+* `git rebase -i` used to get confused when an `exec` command created new commits and then appended `pick` lines for them. This [has been fixed](https://github.com/git-for-windows/git/pull/2121).
 
 ## Changes since Git for Windows v2.20.1 (December 15th 2018)
 
