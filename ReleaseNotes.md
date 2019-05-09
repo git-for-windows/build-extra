@@ -57,6 +57,7 @@ This package contains software from a number of other projects including Bash, z
 * gitk [no longer fails with "filename too long"](https://github.com/git-for-windows/git/pull/2170) when there are 1,000+ branches/tags.
 * A bug which on occasion caused lengthy rebase runs to crash without error message [was fixed](https://github.com/git-for-windows/git/pull/2182).
 * Two workarounds from the Git for Windows 1.x era (concerning reading credentials via GUI and fetching via `git://`) [were considered obsolete](https://github.com/git-for-windows/git/pull/2178).
+* `git difftool --no-index` [can now be run outside of Git worktrees](https://github.com/git-for-windows/git/pull/2175).
 
 ## Changes since Git for Windows v2.20.1 (December 15th 2018)
 
