@@ -43,7 +43,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [git-flow v1.12.2](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.2).
 * Comes with [Git Credential Manager v1.18.5](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.5).
 * Comes with [cURL v7.64.1](https://curl.haxx.se/changes.html#7_64_1).
-* Comes with [GNU Privacy Guard vv2.2.15](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000436.html), specifically [patched to handle Windows paths](https://github.com/git-for-windows/MSYS2-packages/pull/33).
+* Comes with [GNU Privacy Guard v2.2.15](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000436.html), specifically [patched to handle Windows paths](https://github.com/git-for-windows/MSYS2-packages/pull/33).
 * Comes with [OpenSSL v1.1.1b](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [OpenSSH v8.0p1](https://www.openssh.com/txt/release-8.0).
 * Comes with [Git LFS v2.7.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.7.2).

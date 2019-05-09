@@ -3607,7 +3607,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		done
 		test -n "$announce_url" ||
 		die "Did not find announcement mail for GNU Privacy Guard %s\n" "$v"
-		relnotes_feature='Comes with [GNU Privacy Guard v'"$v"']('"$announce_url"').'
+		relnotes_feature='Comes with [GNU Privacy Guard '"$v"']('"$announce_url"').'
 
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
