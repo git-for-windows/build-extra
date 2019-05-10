@@ -498,6 +498,8 @@ out_of_memory:
 				goto next_file; /* skip e.g. git-credential-manager.html */
 			if (path_ends_with(find_data.cFileName, L".pdb"))
 				goto next_file; /* skip e.g. git-credential-store.pdb */
+			if (!wcsicmp(find_data.cFileName, L"git-credential-helper-selector.exe"))
+				goto next_file; /* skip the credential helper selector itself */
 
 			if (helper_nr + 1 >= alloc) {
 				alloc += 16;
