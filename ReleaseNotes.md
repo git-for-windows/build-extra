@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git LFS v2.7.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.7.2).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on Cygwin v3.x (see release notes for Cygwin [3.0.0](https://cygwin.com/ml/cygwin-announce/2019-02/msg00010.html), [3.0.1](https://cygwin.com/ml/cygwin-announce/2019-02/msg00014.html), [3.0.2](https://cygwin.com/ml/cygwin-announce/2019-03/msg00002.html), [3.0.3](https://cygwin.com/ml/cygwin-announce/2019-03/msg00008.html), [3.0.4](https://cygwin.com/ml/cygwin-announce/2019-03/msg00016.html), [3.0.5](https://cygwin.com/ml/cygwin-announce/2019-03/msg00051.html), [3.0.6](https://cygwin.com/ml/cygwin-announce/2019-04/msg00012.html), and [3.0.7](https://cygwin.com/ml/cygwin-announce/2019-04/msg00030.html)).
 * There are now [experimental built-in versions of `git add -i` and `git add -p`](https://github.com/git-for-windows/git/pull/2150), i.e. those modes are now a lot faster (in particular at startup). You can opt into using them on the last installer page.
+* PortableGit [now comes with a meta credential helper](https://github.com/git-for-windows/git/issues/2116), i.e. a GUI that lets the user choose *which* of the available credential helpers to use. This should help to avoid storing credentials on other people's machines when running portable Git from a thumb drive.
 
 ### Bug Fixes
 
