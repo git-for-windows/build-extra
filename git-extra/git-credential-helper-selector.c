@@ -518,6 +518,16 @@ out_of_memory:
 			helper_path[helper_nr][pattern_len] = L'\\';
 			memcpy(helper_path[helper_nr] + pattern_len + 1, find_data.cFileName, (len + 1) * sizeof(WCHAR));
 
+			/* make sure that it is an executable or a script */
+			if (path_ends_with(helper_path[helper_nr], L".exe") ||
+			    path_ends_with(helper_path[helper_nr], L".bat") ||
+			    path_ends_with(helper_path[helper_nr], L".cmd"))
+				; /* is executable */
+			else if (!parse_script_interpreter(helper_path[helper_nr])) {
+				free(helper_path[helper_nr]);
+				goto next_file;
+			}
+
 			helper_name[helper_nr] = malloc((len + 1 - (pattern_suffix_len - 2)) * sizeof(WCHAR));
 			if (!helper_name[helper_nr])
 				goto out_of_memory;
