@@ -103,6 +103,13 @@ LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 	grep -v "^mingw$BITNESS/etc/gitconfig$")" ||
 die "Could not generate file list"
 
+case "$LIST" in
+*/git-credential-helper-selector.exe*)
+	git config -f "$SCRIPT_PATH/root/mingw$BITNESS/etc/gitconfig" \
+		credential.helper helper-selector
+	;;
+esac
+
 rm -rf "$SCRIPT_PATH/root/mingw$BITNESS/libexec/git-core" &&
 mkdir -p "$SCRIPT_PATH/root/mingw$BITNESS/libexec/git-core" &&
 ln $(echo "$LIST" | sed -n "s|^mingw$BITNESS/bin/[^/]*\.dll$|/&|p") \
