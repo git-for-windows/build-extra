@@ -27,9 +27,9 @@ static LPWSTR parse_script_interpreter(LPWSTR path)
 	/* Skip detection for .exe, .bat, and .cmd */
 	count = wcslen(path);
 	if (count > 4 && path[count - 4] == L'.' &&
-	    (!wcscmp(path + count - 3, L"exe") ||
-	     !wcscmp(path + count - 3, L"bat") ||
-	     !wcscmp(path + count - 3, L"cmd")))
+	    (!wcsicmp(path + count - 3, L"exe") ||
+	     !wcsicmp(path + count - 3, L"bat") ||
+	     !wcsicmp(path + count - 3, L"cmd")))
 		return NULL;
 
 	h = CreateFileW(path, GENERIC_READ, FILE_SHARE_READ, NULL,
@@ -377,7 +377,7 @@ static int discover_config_to_persist_to(void)
 			    0, 0, &output);
 	if (!res && !wcsncmp(output, L"file:", 5) &&
 	    (tab = wcschr(output, L'\t')) &&
-	    (!wcscmp(tab + 1, L"helper-selector") ||
+	    (!wcsicmp(tab + 1, L"helper-selector") ||
 	     path_ends_with(tab + 1, L"\\git-credential-helper-selector.exe"))) {
 		/*
 		 * If it is relative, we might not be in the correct
@@ -438,6 +438,12 @@ static int discover_config_to_persist_to(void)
 static int persist_choice(void)
 {
 	WCHAR command_line[65536];
+	LPWSTR p;
+
+	/* convert backslashes to forward slashes, as `git.exe` likes them better */
+	for (p = helper_path[selected_helper]; *p; p++)
+		if (*p == L'\\')
+			*p = '/';
 
 	swprintf(command_line, 65535, L"git config %s credential.helper %s",
 		 persist_to_config_option,
@@ -489,15 +495,17 @@ out_of_memory:
 		while (h != INVALID_HANDLE_VALUE) {
 			size_t len = wcslen(find_data.cFileName), i;
 
-			if (len < pattern_suffix_len - 2 || wcsncmp(pattern_suffix + 1, find_data.cFileName, pattern_suffix_len - 2)) {
+			if (len < pattern_suffix_len - 2 || wcsnicmp(pattern_suffix + 1, find_data.cFileName, pattern_suffix_len - 2)) {
 				fwprintf(stderr, L"Unexpected entry: '%s'\n", find_data.cFileName);
 				fflush(stderr);
 				goto next_file;
 			}
-			if (len > 5 && !wcscmp(find_data.cFileName + len - 5, L".html"))
+			if (path_ends_with(find_data.cFileName, L".html"))
 				goto next_file; /* skip e.g. git-credential-manager.html */
-			if (len > 4 && !wcscmp(find_data.cFileName + len - 4, L".pdb"))
+			if (path_ends_with(find_data.cFileName, L".pdb"))
 				goto next_file; /* skip e.g. git-credential-store.pdb */
+			if (!wcsicmp(find_data.cFileName, L"git-credential-helper-selector.exe"))
+				goto next_file; /* skip the credential helper selector itself */
 
 			if (helper_nr + 1 >= alloc) {
 				alloc += 16;
@@ -516,22 +524,32 @@ out_of_memory:
 			helper_path[helper_nr][pattern_len] = L'\\';
 			memcpy(helper_path[helper_nr] + pattern_len + 1, find_data.cFileName, (len + 1) * sizeof(WCHAR));
 
+			/* make sure that it is an executable or a script */
+			if (path_ends_with(helper_path[helper_nr], L".exe") ||
+			    path_ends_with(helper_path[helper_nr], L".bat") ||
+			    path_ends_with(helper_path[helper_nr], L".cmd"))
+				; /* is executable */
+			else if (!parse_script_interpreter(helper_path[helper_nr])) {
+				free(helper_path[helper_nr]);
+				goto next_file;
+			}
+
 			helper_name[helper_nr] = malloc((len + 1 - (pattern_suffix_len - 2)) * sizeof(WCHAR));
 			if (!helper_name[helper_nr])
 				goto out_of_memory;
 			memcpy(helper_name[helper_nr], find_data.cFileName + pattern_suffix_len - 2, (len + 1 - (pattern_suffix_len - 2)) * sizeof(WCHAR));
-			if (len - (pattern_suffix_len - 2) > 4 && !wcscmp(helper_name[helper_nr] + len - (pattern_suffix_len - 2) - 4, L".exe")) {
+			if (len - (pattern_suffix_len - 2) > 4 && !wcsicmp(helper_name[helper_nr] + len - (pattern_suffix_len - 2) - 4, L".exe")) {
 				len -= 4;
 				helper_name[helper_nr][len - (pattern_suffix_len - 2)] = L'\0';
 			}
 
 			/* Avoid duplicate entries for duplicate PATH entries (i.e. the very same path) */
 			for (i = 0; i < helper_nr; i++)
-				if (!wcscmp(helper_path[i], helper_path[helper_nr]))
+				if (!wcsicmp(helper_path[i], helper_path[helper_nr]))
 					goto next_file;
 
 			/* Special-case Git Credential Manager */
-			if (!selected_helper && !wcscmp(helper_name[helper_nr], previously_selected_helper))
+			if (!selected_helper && !wcsicmp(helper_name[helper_nr], previously_selected_helper))
 				selected_helper = helper_nr;
 
 			helper_nr++;
@@ -708,6 +726,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		MessageBoxW(NULL, L"Could not discover credential helpers", L"Error", MB_OK);
 		return 1;
 	}
+
+	height = 5 * offset_y + line_height * (helper_nr + 4) + line_offset_y;
 
 	instance = hInstance;
 	RegisterClassW(&window_class);
