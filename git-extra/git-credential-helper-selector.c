@@ -721,6 +721,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return 1;
 	}
 
+	height = 5 * offset_y + line_height * (helper_nr + 4) + line_offset_y;
+
 	instance = hInstance;
 	RegisterClassW(&window_class);
 	main_window = CreateWindowW(window_class.lpszClassName, L"CredentialHelperSelector",
