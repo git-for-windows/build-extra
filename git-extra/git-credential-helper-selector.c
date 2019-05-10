@@ -494,9 +494,9 @@ out_of_memory:
 				fflush(stderr);
 				goto next_file;
 			}
-			if (len > 5 && !wcsicmp(find_data.cFileName + len - 5, L".html"))
+			if (path_ends_with(find_data.cFileName, L".html"))
 				goto next_file; /* skip e.g. git-credential-manager.html */
-			if (len > 4 && !wcsicmp(find_data.cFileName + len - 4, L".pdb"))
+			if (path_ends_with(find_data.cFileName, L".pdb"))
 				goto next_file; /* skip e.g. git-credential-store.pdb */
 
 			if (helper_nr + 1 >= alloc) {
