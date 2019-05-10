@@ -438,6 +438,12 @@ static int discover_config_to_persist_to(void)
 static int persist_choice(void)
 {
 	WCHAR command_line[65536];
+	LPWSTR p;
+
+	/* convert backslashes to forward slashes, as `git.exe` likes them better */
+	for (p = helper_path[selected_helper]; *p; p++)
+		if (*p == L'\\')
+			*p = '/';
 
 	swprintf(command_line, 65535, L"git config %s credential.helper %s",
 		 persist_to_config_option,
