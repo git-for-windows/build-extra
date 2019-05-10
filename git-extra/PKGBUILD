@@ -50,7 +50,9 @@ source=('inputrc'
         'proxy-lookup.c'
         'git-askyesno.c'
         'update-via-pacman.bat'
-        'git-credential-helper-selector.c')
+        'git-credential-helper-selector.c'
+        'git-credential-helper-selector.manifest'
+        'git-credential-helper-selector.rc')
 sha256sums=('9efaf8dccc08c7cddc58cb589bab5aac5c0894661175a344ca02b2aa849382bd'
             'c26d22aaa1d3dc615d474e0d60c5c0f19598d61d9205e19ec87aac1b28bb07c1'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
