@@ -43,13 +43,13 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [git-flow v1.12.2](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.2).
 * Comes with [Git Credential Manager v1.18.5](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.5).
 * Comes with [cURL v7.64.1](https://curl.haxx.se/changes.html#7_64_1).
-* Comes with [GNU Privacy Guard v2.2.15](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000436.html), specifically [patched to handle Windows paths](https://github.com/git-for-windows/MSYS2-packages/pull/33).
 * Comes with [OpenSSL v1.1.1b](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [OpenSSH v8.0p1](https://www.openssh.com/txt/release-8.0).
 * Comes with [Git LFS v2.7.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.7.2).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on Cygwin v3.x (see release notes for Cygwin [3.0.0](https://cygwin.com/ml/cygwin-announce/2019-02/msg00010.html), [3.0.1](https://cygwin.com/ml/cygwin-announce/2019-02/msg00014.html), [3.0.2](https://cygwin.com/ml/cygwin-announce/2019-03/msg00002.html), [3.0.3](https://cygwin.com/ml/cygwin-announce/2019-03/msg00008.html), [3.0.4](https://cygwin.com/ml/cygwin-announce/2019-03/msg00016.html), [3.0.5](https://cygwin.com/ml/cygwin-announce/2019-03/msg00051.html), [3.0.6](https://cygwin.com/ml/cygwin-announce/2019-04/msg00012.html), and [3.0.7](https://cygwin.com/ml/cygwin-announce/2019-04/msg00030.html)).
 * There are now [experimental built-in versions of `git add -i` and `git add -p`](https://github.com/git-for-windows/git/pull/2150), i.e. those modes are now a lot faster (in particular at startup). You can opt into using them on the last installer page.
 * PortableGit [now comes with a meta credential helper](https://github.com/git-for-windows/git/issues/2116), i.e. a GUI that lets the user choose *which* of the available credential helpers to use. This should help to avoid storing credentials on other people's machines when running portable Git from a thumb drive.
+* Comes with [GNU Privacy Guard v2.2.15 (2)](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000436.html).
 
 ### Bug Fixes
 
