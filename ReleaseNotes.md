@@ -21,7 +21,7 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
 * Git for Windows will not allow commits containing DOS-style truncated 8.3-format filenames ending with a tilde and digit, such as `mydocu~1.txt`. A workaround is to call `git config core.protectNTFS false`, which is not advised. Instead, add a rule to .gitignore to ignore the file(s), or rename the file(s).
 * Many Windows programs (including the Windows Explorer) have problems with directory trees nested so deeply that the absolute path is longer than 260 characters. Therefore, Git for Windows refuses to check out such files by default. You can overrule this default by setting `core.longPaths`, e.g. `git clone -c core.longPaths=true ...`.
 * Some commands are not yet supported on Windows and excluded from the installation.
-* As Git for Windows is shipped without Python support, all Git commands requiring Python are not yet supported; e.g. `git p4`.
+* As Git for Windows is shipped without Python support, `git p4` (which is backed by a Python script) is not supported.
 * The Quick Launch icon will only be installed for the user running setup (typically the Administrator). This is a technical restriction and will not change.
 * The git-core executable file(s) are typically double-counted by Windows Explorer. In fact, repeated files are hard linked, so do not take up the space indicated (#1977).
 
