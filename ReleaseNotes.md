@@ -20,10 +20,10 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
 * Windows drives are normally recognised within the POSIX path as `/c/path/to/dir/` where `/c/` (or appropriate drive letter) is equivalent to the `C:\` Windows prefix to the `\path\to\dir`. If this is not recognised, revert to the `C:\path\to\dir` Windows style.
 * Git for Windows will not allow commits containing DOS-style truncated 8.3-format filenames ending with a tilde and digit, such as `mydocu~1.txt`. A workaround is to call `git config core.protectNTFS false`, which is not advised. Instead, add a rule to .gitignore to ignore the file(s), or rename the file(s).
 * Many Windows programs (including the Windows Explorer) have problems with directory trees nested so deeply that the absolute path is longer than 260 characters. Therefore, Git for Windows refuses to check out such files by default. You can overrule this default by setting `core.longPaths`, e.g. `git clone -c core.longPaths=true ...`.
-*   Some commands are not yet supported on Windows and excluded from the installation.
-*   As Git for Windows is shipped without Python support, all Git commands requiring Python are not yet supported; e.g. `git p4`.
-*   The Quick Launch icon will only be installed for the user running setup (typically the Administrator). This is a technical restriction and will not change.
-*   The git-core executable file(s) are typically double-counted by Windows Explorer. In fact, repeated files are hard linked, so do not take up the space indicated (#1977).
+* Some commands are not yet supported on Windows and excluded from the installation.
+* As Git for Windows is shipped without Python support, all Git commands requiring Python are not yet supported; e.g. `git p4`.
+* The Quick Launch icon will only be installed for the user running setup (typically the Administrator). This is a technical restriction and will not change.
+* The git-core executable file(s) are typically double-counted by Windows Explorer. In fact, repeated files are hard linked, so do not take up the space indicated (#1977).
 
 Should you encounter other problems, please search [the bug tracker](https://github.com/git-for-windows/git/issues) and [the mailing list](http://groups.google.com/group/git-for-windows), chances are that the problem was reported already. If it has not been reported, please follow [our bug reporting guidelines](https://github.com/git-for-windows/git/wiki/Issue-reporting-guidelines) and [report the bug](https://github.com/git-for-windows/git/issues/new).
 
