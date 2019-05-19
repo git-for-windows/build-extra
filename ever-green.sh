@@ -197,6 +197,12 @@ fixup-quietly)
 	;;
 continue-rebase)
 	shift
+	test --skip != "$*" || {
+		shift
+		git add -u &&
+		git reset --hard ||
+		die "Could not --skip"
+	}
 	test -z "$*" ||
 	die "Unhandled arguments: $*"
 	continue_rebase
