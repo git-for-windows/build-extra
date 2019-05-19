@@ -2832,6 +2832,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		die "Could not determine the latest version of %s\n" "$package"
 		tag_name="$(echo "$release" |
 			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
+		test 1.18.5 != "$tag_name" || {
+			tag_name=1.19.0
+			release="$(curl --netrc -s ${url%/latest}/16090167)"
+		}
 		zip_name="$(echo "$release" | sed -n \
 			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p')"
 		version=${tag_name#v}
