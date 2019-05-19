@@ -2851,7 +2851,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" -e "$zip_replace" \
 		 -e 's/^\(src_zip_url=.*\/\).*\(\$.*\)/\1'$src_zip_prefix'\2/' \
-			PKGBUILD &&
+		 -e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 updpkgsums &&
 		 srcdir2="$(unzip -l $zip_prefix$version.zip | sed -n \
 		   's/^.\{28\} *\(.*\/\)\?git-credential-manager.exe/\1/p')" &&
