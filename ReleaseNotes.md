@@ -41,7 +41,6 @@ This package contains software from a number of other projects including Bash, z
 * The `awk` included in Git for Windows [now includes extensions](https://github.com/git-for-windows/build-extra/pull/232) such as `inplace`.
 * The file/product version stored in the installer's `.exe` file [now matches the version of the included `git.exe` file's](https://github.com/git-for-windows/build-extra/pull/235).
 * Comes with [git-flow v1.12.2](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.2).
-* Comes with [Git Credential Manager v1.18.5](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.5).
 * Comes with [cURL v7.64.1](https://curl.haxx.se/changes.html#7_64_1).
 * Comes with [OpenSSL v1.1.1b](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [OpenSSH v8.0p1](https://www.openssh.com/txt/release-8.0).
@@ -51,6 +50,7 @@ This package contains software from a number of other projects including Bash, z
 * PortableGit [now comes with a meta credential helper](https://github.com/git-for-windows/git/issues/2116), i.e. a GUI that lets the user choose *which* of the available credential helpers to use. This should help to avoid storing credentials on other people's machines when running portable Git from a thumb drive.
 * Comes with [GNU Privacy Guard v2.2.15 (2)](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000436.html), specifically [patched to handle Windows paths](https://github.com/git-for-windows/MSYS2-packages/pull/33).
 * Comes with [gawk v5.0.0](http://git.savannah.gnu.org/cgit/gawk.git/plain/NEWS?h=gawk-5.0.0).
+* Comes with [Git Credential Manager v1.19.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.19.0).
 
 ### Bug Fixes
 
