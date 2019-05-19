@@ -196,6 +196,9 @@ fixup-quietly)
 	exit 0
 	;;
 continue-rebase)
+	shift
+	test -z "$*" ||
+	die "Unhandled arguments: $*"
 	continue_rebase
 	exit 0
 	;;
