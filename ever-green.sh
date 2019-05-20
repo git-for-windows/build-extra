@@ -119,7 +119,7 @@ replace-todo-script)
 	cp -f "$(git rev-parse --git-dir)/replace-todo" "$1" ||
 	die "Could not replace todo list"
 
-	eval "\"$ORIGINAL_GIT_SEQUENCE_EDITOR\" \"$1\"" && exit
+	eval "$ORIGINAL_GIT_SEQUENCE_EDITOR \"$1\"" && exit
 	die "Failed to call '$ORIGINAL_GIT_SEQUENCE_EDITOR'"
 	;;
 nested-rebase)
@@ -177,7 +177,7 @@ nested-rebase)
 		test -n "$ORIGINAL_GIT_SEQUENCE_EDITOR" ||
 		die "Could not determine editor"
 	fi
-	eval "\"$ORIGINAL_GIT_SEQUENCE_EDITOR\" \"$todo\"" ||
+	eval "$ORIGINAL_GIT_SEQUENCE_EDITOR \"$todo\"" ||
 	die "Could not launch $ORIGINAL_GIT_SEQUENCE_EDITOR"
 
 	test -s "$todo" ||
