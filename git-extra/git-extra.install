@@ -240,6 +240,18 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	# Do not require /usr/bin/cmd in /usr/bin/start
 	grep -q '^"\$COMSPEC" ' /usr/bin/start ||
 	sed -i 's/^cmd /"$COMSPEC" /' /usr/bin/start
+
+	# Undo the damage of
+	# https://github.com/mirror/mingw-w64/commit/69effce76945e
+	for dir in mingw32 mingw64
+	do
+		case "$dir" in
+		*32) header=/$dir/i686-w64-mingw32/include/pthread_unistd.h;;
+		*64) header=/$dir/x86_64-w64-mingw32/include/pthread_unistd.h;;
+		esac
+		grep -q '^#define _POSIX_THREAD_SAFE_FUNCTIONS' $header ||
+		sed -i '$i#undef _POSIX_THREAD_SAFE_FUNCTIONS\n#define _POSIX_THREAD_SAFE_FUNCTIONS 200112L\n' $header
+	done
 }
 
 post_upgrade () {
