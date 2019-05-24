@@ -437,17 +437,28 @@ static int discover_config_to_persist_to(void)
 
 static int persist_choice(void)
 {
+	WCHAR escaped[65536];
 	WCHAR command_line[65536];
-	LPWSTR p;
+	LPWSTR p, q = escaped;
 
-	/* convert backslashes to forward slashes, as `git.exe` likes them better */
-	for (p = helper_path[selected_helper]; *p; p++)
-		if (*p == L'\\')
-			*p = '/';
+	/*
+	 * Convert backslashes to forward slashes, as `git.exe` likes them
+	 * better; Also prefix with an exclamation point and wrap in double
+	 * quotes to support paths with spaces.
+	 */
+	if (!selected_helper)
+		escaped[0] = L'\0';
+	else {
+		*(q++) = L'!';
+		*(q++) = L'"';
+		for (p = helper_path[selected_helper]; *p; p++)
+			*(q++) = *p == L'\\' ? L'/' : *p;
+		*(q++) = L'"';
+		*(q++) = L'\0';
+	}
 
 	swprintf(command_line, 65535, L"git config %s credential.helper %s",
-		 persist_to_config_option,
-		 quote(selected_helper ? helper_path[selected_helper] : L""));
+		 persist_to_config_option, quote(escaped));
 	return spawn_process(find_exe(L"git.exe"), command_line, 0, 0, NULL);
 }
 
