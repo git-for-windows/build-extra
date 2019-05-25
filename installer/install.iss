@@ -639,24 +639,37 @@ begin
     Result:=#34+Value+#34;
 end;
 
+function ReadFileAsString(Path:String):String;
+var
+    Contents:AnsiString;
+begin
+    if not LoadStringFromFile(Path,Contents) then
+        Result:='(no output)'
+    else
+        Result:=Contents;
+end;
+
 function GitSystemConfigSet(Key,Value:String):Boolean;
 var
     i:Integer;
+    OutPath,ErrPath:String;
 begin
+    OutPath:=ExpandConstant('{tmp}\config-set.out');
+    ErrPath:=ExpandConstant('{tmp}\config-set.err');
     if (Value=#0) then begin
-        if Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system --unset '+Key,
+        if Exec(ExpandConstant('{cmd}'),'/C .\{#MINGW_BITNESS}\bin\git.exe config --system --unset '+Key+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) And ((i=0) Or (i=5)) then
             // exit code 5 means it was already unset, so that's okay
             Result:=True
         else begin
-            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(i));
+            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(i)+#10+#13+ReadFileAsString(OutPath)+#10+#13+'stderr:'+#10+#13+ReadFileAsString(ErrPath));
             Result:=False
         end
-    end else if Exec(AppDir+'\{#MINGW_BITNESS}\bin\git.exe','config --system '+ShellQuote(Key)+' '+ShellQuote(Value),
+    end else if Exec(ExpandConstant('{cmd}'),'/C .\{#MINGW_BITNESS}\bin\git.exe config --system '+ShellQuote(Key)+' '+ShellQuote(Value)+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) And (i=0) then
         Result:=True
     else begin
-        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(i));
+        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(i)+#10+#13+ReadFileAsString(OutPath)+#10+#13+'stderr:'+#10+#13+ReadFileAsString(ErrPath));
         Result:=False;
     end;
 end;
@@ -922,16 +935,6 @@ begin
             // Restore the settings chosen during a previous install.
             Result:=GetPreviousData(Key,Default);
     end;
-end;
-
-function ReadFileAsString(Path:String):String;
-var
-    Contents:AnsiString;
-begin
-    if not LoadStringFromFile(Path,Contents) then
-        Result:='(no output)'
-    else
-        Result:=Contents;
 end;
 
 function DetectNetFxVersion:Cardinal;
@@ -1855,7 +1858,7 @@ begin
     RdbExperimentalOptions[GP_BuiltinRebase]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in rebase','<RED>(NEW!)</RED> Use the experimental built-in rebase (about 70% faster, but only'+#13+'lightly tested).',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
-    RdbExperimentalOptions[GP_BuiltinRebase].Checked:=ReplayChoice('Enable Builtin Rebase','Auto')='Disabled';
+    RdbExperimentalOptions[GP_BuiltinRebase].Checked:=ReplayChoice('Enable Builtin Rebase','Auto')='Enabled';
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_STASH
@@ -1863,7 +1866,7 @@ begin
     RdbExperimentalOptions[GP_BuiltinStash]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in stash','<RED>(NEW!)</RED> Use the experimental built-in stash (about 90% faster, but only'+#13+'lightly tested).',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
-    RdbExperimentalOptions[GP_BuiltinStash].Checked:=ReplayChoice('Enable Builtin Stash','Auto')='Disabled';
+    RdbExperimentalOptions[GP_BuiltinStash].Checked:=ReplayChoice('Enable Builtin Stash','Auto')='Enabled';
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_ADD_I
@@ -1871,7 +1874,7 @@ begin
     RdbExperimentalOptions[GP_BuiltinAddI]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in add -i/-p','<RED>(NEW!)</RED> Use the experimental built-in interactive add ("git add -i" or "git add -p").'+#13+'This makes it faster (especially the startup!), but it is not yet considered robust.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
-    RdbExperimentalOptions[GP_BuiltinAddI].Checked:=ReplayChoice('Enable Builtin Interactive Add','Auto')='Disabled';
+    RdbExperimentalOptions[GP_BuiltinAddI].Checked:=ReplayChoice('Enable Builtin Interactive Add','Auto')='Enabled';
 #endif
 
 #endif
@@ -2401,6 +2404,13 @@ begin
         else
             FileCopy(ExpandConstant('{tmp}\gitconfig.system'),AppDir+'\{#MINGW_BITNESS}\etc\gitconfig',True)
     end;
+
+    {
+        Configure some defaults in the system config
+    }
+
+    if not SetSystemConfigDefaults() then
+        LogError('Unable to set system config defaults');
 
     {
         Configure http.sslBackend according to the user's choice.
