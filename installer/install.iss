@@ -639,6 +639,16 @@ begin
     Result:=#34+Value+#34;
 end;
 
+function ReadFileAsString(Path:String):String;
+var
+    Contents:AnsiString;
+begin
+    if not LoadStringFromFile(Path,Contents) then
+        Result:='(no output)'
+    else
+        Result:=Contents;
+end;
+
 function GitSystemConfigSet(Key,Value:String):Boolean;
 var
     i:Integer;
@@ -922,16 +932,6 @@ begin
             // Restore the settings chosen during a previous install.
             Result:=GetPreviousData(Key,Default);
     end;
-end;
-
-function ReadFileAsString(Path:String):String;
-var
-    Contents:AnsiString;
-begin
-    if not LoadStringFromFile(Path,Contents) then
-        Result:='(no output)'
-    else
-        Result:=Contents;
 end;
 
 function DetectNetFxVersion:Cardinal;
