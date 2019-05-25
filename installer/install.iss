@@ -2403,6 +2403,13 @@ begin
     end;
 
     {
+        Configure some defaults in the system config
+    }
+
+    if not SetSystemConfigDefaults() then
+        LogError('Unable to set system config defaults');
+
+    {
         Configure http.sslBackend according to the user's choice.
     }
 
