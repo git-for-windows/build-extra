@@ -2,8 +2,8 @@ post_install() {
   for arch in mingw32 mingw64; do
     if [ -f "${arch}/bin/git-lfs.exe" ]; then
       git config -f "${arch}/etc/gitconfig" filter.lfs.clean "git-lfs clean -- %f"
-      git config -f "${arch}/etc/gitconfig" filter.lfs.smudge "git-lfs smudge -- %f"
-      git config -f "${arch}/etc/gitconfig" filter.lfs.process "git-lfs filter-process"
+      git config -f "${arch}/etc/gitconfig" filter.lfs.smudge "git-lfs smudge --skip -- %f"
+      git config -f "${arch}/etc/gitconfig" filter.lfs.process "git-lfs filter-process --skip"
       git config -f "${arch}/etc/gitconfig" filter.lfs.required true
     fi
   done
