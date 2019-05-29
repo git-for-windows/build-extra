@@ -51,7 +51,8 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v7.65.0](https://curl.haxx.se/changes.html#7_65_0).
 * Comes with [git-flow v1.12.3](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.3).
 * Comes with [OpenSSL v1.1.1c](https://www.openssl.org/news/openssl-1.1.1-notes.html).
-* Comes with [GNU Privacy Guard v2.2.16](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000436.html).
+* Comes with [GNU Privacy Guard v2.2.16](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000436.html), specifically [patched to handle Windows paths](https://github.com/git-for-windows/MSYS2
+-packages/pull/33).
 
 ### Bug Fixes
 
