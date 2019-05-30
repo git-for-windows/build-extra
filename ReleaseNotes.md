@@ -63,7 +63,6 @@ This package contains software from a number of other projects including Bash, z
 * A bug which on occasion caused lengthy rebase runs to crash without error message [was fixed](https://github.com/git-for-windows/git/pull/2182).
 * Two workarounds from the Git for Windows 1.x era (concerning reading credentials via GUI and fetching via `git://`) [were considered obsolete](https://github.com/git-for-windows/git/pull/2178).
 * `git difftool --no-index` [can now be run outside of Git worktrees](https://github.com/git-for-windows/git/pull/2175).
-* `gitk` [now works correctly](https://github.com/git-for-windows/git/pull/2170) in the presence of a large number of branches/tags.
 * `git rebase -i` used to get confused when an `exec` command created new commits and then appended `pick` lines for them. This [has been fixed](https://github.com/git-for-windows/git/pull/2121).
 * During a run of `git rebase --rebase-merges`, the output of `git status` [now shows `label` lines correctly](https://github.com/git-for-windows/git/pull/2185), i.e. with the labels' names instead of the commit hash they point to.
 * We [now avoid problems updating the commit graph](https://github.com/git-for-windows/git/pull/2198) when `gc.writeCommitGraph=true`.
