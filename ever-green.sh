@@ -105,11 +105,9 @@ continue_rebase () {
 
 		git rebase --continue && break
 
-set -x
 		test "exec exit 123 # force re-reading of replacement objects" != \
 			"$(tail -n 1 "$(git rev-parse --git-path rebase-merge/done)")" ||
 		continue
-set +x
 
 		test "$msgnum" != "$(cat "$(git rev-parse --git-dir)/rebase-merge/msgnum")" ||
 		exit 1
