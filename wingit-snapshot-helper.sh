@@ -333,6 +333,7 @@ add-snapshot)
 		h2_id="$(TZ=GMT date --date="$date" +%Y-%m-%d-%H:%M:%S)"
 		;;
 	*)
+		commit="$(git rev-parse --verify refs/tags/"$version")" ||
 		die "Could not determine commit from version '$version'"
 		;;
 	esac
