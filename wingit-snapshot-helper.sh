@@ -319,24 +319,25 @@ add-snapshot)
 		;;
 	*.g[a-f0-9]*)
 		commit="${version##*.g}"
-		if git rev-parse --verify -q 10ca1f73c11475e222 2>/dev/null
-		then
-			git_checkout=.
-		else
-			git_checkout=/usr/src/git
-		fi
-		test -d "$git_checkout" || git_checkout="$HOME/git"
-		test -d "$git_checkout" || die "Could not find Git repository"
-		git -C "$git_checkout" rev-parse --verify -q "$commit" ||
-		die "No commit '$commit' in '$git_checkout'"
-		date="$(git -C "$git_checkout" show -s --format=%cD "$commit")"
-		h2_id="$(TZ=GMT date --date="$date" +%Y-%m-%d-%H:%M:%S)"
 		;;
 	*)
 		commit="$(git rev-parse --verify refs/tags/"$version")" ||
 		die "Could not determine commit from version '$version'"
 		;;
 	esac
+
+	if git rev-parse --verify -q 10ca1f73c11475e222 2>/dev/null
+	then
+		git_checkout=.
+	else
+		git_checkout=/usr/src/git
+	fi
+	test -d "$git_checkout" || git_checkout="$HOME/git"
+	test -d "$git_checkout" || die "Could not find Git repository"
+	git -C "$git_checkout" rev-parse --verify -q "$commit" ||
+	die "No commit '$commit' in '$git_checkout'"
+	date="$(git -C "$git_checkout" show -s --format=%cD "$commit")"
+	h2_id="$(TZ=GMT date --date="$date" +%Y-%m-%d-%H:%M:%S)"
 
 	add_snapshot "$version" "$date" "$h2_id" "$commit"
 	;;
