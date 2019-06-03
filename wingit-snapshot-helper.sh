@@ -311,16 +311,20 @@ unlock)
 	req "$action" "$@"
 	;;
 add-snapshot)
+	commit=
+	case "$1" in
+	--commit=*) commit="${1#*=}"; shift;;
+	esac
 	test $# = 1 || die "add_snapshot requires one parameter: <version>"
 	version="$1"
-	case "$version" in
+	case "$commit,$version" in
 	*" "*|*"	"*)
 		die "There cannot be any whitespace in the version parameter"
 		;;
-	*.g[a-f0-9]*)
+	,*.g[a-f0-9]*)
 		commit="${version##*.g}"
 		;;
-	*)
+	,*)
 		commit="$(git rev-parse --verify refs/tags/"$version")" ||
 		die "Could not determine commit from version '$version'"
 		;;
