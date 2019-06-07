@@ -47,11 +47,11 @@ This package contains software from a number of other projects including Bash, z
 * PortableGit [now comes with a meta credential helper](https://github.com/git-for-windows/git/issues/2116), i.e. a GUI that lets the user choose *which* of the available credential helpers to use. This should help to avoid storing credentials on other people's machines when running portable Git from a thumb drive.
 * Comes with [gawk v5.0.0](http://git.savannah.gnu.org/cgit/gawk.git/plain/NEWS?h=gawk-5.0.0).
 * Comes with [Git Credential Manager v1.19.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.19.0).
-* Comes with [Heimdal v7.5.0](http://h5l.org/releases.html).
 * Comes with [git-flow v1.12.3](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.12.3).
 * Comes with [OpenSSL v1.1.1c](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [GNU Privacy Guard v2.2.16](https://lists.gnupg.org/pipermail/gnupg-announce/2019q1/000436.html), specifically [patched to handle Windows paths](https://github.com/git-for-windows/MSYS2
 * Comes with [cURL v7.65.1](https://curl.haxx.se/changes.html#7_65_1).
+* Comes with [Heimdal v7.5.0](http://h5l.org/releases.html).
 -packages/pull/33).
 
 ### Bug Fixes
