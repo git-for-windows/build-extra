@@ -308,7 +308,7 @@ add () { # <file>
 		if test -n "$GPGKEY"
 		then
 			call_gpg --detach-sign --no-armor \
-				-u $GPGKEY "$dir/$path"
+				-u $GPGKEY "$dir/${path##*/}"
 		fi
 	done
 }
