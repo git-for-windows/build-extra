@@ -4232,7 +4232,10 @@ publish () { #
 	(cd "$wwwdir" &&
 	 sdk= pkgpath=$PWD ff_master &&
 	 require_push_url &&
-	 sdk="$sdk64" require mingw-w64-x86_64-nodejs) ||
+	 if ! type node.exe
+	 then
+		sdk="$sdk64" require mingw-w64-x86_64-nodejs
+	 fi) ||
 	die "Could not prepare website clone for update\n"
 
 	(cd "$sdk64/usr/src/build-extra" &&
