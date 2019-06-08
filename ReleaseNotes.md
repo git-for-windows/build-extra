@@ -1,5 +1,5 @@
-# Git for Windows v2.21.0 Release Notes
-Latest update: February 26th 2019
+# Git for Windows v2.22.0 Release Notes
+Latest update: June 8th 2019
 
 ## Introduction
 
@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.22.0](https://github.com/git/git/blob/v2.22.0/Documentation/RelNotes/2.22.0.txt).
 * The `awk` included in Git for Windows [now includes extensions](https://github.com/git-for-windows/build-extra/pull/232) such as `inplace`.
 * The file/product version stored in the installer's `.exe` file [now matches the version of the included `git.exe` file's](https://github.com/git-for-windows/build-extra/pull/235).
 * Comes with [OpenSSH v8.0p1](https://www.openssh.com/txt/release-8.0).
