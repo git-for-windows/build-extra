@@ -4243,6 +4243,7 @@ publish () { #
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "Could not prepare build-extra for download-stats update\n"
 
+	test ! -x "$sdk64/mingw64/bin/node.exe" ||
 	"$sdk64/mingw64/bin/node.exe" -v || {
 		if test -f "$sdk64/mingw64/bin/libcares-3.dll" &&
 			test ! -f "$sdk64/mingw64/bin/libcares-2.dll"
@@ -4347,7 +4348,7 @@ publish () { #
 
 	echo "Updating website..." >&2
 	(cd "$wwwdir" &&
-	 "$sdk64/mingw64/bin/node.exe" bump-version.js --auto &&
+	 PATH="$sdk64/mingw64/bin/:$PATH" node.exe bump-version.js --auto &&
 	 git commit -a -s -m "New Git for Windows version" &&
 	 really_push origin HEAD) ||
 	die "Could not update website\n"
