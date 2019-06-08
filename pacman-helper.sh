@@ -241,7 +241,7 @@ upload () { # <package> <version> <arch> <filename>
 
 package_list () { # db.tar.xz
 	tar tf "$1" |
-	sed -n 's/\/$//p'
+	sed -ne '/ /d' -e 's/\/$//p'
 }
 
 call_gpg () {
