@@ -36,9 +36,9 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.22.0 (June 8th 2019)
 
-### New Features
+### Bug Fixes
 
-* Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/c10b4185a35f494a2ff4ad2f5828540d93d56bec) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.7](https://cygwin.com/ml/cygwin-announce/2019-04/msg00030.html).
+* Git for Windows' MSYS2 runtime was [patched](https://github.com/git-for-windows/msys2-runtime/commit/c10b4185a35f494a2ff4ad2f5828540d93d56bec) to fix a bug where setting the environment variable `SHELL` to an empty string in a shell script would not only fail to pass that setting to non-MSYS2 processes (such as `git.exe`) but also completely skip all environment variables that sort after said variable.
 
 ## Changes since Git for Windows v2.21.0 (February 26th 2019)
 
