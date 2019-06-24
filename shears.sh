@@ -636,7 +636,7 @@ exec "$this" edit "$(git var GIT_EDITOR)" "\$@"
 EOF
 	chmod +x "$shears_editor" &&
 	GIT_EDITOR="\"$shears_editor\"" &&
-	GIT_SEQUENCE_EDITOR="$shears_editor" &&
+	GIT_SEQUENCE_EDITOR="\"$shears_editor\"" &&
 	export GIT_EDITOR GIT_SEQUENCE_EDITOR
 }
 
