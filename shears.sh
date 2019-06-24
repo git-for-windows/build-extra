@@ -361,7 +361,7 @@ EOF
 	shortonto=$(git rev-parse --short $onto)
 
 	# --topo-order has the bad habit of breaking first-parent chains over
-	# merges, so we generate the topoligical order ourselves here
+	# merges, so we generate the topological order ourselves here
 
 	list="$(git log --format='%h %p' --topo-order --reverse \
 		$(test "$onto" = "$upstream" || echo ^$upstream) $onto..$head)"
