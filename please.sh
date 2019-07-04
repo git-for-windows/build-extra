@@ -3624,6 +3624,27 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
 		die "Could not update $sdk32/$pkgpath"
 		;;
+	mingw-w64-pcre2)
+		url=https://pcre.org/changelog.txt
+		changelog="$(curl $url)" ||
+		die "Could not download %s\n" "$url"
+
+		version="$(echo "$changelog" | sed -n -e \
+			'/^Version [1-9][0-9]*\.[1-9]/{s/^[^1-9]*\([^ ]*\).*/\1/p;q}' )"
+		test -n "$version" ||
+		die "Could not determine current PCRE2 version\n"
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: upgrade to v$version" PKGBUILD) ||
+		exit
+
+		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
+		relnotes_feature="Comes with [$package $v]($url)."
+		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
