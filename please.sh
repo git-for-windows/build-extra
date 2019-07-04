@@ -3643,7 +3643,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		exit
 
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
-		relnotes_feature="Comes with [$package $v]($url)."
+		relnotes_feature="Comes with [PCRE2 $v]($url)."
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
