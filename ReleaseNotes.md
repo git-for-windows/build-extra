@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [patch level 3](https://github.com/git-for-windows/msys2-runtime/commit/e0e7936faa74acea8cde0f89f464402515d1caad) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.7](https://cygwin.com/ml/cygwin-announce/2019-04/msg00030.html).
+* Comes with [mingw-w64-pcre2 v10.33](https://pcre.org/changelog.txt).
 
 ### Bug Fixes
 
