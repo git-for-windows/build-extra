@@ -3604,7 +3604,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 			m="$(curl -s "$url2/$d")" ||
 			die "Could not download %s\n" "$url2$d"
 			m="$(echo "$m" |
-				sed -n '/<A HREF.*>.*GnuPG 2.2.15 released/{s/.* HREF="\([^"]*\).*/\1/p;q}')"
+				sed -n '/<A HREF.*>.*GnuPG '"$(echo "$version" |
+					sed 's/\./\\./g'
+				)"'/{s/.* HREF="\([^"]*\).*/\1/p;q}')"
 			test -n "$m" || continue
 			announce_url="$url2${d%/*}/$m"
 			break
