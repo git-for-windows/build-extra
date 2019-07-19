@@ -1694,7 +1694,7 @@ begin
             'variables will be adjusted to point to the following executable:',TabOrder,Top,Left);
         EdtPlink:=TEdit.Create(PuTTYPage);
         EdtPlink.Left:=ScaleX(Left+24);
-        EdtPlink.Top:=ScaleY(Top+9);
+        EdtPlink.Top:=ScaleY(Top);
         with EdtPlink do begin
             Parent:=PuTTYPage.Surface;
 
@@ -1717,7 +1717,7 @@ begin
         end;
         BtnPlink:=TButton.Create(PuTTYPage);
         BtnPlink.Left:=ScaleX(Left+344);
-        BtnPlink.Top:=ScaleY(Top+9);
+        BtnPlink.Top:=ScaleY(Top);
         with BtnPlink do begin
             Parent:=PuTTYPage.Surface;
             Caption:='...';
