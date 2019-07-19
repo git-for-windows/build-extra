@@ -41,7 +41,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [patch level 3](https://github.com/git-for-windows/msys2-runtime/commit/e0e7936faa74acea8cde0f89f464402515d1caad) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.7](https://cygwin.com/ml/cygwin-announce/2019-04/msg00030.html).
 * Comes with [PCRE2 v10.33](https://pcre.org/changelog.txt).
 * Comes with [GNU Privacy Guard v2.2.17](https://lists.gnupg.org/pipermail/gnupg-announce/2019q3/000439.html).
-* Comes with [cURL v7.65.2](https://curl.haxx.se/changes.html#7_65_2).
+* Comes with [cURL v7.65.3](https://curl.haxx.se/changes.html#7_65_3).
 
 ### Bug Fixes
 
