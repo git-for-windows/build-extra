@@ -401,6 +401,7 @@ var
     PuTTYPage:TWizardPage;
     RdbSSH:array[GS_OpenSSH..GS_Plink] of TRadioButton;
     EdtPlink:TEdit;
+    TortoisePlink:TCheckBox;
 
     // Wizard page and variables for the HTTPS implementation (cURL) settings.
     CurlVariantPage:TWizardPage;
@@ -1690,8 +1691,9 @@ begin
         RdbSSH[GS_Plink]:=CreateRadioButton(PuTTYPage,'Use (Tortoise)Plink',
             'PuTTY sessions were found in your Registry. You may specify the path'+#13+
             'to an existing copy of (Tortoise)Plink.exe from the TortoiseGit/SVN/CVS'+#13+
-            'or PuTTY applications. The GIT_SSH and SVN_SSH environment'+#13+
-            'variables will be adjusted to point to the following executable:',TabOrder,Top,Left);
+            'or PuTTY applications. "ssh.variant" will be set in the GIT configuration. '+#13+
+            'The GIT_SSH and SVN_SSH environment variables will be adjusted to point '+#13+
+            'to the following executable:',TabOrder,Top,Left);
         EdtPlink:=TEdit.Create(PuTTYPage);
         EdtPlink.Left:=ScaleX(Left+24);
         EdtPlink.Top:=ScaleY(Top);
@@ -1714,7 +1716,9 @@ begin
 
             Width:=ScaleX(316);
             Height:=ScaleY(13);
+            TabOrder:=TabOrder;
         end;
+        TabOrder:=TabOrder+1;
         BtnPlink:=TButton.Create(PuTTYPage);
         BtnPlink.Left:=ScaleX(Left+344);
         BtnPlink.Top:=ScaleY(Top);
@@ -1724,8 +1728,24 @@ begin
             OnClick:=@BrowseForPuTTYFolder;
             Width:=ScaleX(21);
             Height:=ScaleY(21);
+            TabOrder:=TabOrder;
         end;
-        Top:=Top+30;
+        TabOrder:=TabOrder+1;
+        Top:=Top+29;
+
+        // Add checkbox for tortoise plink
+        TortoisePlink:=TCheckBox.Create(PuTTYPage);
+        TortoisePlink.Left:=ScaleX(Left+24);
+        TortoisePlink.Top:=ScaleY(Top);
+        with TortoisePlink do begin
+            Caption:='Set ssh.variant for Tortoise Plink';
+            Parent:=PuTTYPage.Surface;
+            Width:=ScaleX(405);
+            Height:=ScaleY(17);
+            TabOrder:=TabOrder;
+        end;
+        TabOrder:=TabOrder+1;
+        Top:=Top+17;
 
         // Restore the setting chosen during a previous install.
         case ReplayChoice('SSH Option','OpenSSH') of
@@ -1734,6 +1754,10 @@ begin
         else
             RdbSSH[GS_OpenSSH].Checked:=True;
         end;
+
+        data:=ReplayChoice('Tortoise Option','');
+        if (data='true') then
+            TortoisePlink.Checked:=True;
     end else begin
         PuTTYPage:=NIL;
     end;
@@ -2529,9 +2553,19 @@ begin
     DeleteMarkedEnvString('GIT_SSH');
     DeleteMarkedEnvString('SVN_SSH');
 
-    if (PuTTYPage<>NIL) and RdbSSH[GS_Plink].Checked then begin
-        SetAndMarkEnvString('GIT_SSH',EdtPlink.Text,True);
-        SetAndMarkEnvString('SVN_SSH',EdtPlink.Text,True);
+    if (PuTTYPage<>NIL) then begin
+        GitSystemConfigSet('ssh.variant',#0);
+        if RdbSSH[GS_Plink].Checked then begin
+            SetAndMarkEnvString('GIT_SSH',EdtPlink.Text,True);
+            SetAndMarkEnvString('SVN_SSH',EdtPlink.Text,True);
+            if TortoisePlink.Checked then begin
+                Log('Line {#__LINE__}: Setting config option ssh.variant=tortoiseplink');
+                GitSystemConfigSet('ssh.variant','tortoiseplink')
+            end else begin
+                Log('Line {#__LINE__}: Setting config option ssh.variant=putty');
+                GitSystemConfigSet('ssh.variant','putty');
+            end;
+        end;
     end;
 
     // Get the current user's directories in PATH.
@@ -2719,7 +2753,7 @@ end;
 
 procedure RegisterPreviousData(PreviousDataKey:Integer);
 var
-    Data,CustomEditorData,Path:String;
+    Data,Data2,CustomEditorData,Path:String;
 begin
     // Git Editor options.
     Data:='';
@@ -2757,13 +2791,17 @@ begin
 
     // Git SSH options.
     Data:='';
+    Data2:='false';
     if (PuTTYPage=NIL) or RdbSSH[GS_OpenSSH].Checked then begin
         Data:='OpenSSH';
     end else if RdbSSH[GS_Plink].Checked then begin
         Data:='Plink';
         RecordChoice(PreviousDataKey,'Plink Path',EdtPlink.Text);
+        if TortoisePlink.Checked then
+            Data2:='true';
     end;
     RecordChoice(PreviousDataKey,'SSH Option',Data);
+    RecordChoice(PreviousDataKey,'Tortoise Option',Data2);
 
     // HTTPS implementation (cURL) options.
     Data:='OpenSSL';
