@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Git for Windows' MSYS2 runtime was [patched](https://github.com/git-for-windows/msys2-runtime/commit/c10b4185a35f494a2ff4ad2f5828540d93d56bec) to fix a bug where setting the environment variable `SHELL` to an empty string in a shell script would not only fail to pass that setting to non-MSYS2 processes (such as `git.exe`) but also completely skip all environment variables that sort after said variable.
+* `git clean -dfx` [no longer follows NTFS junction points (also known as mount points)](https://github.com/git-for-windows/git/pull/2268).
 
 ## Changes since Git for Windows v2.21.0 (February 26th 2019)
 
