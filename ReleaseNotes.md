@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [PCRE2 v10.33](https://pcre.org/changelog.txt).
 * Comes with [GNU Privacy Guard v2.2.17](https://lists.gnupg.org/pipermail/gnupg-announce/2019q3/000439.html).
 * Comes with [cURL v7.65.3](https://curl.haxx.se/changes.html#7_65_3).
+* Comes with [Git LFS v2.8.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.8.0).
 
 ### Bug Fixes
 
