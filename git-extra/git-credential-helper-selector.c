@@ -612,6 +612,7 @@ static int aborted = 1;
 static int width = 400, height = 300;
 static int offset_x = 10, offset_y = 10;
 static int line_height = 25, line_offset_y = 5, button_width = 75;
+static HFONT font = NULL;
 
 static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 				    LPARAM lParam)
@@ -625,12 +626,24 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 
 		GetClientRect(hwnd, &rect);
 		width = rect.right - rect.left;
-		CreateWindowW(L"Button", L"Select a credential helper",
+		NONCLIENTMETRICSW non_client_metrics;
+		non_client_metrics.cbSize = sizeof(non_client_metrics);
+		if (SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, non_client_metrics.cbSize, &non_client_metrics, 0))
+			font = CreateFontIndirectW(&non_client_metrics.lfMessageFont);
+		if (!font) {
+			font = CreateFontW(0, 0, 0, 0, FW_DONTCARE, FALSE, FALSE, FALSE, ANSI_CHARSET, OUT_DEFAULT_PRECIS,
+				CLIP_DEFAULT_PRECIS, DEFAULT_QUALITY, (DEFAULT_PITCH | FF_DONTCARE), TEXT("MS Shell Dlg 2"));
+		}
+
+		HWND select_helper_hwnd = CreateWindowW(L"Button", L"Select a credential helper",
 			      WS_TABSTOP | WS_CHILD | WS_VISIBLE | BS_GROUPBOX,
 			      offset_x, offset_y,
 			      width - 2 * offset_x,
 			      line_height * helper_nr + 3 * offset_y,
 			      hwnd, (HMENU) 0, instance, NULL);
+		if (font)
+			SendMessage(select_helper_hwnd, WM_SETFONT, (WPARAM) font, TRUE);
+
 		for (i = 0; i < helper_nr; i++) {
 			HWND hwnd2 = CreateWindowW(L"Button", helper_name[i],
 						   WS_CHILD | WS_VISIBLE |
@@ -641,6 +654,8 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 						   line_height + line_offset_y,
 						   hwnd, (HMENU)(ID_USER + i), instance, NULL);
 			create_tooltip(hwnd2, helper_path[i]);
+			if (font)
+				SendMessage(hwnd2, WM_SETFONT, (WPARAM) font, TRUE);
 			if (i == selected_helper) {
 				SendMessage(hwnd2, BM_SETCHECK, BST_CHECKED, 1);
 				SetFocus(hwnd2);
@@ -656,22 +671,29 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 				      line_height + line_offset_y,
 				      hwnd, (HMENU) ID_PERSIST, NULL, NULL);
 		create_tooltip(hwnd3, persist_tooltip);
+		if (font)
+			SendMessage(hwnd3, WM_SETFONT, (WPARAM) font, TRUE);
 
-		CreateWindowW(L"Button", L"Select",
+		HWND select_btn_hwnd = CreateWindowW(L"Button", L"Select",
 			      WS_TABSTOP | WS_VISIBLE | WS_CHILD | BS_DEFPUSHBUTTON,
 			      width - 2 * (button_width + offset_x),
 			      5 * offset_y + line_height * (helper_nr + 1),
 			      button_width,
 			      line_height + line_offset_y,
 			      hwnd, (HMENU) ID_ENTER, NULL, NULL);
+		if (font)
+			SendMessage(select_btn_hwnd, WM_SETFONT, (WPARAM) font, TRUE);
 
-		CreateWindowW(L"Button", L"Cancel",
+		HWND cancel_btn_hwnd = CreateWindowW(L"Button", L"Cancel",
 			      WS_TABSTOP | WS_VISIBLE | WS_CHILD,
 			      width - (button_width + offset_x),
 			      5 * offset_y + line_height * (helper_nr + 1),
 			      button_width,
 			      line_height + line_offset_y,
 			      hwnd, (HMENU) ID_ABORT, NULL, NULL);
+		if (font)
+			SendMessage(cancel_btn_hwnd, WM_SETFONT, (WPARAM) font, TRUE);
+
 		break;
 	}
 
@@ -699,6 +721,8 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 		break;
 
 	case WM_DESTROY:
+		if (font)
+			DeleteObject(font);
 		PostQuitMessage(0);
 		break;
 	}
