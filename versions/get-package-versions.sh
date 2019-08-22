@@ -23,7 +23,9 @@ cd "$(dirname "$0")" ||
 die "Could not switch current directory to versions/"
 
 tagname="$(echo "$version" |
-	sed -ne 's/^\([0-9]\+\.[0-9]\+\.[0-9]\+\)$/v&.windows.1/p' \
+	sed -n \
+	  -e 's/^\(2\.11\.1\)\(\.[0-9]\+\)$/v\1.mingit-prerelease\2/p' \
+	  -e 's/^\([0-9]\+\.[0-9]\+\.[0-9]\+\)$/v&.windows.1/p' \
 	  -e 's/^\([0-9]\+\.[0-9]\+\.[0-9]\+\)\(\.[0-9]\+\)$/v\1.windows\2/p' \
 	  -e 's/^\([0-9]\+\.[0-9]\+\.[0-9]\+\)(\([0-9]\+\))$/v\1.windows.\2/p')"
 test -n "$tagname" ||
@@ -90,7 +92,7 @@ test -f "$file" || {
 	then
 		# Some MinGit-only versions were named like the tag
 		test -n "$mingit_only" &&
-		zip=MinGit-"${tagname#v}"-64-bit.zip &&
+		zip=MinGit-"$(echo "${tagname#v}" | tr - .)"-64-bit.zip &&
 		download "$zip" ||
 		die "Could not download $zip"
 	fi &&
