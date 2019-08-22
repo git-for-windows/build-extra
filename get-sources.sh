@@ -158,6 +158,11 @@ do
 		# built as secondary package (see MINGW-packages/*/PKGBUILD)
 		name=${name%-doc-html}
 		;;
+	libcrypt)
+		# before https://github.com/msys2/MSYS2-packages/commit/a58271b3957
+		# the package was called crypt
+		test "$version" != 2.1-1 ||
+		name=crypt
 	esac
 
 	# Work around mismatched version uploaded in MSYS2/Git for Windows
