@@ -70,6 +70,9 @@ esac
 cp "$SCRIPT_PATH/../LICENSE.txt" "$SCRIPT_PATH/root/" ||
 die "Could not copy license file"
 
+mkdir -p "$SCRIPT_PATH/root/dev" ||
+die "Could not make dev/ directory"
+
 mkdir -p "$SCRIPT_PATH/root/etc" ||
 die "Could not make etc/ directory"
 

@@ -117,6 +117,7 @@ Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; Aft
 Source: {#SourcePath}\..\edit-git-bash.exe; Flags: dontcopy
 
 [Dirs]
+Name: "{app}\dev"
 Name: "{app}\tmp"
 
 [Icons]
