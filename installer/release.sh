@@ -39,6 +39,7 @@ do
 			exit 1
 		fi
 		inno_defines="$inno_defines$LF#define DEBUG_WIZARD_PAGE '$page'$LF#define OUTPUT_TO_TEMP ''"
+		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;${LF}${LF}"
 		skip_files=t
 		;;
 	--output=*)

@@ -91,6 +91,9 @@ sed -e "s/@@VERSION@@/$VERSION/g" -e "s/@@AUTHOR@@/$AUTHOR/g" \
 	-e "s/@@VERSIONTAG@@/$VERSIONTAG/g" \
 	-e "s/@@ID@@/$ID/g" -e '/@@FILELIST@@/,$d' <"$SPECIN" >"$SPEC"
 
+mkdir -p "$BUILDEXTRA/emptydir" ||
+die "Could not generate empty directory."
+
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 	PACKAGE_VERSIONS_FILE="$BUILDEXTRA"/nuget/package-versions.txt \
