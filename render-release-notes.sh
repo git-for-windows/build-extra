@@ -139,6 +139,8 @@ test "$OUTPUTDIR${OUTPUTDIR:+/}Release.html" -nt "$SCRIPT_PATH"/render-release-n
 	test -z "$COPYCSS" || {
 		test -z "$CSSDIR" && CSSDIR="$OUTPUTDIR" || CSSDIR="$OUTPUTDIR${OUTPUTDIR:+/}$CSSDIR"
 		test -z "$CSSDIR" || test -d "$CSSDIR" || mkdir -p "$CSSDIR"
+		test -n "$CSSDIR" || CSSDIR="$PWD"
+		test "x$SCRIPT_PATH" = "x$CSSDIR" ||
 		cp -u "$SCRIPT_PATH"/ReleaseNotes.css "$CSSDIR${CSSDIR:+/}ReleaseNotes.css"
 	}
 }
