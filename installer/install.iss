@@ -118,6 +118,8 @@ Source: {#SourcePath}\..\edit-git-bash.exe; Flags: dontcopy
 
 [Dirs]
 Name: "{app}\dev"
+Name: "{app}\dev\mqueue"
+Name: "{app}\dev\shm"
 Name: "{app}\tmp"
 
 [Icons]
