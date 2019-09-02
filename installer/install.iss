@@ -2321,6 +2321,52 @@ begin
         LogError(ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater (output: '+ReadFileAsString(LogPath)+', errors: '+ReadFileAsString(ErrPath)+').'));
 end;
 
+{
+    Create Cygwin's idea of a symbolic link:
+    - a system file
+    - starting with the prefix `!<symlink>\xff\xfe`
+    - followed by the symlink target, in UTF-16
+    - ending in two NUL bytes (reflecting a UTF-16 NUL)
+}
+
+function GetFileAttributes(Path:PAnsiChar):DWORD;
+ external 'GetFileAttributesA@kernel32.dll stdcall';
+
+function SetFileAttributes(Path:PAnsiChar;dwFileAttributes:DWORD):BOOL;
+external 'SetFileAttributesA@kernel32.dll stdcall';
+
+function CreateCygwinSymlink(SymlinkPath,TargetPath:String):Boolean;
+var
+    Attribute:DWord;
+    i:Integer;
+begin
+    Result:=True;
+
+    // assuming that the target is actually all-ASCII, convert to UTF-16
+    for i:=Length(TargetPath) downto 1 do
+        TargetPath:=Copy(TargetPath,1,i)+#0+Copy(TargetPath,i+1,Length(TargetPath)-i);
+
+    // insert `!<symlink>\xff\xfe` prefix, and append `\0\0`
+    TargetPath:='!<symlink>'+#255+#254+TargetPath+#0+#0;
+
+    // write the file
+    if not SaveStringToFile(SymlinkPath,TargetPath,False) then begin
+        LogError('Could not write "'+SymlinkPath+'"');
+        Result:=False;
+    end;
+
+    // Set system bit (required for Cygwin to interpret this as a symlink)
+    Attribute:=GetFileAttributes(SymlinkPath);
+    if (Attribute and 4) = 0  then
+    begin
+        Attribute:=Attribute or 4;
+        if not SetFileAttributes(SymlinkPath,Attribute) then begin
+            LogError('Could not mark "'+SymlinkPath+'" as system file');
+            Result:=False;
+        end;
+    end;
+end;
+
 procedure CurStepChanged(CurStep:TSetupStep);
 var
     ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
@@ -2363,6 +2409,15 @@ begin
     }
 
     MaybeHardlinkDLLFiles();
+
+    {
+        Create the symlinks in `/dev/`
+    }
+
+    CreateCygwinSymlink(AppDir+'\dev\fd','/proc/self/fd');
+    CreateCygwinSymlink(AppDir+'\dev\stdin','/proc/self/fd/0');
+    CreateCygwinSymlink(AppDir+'\dev\stdout','/proc/self/fd/1');
+    CreateCygwinSymlink(AppDir+'\dev\stderr','/proc/self/fd/2');
 
     {
         Create the built-ins
