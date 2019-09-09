@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The shell construct `<(<command>)`, which was broken in v2.23.0 (`/dev/fd/<n>: no such file or directory`), [was fixed](https://github.com/git-for-windows/build-extra/pull/255).
+* The default config [no longer skips `git-lfs` downloads](https://github.com/git-for-windows/build-extra/pull/256).
 
 ## Changes since Git for Windows v2.22.0 (June 8th 2019)
 
