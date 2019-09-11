@@ -36,6 +36,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.23.0 (August 17th 2019)
 
+### New Features
+
+* Comes with [cURL v7.66.0](https://curl.haxx.se/changes.html#7_66_0).
+
 ### Bug Fixes
 
 * The shell construct `<(<command>)`, which was broken in v2.23.0 (`/dev/fd/<n>: no such file or directory`), [was fixed](https://github.com/git-for-windows/build-extra/pull/255).
