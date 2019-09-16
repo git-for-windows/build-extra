@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [cURL v7.66.0](https://curl.haxx.se/changes.html#7_66_0).
+* Comes with [Git Credential Manager v1.20.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.20.0).
 
 ### Bug Fixes
 
