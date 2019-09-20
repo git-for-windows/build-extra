@@ -50,8 +50,6 @@ SignTool=signtool
 #endif
 
 #define FILE_VERSION GetFileVersion(SOURCE_DIR+'\'+MINGW_BITNESS+'\bin\git.exe')
-#define PROD_VERSION GetStringFileInfo(SOURCE_DIR+'\'+MINGW_BITNESS \
-				+'\bin\git.exe', 'ProductVersion')
 
 ; Installer-related
 AllowNoIcons=yes
@@ -59,7 +57,7 @@ AppName={#APP_NAME}
 AppPublisher=The Git Development Community
 AppPublisherURL={#APP_URL}
 AppSupportURL={#APP_CONTACT_URL}
-AppVersion={#PROD_VERSION}
+AppVersion={#APP_VERSION}
 ChangesAssociations=yes
 ChangesEnvironment=yes
 CloseApplications=no
