@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 * The shell construct `<(<command>)`, which was broken in v2.23.0 (`/dev/fd/<n>: no such file or directory`), [was fixed](https://github.com/git-for-windows/build-extra/pull/255).
 * The default config [no longer skips `git-lfs` downloads](https://github.com/git-for-windows/build-extra/pull/256).
 * Starting with cURL v7.66.0, [`$HOME/.netrc` can be used](https://github.com/curl/curl/commit/f9c7ba9096ec29db2536481d8e9ebe314e007f0c) instead of `$HOME/_netrc` (but it will still fall back to looking for the latter).
+* The installer's "ProductVersion" [is now consistent with older Git for Windows versions'](https://github.com/git-for-windows/build-extra/pull/257).
 
 ## Changes since Git for Windows v2.22.0 (June 8th 2019)
 
