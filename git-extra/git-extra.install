@@ -249,6 +249,7 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 		*32) header=/$dir/i686-w64-mingw32/include/pthread_unistd.h;;
 		*64) header=/$dir/x86_64-w64-mingw32/include/pthread_unistd.h;;
 		esac
+		test ! -e $header ||
 		grep -q '^#define _POSIX_THREAD_SAFE_FUNCTIONS' $header ||
 		sed -i '$i#undef _POSIX_THREAD_SAFE_FUNCTIONS\n#define _POSIX_THREAD_SAFE_FUNCTIONS 200112L\n' $header
 	done
