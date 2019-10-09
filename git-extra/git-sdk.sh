@@ -147,7 +147,7 @@ sdk () {
 			sdk init MSYS2-packages &&
 			(cd "$src_dir/$2" &&
 			 test -d src/msys2-runtime ||
-			 makepkg --nobuild --syncdeps --noconfirm) &&
+			 makepkg --nobuild --syncdeps --noconfirm --skipchecksums --skippgpcheck) &&
 			src_dir="$src_dir/msys2-runtime/src/msys2-runtime" &&
 			src_cdup_dir="$src_dir" ||
 			return 1
@@ -286,7 +286,7 @@ sdk () {
 			then
 				# no local changes
 				cd "$src_cdup_dir" &&
-				makepkg --syncdeps --noconfirm
+				makepkg --syncdeps --noconfirm --skipchecksums --skippgpcheck
 				return $?
 			fi
 
@@ -302,8 +302,8 @@ sdk () {
 			if test -f PKGBUILD
 			then
 				case "$MSYSTEM" in
-				MSYS) makepkg --syncdeps --noconfirm;;
-				MINGW*) makepkg-mingw --syncdeps --noconfirm;;
+				MSYS) makepkg --syncdeps --noconfirm --skipchecksums --skippgpcheck;;
+				MINGW*) makepkg-mingw --syncdeps --noconfirm --skipchecksums --skippgpcheck;;
 				esac
 				return $?
 			fi
