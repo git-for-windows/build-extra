@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v7.66.0](https://curl.haxx.se/changes.html#7_66_0).
 * Comes with [Git Credential Manager v1.20.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.20.0).
 * Comes with [OpenSSH v8.1p1](https://www.openssh.com/txt/release-8.1).
+* Comes with [OpenSSL v1.1.1d](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
 ### Bug Fixes
 
