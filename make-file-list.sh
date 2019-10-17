@@ -256,9 +256,13 @@ pacman -Q filesystem $SH_FOR_REBASE rebase \
 test -n "$ETC_GITCONFIG" ||
 ETC_GITCONFIG=etc/gitconfig
 
+test -n "$ETC_GITATTRIBUTES" ||
+ETC_GITATTRIBUTES="${ETC_GITCONFIG%/*}/gitattributes"
+
 cat <<EOF
 etc/fstab
 etc/nsswitch.conf
+$ETC_GITATTRIBUTES
 usr/bin/rebase.exe
 usr/bin/rebaseall
 EOF
@@ -274,7 +278,6 @@ etc/bash.bashrc
 etc/msystem
 usr/bin/dash.exe
 usr/bin/getopt.exe
-mingw$BITNESS/etc/gitattributes
 EOF
 
 test -n "$MINIMAL_GIT" || cat <<EOF
