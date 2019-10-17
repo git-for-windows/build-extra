@@ -112,6 +112,7 @@ then
 else
 	echo "Generating file list to be included in the installer ..."
 	LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
+		ETC_GITCONFIG="$etc_gitconfig" \
 		PACKAGE_VERSIONS_FILE=package-versions.txt \
 		INCLUDE_GIT_UPDATE=1 \
 		sh ../make-file-list.sh)" ||
@@ -161,7 +162,7 @@ then
 	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_BUILTIN_ADD_I 1"
 fi
 
-GITCONFIG_PATH="$(echo "$LIST" | grep "^mingw$BITNESS/etc/gitconfig\$")"
+GITCONFIG_PATH="$(echo "$LIST" | grep "^$etc_gitconfig\$")"
 test -z "$GITCONFIG_PATH" || {
 	keys="$(git config -f "/$GITCONFIG_PATH" -l --name-only)" &&
 	gitconfig="$LF[Code]${LF}function GitSystemConfigSet(Key,Value:String):Boolean; forward;$LF" &&
@@ -175,7 +176,7 @@ test -z "$GITCONFIG_PATH" || {
 			case "$key$value" in *"'"*) die "Cannot handle $key=$value because of the single quote";; esac &&
 			case "$key" in
 			filter.lfs.*) extra=" IsComponentSelected('gitlfs') And";;
-			pack.packsizelimit) test $BITNESS = 32 || continue; value=2g;;
+			pack.packsizelimit) test $BITNESS = 32 || continue; value=2g; extra=;;
 			*) extra=;;
 			esac &&
 			gitconfig="$gitconfig$LF    if$extra not GitSystemConfigSet('$key','$value') then$LF        Result:=False;" ||
