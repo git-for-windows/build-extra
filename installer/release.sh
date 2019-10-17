@@ -162,10 +162,8 @@ then
 fi
 
 GITCONFIG_PATH="$(echo "$LIST" | grep "^mingw$BITNESS/etc/gitconfig\$")"
-printf '' >programdata-config.template
 test -z "$GITCONFIG_PATH" || {
-	cp "/$GITCONFIG_PATH" programdata-config.template &&
-	keys="$(git config -f programdata-config.template -l --name-only)" &&
+	keys="$(git config -f "/$GITCONFIG_PATH" -l --name-only)" &&
 	gitconfig="$LF[Code]${LF}function GitSystemConfigSet(Key,Value:String):Boolean; forward;$LF" &&
 	gitconfig="$gitconfig${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}" &&
 	for key in $keys
@@ -173,9 +171,8 @@ test -z "$GITCONFIG_PATH" || {
 		case "$key" in
 		pack.packsizelimit|diff.astextplain.*|filter.lfs.*|http.sslcainfo)
 			# set in the system-wide config
-			value="$(git config -f programdata-config.template "$key")" &&
+			value="$(git config -f "/$GITCONFIG_PATH" "$key")" &&
 			case "$key$value" in *"'"*) die "Cannot handle $key=$value because of the single quote";; esac &&
-			git config -f programdata-config.template --unset "$key" &&
 			case "$key" in
 			filter.lfs.*) extra=" IsComponentSelected('gitlfs') And";;
 			pack.packsizelimit) test $BITNESS = 32 || continue; value=2g;;
@@ -185,9 +182,7 @@ test -z "$GITCONFIG_PATH" || {
 			break
 			;;
 		esac || break
-	done &&
-	sed -i '/^\[/{:1;$d;N;/^.[^[]*$/b;s/^.*\[/[/;b1}' \
-		programdata-config.template ||
+	done ||
 	die "Could not split gitconfig"
 
 	gitconfig="$gitconfig${LF}end;$LF"
@@ -195,11 +190,6 @@ test -z "$GITCONFIG_PATH" || {
 
 	LIST="$(echo "$LIST" | grep -v "^$GITCONFIG_PATH\$")"
 }
-
-printf '%s\n' \
-	'Source: {#SourcePath}\programdata-config.template; Flags: dontcopy' \
-	>>file-list.iss ||
-die "Could not append gitconfig to file list"
 
 test -z "$LIST" ||
 echo "$LIST" |
