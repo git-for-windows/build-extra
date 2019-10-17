@@ -253,10 +253,13 @@ pacman -Q filesystem $SH_FOR_REBASE rebase \
 		mingw-w64-$ARCH-xpdf-tools) \
 	>>"$PACKAGE_VERSIONS_FILE"
 
+test -n "$ETC_GITCONFIG" ||
+ETC_GITCONFIG=etc/gitconfig
+
 cat <<EOF
 etc/fstab
 etc/nsswitch.conf
-mingw$BITNESS/etc/gitconfig
+$ETC_GITCONFIG
 usr/bin/rebase.exe
 usr/bin/rebaseall
 EOF
