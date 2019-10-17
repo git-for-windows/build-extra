@@ -2188,8 +2188,12 @@ var
 begin
     if UninstallAppPath<>'' then begin
         // Save a copy of the system config so that we can copy it back later
-        if FileExists(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig') and
-            (not FileCopy(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig',ExpandConstant('{tmp}\gitconfig.system'),True)) then
+        if FileExists(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig') then begin
+            if (not FileCopy(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig',ExpandConstant('{tmp}\gitconfig.system'),True)) then
+                LogError('Could not save system config; continuing anyway');
+        // Save a copy of the system config so that we can copy it back later
+        end else if FileExists(UninstallAppPath+'\etc\gitconfig') and
+            (not FileCopy(UninstallAppPath+'\etc\gitconfig',ExpandConstant('{tmp}\gitconfig.system'),True)) then
             LogError('Could not save system config; continuing anyway');
 
         ProgramData:=ExpandConstant('{commonappdata}');
@@ -2483,10 +2487,10 @@ begin
 
     // Copy previous system wide git config file, if any
     if FileExists(ExpandConstant('{tmp}\gitconfig.system')) then begin
-        if (not ForceDirectories(AppDir+'\{#MINGW_BITNESS}\etc')) then
-            LogError('Failed to create \{#MINGW_BITNESS}\etc; continuing anyway')
+        if (not ForceDirectories(AppDir+'\{#ETC_GITCONFIG_DIR}')) then
+            LogError('Failed to create \{#ETC_GITCONFIG_DIR}; continuing anyway')
         else
-            FileCopy(ExpandConstant('{tmp}\gitconfig.system'),AppDir+'\{#MINGW_BITNESS}\etc\gitconfig',True)
+            FileCopy(ExpandConstant('{tmp}\gitconfig.system'),AppDir+'\{#ETC_GITCONFIG_DIR}\gitconfig',True)
     end;
 
     {

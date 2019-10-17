@@ -99,6 +99,11 @@ echo "Compiling edit-git-bash.exe ..."
 make -C ../ edit-git-bash.exe ||
 die "Could not build edit-git-bash.exe"
 
+etc_gitconfig="$(git -c core.editor=echo config --system -e 2>/dev/null)" &&
+etc_gitconfig="$(cygpath -au "$etc_gitconfig")" &&
+etc_gitconfig="${etc_gitconfig#/}" ||
+die "Could not determine the path of the system config"
+
 if test t = "$skip_files"
 then
 	# make sure the file exists, as the installer wants it
@@ -215,11 +220,13 @@ test -z "$include_pdbs" || {
 } ||
 die "Could not include .pdb files"
 
-printf "%s\n%s\n%s\n%s%s" \
+etc_gitconfig_dir="${etc_gitconfig%/gitconfig}"
+printf "%s\n%s\n%s\n%s\n%s%s" \
 	"#define APP_VERSION '$displayver'" \
 	"#define FILENAME_VERSION '$version'" \
 	"#define BITNESS '$BITNESS'" \
 	"#define SOURCE_DIR '$(cygpath -aw /)'" \
+	"#define ETC_GITCONFIG_DIR '${etc_gitconfig_dir//\//\\}'" \
 	"$inno_defines" \
 	>config.iss
 
