@@ -259,7 +259,6 @@ ETC_GITCONFIG=etc/gitconfig
 cat <<EOF
 etc/fstab
 etc/nsswitch.conf
-$ETC_GITCONFIG
 usr/bin/rebase.exe
 usr/bin/rebaseall
 EOF
@@ -279,6 +278,7 @@ mingw$BITNESS/etc/gitattributes
 EOF
 
 test -n "$MINIMAL_GIT" || cat <<EOF
+$ETC_GITCONFIG
 etc/post-install/01-devices.post
 etc/post-install/03-mtab.post
 etc/post-install/06-windows-files.post

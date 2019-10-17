@@ -69,6 +69,16 @@ die "Could not copy license file"
 mkdir -p "$SCRIPT_PATH"/root/etc ||
 die "Could not make etc/"
 
+cat >"$SCRIPT_PATH"/root/"$etc_gitconfig" <<EOF ||
+[include]
+	; include Git for Windows' system config in order
+	; to inherit settings like `core.autocrlf`
+	path = C:\Program Files (x86)\Git\etc\gitconfig
+	path = C:\Program Files\Git\etc\gitconfig
+$(cat "/$etc_gitconfig")
+EOF
+die "Could not generate system config"
+
 test -z "$include_pdbs" || {
 	find "$SCRIPT_PATH/root" -name \*.pdb -exec rm {} \; &&
 	"$SCRIPT_PATH"/../please.sh bundle-pdbs \
