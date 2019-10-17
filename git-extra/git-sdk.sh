@@ -129,6 +129,11 @@ sdk () {
 		printf "%s " git-sdk.sh sdk.completion ReleaseNotes.md \
 			install.iss
 		;;
+	# for building
+	makepkg|makepkg-mingw)
+		cmd=$1; shift
+		$cmd --syncdeps --noconfirm --skipchecksums --skippgpcheck "$@"
+		;;
 	# here start the commands
 	init-lazy)
 		case "$2" in
@@ -147,7 +152,7 @@ sdk () {
 			sdk init MSYS2-packages &&
 			(cd "$src_dir/$2" &&
 			 test -d src/msys2-runtime ||
-			 makepkg --nobuild --syncdeps --noconfirm --skipchecksums --skippgpcheck) &&
+			 sdk makepkg --nobuild) &&
 			src_dir="$src_dir/msys2-runtime/src/msys2-runtime" &&
 			src_cdup_dir="$src_dir" ||
 			return 1
@@ -286,7 +291,7 @@ sdk () {
 			then
 				# no local changes
 				cd "$src_cdup_dir" &&
-				makepkg --syncdeps --noconfirm --skipchecksums --skippgpcheck
+				sdk makepkg
 				return $?
 			fi
 
@@ -302,8 +307,8 @@ sdk () {
 			if test -f PKGBUILD
 			then
 				case "$MSYSTEM" in
-				MSYS) makepkg --syncdeps --noconfirm --skipchecksums --skippgpcheck;;
-				MINGW*) makepkg-mingw --syncdeps --noconfirm --skipchecksums --skippgpcheck;;
+				MSYS) sdk makepkg;;
+				MINGW*) sdk makepkg-mingw;;
 				esac
 				return $?
 			fi
