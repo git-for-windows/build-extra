@@ -1,11 +1,9 @@
 export LC_ALL=C
 
 post_install () {
-	for dir in mingw32 mingw64
-	do
-		test ! -d /$dir ||
-		test -f /$dir/etc/gitconfig ||
-		cat > /$dir/etc/gitconfig <<\GITCONFIG
+	ETC_GITCONFIG="$(git -c core.editor=echo config --system -e 2>/dev/null)"
+	test -f "$ETC_GITCONFIG" ||
+	cat > "$ETC_GITCONFIG" <<\GITCONFIG
 [core]
 	symlinks = false
 	autocrlf = true
@@ -25,9 +23,9 @@ post_install () {
 [rebase]
 	autosquash = true
 GITCONFIG
-		test ! -d /$dir ||
-		test -f /$dir/etc/gitattributes ||
-		cat > /$dir/etc/gitattributes <<\GITATTRIBUTES
+	ETC_GITATTRIBUTES="${ETC_GITCONFIG%/*}/gitattributes"
+	test -f "$ETC_GITATTRIBUTES" ||
+	cat > "$ETC_GITATTRIBUTES" <<\GITATTRIBUTES
 *.doc	diff=astextplain
 *.DOC	diff=astextplain
 *.docx	diff=astextplain
@@ -53,11 +51,13 @@ GITCONFIG
 
 GITATTRIBUTES
 
-		grep -q '^\*\.docm' /$dir/etc/gitattributes ||
-		sed -i -e 's/^\*\.DOCX\(.*\)/&\n*.docm\1\n*.DOCM\1/' \
-			-e 's/^\*\.DOT\(.*\)/&\n*.dotm\1\n*.DOTM\1/' \
-			/$dir/etc/gitattributes
+	grep -q '^\*\.docm' "$ETC_GITATTRIBUTES" ||
+	sed -i -e 's/^\*\.DOCX\(.*\)/&\n*.docm\1\n*.DOCM\1/' \
+		-e 's/^\*\.DOT\(.*\)/&\n*.dotm\1\n*.DOTM\1/' \
+		"$ETC_GITATTRIBUTES"
 
+	for dir in mingw32 mingw64
+	do
 		# Drop git-wrapper in place of builtins "to save space"
 		git_wrapper=/$dir/share/git/git-wrapper.exe
 		if test -f $git_wrapper &&
