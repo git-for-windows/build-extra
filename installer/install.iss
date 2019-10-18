@@ -2184,22 +2184,16 @@ end;
 procedure CleanupWhenUpgrading;
 var
     ErrorCode:Integer;
-    ProgramData:String;
 begin
     if UninstallAppPath<>'' then begin
         // Save a copy of the system config so that we can copy it back later
-        if FileExists(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig') and
-            (not FileCopy(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig',ExpandConstant('{tmp}\gitconfig.system'),True)) then
+        if FileExists(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig') then begin
+            if (not FileCopy(UninstallAppPath+'\{#MINGW_BITNESS}\etc\gitconfig',ExpandConstant('{tmp}\gitconfig.system'),True)) then
+                LogError('Could not save system config; continuing anyway');
+        // Save a copy of the system config so that we can copy it back later
+        end else if FileExists(UninstallAppPath+'\etc\gitconfig') and
+            (not FileCopy(UninstallAppPath+'\etc\gitconfig',ExpandConstant('{tmp}\gitconfig.system'),True)) then
             LogError('Could not save system config; continuing anyway');
-
-        ProgramData:=ExpandConstant('{commonappdata}');
-        if FileExists(UninstallAppPath+'\etc\gitconfig') and not FileExists(ProgramData+'\Git\config') then begin
-            if not ForceDirectories(ProgramData+'\Git') then
-                LogError('Could not initialize Windows-wide Git config.')
-            else if not FileCopy(UninstallAppPath+'\etc\gitconfig',ProgramData+'\Git\config',False) then
-                LogError('Could not copy old Git config to Windows-wide location.');
-        end;
-
     end;
 
     if UninstallString<>'' then begin
@@ -2367,7 +2361,7 @@ end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
 var
-    ProgramData,DllPath,FileName,Cmd,Msg,Ico:String;
+    DllPath,FileName,Cmd,Msg,Ico:String;
     BuiltIns,ImageNames,EnvPath:TArrayOfString;
     Count,i:Longint;
     RootKey:Integer;
@@ -2394,7 +2388,6 @@ begin
     end;
 
     AppDir:=ExpandConstant('{app}');
-    ProgramData:=ExpandConstant('{commonappdata}');
 
     {
         Copy dlls from "/mingw64/bin" to "/mingw64/libexec/git-core" if they are
@@ -2467,26 +2460,12 @@ begin
     end else
         LogError('Line {#__LINE__}: Unable to read file "{#MINGW_BITNESS}\{#APP_BUILTINS}".');
 
-    // Create default ProgramData git config file
-    if not FileExists(ProgramData + '\Git\config') then begin
-        if not DirExists(ProgramData + '\Git') then begin
-            if not CreateDir(ProgramData + '\Git') then begin
-                Log('Line {#__LINE__}: Creating directory "' + ProgramData + '\Git" failed.');
-            end;
-        end;
-        if not FileExists(ExpandConstant('{tmp}\programdata-config.template')) then
-            ExtractTemporaryFile('programdata-config.template');
-        if not FileCopy(ExpandConstant('{tmp}\programdata-config.template'), ProgramData + '\Git\config', True) then begin
-            Log('Line {#__LINE__}: Creating initial "' + ProgramData + '\Git\config" failed.');
-        end;
-    end;
-
     // Copy previous system wide git config file, if any
     if FileExists(ExpandConstant('{tmp}\gitconfig.system')) then begin
-        if (not ForceDirectories(AppDir+'\{#MINGW_BITNESS}\etc')) then
-            LogError('Failed to create \{#MINGW_BITNESS}\etc; continuing anyway')
+        if (not ForceDirectories(AppDir+'\{#ETC_GITCONFIG_DIR}')) then
+            LogError('Failed to create \{#ETC_GITCONFIG_DIR}; continuing anyway')
         else
-            FileCopy(ExpandConstant('{tmp}\gitconfig.system'),AppDir+'\{#MINGW_BITNESS}\etc\gitconfig',True)
+            FileCopy(ExpandConstant('{tmp}\gitconfig.system'),AppDir+'\{#ETC_GITCONFIG_DIR}\gitconfig',True)
     end;
 
     {
@@ -2505,35 +2484,25 @@ begin
     else
         GitSystemConfigSet('http.sslBackend','openssl');
 
-    if FileExists(ProgramData+'\Git\config') then begin
-        if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config pack.packsizelimit)\" && if test 2g = \"$value\"; then git config -f config --unset pack.packsizelimit; fi"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
-            LogError('Unable to remove packsize limit from ProgramData config');
-        Cmd:=AppDir+'/';
+    if not RdbCurlVariant[GC_WinSSL].Checked then begin
+        Cmd:=AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt';
         StringChangeEx(Cmd,'\','/',True);
-        if not Exec(AppDir+'\bin\bash.exe','-c "value=\"$(git config -f config http.sslcainfo)\" && case \"$value\" in \"'+Cmd+'\"/*|\"C:/Program Files/Git/\"*|\"c:/Program Files/Git/\"*) git config -f config --unset http.sslcainfo;; esac"',ProgramData+'\Git',SW_HIDE,ewWaitUntilTerminated,i) then
-            LogError('Unable to delete http.sslCAInfo from ProgramData config');
-        if not RdbCurlVariant[GC_WinSSL].Checked then begin
-            Cmd:=AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt';
-            StringChangeEx(Cmd,'\','/',True);
-            GitSystemConfigSet('http.sslCAInfo',Cmd);
-         end else
-            GitSystemConfigSet('http.sslCAInfo',#0);
-    end;
+        GitSystemConfigSet('http.sslCAInfo',Cmd);
+    end else
+        GitSystemConfigSet('http.sslCAInfo',#0);
 
     {
         Adapt core.autocrlf
     }
 
     if RdbCRLF[GC_LFOnly].checked then begin
-        Cmd:='core.autocrlf input';
+        Cmd:='input';
     end else if RdbCRLF[GC_CRLFAlways].checked then begin
-        Cmd:='core.autocrlf true';
+        Cmd:='true';
     end else begin
-        Cmd:='core.autocrlf false';
+        Cmd:='false';
     end;
-    if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config -f config ' + Cmd,
-                ProgramData + '\Git', SW_HIDE, ewWaitUntilTerminated, i) then
-        LogError('Unable to configure the line ending conversion: ' + Cmd);
+    GitSystemConfigSet('core.autocrlf',Cmd);
 
     {
         Configure the terminal window for Git Bash
@@ -2547,24 +2516,17 @@ begin
         Configure extra options
     }
 
-    if RdbExtraOptions[GP_FSCache].checked then begin
-        Cmd:='core.fscache true';
-
-        if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config -f config ' + Cmd,
-                    ProgramData + '\Git', SW_HIDE, ewWaitUntilTerminated, i) then
-            LogError('Unable to enable the extra option: ' + Cmd);
-    end;
+    if RdbExtraOptions[GP_FSCache].checked then
+        GitSystemConfigSet('core.fscache','true');
 
     if RdbExtraOptions[GP_GCM].checked then
         GitSystemConfigSet('credential.helper','manager');
 
     if RdbExtraOptions[GP_Symlinks].checked then
-        Cmd:='core.symlinks true'
+        Cmd:='true'
     else
-        Cmd:='core.symlinks false';
-    if not Exec(AppDir + '\{#MINGW_BITNESS}\bin\git.exe', 'config -f config ' + Cmd,
-                ProgramData + '\Git', SW_HIDE, ewWaitUntilTerminated, i) then
-        LogError('Unable to enable the extra option: ' + Cmd);
+        Cmd:='false';
+    GitSystemConfigSet('core.symlinks',Cmd);
 
     {
         Configure experimental options

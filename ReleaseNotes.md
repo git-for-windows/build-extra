@@ -35,6 +35,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.23.0 (August 17th 2019)
 
+Note! As a consequence of making `git config --system` work as expected, the location of the system config is now `C:\Program Files\Git\etc\gitconfig` (no longer split between `C:\Program Files\Git\mingw64\etc\gitconfig` and `C:\ProgramData\Git\config`), and likewise the location of the system gitattributes is now `C:\Program Files\Git\etc\gitattributes` (no longer `C:\Program Files\Git\mingw64\etc\gitattributes`). Any manual modifications to `C:\ProgramData\Git\config` need to be ported manually.
+
 ### New Features
 
 * Comes with [cURL v7.66.0](https://curl.haxx.se/changes.html#7_66_0).
@@ -48,6 +50,7 @@ This package contains software from a number of other projects including Bash, z
 * The default config [no longer skips `git-lfs` downloads](https://github.com/git-for-windows/build-extra/pull/256).
 * Starting with cURL v7.66.0, [`$HOME/.netrc` can be used](https://github.com/curl/curl/commit/f9c7ba9096ec29db2536481d8e9ebe314e007f0c) instead of `$HOME/_netrc` (but it will still fall back to looking for the latter).
 * The installer's "ProductVersion" [is now consistent with older Git for Windows versions'](https://github.com/git-for-windows/build-extra/pull/257).
+* [Makes `git config --system` work like you think it should](https://github.com/git-for-windows/git/pull/2358).
 
 ## Changes since Git for Windows v2.22.0 (June 8th 2019)
 

@@ -1,12 +1,8 @@
 post_install() {
-  for arch in mingw32 mingw64; do
-    if [ -f "${arch}/bin/git-lfs.exe" ]; then
-      git config -f "${arch}/etc/gitconfig" filter.lfs.clean "git-lfs clean -- %f"
-      git config -f "${arch}/etc/gitconfig" filter.lfs.smudge "git-lfs smudge -- %f"
-      git config -f "${arch}/etc/gitconfig" filter.lfs.process "git-lfs filter-process"
-      git config -f "${arch}/etc/gitconfig" filter.lfs.required true
-    fi
-  done
+  git config --system filter.lfs.clean "git-lfs clean -- %f"
+  git config --system filter.lfs.smudge "git-lfs smudge -- %f"
+  git config --system filter.lfs.process "git-lfs filter-process"
+  git config --system filter.lfs.required true
 }
 
 post_upgrade() {
@@ -14,9 +10,5 @@ post_upgrade() {
 }
 
 pre_remove() {
-  for arch in mingw32 mingw64; do
-    if [ -f "${arch}/bin/git-lfs.exe" ]; then
-       git config -f "${arch}/etc/gitconfig" --remove-section filter.lfs
-    fi
-  done
+  git config --system --remove-section filter.lfs
 }

@@ -99,6 +99,11 @@ echo "Compiling edit-git-bash.exe ..."
 make -C ../ edit-git-bash.exe ||
 die "Could not build edit-git-bash.exe"
 
+etc_gitconfig="$(git -c core.editor=echo config --system -e 2>/dev/null)" &&
+etc_gitconfig="$(cygpath -au "$etc_gitconfig")" &&
+etc_gitconfig="${etc_gitconfig#/}" ||
+die "Could not determine the path of the system config"
+
 if test t = "$skip_files"
 then
 	# make sure the file exists, as the installer wants it
@@ -107,6 +112,7 @@ then
 else
 	echo "Generating file list to be included in the installer ..."
 	LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
+		ETC_GITCONFIG="$etc_gitconfig" \
 		PACKAGE_VERSIONS_FILE=package-versions.txt \
 		INCLUDE_GIT_UPDATE=1 \
 		sh ../make-file-list.sh)" ||
@@ -156,11 +162,9 @@ then
 	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_BUILTIN_ADD_I 1"
 fi
 
-GITCONFIG_PATH="$(echo "$LIST" | grep "^mingw$BITNESS/etc/gitconfig\$")"
-printf '' >programdata-config.template
+GITCONFIG_PATH="$(echo "$LIST" | grep "^$etc_gitconfig\$")"
 test -z "$GITCONFIG_PATH" || {
-	cp "/$GITCONFIG_PATH" programdata-config.template &&
-	keys="$(git config -f programdata-config.template -l --name-only)" &&
+	keys="$(git config -f "/$GITCONFIG_PATH" -l --name-only)" &&
 	gitconfig="$LF[Code]${LF}function GitSystemConfigSet(Key,Value:String):Boolean; forward;$LF" &&
 	gitconfig="$gitconfig${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}" &&
 	for key in $keys
@@ -168,21 +172,18 @@ test -z "$GITCONFIG_PATH" || {
 		case "$key" in
 		pack.packsizelimit|diff.astextplain.*|filter.lfs.*|http.sslcainfo)
 			# set in the system-wide config
-			value="$(git config -f programdata-config.template "$key")" &&
+			value="$(git config -f "/$GITCONFIG_PATH" "$key")" &&
 			case "$key$value" in *"'"*) die "Cannot handle $key=$value because of the single quote";; esac &&
-			git config -f programdata-config.template --unset "$key" &&
 			case "$key" in
 			filter.lfs.*) extra=" IsComponentSelected('gitlfs') And";;
-			pack.packsizelimit) test $BITNESS = 32 || continue; value=2g;;
+			pack.packsizelimit) test $BITNESS = 32 || continue; value=2g; extra=;;
 			*) extra=;;
 			esac &&
 			gitconfig="$gitconfig$LF    if$extra not GitSystemConfigSet('$key','$value') then$LF        Result:=False;" ||
 			break
 			;;
 		esac || break
-	done &&
-	sed -i '/^\[/{:1;$d;N;/^.[^[]*$/b;s/^.*\[/[/;b1}' \
-		programdata-config.template ||
+	done ||
 	die "Could not split gitconfig"
 
 	gitconfig="$gitconfig${LF}end;$LF"
@@ -190,11 +191,6 @@ test -z "$GITCONFIG_PATH" || {
 
 	LIST="$(echo "$LIST" | grep -v "^$GITCONFIG_PATH\$")"
 }
-
-printf '%s\n' \
-	'Source: {#SourcePath}\programdata-config.template; Flags: dontcopy' \
-	>>file-list.iss ||
-die "Could not append gitconfig to file list"
 
 test -z "$LIST" ||
 echo "$LIST" |
@@ -215,11 +211,13 @@ test -z "$include_pdbs" || {
 } ||
 die "Could not include .pdb files"
 
-printf "%s\n%s\n%s\n%s%s" \
+etc_gitconfig_dir="${etc_gitconfig%/gitconfig}"
+printf "%s\n%s\n%s\n%s\n%s%s" \
 	"#define APP_VERSION '$displayver'" \
 	"#define FILENAME_VERSION '$version'" \
 	"#define BITNESS '$BITNESS'" \
 	"#define SOURCE_DIR '$(cygpath -aw /)'" \
+	"#define ETC_GITCONFIG_DIR '${etc_gitconfig_dir//\//\\}'" \
 	"$inno_defines" \
 	>config.iss
 

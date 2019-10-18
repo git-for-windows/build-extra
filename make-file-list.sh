@@ -253,10 +253,16 @@ pacman -Q filesystem $SH_FOR_REBASE rebase \
 		mingw-w64-$ARCH-xpdf-tools) \
 	>>"$PACKAGE_VERSIONS_FILE"
 
+test -n "$ETC_GITCONFIG" ||
+ETC_GITCONFIG=etc/gitconfig
+
+test -n "$ETC_GITATTRIBUTES" ||
+ETC_GITATTRIBUTES="${ETC_GITCONFIG%/*}/gitattributes"
+
 cat <<EOF
 etc/fstab
 etc/nsswitch.conf
-mingw$BITNESS/etc/gitconfig
+$ETC_GITATTRIBUTES
 usr/bin/rebase.exe
 usr/bin/rebaseall
 EOF
@@ -272,10 +278,10 @@ etc/bash.bashrc
 etc/msystem
 usr/bin/dash.exe
 usr/bin/getopt.exe
-mingw$BITNESS/etc/gitattributes
 EOF
 
 test -n "$MINIMAL_GIT" || cat <<EOF
+$ETC_GITCONFIG
 etc/post-install/01-devices.post
 etc/post-install/03-mtab.post
 etc/post-install/06-windows-files.post

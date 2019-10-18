@@ -13,12 +13,10 @@ edit-git-bash.exe
 /git-for-windows-keyring/git-for-windows-keyring-*.src.tar.gz
 /installer/ReleaseNotes.html
 /installer/config.iss
-/installer/gitconfig.system
 /installer/install.log
 /installer/is-unicode.exe
 /installer/file-list.iss
 /installer/package-versions.txt
-/installer/programdata-config.template
 /installer/root/
 /mingit/exclude-list
 /mingit/root/
