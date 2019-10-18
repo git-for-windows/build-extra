@@ -43,6 +43,7 @@ Note! As a consequence of making `git config --system` work as expected, the loc
 * Comes with [Git Credential Manager v1.20.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.20.0).
 * Comes with [OpenSSH v8.1p1](https://www.openssh.com/txt/release-8.1).
 * Comes with [OpenSSL v1.1.1d](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [Git LFS v2.9.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.9.0).
 
 ### Bug Fixes
 
