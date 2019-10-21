@@ -253,6 +253,11 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 		grep -q '^#define _POSIX_THREAD_SAFE_FUNCTIONS' $header ||
 		sed -i '$i#undef _POSIX_THREAD_SAFE_FUNCTIONS\n#define _POSIX_THREAD_SAFE_FUNCTIONS 200112L\n' $header
 	done
+
+	# Make sure that `/ssl` is a symbolic link pointing to `/usr/ssl`.
+	# This is needed because `/etc/gitconfig` is shared between the MSYS
+	# and the MINGW variants of `git.exe`.
+	test -h /ssl || (cd / && rm -f ssl && cmd //c 'mklink /d ssl usr\ssl')
 }
 
 post_upgrade () {
