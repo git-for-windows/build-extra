@@ -36,15 +36,12 @@ pkgver() {
 
 prepare () {
   cd "$srcdir/cv2pdb"
-  grep -q '<PlatformToolset>$(DefaultPlatformToolset)<' src/cv2pdb.vcxproj ||
   sed -i 's/\(<PlatformToolset>\)[^<]*/\1$(DefaultPlatformToolset)/g' src/cv2pdb.vcxproj
-  #grep -q '<PlatformToolset>$(DefaultPlatformToolset)<' ||
-  #sed -i 's/\(<PlatformToolset>\)[^<]*/\1$(DefaultPlatformToolset)/g' src/dumplines.vcxproj
 }
 
 build() {
   cd "$srcdir/cv2pdb"
-  cmd //c '..\..\..\msbuild\hMSBuild.bat -vswhere-version local -nocachevswhere /p:Configuration=Release /p:Platform='"$WARCH"' src\cv2pdb.vcxproj' ||
+  cmd //c '..\..\..\msbuild\hMSBuild.bat -notamd64 -vsw-version local /p:Configuration=Release /p:Platform='"$WARCH"' src\cv2pdb.vcxproj' ||
   die "MSBuild failed."
 
   test -z "$SIGNTOOL" ||
@@ -58,7 +55,7 @@ package () {
   install -m755 $OUTDIR/cv2pdb.exe "${pkgdir}/${MINGW_PREFIX}/bin"
 
   install -d "${pkgdir}/${MINGW_PREFIX}/share/doc/cv2pdb"
-  install -m644 CHANGES FEATURES LICENSE README \
+  install -m644 CHANGES FEATURES LICENSE README.MD \
     "${pkgdir}/${MINGW_PREFIX}/share/doc/cv2pdb"
 
   git -C "$srcdir/cv2pdb" clean -dfx
