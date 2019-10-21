@@ -98,6 +98,13 @@ etc_gitconfig="$(cygpath -au "$etc_gitconfig")" &&
 etc_gitconfig="${etc_gitconfig#/}" ||
 die "Could not determine the path of the system config"
 
+# Make a list of files to include
+LIST="$(ARCH=$ARCH BITNESS=$BITNESS ETC_GITCONFIG="$etc_gitconfig" \
+	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/root/etc/package-versions.txt \
+	sh "$SCRIPT_PATH"/../make-file-list.sh "$@" |
+	grep -v "^$etc_gitconfig$")" ||
+die "Could not generate file list"
+
 mkdir -p "$SCRIPT_PATH/root/${etc_gitconfig%/*}" &&
 cp /"$etc_gitconfig" "$SCRIPT_PATH/root/$etc_gitconfig" &&
 git config -f "$SCRIPT_PATH/root/$etc_gitconfig" \
@@ -105,13 +112,6 @@ git config -f "$SCRIPT_PATH/root/$etc_gitconfig" \
 die "Could not configure Git-Credential-Manager as default"
 test 64 != $BITNESS ||
 git config -f "$SCRIPT_PATH/root/$etc_gitconfig" --unset pack.packSizeLimit
-
-# Make a list of files to include
-LIST="$(ARCH=$ARCH BITNESS=$BITNESS ETC_GITCONFIG="$etc_gitconfig" \
-	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/root/etc/package-versions.txt \
-	sh "$SCRIPT_PATH"/../make-file-list.sh "$@" |
-	grep -v "^$etc_gitconfig$")" ||
-die "Could not generate file list"
 
 case "$LIST" in
 */git-credential-helper-selector.exe*)
