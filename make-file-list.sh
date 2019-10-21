@@ -256,8 +256,20 @@ pacman -Q filesystem $SH_FOR_REBASE rebase \
 test -n "$ETC_GITCONFIG" ||
 ETC_GITCONFIG=etc/gitconfig
 
+test etc/gitconfig != "$ETC_GITCONFIG" ||
+test -f /etc/gitconfig ||
+test ! -f /mingw$BITNESS/etc/gitconfig ||
+{ mkdir -p /etc && cp /mingw$BITNESS/etc/gitconfig /etc/gitconfig; } ||
+die "Could not copy system gitconfig into new location"
+
 test -n "$ETC_GITATTRIBUTES" ||
 ETC_GITATTRIBUTES="${ETC_GITCONFIG%/*}/gitattributes"
+
+test etc/gitattributes != "$ETC_GITATTRIBUTES" ||
+test -f /etc/gitattributes ||
+test ! -f /mingw$BITNESS/etc/gitattributes ||
+cp /mingw$BITNESS/etc/gitattributes /etc/gitattributes ||
+die "Could not copy system gitattributes into new location"
 
 cat <<EOF
 etc/fstab
