@@ -69,16 +69,6 @@ die "Could not copy license file"
 mkdir -p "$SCRIPT_PATH"/root/etc ||
 die "Could not make etc/"
 
-cat >"$SCRIPT_PATH"/root/"$etc_gitconfig" <<EOF ||
-[include]
-	; include Git for Windows' system config in order
-	; to inherit settings like \`core.autocrlf\`
-	path = C:\\Program Files (x86)\\Git\\etc\\gitconfig
-	path = C:\\Program Files\\Git\\etc\\gitconfig
-$(cat "/$etc_gitconfig")
-EOF
-die "Could not generate system config"
-
 test -z "$include_pdbs" || {
 	find "$SCRIPT_PATH/root" -name \*.pdb -exec rm {} \; &&
 	"$SCRIPT_PATH"/../please.sh bundle-pdbs \
@@ -91,6 +81,16 @@ LIST="$(ARCH=$ARCH BITNESS=$BITNESS MINIMAL_GIT=1 ETC_GITCONFIG="$etc_gitconfig"
 	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/root/etc/package-versions.txt \
 	sh "$SCRIPT_PATH"/../make-file-list.sh "$@")" ||
 die "Could not generate file list"
+
+cat >"$SCRIPT_PATH"/root/"$etc_gitconfig" <<EOF ||
+[include]
+	; include Git for Windows' system config in order
+	; to inherit settings like \`core.autocrlf\`
+	path = C:\\Program Files (x86)\\Git\\etc\\gitconfig
+	path = C:\\Program Files\\Git\\etc\\gitconfig
+$(cat "/$etc_gitconfig")
+EOF
+die "Could not generate system config"
 
 # Make the archive
 
