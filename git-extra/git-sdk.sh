@@ -291,7 +291,7 @@ sdk () {
 			then
 				# no local changes
 				cd "$src_cdup_dir" &&
-				sdk makepkg
+				sdk makepkg -f
 				return $?
 			fi
 
@@ -307,8 +307,8 @@ sdk () {
 			if test -f PKGBUILD
 			then
 				case "$MSYSTEM" in
-				MSYS) sdk makepkg;;
-				MINGW*) sdk makepkg-mingw;;
+				MSYS) sdk makepkg -f;;
+				MINGW*) sdk makepkg-mingw -f;;
 				esac
 				return $?
 			fi
