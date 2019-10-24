@@ -52,6 +52,7 @@ Note! As a consequence of making `git config --system` work as expected, the loc
 * Starting with cURL v7.66.0, [`$HOME/.netrc` can be used](https://github.com/curl/curl/commit/f9c7ba9096ec29db2536481d8e9ebe314e007f0c) instead of `$HOME/_netrc` (but it will still fall back to looking for the latter).
 * The installer's "ProductVersion" [is now consistent with older Git for Windows versions'](https://github.com/git-for-windows/build-extra/pull/257).
 * [Makes `git config --system` work like you think it should](https://github.com/git-for-windows/git/pull/2358).
+* The (still experimental) built-in `git add -p` [no longer gets confused about incomplete lines](https://github.com/git-for-windows/git/pull/2368) (i.e. a file's l last line that does not end in a Line Feed).
 
 ## Changes since Git for Windows v2.22.0 (June 8th 2019)
 
