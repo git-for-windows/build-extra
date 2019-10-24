@@ -86,8 +86,8 @@ cat >"$SCRIPT_PATH"/root/"$etc_gitconfig" <<EOF ||
 [include]
 	; include Git for Windows' system config in order
 	; to inherit settings like \`core.autocrlf\`
-	path = C:\\Program Files (x86)\\Git\\etc\\gitconfig
-	path = C:\\Program Files\\Git\\etc\\gitconfig
+	path = C:/Program Files (x86)/Git/etc/gitconfig
+	path = C:/Program Files/Git/etc/gitconfig
 $(cat "/$etc_gitconfig")
 EOF
 die "Could not generate system config"
