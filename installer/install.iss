@@ -816,6 +816,13 @@ begin
         if Previous<0 then begin
             if Current>=0 then
                 Result:=+1;
+            Result:=Ord(CurrentVersion[i])-Ord(PreviousVersion[j]);
+            if (Result=0) then begin
+                // skip identical non-numerical characters
+                i:=i+1;
+                j:=j+1;
+                Continue;
+            end;
             Exit;
         end;
         if Current<0 then begin
