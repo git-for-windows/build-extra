@@ -55,6 +55,7 @@ Note! As a consequence of making `git config --system` work as expected, the loc
 * The (still experimental) built-in `git add -p` [no longer gets confused about incomplete lines](https://github.com/git-for-windows/git/pull/2368) (i.e. a file's l last line that does not end in a Line Feed).
 * A buffer overrun in the code to determine which files need to be marked as hidden [was plugged](https://github.com/git-for-windows/git/pull/2371).
 * The support for `sendpack.sideband` that was removed by mistake [was re-introduced](https://github.com/git-for-windows/git/pull/2375), to support `git push` via the `git://` protocol again.
+* `git stash` [no longer records skip-worktree files as deleted](https://github.com/git-for-windows/git/pull/2378) after resolving merge conflicts in them.
 
 ## Changes since Git for Windows v2.22.0 (June 8th 2019)
 
