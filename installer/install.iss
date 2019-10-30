@@ -869,6 +869,26 @@ begin
     ExitProcess(0);
 end;
 
+function IsDowngrade(CurrentVersion,PreviousVersion:String):Boolean;
+var
+    Path:String;
+    i,j,CurrentLength,PreviousLength:Integer;
+begin
+    Result:=(VersionCompare(CurrentVersion,PreviousVersion)<0);
+#ifdef GIT_VERSION
+    if Result then begin
+        // maybe the previous version was a prerelease?
+        if (RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','InstallPath',Path))
+                and (Exec(ExpandConstant('{cmd}'),'/c ""'+Path+'\cmd\git.exe" version >"'+ExpandConstant('{tmp}')+'\previous.version""','',SW_HIDE,ewWaitUntilTerminated,i))
+                and (i=0) then begin
+            CurrentVersion:='{#GIT_VERSION}';
+            PreviousVersion:=ReadFileAsString(ExpandConstant('{tmp}\previous.version'));
+            Result:=(VersionCompare(CurrentVersion,PreviousVersion)<0);
+        end;
+    end;
+#endif
+end;
+
 function InitializeSetup:Boolean;
 var
     CurrentVersion,Msg:String;
@@ -897,7 +917,7 @@ begin
 #if APP_VERSION!='0-test'
     if Result and not ParamIsSet('ALLOWDOWNGRADE') then begin
         CurrentVersion:=ExpandConstant('{#APP_VERSION}');
-        if (VersionCompare(CurrentVersion,PreviousGitForWindowsVersion)<0) then begin
+        if IsDowngrade(CurrentVersion,PreviousGitForWindowsVersion) then begin
             if WizardSilent() and (ParamIsSet('SKIPDOWNGRADE') or ParamIsSet('VSNOTICE')) then begin
                 Msg:='Skipping downgrade from '+PreviousGitForWindowsVersion+' to '+CurrentVersion;
                 if ParamIsSet('SKIPDOWNGRADE') or (ExpandConstant('{log}')='') then

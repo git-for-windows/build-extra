@@ -119,6 +119,11 @@ else
 	die "Could not generate file list"
 fi
 
+cmd_git="$(echo "$LIST" | grep '^cmd/git\.exe$')"
+test -z "$cmd_git" ||
+inno_defines="$inno_defines$LF#define GIT_VERSION '$("/$cmd_git" version)'" ||
+die "Could not execute 'git version'"
+
 printf '; List of files\n%s\n%s\n%s\n%s\n%s\n%s\n' \
 	"Source: \"mingw$BITNESS\\bin\\blocked-file-util.exe\"; Flags: dontcopy" \
 	"Source: \"{#SourcePath}\\package-versions.txt\"; DestDir: {app}\\etc; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
