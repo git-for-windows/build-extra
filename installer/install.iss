@@ -869,6 +869,16 @@ begin
     ExitProcess(0);
 end;
 
+function CountDots(S:String):Integer;
+var
+    i:Integer;
+begin
+    Result:=0;
+    for i:=1 to Length(S) do
+        if (S[i]=#46) then
+            Result:=Result+1;
+end;
+
 function IsDowngrade(CurrentVersion,PreviousVersion:String):Boolean;
 var
     Path:String;
@@ -876,8 +886,8 @@ var
 begin
     Result:=(VersionCompare(CurrentVersion,PreviousVersion)<0);
 #ifdef GIT_VERSION
-    if Result then begin
-        // maybe the previous version was a prerelease?
+    if Result or (CountDots(CurrentVersion)>3) or (CountDots(PreviousVersion)>3) then begin
+        // maybe the previous version was a prerelease (prereleases have five numbers: v2.24.0-rc1.windows.1 reduces to '2.24.0.1.1')?
         if (RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','InstallPath',Path))
                 and (Exec(ExpandConstant('{cmd}'),'/c ""'+Path+'\cmd\git.exe" version >"'+ExpandConstant('{tmp}')+'\previous.version""','',SW_HIDE,ewWaitUntilTerminated,i))
                 and (i=0) then begin
