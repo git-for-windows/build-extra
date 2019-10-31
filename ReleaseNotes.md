@@ -56,6 +56,7 @@ Note! As a consequence of making `git config --system` work as expected, the loc
 * A buffer overrun in the code to determine which files need to be marked as hidden [was plugged](https://github.com/git-for-windows/git/pull/2371).
 * The support for `sendpack.sideband` that was removed by mistake [was re-introduced](https://github.com/git-for-windows/git/pull/2375), to support `git push` via the `git://` protocol again.
 * `git stash` [no longer records skip-worktree files as deleted](https://github.com/git-for-windows/git/pull/2378) after resolving merge conflicts in them.
+* The Git for Windows installer [no longer complains about a downgrade](https://github.com/git-for-windows/build-extra/pull/264) when upgrading from an `-rc` version, i.e. from a pre-release leading up to the next major version.
 
 ## Changes since Git for Windows v2.22.0 (June 8th 2019)
 
