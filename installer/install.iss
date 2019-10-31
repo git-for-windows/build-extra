@@ -649,6 +649,10 @@ begin
         Result:='(no output)'
     else
         Result:=Contents;
+    if (Length(Result)>0) and (Result[Length(Result)]=#10) then
+        SetLength(Result,Length(Result)-1);
+    if (Length(Result)>0) and (Result[Length(Result)]=#13) then
+        SetLength(Result,Length(Result)-1);
 end;
 
 function GitSystemConfigSet(Key,Value:String):Boolean;
@@ -812,6 +816,13 @@ begin
         if Previous<0 then begin
             if Current>=0 then
                 Result:=+1;
+            Result:=Ord(CurrentVersion[i])-Ord(PreviousVersion[j]);
+            if (Result=0) then begin
+                // skip identical non-numerical characters
+                i:=i+1;
+                j:=j+1;
+                Continue;
+            end;
             Exit;
         end;
         if Current<0 then begin
@@ -858,6 +869,36 @@ begin
     ExitProcess(0);
 end;
 
+function CountDots(S:String):Integer;
+var
+    i:Integer;
+begin
+    Result:=0;
+    for i:=1 to Length(S) do
+        if (S[i]=#46) then
+            Result:=Result+1;
+end;
+
+function IsDowngrade(CurrentVersion,PreviousVersion:String):Boolean;
+var
+    Path:String;
+    i,j,CurrentLength,PreviousLength:Integer;
+begin
+    Result:=(VersionCompare(CurrentVersion,PreviousVersion)<0);
+#ifdef GIT_VERSION
+    if Result or (CountDots(CurrentVersion)>3) or (CountDots(PreviousVersion)>3) then begin
+        // maybe the previous version was a prerelease (prereleases have five numbers: v2.24.0-rc1.windows.1 reduces to '2.24.0.1.1')?
+        if (RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','InstallPath',Path))
+                and (Exec(ExpandConstant('{cmd}'),'/c ""'+Path+'\cmd\git.exe" version >"'+ExpandConstant('{tmp}')+'\previous.version""','',SW_HIDE,ewWaitUntilTerminated,i))
+                and (i=0) then begin
+            CurrentVersion:='{#GIT_VERSION}';
+            PreviousVersion:=ReadFileAsString(ExpandConstant('{tmp}\previous.version'));
+            Result:=(VersionCompare(CurrentVersion,PreviousVersion)<0);
+        end;
+    end;
+#endif
+end;
+
 function InitializeSetup:Boolean;
 var
     CurrentVersion,Msg:String;
@@ -886,7 +927,7 @@ begin
 #if APP_VERSION!='0-test'
     if Result and not ParamIsSet('ALLOWDOWNGRADE') then begin
         CurrentVersion:=ExpandConstant('{#APP_VERSION}');
-        if (VersionCompare(CurrentVersion,PreviousGitForWindowsVersion)<0) then begin
+        if IsDowngrade(CurrentVersion,PreviousGitForWindowsVersion) then begin
             if WizardSilent() and (ParamIsSet('SKIPDOWNGRADE') or ParamIsSet('VSNOTICE')) then begin
                 Msg:='Skipping downgrade from '+PreviousGitForWindowsVersion+' to '+CurrentVersion;
                 if ParamIsSet('SKIPDOWNGRADE') or (ExpandConstant('{log}')='') then
