@@ -117,7 +117,7 @@ until [ $# -eq 0 ]; do
 done
 
 gh_tags=https://gitforwindows.org/latest-tag.txt
-[[ -e /bin ]] || mkdir /bin
+[[ -e /cmd ]] || mkdir /cmd
 [[ -e /tmp ]] || mkdir /tmp
 
 echo ""
@@ -199,8 +199,14 @@ echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui" /f /ve /d "
 echo 'set /p=Adding icon for "Git GUI Here" ... <nul' >> $ctxmenu
 echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui" /f /v Icon /d "%~dp0\git-gui.exe"' >> $ctxmenu
 echo 'set /p=Adding command for "Git GUI Here" ... <nul' >> $ctxmenu
-echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui\command" /f /ve /d "\"%~dp0\git-gui.exe\" '\
-'\"--working-dir\" \"%%v.\""' >> $ctxmenu
+if [[ "$system" == "Msys" ]]; then
+	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui\command" '\
+'/f /ve /d "\"%~dp0\git-gui.exe\" \"--working-dir\" \"%%v.\""' >> $ctxmenu
+else # Cygwin 
+	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui\command" '\
+'/f /ve /d "cmd.exe /s /c \"set \"PATH=%~dp0\..\bin\" '\
+'^&^& \"%~dp0\git-gui.exe\" \"--working-dir\" \"%%v.\"\""' >> $ctxmenu
+fi
 echo '' >> $ctxmenu
 echo 'set /p=Adding "Git Bash Here" ... <nul' >> $ctxmenu
 echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell" /f /ve /d "Git Ba&sh Here"' >> $ctxmenu
@@ -208,11 +214,13 @@ echo 'set /p=Adding icon for "Git Bash Here" ... <nul' >> $ctxmenu
 echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell" /f /v Icon /d "%~dp0\git-gui.exe"' >> $ctxmenu
 echo 'set /p=Adding command for "Git Bash Here" ... <nul' >> $ctxmenu
 if [[ "$system" == "Msys" ]]; then
-echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell\command" /f /ve /d "\"%~dp0..\usr\bin\mintty.exe\" -i /cmd/git-gui.exe /usr/bin/bash -c '\
-'\"cd '"'%%v'; export CHERE_INVOKING=1; exec /usr/bin/bash --login -i"'\""' >> $ctxmenu
-else
-echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell\command" /f /ve /d "\"%~dp0..\bin\mintty.exe\" -i /cmd/git-gui.exe /bin/bash -c '\
-'\"cd '"'%%v'; export CHERE_INVOKING=1; exec /bin/bash --login -i"'\""' >> $ctxmenu
+	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell\command" '\
+'/f /ve /d "\"%~dp0..\usr\bin\mintty.exe\" -i /cmd/git-gui.exe /usr/bin/bash -c '\
+'\"cd '"'%%v'; export CHERE_INVOKING=1; export MSYSTEM=MINGW$bit; exec /usr/bin/bash --login -i"'\""' >> $ctxmenu
+else # Cygwin
+	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell\command" '\
+'/f /ve /d "\"%~dp0..\bin\mintty.exe\" -i /cmd/git-gui.exe /bin/bash --login -i -c '\
+'\"cd '"'%%v'; export CHERE_INVOKING=1; export PATH=/mingw$bit/bin:\$PATH; exec /bin/bash"'\""' >> $ctxmenu
 fi
 echo '' >> $ctxmenu
 echo 'pause' >> $ctxmenu
