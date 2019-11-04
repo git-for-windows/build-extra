@@ -4345,9 +4345,9 @@ publish () { #
 	nextver=v"$version" &&
 	(cd "$git_src_dir" &&
 	 git push git-for-windows "$nextver" &&
-	 mirrors="$(git config --get-regexp 'remote\..*\.releasemirror' || true |
+	 if mirrors="$(git config --get-regexp 'remote\..*\.releasemirror' || true |
 		sed -n 's/^remote.\(.*\).releasemirror true$/\1/p')" &&
-	 if test -n "$mirrors"
+	    test -n "$mirrors"
 	 then
 		for remote in $mirrors
 		do
