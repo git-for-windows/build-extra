@@ -39,6 +39,7 @@ Note! As a consequence of making `git config --system` work as expected, the loc
 
 ### New Features
 
+* Comes with [Git v2.24.0](https://github.com/git/git/blob/v2.24.0/Documentation/RelNotes/2.24.0.txt).
 * Comes with [cURL v7.66.0](https://curl.haxx.se/changes.html#7_66_0).
 * Comes with [Git Credential Manager v1.20.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.20.0).
 * Comes with [OpenSSH v8.1p1](https://www.openssh.com/txt/release-8.1).
