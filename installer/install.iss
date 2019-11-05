@@ -2368,10 +2368,25 @@ function GetFileAttributes(Path:PAnsiChar):DWORD;
 function SetFileAttributes(Path:PAnsiChar;dwFileAttributes:DWORD):BOOL;
 external 'SetFileAttributesA@kernel32.dll stdcall';
 
+function CryptStringToBinary(sz:string;cch:LongWord;flags:LongWord;binary:string;var size:LongWord;skip:LongWord;flagsused:LongWord):Integer;
+external 'CryptStringToBinaryW@crypt32.dll stdcall';
+
+const
+  CRYPT_STRING_HEX = $04;
+  HEX_CHARS = '0123456789abcdef';
+
+function CharToHex(C:Integer):string;
+begin
+    Result:=HEX_CHARS[((C div 16) and 15)+1]+HEX_CHARS[(C and 15)+1];
+end;
+
 function CreateCygwinSymlink(SymlinkPath,TargetPath:String):Boolean;
 var
     Attribute:DWord;
     i:Integer;
+    Hex,Buffer:string;
+    Stream:TStream;
+    Size:LongWord;
 begin
     Result:=True;
 
@@ -2379,13 +2394,24 @@ begin
     for i:=Length(TargetPath) downto 1 do
         TargetPath:=Copy(TargetPath,1,i)+#0+Copy(TargetPath,i+1,Length(TargetPath)-i);
 
-    // insert `!<symlink>\xff\xfe` prefix, and append `\0\0`
-    TargetPath:='!<symlink>'+#255+#254+TargetPath+#0+#0;
+    Hex:='213c73796d6c696e6b3efffe'; // "!<symlink>\xff\xfe"
+    for i:=1 to Length(TargetPath) do
+        Hex:=Hex+CharToHex(Ord(TargetPath[i])); // append wide characters as hex
+    Hex:=Hex+'0000'; // append a wide NUL
 
     // write the file
-    if not SaveStringToFile(SymlinkPath,TargetPath,False) then begin
-        LogError('Could not write "'+SymlinkPath+'"');
+    Stream:=TFileStream.Create(SymlinkPath,fmCreate);
+    try
+        Size:=Length(Hex) div 2;
+        SetLength(Buffer,Size);
+        if (CryptStringToBinary(Hex,Length(Hex),CRYPT_STRING_HEX,Buffer,Size,0,0)=0) or (Size<>Length(Hex) div 2) then
+            RaiseException('could not decode hex '+Hex);
+        Stream.WriteBuffer(Buffer,Size);
+    except
+        LogError('Could not write "'+SymlinkPath+'" '+GetExceptionMessage());
         Result:=False;
+    finally
+        Stream.Free
     end;
 
     // Set system bit (required for Cygwin to interpret this as a symlink)
