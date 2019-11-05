@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Using `http.extraHeader` [no longer results in spurious crashes](https://github.com/gitgitgadget/git/pull/453).
+* The `/proc/{stdin,stdout,stderr}` pseudo-symlinks [are now installed properly even with non-US locales](https://github.com/git-for-windows/build-extra/pull/265).
 
 ## Changes since Git for Windows v2.23.0 (August 17th 2019)
 
