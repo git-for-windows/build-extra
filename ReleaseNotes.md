@@ -33,6 +33,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.24.0 (November 4th 2019)
+
+### Bug Fixes
+
+* Using `http.extraHeader` [no longer results in spurious crashes](https://github.com/gitgitgadget/git/pull/453).
+
 ## Changes since Git for Windows v2.23.0 (August 17th 2019)
 
 Note! As a consequence of making `git config --system` work as expected, the location of the system config is now `C:\Program Files\Git\etc\gitconfig` (no longer split between `C:\Program Files\Git\mingw64\etc\gitconfig` and `C:\ProgramData\Git\config`), and likewise the location of the system gitattributes is now `C:\Program Files\Git\etc\gitattributes` (no longer `C:\Program Files\Git\mingw64\etc\gitattributes`). Any manual modifications to `C:\ProgramData\Git\config` need to be ported manually.
