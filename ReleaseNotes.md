@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Using `http.extraHeader` [no longer results in spurious crashes](https://github.com/gitgitgadget/git/pull/453).
 * The `/proc/{stdin,stdout,stderr}` pseudo-symlinks [are now installed properly even with non-US locales](https://github.com/git-for-windows/build-extra/pull/265).
+* A bug [was fixed](https://github.com/git-for-windows/git/pull/2391) that prevented `gitk` from refreshing after new changes were committed.
 
 ## Changes since Git for Windows v2.23.0 (August 17th 2019)
 
