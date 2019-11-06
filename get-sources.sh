@@ -23,8 +23,6 @@ die "Usage: $0 [--mingit] <package-versions>"
 test -d /usr/src/MSYS2-packages/git ||
 die "Need to run this in an SDK"
 
-msys_source_url=http://repo.msys2.org/msys/sources
-mingw_source_url=http://repo.msys2.org/mingw/sources
 sf_repos_url=http://sourceforge.net/projects/msys2/files/REPOS
 msys_sf_source_url=$sf_repos_url/MSYS2/Sources
 mingw_sf_source_url=$sf_repos_url/MINGW/Sources
@@ -213,10 +211,10 @@ do
 			sf3_url=
 			;;
 		mingw-w64-*)
-			url=$mingw_source_url/$filename
-			sf1_url=$mingw_sf_source_url/$filename/download
-			sf2_url=$mingw_sf_source_url/$name-$version.src.tar.gz/download
-			sf3_url="$azure_blobs_source_url/$filename"
+			url=$mingw_sf_source_url/$filename/download
+			sf1_url=$mingw_sf_source_url/$name-$version.src.tar.gz/download
+			sf2_url="$azure_blobs_source_url/$filename"
+			sf3_url=
 			;;
 		*)
 			if test crypt != $name &&
@@ -257,9 +255,9 @@ do
 				fi
 			fi
 
-			url="$msys_source_url/$filename"
-			sf1_url="$msys_sf_source_url/$filename/download"
-			sf2_url="$azure_blobs_source_url/$filename"
+			url="$msys_sf_source_url/$filename/download"
+			sf1_url="$azure_blobs_source_url/$filename"
+			sf2_url=
 			sf3_url=
 			;;
 		esac
