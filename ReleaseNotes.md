@@ -35,6 +35,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.24.0 (November 4th 2019)
 
+### New Features
+
+* Comes with [cURL v7.67.0](https://curl.haxx.se/changes.html#7_67_0).
+
 ### Bug Fixes
 
 * Using `http.extraHeader` [no longer results in spurious crashes](https://github.com/gitgitgadget/git/pull/453).
