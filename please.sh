@@ -213,7 +213,7 @@ sync () { # [--force]
 	y_opt=y
 	while case "$1" in
 	--force)
-		force=--force
+		force='--overwrite=\*'
 		y_opt=yy
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
@@ -240,7 +240,7 @@ sync () { # [--force]
 		die 'Could not keep files as planned\n'
 
 		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\bash.exe \
-			-lc "pacman.exe -Su $force --noconfirm" ||
+			-lc 'pacman.exe -Su '$force' --noconfirm' ||
 		die "Could not update packages in %s\n" "$sdk"
 
 		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
