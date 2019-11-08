@@ -42,7 +42,7 @@ function backup(){
 function update(){
     mkdir -p "$2"
     echo -n \* upating.......
-    \cp -rnf "$1" "$2" > /dev/null 2>&1 || \cp -rf "$1" "$2"
+    \cp -rlf "$1" "$2" > /dev/null 2>&1 || \cp -rf "$1" "$2"
     echo done
 }
 
