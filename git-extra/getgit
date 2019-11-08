@@ -42,7 +42,7 @@ function backup(){
 function update(){
     mkdir -p "$2"
     echo -n \* upating.......
-    \cp -rnf "$1" "$2" > /dev/null 2>&1 || \cp -rf "$1" "$2"
+    \cp -rlf "$1" "$2" > /dev/null 2>&1 || \cp -rf "$1" "$2"
     echo done
 }
 
@@ -64,7 +64,8 @@ function restore(){
 function cleanup(){
     if [[ -e "$1" ]]; then
         echo -n \* cleaning up... >&2
-        rm -rf "$1"
+        # rm -rf "$1"
+        mv -f "$1" "/tmp/${1//\//.}$(date +%Y%m%d%H%M%S)"
         echo done >&2
 	else
 		echo "* nothing to cleanup, skip" >&2
@@ -78,7 +79,7 @@ function cleanup(){
 function process(){
     until [ $# -eq 0 ]; do
         case "$1" in
-            -f) f=1; shift;;
+            -f) local f=1; shift;;
             *) local target="$1"; local files="$2"; shift; shift;;
         esac    
     done
@@ -134,9 +135,10 @@ else
 fi
 latest=$(curl $gh_tags)
 version=$(echo $latest | grep -Po "\d+\.\d+.\d+")
-echo "Gathered { system: \"$system\", bit: \"$bit\", latest: \"$latest\", version: \"$version\" }"
+patch=$(echo $latest | grep -Po "windows\.\K\d")
+echo "Gathered { system: \"$system\", bit: \"$bit\", latest: \"$latest\", version: \"$version\", patch: \"$patch\" }"
 # I think there's no chance that the local version is greater than the latest released version
-if [[ x$force_update != x1 && "$version" == "$(git --version 2>/dev/null | grep -Po "\d+\.\d+.\d+")" ]]; then
+if [[ x$force_update != x1 && "$latest" == "v$(git --version 2>/dev/null | grep -Po "\d+\.\d+.\d+\.windows\.\d")" ]]; then
     echo There is no need to update git 
     echo ""
     echo "[ git --version ]" 
@@ -147,7 +149,8 @@ fi
 
 echo ""
 # Downloading
-filename=PortableGit-$version-$bit-bit.7z.exe
+[[ "$patch" != "" && $patch -gt 1 ]] && n=".$patch"
+filename=PortableGit-$version$n-$bit-bit.7z.exe
 download_href="https://github.com/git-for-windows/git/releases/download/$latest/$filename"
 if [[ ! x$skip_download == x1 ]]; then
     downloader=`type wget > /dev/null 2>&1 && echo "wget -c -O" \
@@ -219,8 +222,8 @@ if [[ "$system" == "Msys" ]]; then
 '\"cd '"'%%v'; export CHERE_INVOKING=1; export MSYSTEM=MINGW$bit; exec /usr/bin/bash --login -i"'\""' >> $ctxmenu
 else # Cygwin
 	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell\command" '\
-'/f /ve /d "\"%~dp0..\bin\mintty.exe\" -i /cmd/git-gui.exe /bin/bash --login -i -c '\
-'\"cd '"'%%v'; export CHERE_INVOKING=1; export PATH=/mingw$bit/bin:\$PATH; exec /bin/bash"'\""' >> $ctxmenu
+'/f /ve /d "\"%~dp0..\bin\mintty.exe\" -i /cmd/git-gui.exe /bin/bash -c '\
+'\"cd '"'%%v'; export CHERE_INVOKING=1; export PATH=/mingw$bit/bin:\$PATH; exec /bin/bash --login -i"'\""' >> $ctxmenu
 fi
 echo '' >> $ctxmenu
 echo 'pause' >> $ctxmenu
