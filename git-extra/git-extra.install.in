@@ -216,10 +216,19 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 		sed -i '$i#undef _POSIX_THREAD_SAFE_FUNCTIONS\n#define _POSIX_THREAD_SAFE_FUNCTIONS 200112L\n' $header
 	done
 
-	# Make sure that `/ssl` is a symbolic link pointing to `/usr/ssl`.
-	# This is needed because `/etc/gitconfig` is shared between the MSYS
-	# and the MINGW variants of `git.exe`.
-	test -h /ssl || (cd / && rm -f ssl && cmd //c 'mklink /d ssl usr\ssl')
+	# We do not actually need the http.sslCAInfo setting anymore, as the
+	# cURL we ship with Git for Windows was patched to find the location of
+	# the TLS/SSL certificates.
+	test ! -f /etc/gitconfig || # just a little defensive programming
+	! grep -q '^	sslCAinfo = /ssl/certs/ca-bundle.crt$' /etc/gitconfig ||
+	sed -i -e 's/^	sslCAinfo = \/ssl\/certs\/ca-bundle\.crt$/#&/' /etc/gitconfig
+
+	# Previously, we made sure that `/ssl` is a symbolic link pointing to
+	# `/usr/ssl` so that the http.sslCAInfo setting could be shared between
+	# the MSYS and the MINGW variants of `git.exe`.
+	#
+	# As we no longer need it, delete it.
+	test ! -h /ssl || rm /ssl
 }
 
 post_upgrade () {
