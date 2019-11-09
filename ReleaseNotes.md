@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * MinGit [no longer overrides an installed Git for Windows' system gitconfig](https://github.com/git-for-windows/build-extra/pull/267).
+* The "Check daily for updates" feature [uses the Action Center again](https://github.com/git-for-windows/build-extra/pull/268).
 
 ## Changes since Git for Windows v2.24.0 (November 4th 2019)
 
