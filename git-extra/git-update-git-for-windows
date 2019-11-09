@@ -154,7 +154,7 @@ update_git_for_windows () {
 	try_toast=
 	test -z "$use_gui" ||
 	case "$(uname -s)" in
-	*-6.[23]|*-10.0)
+	*-6.[23]|*-6.[23]-[1-9]*|*-10.0|*-10.0-[1-9]*)
 		# Only try to show a Toast notification on Windows 8 & 10,
 		# and only if we have a working wintoast.exe
 		! type wintoast.exe >/dev/null 2>&1 ||
