@@ -1915,8 +1915,8 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 				test ! -f "$file" ||
 				cp "$file" "'"$outputdir"'"/;'
 			} )"'
-			precmd="pacman --force --noconfirm -U" &&
-			postcmd="pacman --force --noconfirm -U" &&
+			precmd="pacman --overwrite=\* --noconfirm -U" &&
+			postcmd="pacman --overwrite=\* --noconfirm -U" &&
 			for pkg in '"$pkglist"'
 			do
 				pkg=mingw-w64-$mach-$pkg
