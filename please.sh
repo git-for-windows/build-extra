@@ -4459,6 +4459,94 @@ publish_sdk () { #
 	git --git-dir="$sdk64"/usr/src/build-extra/.git push origin "$tag"
 }
 
+create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitness=(32|64|auto)] [--force] <name>
+	git_sdk_path=/
+	output_path=
+	force=
+	while case "$1" in
+	--out|-o)
+		shift
+		output_path="$(cygpath -am "$1")" || exit
+		;;
+	--out=*|-o=*)
+		output_path="$(cygpath -am "${1#*=}")" || exit
+		;;
+	-o*)
+		output_path="$(cygpath -am "${1#-?}")" || exit
+		;;
+	--git-sdk|--sdk|-g)
+		shift
+		git_sdk_path="$(cygpath -am "$1")" || exit
+		;;
+	--git-sdk=*|--sdk=*|-g=*)
+		git_sdk_path="$(cygpath -am "${1#*=}")" || exit
+		;;
+	-o*)
+		git_sdk_path="$(cygpath -am "${1#-?}")" || exit
+		;;
+	--force|-f)
+		force=t
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected one argument, got $#: %s\n" "$*"
+
+	test -n "$output_path" ||
+	output_path="$(cygpath -am "$1")"
+
+	mode=
+	case "$1" in
+	minimal|git-sdk-minimal) mode=minimal-sdk;;
+	minimal-sdk) mode=$1;;
+	*) die "Unhandled artifact: '%s'\n" "$1";;
+	esac
+
+	test ! -d "$output_path" ||
+	if test -z "$force"
+	then
+		die "Directory exists already: '%s'\n" "$output_path"
+	elif test -f "$output_path/.git"
+	then
+		git -C "$(git -C "$output_path" rev-parse --git-common-dir)" worktree remove -f "$(cygpath -am "$output_path")"
+	else
+		rm -rf "$output_path"
+	fi ||
+	die "Could not remove '%s'\n" "$output_path"
+
+	if test -d "$git_sdk_path"
+	then
+		test ! -f "$git_sdk_path/.git" ||
+		git_sdk_path="$(git -C "$git_sdk_path" rev-parse --git-dir)"
+		test ! -d "$git_sdk_path/.git" ||
+		git_sdk_path="$git_sdk_path/.git"
+		test true = "$(git -C "$git_sdk_path" rev-parse --is-inside-git-dir)" ||
+		die "Not a Git repository: '%s'\n" "$git_sdk_path"
+	else
+		test "z$git_sdk_path" != "z${git_sdk_path%.git}" ||
+		git_sdk_path="$git_sdk_path.git"
+		git clone --depth 1 --bare https://github.com/git-for-windows/git-sdk-64 "$git_sdk_path"
+	fi
+
+	git -C "$git_sdk_path" config extensions.worktreeConfig true &&
+	git -C "$git_sdk_path" worktree add --detach --no-checkout "$output_path" HEAD &&
+	sparse_checkout_file="$(git -C "$output_path" rev-parse --git-path info/sparse-checkout)" &&
+	git -C "$output_path" config --worktree core.sparseCheckout true &&
+	git -C "$output_path" config --worktree core.bare false &&
+	mkdir -p "${sparse_checkout_file%/*}" &&
+	git -C "$git_sdk_path" show HEAD:.sparse/$mode >"$sparse_checkout_file" &&
+	git -C "$output_path" checkout -- &&
+	if test ! -f "$output_path/etc/profile"
+	then
+		printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:$PATH\n' >"$output_path/etc/profile"
+	fi &&
+	rm -r "$(cat "$output_path/.git" | sed 's/^gitdir: //')" &&
+	rm "$output_path/.git" &&
+	echo "Output written to '$output_path'" >&2 ||
+	die "Could not write artifact at '%s'\n" "$output_path"
+}
+
 this_script_path="$(cd "$(dirname "$0")" && echo "$(pwd -W)/$(basename "$0")")" ||
 die "Could not determine this script's path\n"
 
