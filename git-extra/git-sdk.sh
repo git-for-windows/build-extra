@@ -308,7 +308,7 @@ sdk () {
 			then
 				case "$MSYSTEM" in
 				MSYS) sdk makepkg -f;;
-				MINGW*) sdk makepkg-mingw -f;;
+				MINGW*) MINGW_INSTALLS=${MSYSTEM,,} sdk makepkg-mingw -f;;
 				esac
 				return $?
 			fi
