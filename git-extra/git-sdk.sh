@@ -132,7 +132,7 @@ sdk () {
 	# for building
 	makepkg|makepkg-mingw)
 		cmd=$1; shift
-		$cmd --syncdeps --noconfirm --skipchecksums --skippgpcheck "$@"
+		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} $cmd --syncdeps --noconfirm --skipchecksums --skippgpcheck "$@"
 		;;
 	# here start the commands
 	init-lazy)
