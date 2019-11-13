@@ -132,7 +132,7 @@ sdk () {
 	# for building
 	makepkg|makepkg-mingw)
 		cmd=$1; shift
-		$cmd --syncdeps --noconfirm --skipchecksums --skippgpcheck "$@"
+		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} $cmd --syncdeps --noconfirm --skipchecksums --skippgpcheck "$@"
 		;;
 	# here start the commands
 	init-lazy)
@@ -220,14 +220,20 @@ sdk () {
 		;;
 	init)
 		sdk init-lazy "$2" &&
-		if test refs/heads/master = \
-				"$(git -C "$src_cdup_dir" symbolic-ref HEAD >/dev/null 2>&1)" &&
-			{ git -C "$src_cdup_dir" diff-files --quiet &&
-			  git -C "$src_cdup_dir" diff-index --quiet HEAD ||
-			  test ! -s "$src_cdup_dir"/.git/index; }
-		then
+		case "$(git -C "$src_cdup_dir" symbolic-ref HEAD >/dev/null 2>&1)" in
+		'')
+			# Not checked out yet
 			git -C "$src_cdup_dir" pull origin master
-		fi &&
+			;;
+		refs/heads/master)
+			if { git -C "$src_cdup_dir" diff-files --quiet &&
+				git -C "$src_cdup_dir" diff-index --quiet HEAD ||
+				test ! -s "$src_cdup_dir"/.git/index; }
+			then
+				git -C "$src_cdup_dir" pull origin master
+			fi
+			;;
+		esac &&
 		if test git = "$2" && test ! -f "$src_dir/config.mak"
 		then
 			cat >"$src_dir/config.mak" <<-\EOF
@@ -308,7 +314,7 @@ sdk () {
 			then
 				case "$MSYSTEM" in
 				MSYS) sdk makepkg -f;;
-				MINGW*) sdk makepkg-mingw -f;;
+				MINGW*) MINGW_INSTALLS=${MSYSTEM,,} sdk makepkg-mingw -f;;
 				esac
 				return $?
 			fi
