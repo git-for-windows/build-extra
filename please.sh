@@ -4499,7 +4499,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	mode=
 	case "$1" in
 	minimal|git-sdk-minimal) mode=minimal-sdk;;
-	minimal-sdk) mode=$1;;
+	minimal-sdk|makepkg-git|makepkg-git-i686) mode=$1;;
 	*) die "Unhandled artifact: '%s'\n" "$1";;
 	esac
 
@@ -4539,7 +4539,56 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	git -C "$output_path" checkout -- &&
 	if test ! -f "$output_path/etc/profile"
 	then
-		printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:$PATH\n' >"$output_path/etc/profile"
+		if test minimal-sdk = $mode
+		then
+			printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:$PATH\n' >"$output_path/etc/profile"
+		elif test makepkg-git = $mode
+		then
+			cat >"$output_path/etc/profile" <<-\EOF
+			case "$SYSTEMROOT" in
+			[A-Za-z]:*)
+					SYSTEMROOT_MSYS=/${SYSTEMROOT%%:*}${SYSTEMROOT#?:}
+					SYSTEMROOT_MSYS=${SYSTEMROOT_MSYS//\\/\/}
+					;;
+			*)
+					SYSTEMROOT_MSYS=${SYSTEMROOT//\\/\/}
+					;;
+			esac
+
+			if test MSYS = "$MSYSTEM"
+			then
+					PATH=/usr/bin:/usr/bin/core_perl:$SYSTEMROOT_MSYS/system32:$SYSTEMROOT_MSYS
+			else
+					export MSYSTEM=MINGW64
+					PATH=/mingw64/bin:/usr/bin:/usr/bin/core_perl:$SYSTEMROOT_MSYS/system32:$SYSTEMROOT_MSYS
+			fi
+
+			# These Cygwin-style pseudo symlinks are marked as system files
+			# and that attribute cannot be preserved in .zip archives
+			test -h /dev/fd || {
+					ln -s /proc/self/fd /dev/
+					test -h /dev/stdin || ln -s /proc/self/fd/0 /dev/stdin
+					test -h /dev/stdout || ln -s /proc/self/fd/1 /dev/stdout
+					test -h /dev/stderr || ln -s /proc/self/fd/2 /dev/stderr
+			}
+			EOF
+		fi
+	fi &&
+	if test makepkg-git = $mode && test ! -x "$output_path/usr/bin/git"
+	then
+		printf '#!/bin/sh\n\nexec /mingw64/bin/git.exe "$@"\n' >"$output_path/usr/bin/git"
+	fi &&
+	if test makepkg-git = $mode && ! grep -q http://docbook.sourceforge.net/release/xsl-ns/current "$output_path/etc/xml/catalog"
+	then
+		# Slightly dirty workaround for missing docbook-xsl-ns
+		(cd "$output_path/usr/share/xml/" &&
+			test -d docbook-xsl-ns-1.78.1 ||
+			curl -L https://sourceforge.net/projects/docbook/files/docbook-xsl-ns/1.78.1/docbook-xsl-ns-1.78.1.tar.bz2/download |
+			tar xjf -) &&
+		sed -i '/<\/catalog>/i\
+  <rewriteSystem systemIdStartString="http://docbook.sourceforge.net/release/xsl-ns/current" rewritePrefix="/usr/share/xml/docbook-xsl-ns-1.78.1"/>\
+  <rewriteURI uriStartString="http://docbook.sourceforge.net/release/xsl-ns/current" rewritePrefix="/usr/share/xml/docbook-xsl-ns-1.78.1"/>' \
+			"$output_path/etc/xml/catalog"
 	fi &&
 	rm -r "$(cat "$output_path/.git" | sed 's/^gitdir: //')" &&
 	rm "$output_path/.git" &&
