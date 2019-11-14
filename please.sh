@@ -4499,7 +4499,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	mode=
 	case "$1" in
 	minimal|git-sdk-minimal) mode=minimal-sdk;;
-	minimal-sdk|makepkg-git|makepkg-git-i686) mode=$1;;
+	minimal-sdk|makepkg-git|makepkg-git-i686|build-installers) mode=$1;;
 	*) die "Unhandled artifact: '%s'\n" "$1";;
 	esac
 
@@ -4535,7 +4535,74 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	git -C "$output_path" config --worktree core.sparseCheckout true &&
 	git -C "$output_path" config --worktree core.bare false &&
 	mkdir -p "${sparse_checkout_file%/*}" &&
-	git -C "$git_sdk_path" show HEAD:.sparse/$mode >"$sparse_checkout_file" &&
+	case "$mode" in
+	build-installers)
+		cat <<-\EOF >"$sparse_checkout_file"
+		# Minimal `sh`
+		/git-cmd.exe
+		/usr/bin/sh.exe
+		/usr/bin/msys-2.0.dll
+		/etc/nsswitch.conf
+
+		# Pacman
+		/usr/bin/pacman.exe
+		/usr/bin/pactree.exe
+		/usr/bin/msys-gpg*.dll
+		/usr/bin/gpg.exe
+		/usr/bin/gpgconf.exe
+		/usr/bin/msys-gcrypt*.dll
+		/usr/bin/msys-z.dll
+		/usr/bin/msys-sqlite*.dll
+		/usr/bin/msys-bz2*.dll
+		/usr/bin/msys-assuan*.dll
+		/etc/pacman*
+		/usr/ssl/certs/ca-bundle.crt
+		/usr/share/pacman/
+		/var/lib/pacman/local/
+
+		# Some other utilities required by `make-file-list.sh`
+		/usr/bin/grep.exe
+		/usr/bin/sed.exe
+		/usr/bin/msys-iconv-*.dll
+		/usr/bin/msys-intl-*.dll
+		/usr/bin/msys-pcre*.dll
+		/usr/bin/msys-gcc_s-*.dll
+
+		# Files to include into the installer/Portable Git/MinGit
+		EOF
+		git -C "$output_path" checkout -- &&
+		printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:$PATH\n' >"$output_path/etc/profile" &&
+		mkdir -p "$output_path/mingw64/bin" &&
+		tmp_ignore="$output_path/.tmp" &&
+		git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$tmp_ignore" &&
+		git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$tmp_ignore" &&
+		git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$tmp_ignore" &&
+		BITNESS=64 ARCH=x86_64 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
+		"${this_script_path%/*}/make-file-list.sh" |
+		git -C "$output_path" -c core.excludesfile="$tmp_ignore" check-ignore -v -n --no-index --stdin |
+		sed -ne 's|[][]|\\&|g' -e 's|^::.|/|p' >"$sparse_checkout_file" &&
+		rm "$tmp_ignore" &&
+		rm "$output_path/etc/profile" &&
+		cat <<-EOF >>"$sparse_checkout_file" &&
+
+		# 7-Zip
+		/usr/bin/7za
+		/usr/lib/p7zip/7za.exe
+		/usr/bin/msys-stdc++-*.dll
+
+		# WinToast
+		/mingw$bitness/bin/wintoast.exe
+
+		# BusyBox
+		/mingw$bitness/bin/busybox.exe
+		EOF
+		mkdir -p "$output_path/.sparse" &&
+		cp "$sparse_checkout_file" "$output_path/.sparse/build-installers"
+		;;
+	*)
+		git -C "$git_sdk_path" show HEAD:.sparse/$mode >"$sparse_checkout_file"
+		;;
+	esac &&
 	git -C "$output_path" checkout -- &&
 	if test ! -f "$output_path/etc/profile"
 	then
