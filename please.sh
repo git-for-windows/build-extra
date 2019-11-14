@@ -4463,6 +4463,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	git_sdk_path=/
 	output_path=
 	force=
+	bitness=auto
 	while case "$1" in
 	--out|-o)
 		shift
@@ -4484,6 +4485,16 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	-o*)
 		git_sdk_path="$(cygpath -am "${1#-?}")" || exit
 		;;
+	--bitness|-b)
+		shift
+		bitness="$1"
+		;;
+	--bitness=*|-b=*)
+		bitness="${1#*=}"
+		;;
+	-b*)
+		bitness="${1#-?}"
+		;;
 	--force|-f)
 		force=t
 		;;
@@ -4495,6 +4506,11 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 
 	test -n "$output_path" ||
 	output_path="$(cygpath -am "$1")"
+
+	case "$bitness" in
+	32|64|auto) ;; # okay
+	*) die "Unhandled bitness: %s\n" "$bitness";;
+	esac
 
 	mode=
 	case "$1" in
@@ -4523,10 +4539,24 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		git_sdk_path="$git_sdk_path/.git"
 		test true = "$(git -C "$git_sdk_path" rev-parse --is-inside-git-dir)" ||
 		die "Not a Git repository: '%s'\n" "$git_sdk_path"
+
+		test auto != "$bitness" ||
+		if git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-msys 2>/dev/null
+		then
+			bitness=32
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/x86_64-pc-msys 2>/dev/null
+		then
+			bitness=64
+		else
+			die "'%s' is neither 32-bit nor 64-bit SDK?!?" "$git_sdk_path"
+		fi
 	else
+		test auto != "$bitness" ||
+		die "No SDK found at '%s'; Please use `--bitness=<n>` to indicate which SDK to use" "$git_sdk_path"
+
 		test "z$git_sdk_path" != "z${git_sdk_path%.git}" ||
 		git_sdk_path="$git_sdk_path.git"
-		git clone --depth 1 --bare https://github.com/git-for-windows/git-sdk-64 "$git_sdk_path"
+		git clone --depth 1 --bare https://github.com/git-for-windows/git-sdk-$bitness "$git_sdk_path"
 	fi
 
 	git -C "$git_sdk_path" config extensions.worktreeConfig true &&
@@ -4571,17 +4601,27 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		# Files to include into the installer/Portable Git/MinGit
 		EOF
 		git -C "$output_path" checkout -- &&
-		printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:$PATH\n' >"$output_path/etc/profile" &&
-		mkdir -p "$output_path/mingw64/bin" &&
-		tmp_ignore="$output_path/.tmp" &&
-		git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$tmp_ignore" &&
-		git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$tmp_ignore" &&
-		git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$tmp_ignore" &&
-		BITNESS=64 ARCH=x86_64 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
-		"${this_script_path%/*}/make-file-list.sh" |
-		git -C "$output_path" -c core.excludesfile="$tmp_ignore" check-ignore -v -n --no-index --stdin |
-		sed -ne 's|[][]|\\&|g' -e 's|^::.|/|p' >"$sparse_checkout_file" &&
-		rm "$tmp_ignore" &&
+		printf 'export MSYSTEM=MINGW%s\nexport PATH=/mingw%s/bin:/usr/bin/:/usr/bin/core_perl:$PATH\n' "$bitness" "$bitness" >"$output_path/etc/profile" &&
+		mkdir -p "$output_path/mingw$bitness/bin" &&
+		case $bitness in
+		32)
+			BITNESS=32 ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
+			"${this_script_path%/*}/make-file-list.sh" |
+			# escape the `[` in `[.exe`
+			sed -e 's|[][]|\\&|g' >>"$sparse_checkout_file"
+			;;
+		*)
+			tmp_ignore="$output_path/.tmp" &&
+			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$tmp_ignore" &&
+			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$tmp_ignore" &&
+			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$tmp_ignore" &&
+			BITNESS=64 ARCH=x86_64 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
+			"${this_script_path%/*}/make-file-list.sh" |
+			git -C "$output_path" -c core.excludesfile="$tmp_ignore" check-ignore -v -n --no-index --stdin |
+			sed -ne 's|[][]|\\&|g' -e 's|^::.|/|p' >"$sparse_checkout_file" &&
+			rm "$tmp_ignore"
+			;;
+		esac &&
 		rm "$output_path/etc/profile" &&
 		cat <<-EOF >>"$sparse_checkout_file" &&
 
