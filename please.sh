@@ -4703,6 +4703,103 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	die "Could not write artifact at '%s'\n" "$output_path"
 }
 
+find_mspdb_dll () { #
+	for v in 140 120 110 100 80
+	do
+		type -p mspdb$v.dll 2>/dev/null && return 0
+	done
+	return 1
+}
+
+build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifacts] [--skip-doc-man] [--skip-doc-html] [--force] [<revision>]
+	output_path=
+	sed_makepkg_e=
+	force=
+	while case "$1" in
+	--only-32-bit)
+		MINGW_INSTALLS=mingw32
+		export MINGW_INSTALLS
+		;;
+	--only-64-bit)
+		MINGW_INSTALLS=mingw64
+		export MINGW_INSTALLS
+		;;
+	--skip-test-artifacts)
+		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-test-artifacts"//'
+		;;
+	--skip-doc-man)
+		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-doc-man"//'
+		;;
+	--skip-doc-html)
+		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-doc-html"//'
+		;;
+	--force)
+		force=--force
+		;;
+	--out|--output|-o)
+		shift
+		output_path="$(cygpath -am "$1")" || exit
+		;;
+	--out=*|--output=*|-o=*)
+		output_path="$(cygpath -am "${1#*=}")" || exit
+		;;
+	-o*)
+		output_path="$(cygpath -am "${1#-?}")" || exit
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# -le 1 ||
+	die "Expected at most one argument, got $#: %s\n" "$*"
+
+	git_src_dir="/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	test -d ${git_src_dir%/src/git} ||
+	git clone --depth 1 --single-branch -b master https://github.com/git-for-windows/MINGW-packages /usr/src/MINGW-packages ||
+	die "Could not clone MINGW-packages\n"
+
+	tag="$(git for-each-ref --format '%(refname:short)' --points-at="${1:+HEAD}" 'refs/tags/v[0-9]*')"
+	test -n "$tag" || {
+		tag=$(git describe --match=v* "${1:+HEAD}" | sed 's/-.*//').$(date +%Y%m%d%H%M%S) &&
+		git tag $tag "${1:+HEAD}"
+	} ||
+	die "Could not create tag\n"
+
+	test -d ${git_src_dir%/src/git}/git ||
+	git clone --bare https://github.com/git-for-windows/git.git ${git_src_dir%/src/git}/git ||
+	die "Could not initialize %s\n" ${git_src_dir%/src/git}/git
+
+	sed -e "s/^tag=.*/tag=${tag#v}/" $sed_makepkg_e <${git_src_dir%/src/git}/PKGBUILD >${git_src_dir%/src/git}/PKGBUILD.$tag ||
+	die "Could not write %s\n" ${git_src_dir%/src/git}/PKGBUILD.$tag
+
+	test -d ${git_src_dir%/src/git}/git ||
+	git clone --bare https://github.com/git-for-windows/git.git ${git_src_dir%/src/git}/git ||
+	die "Could not initialize %s\n" ${git_src_dir%/src/git}/git
+
+	test -d $git_src_dir || {
+		git -c core.autocrlf=false clone --reference ${git_src_dir%/src/git}/git https://github.com/git-for-windows/git $git_src_dir &&
+		git -C $git_src_dir config core.autocrlf false
+	} ||
+	die "Could not initialize %s\n" $git_src_dir
+
+	git push $git_src_dir $tag ||
+	die "Could not push %s\n" $tag
+
+	find_mspdb_dll >/dev/null || {
+		WITHOUT_PDBS=1
+		export WITHOUT_PDBS
+	}
+
+	(cd ${git_src_dir%/src/git}/ && MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag) ||
+	die "Could not build mingw-w64-git\n"
+
+	test -z "$output_path" || {
+		pkgpattern="$(sed -n '/^pkgver=/{N;s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2/p}' <${git_src_dir%/src/git}/PKGBUILD.$tag)" &&
+		mkdir -p "$output_path" &&
+		cp ${git_src_dir%/src/git}/*-"$pkgpattern"-any.pkg.tar.xz "$output_path/"
+	} ||
+	die "Could not copy artifact(s) to %s\n" "$output_path"
+}
+
 this_script_path="$(cd "$(dirname "$0")" && echo "$(pwd -W)/$(basename "$0")")" ||
 die "Could not determine this script's path\n"
 
