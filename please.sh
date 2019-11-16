@@ -4692,7 +4692,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			test -d docbook-xsl-ns-1.78.1 ||
 			curl -L https://sourceforge.net/projects/docbook/files/docbook-xsl-ns/1.78.1/docbook-xsl-ns-1.78.1.tar.bz2/download |
 			tar xjf -) &&
-		sed -i '/<\/catalog>/i\
+		sed -i -e 's|C:/git-sdk-64-ci||g' -e '/<\/catalog>/i\
   <rewriteSystem systemIdStartString="http://docbook.sourceforge.net/release/xsl-ns/current" rewritePrefix="/usr/share/xml/docbook-xsl-ns-1.78.1"/>\
   <rewriteURI uriStartString="http://docbook.sourceforge.net/release/xsl-ns/current" rewritePrefix="/usr/share/xml/docbook-xsl-ns-1.78.1"/>' \
 			"$output_path/etc/xml/catalog"
@@ -4783,6 +4783,9 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 
 	git push $git_src_dir $tag ||
 	die "Could not push %s\n" $tag
+
+	# Work around bug where the incorrect xmlcatalog.exe wrote /etc/xml/catalog
+	sed -i -e 's|C:/git-sdk-64-ci||g' /etc/xml/catalog
 
 	find_mspdb_dll >/dev/null || {
 		WITHOUT_PDBS=1
