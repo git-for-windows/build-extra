@@ -51,7 +51,7 @@ unset ORIGINAL_PATH
 # We really only use -w, -am and -au in please.sh, so that's what we
 # support here
 
-cygpath () {
+cygpath () { # [<short-options>] <path>
 	test $# = 2 ||
 	die "This minimal cygpath drop-in cannot handle '%s'\n" "$*"
 
