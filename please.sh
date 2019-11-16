@@ -4803,6 +4803,84 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	die "Could not copy artifact(s) to %s\n" "$output_path"
 }
 
+# This function does not "clean up" after installing the packages
+make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--installer] [--portable] [--mingit] [--mingit-busybox]
+	modes=
+	install_package=
+	output=
+	output_path=
+	version=0-test
+	while case "$1" in
+	--pkg=*)
+		install_package="${install_package:+$install_package }$(echo "${1#*=}" | tr , ' ')"
+		for file in ${1#*=}
+		do
+			candidate="$(echo $file | sed -n 's/.*git-\([0-9][.0-9a-f]*\).*/\1/p')"
+			test -z "$candidate" || version="$candidate"
+		done
+		;;
+	--pkg)
+		shift
+		install_package="${install_package:+$install_package }$(echo "$1" | tr , ' ')"
+		for file in $1
+		do
+			candidate="$(echo $file | sed -n 's/.*git-\([0-9][.0-9a-f]*\).*/\1/p')"
+			test -z "$candidate" || version="$candidate"
+		done
+		;;
+	--installer|--portable|--mingit|--mingit-busybox)
+		modes="${modes:+$modes }${1#--}"
+		;;
+	--only-installer|--only-portable|--only-mingit|--only-mingit-busybox)
+		modes="${1#--only-}"
+		;;
+	--out|--output|-o)
+		shift
+		output_path="$(cygpath -am "$1")"
+		output="--output=$output_path" || exit
+		;;
+	--out=*|--output=*|-o=*)
+		output_path="$(cygpath -am "${1#*=}")"
+		output="--output=$output_path" || exit
+		;;
+	-o*)
+		output_path="$(cygpath -am "${1#-?}")"
+		output="--output=$output_path" || exit
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# -eq 0 ||
+	die "Expected no argument, got $#: %s\n" "$*"
+
+	test -n "$modes" ||
+	modes=installer
+
+	mkdir -p "$output_path" ||
+	die "Could not make '%s/'\n" "$output_path"
+
+	test -z "$install_package" || {
+		eval pacman -U --noconfirm --overwrite=\\\* $install_package &&
+		(. /var/lib/pacman/local/git-extra-*/install && post_install)
+	} ||
+	die "Could not install packages: %s\n" "$install_package"
+
+	for mode in $modes
+	do
+		extra=
+
+		test mingit-busybox != $mode || {
+			mode=mingit
+			extra="${extra:+$extra }--busybox"
+		}
+
+		test installer != $mode ||
+		extra="${extra:+$extra }--window-title-version=$version"
+
+		sh -x "${this_script_path%/*}/$mode/release.sh" $output $extra $version
+	done
+}
+
 this_script_path="$(cd "$(dirname "$0")" && echo "$(pwd -W)/$(basename "$0")")" ||
 die "Could not determine this script's path\n"
 
