@@ -30,6 +30,3 @@ else
 		//noicons //tasks= //portable=1
 fi ||
 die "Could not install InnoSetup"
-
-# Remove unneeded files from the installation.
-rm -r InnoSetup/Examples/ InnoSetup/Compil32.exe InnoSetup/isscint.dll

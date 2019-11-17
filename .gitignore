@@ -11,6 +11,9 @@ edit-git-bash.exe
 /git-extra/git-extra-*.src.tar.gz
 /git-for-windows-keyring/git-for-windows-keyring-*.pkg.tar.xz
 /git-for-windows-keyring/git-for-windows-keyring-*.src.tar.gz
+/installer/InnoSetup/Examples/
+/installer/InnoSetup/Compil32.exe
+/installer/InnoSetup/isscint.dll
 /installer/ReleaseNotes.html
 /installer/config.iss
 /installer/install.log
