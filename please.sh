@@ -51,7 +51,7 @@ unset ORIGINAL_PATH
 # We really only use -w, -am and -au in please.sh, so that's what we
 # support here
 
-cygpath () {
+cygpath () { # [<short-options>] <path>
 	test $# = 2 ||
 	die "This minimal cygpath drop-in cannot handle '%s'\n" "$*"
 
@@ -4464,6 +4464,428 @@ publish_sdk () { #
 	die "Could not upload files\n"
 
 	git --git-dir="$sdk64"/usr/src/build-extra/.git push origin "$tag"
+}
+
+create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitness=(32|64|auto)] [--force] <name>
+	git_sdk_path=/
+	output_path=
+	force=
+	bitness=auto
+	while case "$1" in
+	--out|-o)
+		shift
+		output_path="$(cygpath -am "$1")" || exit
+		;;
+	--out=*|-o=*)
+		output_path="$(cygpath -am "${1#*=}")" || exit
+		;;
+	-o*)
+		output_path="$(cygpath -am "${1#-?}")" || exit
+		;;
+	--git-sdk|--sdk|-g)
+		shift
+		git_sdk_path="$(cygpath -am "$1")" || exit
+		;;
+	--git-sdk=*|--sdk=*|-g=*)
+		git_sdk_path="$(cygpath -am "${1#*=}")" || exit
+		;;
+	-o*)
+		git_sdk_path="$(cygpath -am "${1#-?}")" || exit
+		;;
+	--bitness|-b)
+		shift
+		bitness="$1"
+		;;
+	--bitness=*|-b=*)
+		bitness="${1#*=}"
+		;;
+	-b*)
+		bitness="${1#-?}"
+		;;
+	--force|-f)
+		force=t
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected one argument, got $#: %s\n" "$*"
+
+	test -n "$output_path" ||
+	output_path="$(cygpath -am "$1")"
+
+	case "$bitness" in
+	32|64|auto) ;; # okay
+	*) die "Unhandled bitness: %s\n" "$bitness";;
+	esac
+
+	mode=
+	case "$1" in
+	minimal|git-sdk-minimal) mode=minimal-sdk;;
+	minimal-sdk|makepkg-git|makepkg-git-i686|build-installers) mode=$1;;
+	*) die "Unhandled artifact: '%s'\n" "$1";;
+	esac
+
+	test ! -d "$output_path" ||
+	if test -z "$force"
+	then
+		die "Directory exists already: '%s'\n" "$output_path"
+	elif test -f "$output_path/.git"
+	then
+		git -C "$(git -C "$output_path" rev-parse --git-common-dir)" worktree remove -f "$(cygpath -am "$output_path")"
+	else
+		rm -rf "$output_path"
+	fi ||
+	die "Could not remove '%s'\n" "$output_path"
+
+	if test -d "$git_sdk_path"
+	then
+		test ! -f "$git_sdk_path/.git" ||
+		git_sdk_path="$(git -C "$git_sdk_path" rev-parse --git-dir)"
+		test ! -d "$git_sdk_path/.git" ||
+		git_sdk_path="$git_sdk_path/.git"
+		test true = "$(git -C "$git_sdk_path" rev-parse --is-inside-git-dir)" ||
+		die "Not a Git repository: '%s'\n" "$git_sdk_path"
+
+		test auto != "$bitness" ||
+		if git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-msys 2>/dev/null
+		then
+			bitness=32
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/x86_64-pc-msys 2>/dev/null
+		then
+			bitness=64
+		else
+			die "'%s' is neither 32-bit nor 64-bit SDK?!?" "$git_sdk_path"
+		fi
+	else
+		test auto != "$bitness" ||
+		die "No SDK found at '%s'; Please use `--bitness=<n>` to indicate which SDK to use" "$git_sdk_path"
+
+		test "z$git_sdk_path" != "z${git_sdk_path%.git}" ||
+		git_sdk_path="$git_sdk_path.git"
+		git clone --depth 1 --bare https://github.com/git-for-windows/git-sdk-$bitness "$git_sdk_path"
+	fi
+
+	git -C "$git_sdk_path" config extensions.worktreeConfig true &&
+	git -C "$git_sdk_path" worktree add --detach --no-checkout "$output_path" HEAD &&
+	sparse_checkout_file="$(git -C "$output_path" rev-parse --git-path info/sparse-checkout)" &&
+	git -C "$output_path" config --worktree core.sparseCheckout true &&
+	git -C "$output_path" config --worktree core.bare false &&
+	mkdir -p "${sparse_checkout_file%/*}" &&
+	case "$mode" in
+	build-installers)
+		cat <<-\EOF >"$sparse_checkout_file"
+		# Minimal `sh`
+		/git-cmd.exe
+		/usr/bin/sh.exe
+		/usr/bin/msys-2.0.dll
+		/etc/nsswitch.conf
+
+		# Pacman
+		/usr/bin/pacman.exe
+		/usr/bin/pactree.exe
+		/usr/bin/msys-gpg*.dll
+		/usr/bin/gpg.exe
+		/usr/bin/gpgconf.exe
+		/usr/bin/msys-gcrypt*.dll
+		/usr/bin/msys-z.dll
+		/usr/bin/msys-sqlite*.dll
+		/usr/bin/msys-bz2*.dll
+		/usr/bin/msys-assuan*.dll
+		/etc/pacman*
+		/usr/ssl/certs/ca-bundle.crt
+		/usr/share/pacman/
+		/var/lib/pacman/local/
+
+		# Some other utilities required by `make-file-list.sh`
+		/usr/bin/grep.exe
+		/usr/bin/sed.exe
+		/usr/bin/msys-iconv-*.dll
+		/usr/bin/msys-intl-*.dll
+		/usr/bin/msys-pcre*.dll
+		/usr/bin/msys-gcc_s-*.dll
+
+		# Files to include into the installer/Portable Git/MinGit
+		EOF
+		git -C "$output_path" checkout -- &&
+		printf 'export MSYSTEM=MINGW%s\nexport PATH=/mingw%s/bin:/usr/bin/:/usr/bin/core_perl:$PATH\n' "$bitness" "$bitness" >"$output_path/etc/profile" &&
+		mkdir -p "$output_path/mingw$bitness/bin" &&
+		case $bitness in
+		32)
+			BITNESS=32 ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
+			"${this_script_path%/*}/make-file-list.sh" |
+			# escape the `[` in `[.exe`
+			sed -e 's|[][]|\\&|g' >>"$sparse_checkout_file"
+			;;
+		*)
+			tmp_ignore="$output_path/.tmp" &&
+			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$tmp_ignore" &&
+			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$tmp_ignore" &&
+			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$tmp_ignore" &&
+			BITNESS=64 ARCH=x86_64 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
+			"${this_script_path%/*}/make-file-list.sh" |
+			git -C "$output_path" -c core.excludesfile="$tmp_ignore" check-ignore -v -n --no-index --stdin |
+			sed -ne 's|[][]|\\&|g' -e 's|^::.|/|p' >"$sparse_checkout_file" &&
+			rm "$tmp_ignore"
+			;;
+		esac &&
+		rm "$output_path/etc/profile" &&
+		cat <<-EOF >>"$sparse_checkout_file" &&
+
+		# 7-Zip
+		/usr/bin/7za
+		/usr/lib/p7zip/7za.exe
+		/usr/bin/msys-stdc++-*.dll
+
+		# WinToast
+		/mingw$bitness/bin/wintoast.exe
+
+		# BusyBox
+		/mingw$bitness/bin/busybox.exe
+		EOF
+		mkdir -p "$output_path/.sparse" &&
+		cp "$sparse_checkout_file" "$output_path/.sparse/build-installers"
+		;;
+	*)
+		git -C "$git_sdk_path" show HEAD:.sparse/$mode >"$sparse_checkout_file"
+		;;
+	esac &&
+	git -C "$output_path" checkout -- &&
+	if test ! -f "$output_path/etc/profile"
+	then
+		if test minimal-sdk = $mode
+		then
+			printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:$PATH\n' >"$output_path/etc/profile"
+		elif test makepkg-git = $mode
+		then
+			cat >"$output_path/etc/profile" <<-\EOF
+			case "$SYSTEMROOT" in
+			[A-Za-z]:*)
+					SYSTEMROOT_MSYS=/${SYSTEMROOT%%:*}${SYSTEMROOT#?:}
+					SYSTEMROOT_MSYS=${SYSTEMROOT_MSYS//\\/\/}
+					;;
+			*)
+					SYSTEMROOT_MSYS=${SYSTEMROOT//\\/\/}
+					;;
+			esac
+
+			if test MSYS = "$MSYSTEM"
+			then
+					PATH=/usr/bin:/usr/bin/core_perl:$SYSTEMROOT_MSYS/system32:$SYSTEMROOT_MSYS
+			else
+					export MSYSTEM=MINGW64
+					PATH=/mingw64/bin:/usr/bin:/usr/bin/core_perl:$SYSTEMROOT_MSYS/system32:$SYSTEMROOT_MSYS
+			fi
+
+			# These Cygwin-style pseudo symlinks are marked as system files
+			# and that attribute cannot be preserved in .zip archives
+			test -h /dev/fd || {
+					ln -s /proc/self/fd /dev/
+					test -h /dev/stdin || ln -s /proc/self/fd/0 /dev/stdin
+					test -h /dev/stdout || ln -s /proc/self/fd/1 /dev/stdout
+					test -h /dev/stderr || ln -s /proc/self/fd/2 /dev/stderr
+			}
+			EOF
+		fi
+	fi &&
+	if test makepkg-git = $mode && test ! -x "$output_path/usr/bin/git"
+	then
+		printf '#!/bin/sh\n\nexec /mingw64/bin/git.exe "$@"\n' >"$output_path/usr/bin/git"
+	fi &&
+	if test makepkg-git = $mode && ! grep -q http://docbook.sourceforge.net/release/xsl-ns/current "$output_path/etc/xml/catalog"
+	then
+		# Slightly dirty workaround for missing docbook-xsl-ns
+		(cd "$output_path/usr/share/xml/" &&
+			test -d docbook-xsl-ns-1.78.1 ||
+			curl -L https://sourceforge.net/projects/docbook/files/docbook-xsl-ns/1.78.1/docbook-xsl-ns-1.78.1.tar.bz2/download |
+			tar xjf -) &&
+		sed -i -e 's|C:/git-sdk-64-ci||g' -e '/<\/catalog>/i\
+  <rewriteSystem systemIdStartString="http://docbook.sourceforge.net/release/xsl-ns/current" rewritePrefix="/usr/share/xml/docbook-xsl-ns-1.78.1"/>\
+  <rewriteURI uriStartString="http://docbook.sourceforge.net/release/xsl-ns/current" rewritePrefix="/usr/share/xml/docbook-xsl-ns-1.78.1"/>' \
+			"$output_path/etc/xml/catalog"
+	fi &&
+	rm -r "$(cat "$output_path/.git" | sed 's/^gitdir: //')" &&
+	rm "$output_path/.git" &&
+	echo "Output written to '$output_path'" >&2 ||
+	die "Could not write artifact at '%s'\n" "$output_path"
+}
+
+find_mspdb_dll () { #
+	for v in 140 120 110 100 80
+	do
+		type -p mspdb$v.dll 2>/dev/null && return 0
+	done
+	return 1
+}
+
+build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifacts] [--skip-doc-man] [--skip-doc-html] [--force] [<revision>]
+	output_path=
+	sed_makepkg_e=
+	force=
+	while case "$1" in
+	--only-32-bit)
+		MINGW_INSTALLS=mingw32
+		export MINGW_INSTALLS
+		;;
+	--only-64-bit)
+		MINGW_INSTALLS=mingw64
+		export MINGW_INSTALLS
+		;;
+	--skip-test-artifacts)
+		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-test-artifacts"//'
+		;;
+	--skip-doc-man)
+		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-doc-man"//'
+		;;
+	--skip-doc-html)
+		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-doc-html"//'
+		;;
+	--force)
+		force=--force
+		;;
+	--out|--output|-o)
+		shift
+		output_path="$(cygpath -am "$1")" || exit
+		;;
+	--out=*|--output=*|-o=*)
+		output_path="$(cygpath -am "${1#*=}")" || exit
+		;;
+	-o*)
+		output_path="$(cygpath -am "${1#-?}")" || exit
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# -le 1 ||
+	die "Expected at most one argument, got $#: %s\n" "$*"
+
+	git_src_dir="/usr/src/MINGW-packages/mingw-w64-git/src/git"
+	test -d ${git_src_dir%/src/git} ||
+	git clone --depth 1 --single-branch -b master https://github.com/git-for-windows/MINGW-packages /usr/src/MINGW-packages ||
+	die "Could not clone MINGW-packages\n"
+
+	tag="$(git for-each-ref --format '%(refname:short)' --points-at="${1:+HEAD}" 'refs/tags/v[0-9]*')"
+	test -n "$tag" || {
+		tag=$(git describe --match=v* "${1:+HEAD}" | sed 's/-.*//').$(date +%Y%m%d%H%M%S) &&
+		git tag $tag "${1:+HEAD}"
+	} ||
+	die "Could not create tag\n"
+
+	test -d ${git_src_dir%/src/git}/git ||
+	git clone --bare https://github.com/git-for-windows/git.git ${git_src_dir%/src/git}/git ||
+	die "Could not initialize %s\n" ${git_src_dir%/src/git}/git
+
+	sed -e "s/^tag=.*/tag=${tag#v}/" $sed_makepkg_e <${git_src_dir%/src/git}/PKGBUILD >${git_src_dir%/src/git}/PKGBUILD.$tag ||
+	die "Could not write %s\n" ${git_src_dir%/src/git}/PKGBUILD.$tag
+
+	test -d ${git_src_dir%/src/git}/git ||
+	git clone --bare https://github.com/git-for-windows/git.git ${git_src_dir%/src/git}/git ||
+	die "Could not initialize %s\n" ${git_src_dir%/src/git}/git
+
+	test -d $git_src_dir || {
+		git -c core.autocrlf=false clone --reference ${git_src_dir%/src/git}/git https://github.com/git-for-windows/git $git_src_dir &&
+		git -C $git_src_dir config core.autocrlf false
+	} ||
+	die "Could not initialize %s\n" $git_src_dir
+
+	git push $git_src_dir $tag ||
+	die "Could not push %s\n" $tag
+
+	# Work around bug where the incorrect xmlcatalog.exe wrote /etc/xml/catalog
+	sed -i -e 's|C:/git-sdk-64-ci||g' /etc/xml/catalog
+
+	find_mspdb_dll >/dev/null || {
+		WITHOUT_PDBS=1
+		export WITHOUT_PDBS
+	}
+
+	(cd ${git_src_dir%/src/git}/ && MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag) ||
+	die "Could not build mingw-w64-git\n"
+
+	test -z "$output_path" || {
+		pkgpattern="$(sed -n '/^pkgver=/{N;s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2/p}' <${git_src_dir%/src/git}/PKGBUILD.$tag)" &&
+		mkdir -p "$output_path" &&
+		cp ${git_src_dir%/src/git}/*-"$pkgpattern"-any.pkg.tar.xz "$output_path/"
+	} ||
+	die "Could not copy artifact(s) to %s\n" "$output_path"
+}
+
+# This function does not "clean up" after installing the packages
+make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--installer] [--portable] [--mingit] [--mingit-busybox]
+	modes=
+	install_package=
+	output=
+	output_path=
+	version=0-test
+	while case "$1" in
+	--pkg=*)
+		install_package="${install_package:+$install_package }$(echo "${1#*=}" | tr , ' ')"
+		for file in ${1#*=}
+		do
+			candidate="$(echo $file | sed -n 's/.*git-\([0-9][.0-9a-f]*\).*/\1/p')"
+			test -z "$candidate" || version="$candidate"
+		done
+		;;
+	--pkg)
+		shift
+		install_package="${install_package:+$install_package }$(echo "$1" | tr , ' ')"
+		for file in $1
+		do
+			candidate="$(echo $file | sed -n 's/.*git-\([0-9][.0-9a-f]*\).*/\1/p')"
+			test -z "$candidate" || version="$candidate"
+		done
+		;;
+	--installer|--portable|--mingit|--mingit-busybox)
+		modes="${modes:+$modes }${1#--}"
+		;;
+	--only-installer|--only-portable|--only-mingit|--only-mingit-busybox)
+		modes="${1#--only-}"
+		;;
+	--out|--output|-o)
+		shift
+		output_path="$(cygpath -am "$1")"
+		output="--output=$output_path" || exit
+		;;
+	--out=*|--output=*|-o=*)
+		output_path="$(cygpath -am "${1#*=}")"
+		output="--output=$output_path" || exit
+		;;
+	-o*)
+		output_path="$(cygpath -am "${1#-?}")"
+		output="--output=$output_path" || exit
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# -eq 0 ||
+	die "Expected no argument, got $#: %s\n" "$*"
+
+	test -n "$modes" ||
+	modes=installer
+
+	mkdir -p "$output_path" ||
+	die "Could not make '%s/'\n" "$output_path"
+
+	test -z "$install_package" || {
+		eval pacman -U --noconfirm --overwrite=\\\* $install_package &&
+		(. /var/lib/pacman/local/git-extra-*/install && post_install)
+	} ||
+	die "Could not install packages: %s\n" "$install_package"
+
+	for mode in $modes
+	do
+		extra=
+
+		test mingit-busybox != $mode || {
+			mode=mingit
+			extra="${extra:+$extra }--busybox"
+		}
+
+		test installer != $mode ||
+		extra="${extra:+$extra }--window-title-version=$version"
+
+		sh -x "${this_script_path%/*}/$mode/release.sh" $output $extra $version
+	done
 }
 
 this_script_path="$(cd "$(dirname "$0")" && echo "$(pwd -W)/$(basename "$0")")" ||
