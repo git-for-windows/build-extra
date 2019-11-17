@@ -985,11 +985,11 @@ require_git_src_dir () {
 		 echo "Checking out Git (not making it)" >&2 &&
 		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
 			'makepkg-mingw --noconfirm -s -o' &&
-		 case "$(cat .git/objects/info/alternates 2>/dev/null)" in
+		 case "$(cat src/git/.git/objects/info/alternates 2>/dev/null)" in
 		 /*)
-			# dissociate, to allow MINGW git to access the worktree
-			/usr/bin/git repack -ad &&
-			rm .git/objects/info/alternates
+			echo "Dissociating worktree, to allow MINGW git to access the worktree" >&2 &&
+			/usr/bin/git -C src/git/ repack -ad &&
+			rm src/git/.git/objects/info/alternates
 			;;
 		 esac) ||
 		die "Could not initialize %s\n" "$git_src_dir"
