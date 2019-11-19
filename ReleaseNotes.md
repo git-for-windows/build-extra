@@ -35,6 +35,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.24.0(2) (November 6th 2019)
 
+### New Features
+
+* Comes with [tig v2.5.0](https://github.com/jonas/tig/releases/tag/tig-2.5.0).
+
 ### Bug Fixes
 
 * MinGit [no longer overrides an installed Git for Windows' system gitconfig](https://github.com/git-for-windows/build-extra/pull/267).
