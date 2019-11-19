@@ -220,8 +220,9 @@ sdk () {
 		;;
 	init)
 		sdk init-lazy "$2" &&
-		case "$(git -C "$src_cdup_dir" symbolic-ref HEAD >/dev/null 2>&1)" in
+		case "$(git -C "$src_cdup_dir" symbolic-ref HEAD 2>/dev/null)" in
 		'')
+			test -n "$(git -C "$src_cdup_dir" rev-parse HEAD 2>/dev/null)" ||
 			# Not checked out yet
 			git -C "$src_cdup_dir" pull origin master
 			;;
