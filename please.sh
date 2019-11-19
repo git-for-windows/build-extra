@@ -4489,7 +4489,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	--git-sdk=*|--sdk=*|-g=*)
 		git_sdk_path="$(cygpath -am "${1#*=}")" || exit
 		;;
-	-o*)
+	-g*)
 		git_sdk_path="$(cygpath -am "${1#-?}")" || exit
 		;;
 	--bitness|-b)
