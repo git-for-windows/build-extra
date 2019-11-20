@@ -372,6 +372,10 @@ var
     // The options chosen at install time, to be written to /etc/install-options.txt
     ChosenOptions:String;
 
+    // Accumulated set of custom pages that have options, and those that have 'new' parameters on them
+    CurrentCustomPageID:Integer;
+    AllCustomPages,CustomPagesWithUnseenOptions:String;
+
     // Previous Git for Windows version (if upgrading)
     PreviousGitForWindowsVersion:String;
 
@@ -899,6 +903,21 @@ begin
 #endif
 end;
 
+{ Represent a set as a string of comma-separated values }
+function IsInSet(var ASet:String;Value:Integer):Boolean;
+begin
+    Result:=(Pos(','+IntToStr(Value)+',',ASet)>0);
+end;
+
+procedure AddToSet(var ASet:String;Value:Integer);
+begin
+    if ASet='' then
+        ASet:=',';
+    if not IsInSet(ASet,Value) then
+        ASet:=ASet+IntToStr(Value)+',';
+end;
+
+
 function InitializeSetup:Boolean;
 var
     CurrentVersion,Msg:String;
@@ -962,6 +981,10 @@ begin
     NoSpaces:=Key;
     StringChangeEx(NoSpaces,' ','',True);
 
+    // A side effect of ReplayChoice is to collect a set of pages that have options on them, and the subset
+    // of those pages have _new_ options (options whose values have no previously-set value)
+    AddToSet(AllCustomPages,CurrentCustomPageID);
+
     // Interpret /o:PathOption=Cmd and friends
     Result:=ExpandConstant('{param:o:'+NoSpaces+'| }');
     if Result<>' ' then
@@ -977,6 +1000,10 @@ begin
         else
             // Restore the settings chosen during a previous install.
             Result:=GetPreviousData(Key,Default);
+            // Check to see if this result was the default, or was previously set.
+            // If it was the default, the user has not seen this option yet.
+            if GetPreviousData(Key,'z'+Result)<>Result then
+                AddToSet(CustomPagesWithUnseenOptions,CurrentCustomPageID)
     end;
 end;
 
@@ -1072,6 +1099,7 @@ end;
 function CreatePage(var PrevPageID:Integer;const Caption,Description:String;var TabOrder,Top,Left:Integer):TWizardPage;
 begin
     Result:=CreateCustomPage(PrevPageID,Caption,Description);
+    CurrentCustomPageID:=Result.ID;
     PrevPageID:=Result.ID;
     TabOrder:=0;
     Top:=8;
@@ -1081,6 +1109,7 @@ end;
 function CreateFilePage(var PrevPageID:Integer;const Caption,Description,SubCaption:String;var TabOrder,Top,Left:Integer):TInputFileWizardPage;
 begin
     Result:=CreateInputFilePage(PrevPageID,Caption,Description,SubCaption);
+    CurrentCustomPageID:=Result.ID;
     PrevPageID:=Result.ID;
     TabOrder:=0;
     Top:=8;
