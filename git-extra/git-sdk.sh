@@ -303,9 +303,9 @@ sdk () {
 			fi
 
 			# Build the current branch
-			uname_m="$(uname -m)" &&
-			cd "../build-$uname_m-pc-msys/$uname_m-pc-msys/winsup/cygwin" &&
-			make -j$(nproc)
+			(uname_m="$(uname -m)" &&
+			 cd "../build-$uname_m-pc-msys/$uname_m-pc-msys/winsup/cygwin" &&
+			 make -j$(nproc))
 			return $?
 			;;
 		*)
