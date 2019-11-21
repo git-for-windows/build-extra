@@ -291,7 +291,8 @@ sdk () {
 			sdk cd "$2" ||
 			return $?
 
-			if test refs/heads/makepkg = "$(git symbolic-ref HEAD)" &&
+			if test refs/heads/makepkg = \
+				"$(git symbolic-ref HEAD 2>/dev/null)" &&
 				{ git -C diff-files --quiet &&
 				  git -C diff-index --quiet HEAD ||
 				  test ! -s .git/index; }
