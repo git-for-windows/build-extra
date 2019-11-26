@@ -4933,6 +4933,48 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--in
 	done
 }
 
+# This function can build a given package in the current SDK and copy the result into a specified directory
+build_and_copy_artifacts () { # --directory=<artifacts-directory> [--force] [--cleanbuild] <package>
+	artifactsdir=
+	force=
+	cleanbuild=
+	while case "$1" in
+	--directory=*)
+		artifactsdir="$(cygpath -am "${1#*=}")" || exit
+		test -d "$artifactsdir" ||
+		mkdir "$artifactsdir" ||
+		die "Could not create artifacts directory: %s\n" "$artifactsdir"
+		;;
+	--directory)
+		shift
+		artifactsdir="$(cygpath -am "$1")" || exit
+		test -d "$artifactsdir" ||
+		mkdir "$artifactsdir" ||
+		die "Could not create artifacts directory: %s\n" "$artifactsdir"
+		;;
+	-f|--force)
+		force=--force
+		;;
+	--cleanbuild)
+		cleanbuild=--cleanbuild
+		;;
+	-*) die "Unknown option: %s\n" "$1";;
+	*) break;;
+	esac; do shift; done
+	test $# = 1 ||
+	die "Expected 1 argument, got $#: %s\n" "$*"
+
+	test -n "$artifactsdir" ||
+	die "Need a directory to copy the artifacts to\n"
+
+	set_package "$1" &&
+
+	cd "$pkgpath" &&
+	pkg_build $force $cleanbuild &&
+	pkg_copy_artifacts ||
+	die "Could not copy artifacts for '%s' to '%s'\n" "$package" "$artifactsdir"
+}
+
 this_script_path="$(cd "$(dirname "$0")" && echo "$(pwd -W)/$(basename "$0")")" ||
 die "Could not determine this script's path\n"
 
