@@ -3094,6 +3094,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh \
 				--merging --onto "$tag" merging-rebase &&
+			create_bundle_artifact &&
 			{ test -n "$skip_upload" ||
 			  git push git-for-windows HEAD:master; } ||
 			die "Could not rebase '%s' to '%s'\n" "$package" "$tag"
@@ -3191,6 +3192,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh --merging \
 				--onto rmyorston/master merging-rebase &&
+			create_bundle_artifact &&
 			{ test -n "$skip_upload" ||
 			  git push git-for-windows HEAD:master; } ||
 			die "Could not rebase '%s' to '%s'\n" \
