@@ -2784,6 +2784,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	test -n "$GPGKEY" ||
 	die "Need GPGKEY to upload packages\n"
 
+	test -n "$skip_upload" ||
 	test -s "$HOME"/.azure-blobs-token ||
 	die "Missing token in ~/.azure-blobs-token\n"
 
@@ -2825,6 +2826,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	maybe_init_repository "$sdk64/$pkgpath"
 	test MSYS != "$type" || maybe_init_repository "$sdk32/$pkgpath"
 
+	test -n "$skip_upload" ||
 	(cd "$sdk64/$pkgpath" &&
 	 require_push_url origin &&
 	 sdk="$sdk64" ff_master) || exit
@@ -3073,13 +3075,15 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		 if test 0 -lt $(git rev-list --count \
 			git-for-windows/master..$tag)
 		 then
-			require_push_url git-for-windows &&
+			{ test -n "$skip_upload" ||
+			  require_push_url git-for-windows; } &&
 			git reset --hard &&
 			git checkout git-for-windows/master &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh \
 				--merging --onto "$tag" merging-rebase &&
-			git push git-for-windows HEAD:master ||
+			{ test -n "$skip_upload" ||
+			  git push git-for-windows HEAD:master; } ||
 			die "Could not rebase '%s' to '%s'\n" "$package" "$tag"
 		 fi
 
@@ -3168,13 +3172,15 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		  if test 0 -lt $(git rev-list --count \
 			git-for-windows/master..rmyorston/master)
 		  then
-			require_push_url git-for-windows &&
+			{ test -n "$skip_upload" ||
+			  require_push_url git-for-windows; } &&
 			git reset --hard &&
 			git checkout git-for-windows/master &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh --merging \
 				--onto rmyorston/master merging-rebase &&
-			git push git-for-windows HEAD:master ||
+			{ test -n "$skip_upload" ||
+			  git push git-for-windows HEAD:master; } ||
 			die "Could not rebase '%s' to '%s'\n" \
 				"$package" "rmyorston/master"
 		  fi) ||
@@ -3256,7 +3262,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		 set_package mingw-w64-$1 &&
 		 maybe_init_repository "$sdk64/$pkgpath" &&
 		 cd "$sdk64/$pkgpath" &&
-		 require_push_url origin &&
+		 { test -n "$skip_upload" ||
+		   require_push_url origin; } &&
 		 sdk="$sdk64" ff_master || exit
 
 		 sed -i -e 's/^\(_ver=\).*/\1'$version/ \
@@ -3659,7 +3666,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		;;
 	esac &&
 
-	if test -n "$relnotes_feature"
+	if test -n "$relnotes_feature" && test -z "$skip_upload"
 	then
 		(cd "$sdk64/usr/src/build-extra" &&
 		 require_push_url origin)
