@@ -4540,10 +4540,10 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 
 	if test -d "$git_sdk_path"
 	then
-		test ! -f "$git_sdk_path/.git" ||
-		git_sdk_path="$(git -C "$git_sdk_path" rev-parse --git-dir)"
-		test ! -d "$git_sdk_path/.git" ||
-		git_sdk_path="$git_sdk_path/.git"
+		test ! -f "${git_sdk_path%/}/.git" ||
+		git_sdk_path="$(git -C "${git_sdk_path%/}" rev-parse --git-dir)"
+		test ! -d "${git_sdk_path%/}/.git" ||
+		git_sdk_path="${git_sdk_path%/}/.git"
 		test true = "$(git -C "$git_sdk_path" rev-parse --is-inside-git-dir)" ||
 		die "Not a Git repository: '%s'\n" "$git_sdk_path"
 
