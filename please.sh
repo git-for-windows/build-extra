@@ -4522,7 +4522,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	mode=
 	case "$1" in
 	minimal|git-sdk-minimal) mode=minimal-sdk;;
-	minimal-sdk|makepkg-git|build-installers) mode=$1;;
+	minimal-sdk|makepkg-git|build-installers|full-sdk) mode=$1;;
 	*) die "Unhandled artifact: '%s'\n" "$1";;
 	esac
 
@@ -4565,6 +4565,15 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		git_sdk_path="$git_sdk_path.git"
 		git clone --depth 1 --bare https://github.com/git-for-windows/git-sdk-$bitness "$git_sdk_path"
 	fi
+
+	test full-sdk != "$mode" || {
+		mkdir -p "$output_path" &&
+		git -C "$git_sdk_path" archive --format=tar HEAD -- ':(exclude)ssl' |
+		xz -9 >"$output_path"/git-sdk-$bitness.tar.xz &&
+		echo "git-sdk-$bitness.tar.xz written to '$output_path'" >&2 ||
+		die "Could not write git-sdk-$bitness.tar.xz to '%s'\n" "$output_path"
+		return 0
+	}
 
 	git -C "$git_sdk_path" config extensions.worktreeConfig true &&
 	git -C "$git_sdk_path" worktree add --detach --no-checkout "$output_path" HEAD &&
