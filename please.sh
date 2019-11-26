@@ -3686,7 +3686,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		 git pull origin master &&
 		 mention feature "$relnotes_feature"&&
 		 create_bundle_artifact &&
-		 if test -z "$skip_upload"; then really_push origin HEAD; fi)
+		 if test -z "$skip_upload"
+		 then
+			really_push origin HEAD
+		 fi)
 	fi
 }
 
