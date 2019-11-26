@@ -2725,8 +2725,9 @@ maybe_force_pkgrel () {
 }
 
 # --force overwrites existing an Git tag, or existing package files
-upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] [--force] [--release-date=<date>] [--use-branch=<branch>[@<URL>]] [--force-pkgrel=<pkgrel>] [--cleanbuild] <package>
+upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [--no-upload] [--force] [--release-date=<date>] [--use-branch=<branch>[@<URL>]] [--force-pkgrel=<pkgrel>] [--cleanbuild] <package>
 	artifactsdir=
+	skip_build=
 	skip_upload=
 	force=
 	delete_existing_tag=
@@ -2749,6 +2750,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		test -d "$artifactsdir" ||
 		mkdir "$artifactsdir" ||
 		die "Could not create artifacts directory: %s\n" "$artifactsdir"
+		;;
+	--no-build)
+		skip_build=t
+		skip_upload=t
 		;;
 	--no-upload)
 		skip_upload=t
@@ -2781,6 +2786,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	test $# = 1 ||
 	die "Expected 1 argument, got $#: %s\n" "$*"
 
+	test -n "$skip_build" ||
 	test -n "$GPGKEY" ||
 	die "Need GPGKEY to upload packages\n"
 
@@ -2824,7 +2830,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 	esac
 
 	maybe_init_repository "$sdk64/$pkgpath"
-	test MSYS != "$type" || maybe_init_repository "$sdk32/$pkgpath"
+	test -n "$skip_build" || test MSYS != "$type" || maybe_init_repository "$sdk32/$pkgpath"
 
 	test -n "$skip_upload" ||
 	(cd "$sdk64/$pkgpath" &&
@@ -2935,10 +2941,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
 		 git commit -s -m "curl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
 
-		 build $force $cleanbuild "$package" &&
-		 install "$package" &&
-		 if test -z "$skip_upload"; then upload "$package"; fi &&
-		 sdk="$sdk64" pkg_copy_artifacts)
+		 if test -z "$skip_build"
+		 then
+			build $force $cleanbuild "$package" &&
+			sdk="$sdk64" pkg_copy_artifacts &&
+			install "$package" &&
+			if test -z "$skip_upload"
+			then
+				upload "$package"
+			fi
+		 fi)
 			;;
 		esac &&
 
@@ -3274,10 +3286,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		 	openssl-$version.tar.gz &&
 		 git commit -s -m "openssl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
 
-		 build $force $cleanbuild "$package" &&
-		 install "$package" &&
-		 if test -z "$skip_upload"; then upload "$package"; fi &&
-		 sdk="$sdk64" pkg_copy_artifacts) &&
+		 if test -z "$skip_build"
+		 then
+			build $force $cleanbuild "$package" &&
+			sdk="$sdk64" pkg_copy_artifacts &&
+			install "$package" &&
+			if test -z "$skip_upload"
+			then
+				upload "$package"
+			fi
+		 fi) &&
 		test 0 = $? &&
 
 		v="$(echo "$version" | tr -dc 0-9.)" &&
@@ -3672,7 +3690,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-upload] 
 		 require_push_url origin)
 	fi &&
 
-	if test -z "$only_mingw"
+	if test -z "$only_mingw" && test -z "$skip_build"
 	then
 		build $force $cleanbuild "$package" &&
 		foreach_sdk pkg_copy_artifacts &&
