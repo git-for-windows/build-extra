@@ -347,13 +347,13 @@ run () { # <bitness> <command> [<arg>...]
 	sdk="$(eval "echo \$sdk$1")"
 	shift
 
-	cmdline=eval
+	cmd_line=eval
 	for arg
 	do
-		cmdline="$cmdline '$(echo "$arg" | sed -e "s/'/&\\\\&&/g")'"
+		cmd_line="$cmd_line '$(echo "$arg" | sed -e "s/'/&\\\\&&/g")'"
 	done
 
-	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c "$cmdline"
+	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c "$cmd_line"
 }
 
 killall () { # <bitness>
@@ -809,7 +809,7 @@ require_push_url () {
 	then
 		# Allow build agents to use Personal Access Tokens
 		url="$(git config remote."$remote".url)" &&
-		case "$(git config http."$url".extraheader)" in
+		case "$(git config http."$url".extraHeader)" in
 		Authorization:*) true;; # okay
 		*) false;;
 		esac ||
@@ -1000,9 +1000,9 @@ require_git_src_dir () {
 	 sdk= pkgpath=$PWD ff_master) ||
 	die "MINGW-packages not up-to-date\n"
 
-	test false = "$(git -C "$git_src_dir" config core.autocrlf)" ||
+	test false = "$(git -C "$git_src_dir" config core.autoCRLF)" ||
 	(cd "$git_src_dir" &&
-	 git config core.autocrlf false &&
+	 git config core.autoCRLF false &&
 	 rm .git/index
 	 git reset --hard) ||
 	die "Could not make sure Git sources are checked out LF-only\n"
@@ -1238,7 +1238,7 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] (
 			exit 0
 		fi
 	 fi &&
-	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'core.editor=touch' 'rerere.enabled=true' 'rerere.autoupdate=true' 'gc.auto=0'" &&
+	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'core.editor=touch' 'rerere.enabled=true' 'rerere.autoUpdate=true' 'gc.auto=0'" &&
 	 export GIT_CONFIG_PARAMETERS &&
 	 if is_rebasing
 	 then
@@ -1549,7 +1549,7 @@ publish_prerelease () {
 prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--only-64-bit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
 	modes=
 	output=
-	outputdir="$HOME"
+	output_dir="$HOME"
 	force_tag=
 	force_version=
 	prerelease_prefix=prerelease-
@@ -1589,25 +1589,25 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 		only_64_bit=t
 		;;
 	--output=*)
-		outputdir="$(cygpath -am "${1#*=}")" &&
-		output="--output='$outputdir'" ||
+		output_dir="$(cygpath -am "${1#*=}")" &&
+		output="--output='$output_dir'" ||
 		die "Directory '%s' inaccessible\n" "${1#*=}"
 		;;
 	--clean-output=*)
-		outputdir="$(cygpath -am "${1#*=}")" &&
-		rm -rf "$outputdir" &&
-		mkdir -p "$outputdir" ||
-		die "Could not make directory '%s'\n" "$outputdir"
-		output="--output='$outputdir'" ||
-		die "Directory '%s' inaccessible\n" "$outputdir"
+		output_dir="$(cygpath -am "${1#*=}")" &&
+		rm -rf "$output_dir" &&
+		mkdir -p "$output_dir" ||
+		die "Could not make directory '%s'\n" "$output_dir"
+		output="--output='$output_dir'" ||
+		die "Directory '%s' inaccessible\n" "$output_dir"
 		;;
 	--now)
-		outputdir="$(cygpath -am "./prerelease-now")" &&
-		rm -rf "$outputdir" &&
-		mkdir "$outputdir" ||
+		output_dir="$(cygpath -am "./prerelease-now")" &&
+		rm -rf "$output_dir" &&
+		mkdir "$output_dir" ||
 		die "Could not make ./prerelease-now/\n"
-		output="--output='$outputdir'" ||
-		die "Directory "$outputdir"/ is inaccessible\n"
+		output="--output='$output_dir'" ||
+		die "Directory "$output_dir"/ is inaccessible\n"
 
 		modes="installer portable mingit mingit-busybox"
 		force_version='%(prerelease-tag)'
@@ -1797,7 +1797,7 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	skip_makepkg=
 	force_makepkg=
 	pkgprefix="$git_src_dir/../../mingw-w64"
-	pkgsuffix="${pkgver#v}-1-any.pkg.tar.xz"
+	pkg_suffix="${pkgver#v}-1-any.pkg.tar.xz"
 	case "$modes" in
 	mingit|mingit-busybox|"mingit mingit-busybox"|"mingit-busybox mingit")
 		pkglist="git"
@@ -1807,8 +1807,8 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 		;;
 	esac
 	if test -n "$only_64_bit" -o \
-			-f "${pkgprefix}-i686-${pkglist##* }-${pkgsuffix}" &&
-		test -f "${pkgprefix}-x86_64-${pkglist##* }-${pkgsuffix}" &&
+			-f "${pkgprefix}-i686-${pkglist##* }-${pkg_suffix}" &&
+		test -f "${pkgprefix}-x86_64-${pkglist##* }-${pkg_suffix}" &&
 		test "$(git rev-parse --verify "$1"^{commit})" = \
 			"$(git -C "$git_src_dir" rev-parse --verify \
 				"$tag_name"^{commit})"
@@ -1862,7 +1862,7 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 		sed -e '/^pkgname=/{N;N;s/"[^"]*-doc-man[^"]*"//g}'
 		;;
 	esac >"$git_src_dir/../../prerelease-$pkgver.pkgbuild" ||
-	die "Could not generate prerelase-%s.pkgbuild\n" "$pkgver"
+	die "Could not generate prerelease-%s.pkgbuild\n" "$pkgver"
 
 	if test -z "$skip_makepkg"
 	then
@@ -1893,7 +1893,7 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 				-p prerelease-'"$pkgver".pkgbuild ||
 		die "%s: could not build '%s'\n" "$git_src_dir" "$pkgver"
 
-		pkgsuffix="$(sed -n '/^pkgver=/{N;
+		pkg_suffix="$(sed -n '/^pkgver=/{N;
 			s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2-any.pkg.tar.xz/p}' \
 			<"$git_src_dir/../../prerelease-$pkgver.pkgbuild")" ||
 		die "Could not determine package suffix\n"
@@ -1909,18 +1909,18 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 			cd "'"$git_src_dir"'/../.." &&
 			mach="$(uname -m)" &&
 			pkgpre=mingw-w64-$mach-git && {
-			'"$(test -z "'"$outputdir"'" || {
-			echo 'file=$pkgpre-pdb-"'"$pkgsuffix"'";
+			'"$(test -z "'"$output_dir"'" || {
+			echo 'file=$pkgpre-pdb-"'"$pkg_suffix"'";
 				test ! -f "$file" ||
-				cp "$file" "'"$outputdir"'"/; } && {
-				file=$pkgpre-test-artifacts-"'"$pkgsuffix"'";
+				cp "$file" "'"$output_dir"'"/; } && {
+				file=$pkgpre-test-artifacts-"'"$pkg_suffix"'";
 				test ! -f "$file" ||
-				cp "$file" "'"$outputdir"'"/; }; '
-			srcsuffix="${pkgsuffix%-any.pkg.tar.xz}.src.tar.gz"
+				cp "$file" "'"$output_dir"'"/; }; '
+			src_suffix="${pkg_suffix%-any.pkg.tar.xz}.src.tar.gz"
 			test "a$sdk" != "a$sdk64" ||
-			echo 'file=mingw-w64-git-'"$srcsuffix"';
+			echo 'file=mingw-w64-git-'"$src_suffix"';
 				test ! -f "$file" ||
-				cp "$file" "'"$outputdir"'"/;'
+				cp "$file" "'"$output_dir"'"/;'
 			} )"'
 			precmd="pacman --overwrite=\* --noconfirm -U" &&
 			postcmd="pacman --overwrite=\* --noconfirm -U" &&
@@ -1946,14 +1946,14 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 				}
 				postcmd="$postcmd $file"
 
-				file=$pkg-'"$pkgsuffix"'
+				file=$pkg-'"$pkg_suffix"'
 				test -f $file || {
 					echo "$file was not built" >&2
 					exit 1
 				}
-				test -z "'"$outputdir"'" ||
-				cp "$file" "'"$outputdir"'/" || {
-					echo "$file not copied to outputdir" >&2
+				test -z "'"$output_dir"'" ||
+				cp "$file" "'"$output_dir"'/" || {
+					echo "$file not copied to output directory" >&2
 					exit 1
 				}
 				precmd="$precmd $file"
@@ -1992,16 +1992,16 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	case " $modes " in
 	*" portable "*)
 		version="$prerelease_prefix${pkgver#v}" &&
-		sign_files "$outputdir"/PortableGit-"$version"-64-bit.7z.exe &&
+		sign_files "$output_dir"/PortableGit-"$version"-64-bit.7z.exe &&
 		{ test -n "$only_64_bit" || sign_files \
-			"$outputdir"/PortableGit-"$version"-32-bit.7z.exe; } ||
+			"$output_dir"/PortableGit-"$version"-32-bit.7z.exe; } ||
 		die "Could not code-sign portable Git(s)\n"
 		;;
 	esac
 
 	test -z "$upload" || {
 		git -C "$git_src_dir" push git-for-windows "$tag_name" &&
-		publish_prerelease $include_sha256sums "$tag_name" "$outputdir"
+		publish_prerelease $include_sha256sums "$tag_name" "$output_dir"
 	} ||
 	die "Could not publish %s\n" "$tag_name"
 }
@@ -2400,14 +2400,14 @@ tag_git () { # [--force]
 	esac
 	branch_to_use="${branch_to_use:-git-for-windows/master}"
 
-	nextver="$(sed -ne \
+	next_version="$(sed -ne \
 		'1s/.* \(v[0-9][.0-9]*\)(\([0-9][0-9]*\)) .*/\1.windows.\2/p' \
 		-e '1s/.* \(v[0-9][.0-9]*\) .*/\1.windows.1/p' \
 		<"$build_extra_dir/ReleaseNotes.md")"
 	! git --git-dir="$git_src_dir" rev-parse --verify \
-		refs/tags/"$nextver" >/dev/null 2>&1 ||
+		refs/tags/"$next_version" >/dev/null 2>&1 ||
 	test -n "$force" ||
-	die "Already tagged: %s\n" "$nextver"
+	die "Already tagged: %s\n" "$next_version"
 
 	notes="$("$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 		'markdown </usr/src/build-extra/ReleaseNotes.md |
@@ -2418,13 +2418,13 @@ tag_git () { # [--force]
 		"$(sed -n '1s/.*\(Git for Windows v[^ ]*\).*/\1/p' \
 		<"$build_extra_dir/ReleaseNotes.md")" "$notes")" &&
 	(cd "$git_src_dir" &&
-	 signopt= &&
-	 if git config user.signingkey >/dev/null; then signopt=-s; fi &&
-	 git tag -m "$tag_message" -a $signopt $force \
-		"$nextver" $branch_to_use) ||
-	die "Could not tag %s in %s\n" "$nextver" "$git_src_dir"
+	 sign_option= &&
+	 if git config user.signingKey >/dev/null; then sign_option=-s; fi &&
+	 git tag -m "$tag_message" -a $sign_option $force \
+		"$next_version" $branch_to_use) ||
+	die "Could not tag %s in %s\n" "$next_version" "$git_src_dir"
 
-	echo "Created tag $nextver" >&2
+	echo "Created tag $next_version" >&2
 }
 
 test_git () { # <bitness>
@@ -2713,7 +2713,7 @@ pkg_copy_artifacts () {
 	create_bundle_artifact
 }
 
-# <pkrel>
+# <pkgrel>
 maybe_force_pkgrel () {
 	if test -n "$1"
 	then
@@ -2837,7 +2837,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	 require_push_url origin &&
 	 sdk="$sdk64" ff_master) || exit
 
-	relnotes_feature=
+	release_notes_feature=
 	case "$package" in
 	mingw-w64-git-credential-manager)
 		repo=Microsoft/Git-Credential-Manager-for-Windows
@@ -2875,7 +2875,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD) &&
 		url=https://github.com/$repo/releases/tag/$tag_name &&
-		relnotes_feature='Comes with [Git Credential Manager v'$version']('"$url"').'
+		release_notes_feature='Comes with [Git Credential Manager v'$version']('"$url"').'
 		;;
 	git-extra)
 		(cd "$sdk64/$pkgpath" &&
@@ -2957,7 +2957,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		url=https://curl.haxx.se/changes.html &&
 		url="$url$(echo "#$version" | tr . _)" &&
 		v="$version${force_pkgrel:+ ($force_pkgrel)}" &&
-		relnotes_feature='Comes with [cURL v'$v']('"$url"').'
+		release_notes_feature='Comes with [cURL v'$v']('"$url"').'
 		;;
 	mingw-w64-git)
 		finalize $delete_existing_tag $release_date $use_branch \
@@ -2965,10 +2965,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		tag_git $force $use_branch &&
 		if test -n "$artifactsdir"
 		then
-			echo "$nextver" >"$artifactsdir/nextver" &&
+			echo "$next_version" >"$artifactsdir/next_version" &&
 			git -C "$git_src_dir" bundle create \
 				"$artifactsdir/git.bundle" \
-				git-for-windows/master..$nextver &&
+				git-for-windows/master..$next_version &&
 			git -C "$sdk64/usr/src/build-extra" bundle create \
 				"$artifactsdir/build-extra.bundle" \
 				-9 master
@@ -3051,7 +3051,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD) &&
 		url=https://github.com/$repo/releases/tag/v$version &&
-		relnotes_feature='Comes with [Git LFS v'$version']('"$url"').'
+		release_notes_feature='Comes with [Git LFS v'$version']('"$url"').'
 		;;
 	msys2-runtime)
 		(cd "$sdk64/usr/src/MSYS2-packages/msys2-runtime" &&
@@ -3146,13 +3146,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			printf 'Comes with %s%s [%s](%s).' \
 			 "[patch level $pkgrel]($commit_url) of the " \
 			 'MSYS2 runtime (Git for Windows flavor) based on' \
-			 "Cygwin $version" "$cygwin_url" >../.git/relnotes &&
+			 "Cygwin $version" "$cygwin_url" >../.git/release_notes &&
 			sed -i "s/^\\(pkgrel=\\).*/\\1$pkgrel/" PKGBUILD
 		 else
 			pkgrel=
 			printf 'Comes with %s [%s](%s).' \
 			 'MSYS2 runtime (Git for Windows flavor) based on' \
-			 "Cygwin $version" "$cygwin_url" >../.git/relnotes &&
+			 "Cygwin $version" "$cygwin_url" >../.git/release_notes &&
 			sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
 				-e "s/^\\(pkgrel=\\).*/\\11/" PKGBUILD
 		 fi &&
@@ -3165,7 +3165,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			"$package" "$version" &&
 		 git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master
 		) || exit
-		relnotes_feature="$(cat "$sdk64/$pkgpath/../.git/relnotes")"
+		release_notes_feature="$(cat "$sdk64/$pkgpath/../.git/release_notes")"
 		;;
 	mingw-w64-busybox)
 		(cd "$sdk64/$pkgpath" &&
@@ -3214,8 +3214,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 git commit -s -m "busybox: upgrade to $version" PKGBUILD &&
 		 url=$url/commit/${version##*.} &&
 		 echo "Comes with [BusyBox v$version]($url)." \
-			>../.git/relnotes) || exit
-		relnotes_feature="$(cat "$sdk64/$pkgpath/../.git/relnotes")"
+			>../.git/release_notes) || exit
+		release_notes_feature="$(cat "$sdk64/$pkgpath/../.git/release_notes")"
 		;;
 	openssh)
 		url=https://www.openssh.com
@@ -3231,7 +3231,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		test -n "$version" ||
 		die "Could not determine newest OpenSSH version\n"
 		url=$url/${newest% *}
-		relnotes_feature='Comes with [OpenSSH v'$version']('"$url"').'
+		release_notes_feature='Comes with [OpenSSH v'$version']('"$url"').'
 		sha256="$(echo "$notes" |
 			sed -n "s/.*SHA256 (openssh-$version\\.tar\\.gz) = \([^ ]*\).*/\\1/p" |
 			base64 -d | hexdump -e '1/1 "%02x"')"
@@ -3302,7 +3302,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 		v="$(echo "$version" | tr -dc 0-9.)" &&
 		url=https://www.openssl.org/news/openssl-$v-notes.html &&
-		relnotes_feature='Comes with [OpenSSL v'$version']('"$url"').'
+		release_notes_feature='Comes with [OpenSSL v'$version']('"$url"').'
 		;;
 	mingw-w64-wintoast|mingw-w64-cv2pdb)
 		(cd "$sdk64/$pkgpath" &&
@@ -3341,7 +3341,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		exit
 		v="$version patchlevel $patchlevel ${force_pkgrel:+ ($force_pkgrel)}" &&
 		url=https://tiswww.case.edu/php/chet/bash/NEWS &&
-		relnotes_feature='Comes with [Bash v'$v']('"$url"').'
+		release_notes_feature='Comes with [Bash v'$v']('"$url"').'
 		;;
 	heimdal)
 		releases="$(curl http://h5l.org/releases.html)" ||
@@ -3364,7 +3364,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		exit
 
 		url=http://h5l.org/releases.html &&
-		relnotes_feature='Comes with [Heimdal v'$ver']('"$url"').'
+		release_notes_feature='Comes with [Heimdal v'$ver']('"$url"').'
 		;;
 	perl)
 		releases="$(curl https://dev.perl.org/perl5/)" ||
@@ -3389,7 +3389,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		exit
 
 		url=http://search.cpan.org/dist/perl-$ver/pod/perldelta.pod &&
-		relnotes_feature='Comes with [Perl v'$ver']('"$url"').'
+		release_notes_feature='Comes with [Perl v'$ver']('"$url"').'
 		;;
 	perl-Net-SSLeay|perl-HTML-Parser|perl-TermReadKey|perl-Locale-Gettext|perl-XML-Parser|perl-YAML-Syck)
 		metaname=${package#perl-}
@@ -3416,7 +3416,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		exit
 
 		url=https://metacpan.org/source/$metapath-$ver/Changes &&
-		relnotes_feature="Comes with [$package v$ver]($url)."
+		release_notes_feature="Comes with [$package v$ver]($url)."
 		;;
 	tig)
 		repo=jonas/tig
@@ -3439,7 +3439,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		exit
 
 		url=https://github.com/jonas/tig/releases/tag/tig-$version &&
-		relnotes_feature="Comes with [$package v$version]($url)."
+		release_notes_feature="Comes with [$package v$version]($url)."
 		;;
 	subversion)
 		url=https://subversion.apache.org/download.cgi
@@ -3462,7 +3462,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 		url=https://svn.apache.org/repos/asf/subversion/tags/$version &&
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
-		relnotes_feature="Comes with [$package $v]($url/CHANGES)."
+		release_notes_feature="Comes with [$package $v]($url/CHANGES)."
 		;;
 	gawk)
 		url=https://git.savannah.gnu.org/cgit/gawk.git/refs/tags
@@ -3486,7 +3486,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		url=http://git.savannah.gnu.org/cgit/gawk.git/plain &&
 		url=$url/NEWS?h=gawk-$version &&
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
-		relnotes_feature="Comes with [$package $v]($url)."
+		release_notes_feature="Comes with [$package $v]($url)."
 		;;
 	mingw-w64-git-sizer)
 		repo=github/git-sizer
@@ -3537,7 +3537,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 		url=https://nodejs.org/en/blog/release/v$version/ &&
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
-		relnotes_feature="Comes with [$package $v]($url)."
+		release_notes_feature="Comes with [$package $v]($url)."
 		;;
 	mingw-w64-xpdf-tools)
 		# If we ever have to upgrade beyond xpdf 4.00, we will
@@ -3594,7 +3594,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 		url=https://github.com/$repo/releases/tag/$version &&
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
-		relnotes_feature="Comes with [$package $v]($url)."
+		release_notes_feature="Comes with [$package $v]($url)."
 		;;
 	serf)
 		url=https://serf.apache.org/download
@@ -3606,7 +3606,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		test -n "$version" ||
 		die "Could not determine newest $package version\n"
 		url=https://svn.apache.org/repos/asf/serf/trunk/CHANGES
-		relnotes_feature='Comes with ['$package' v'$version']('"$url"').'
+		release_notes_feature='Comes with ['$package' v'$version']('"$url"').'
 
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
@@ -3647,7 +3647,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		done
 		test -n "$announce_url" ||
 		die "Did not find announcement mail for GNU Privacy Guard %s\n" "$v"
-		relnotes_feature='Comes with [GNU Privacy Guard '"$v"']('"$announce_url"').'
+		release_notes_feature='Comes with [GNU Privacy Guard '"$v"']('"$announce_url"').'
 
 		(cd "$sdk64/$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
@@ -3679,14 +3679,14 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		exit
 
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
-		relnotes_feature="Comes with [PCRE2 $v]($url)."
+		release_notes_feature="Comes with [PCRE2 $v]($url)."
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
 		;;
 	esac &&
 
-	if test -n "$relnotes_feature" && test -z "$skip_upload"
+	if test -n "$release_notes_feature" && test -z "$skip_upload"
 	then
 		(cd "$sdk64/usr/src/build-extra" &&
 		 require_push_url origin)
@@ -3700,11 +3700,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		if test -z "$skip_upload"; then upload "$package"; fi
 	fi &&
 
-	if test -n "$relnotes_feature"
+	if test -n "$release_notes_feature"
 	then
 		(cd "$sdk64/usr/src/build-extra" &&
 		 git pull origin master &&
-		 mention feature "$relnotes_feature"&&
+		 mention feature "$release_notes_feature"&&
 		 create_bundle_artifact &&
 		 if test -z "$skip_upload"
 		 then
@@ -3726,10 +3726,10 @@ set_version_from_sdks_git () {
 	test -n "$ver" ||
 	die "Unexpected version format: %s\n" "$version"
 
-	displayver="$ver"
-	case "$displayver" in
+	display_version="$ver"
+	case "$display_version" in
 	*.*.*.*)
-		displayver="${displayver%.*}(${displayver##*.})"
+		display_version="${display_version%.*}(${display_version##*.})"
 		;;
 	esac
 }
@@ -3753,7 +3753,7 @@ today () {
 mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 	case "$1" in
 	bug|bugfix|bug-fix) what="Bug Fixes";;
-	new|feature|newfeature|new-feature) what="New Features";;
+	new|feature|new-feature) what="New Features";;
 	*) die "Don't know how to mention %s\n" "$1";;
 	esac
 	shift
@@ -3766,17 +3766,17 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 	up_to_date usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
-	relnotes="$sdk64"/usr/src/build-extra/ReleaseNotes.md
+	release_notes="$sdk64"/usr/src/build-extra/ReleaseNotes.md
 	latest="$(version_from_release_notes)"
 	if test "$latest" != "$(previous_version_from_release_notes)"
 	then
 		# insert whole "Changes since" section
 		date="$(sed -n -e '2s/Latest update: //p' -e 2q \
-			<"$relnotes")"
+			<"$release_notes")"
 		quoted="v$latest ($date)\\n\\n### $what\\n\\n$quoted"
 		quoted="## Changes since Git for Windows $quoted"
 		sed -i -e "/^## Changes since/{s/^/$quoted\n\n/;:1;n;b1}" \
-			"$relnotes"
+			"$release_notes"
 	else
 		search=$(echo "$quoted" | sed -r -e 's#.*Comes with \[(.* v|patch level).*#\1#' -e 's#[][]#\\&#g')
 		sed -i -e '/^## Changes since/{
@@ -3794,7 +3794,7 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 
 			s/^/'"$quoted"'\n/;
 
-			:7;n;b7}' "$relnotes"
+			:7;n;b7}' "$release_notes"
 	fi ||
 	die "Could not edit release notes\n"
 
@@ -3807,7 +3807,7 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 			:1;
 			/^\* Comes with \[Git v/{G;:2;p;n;b2};
 			x;/./{G;x};n;b1;
-			}' -e p "$relnotes"
+			}' -e p "$release_notes"
 		;;
 	esac
 
@@ -3836,7 +3836,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	esac; do shift; done
 
 	case "$1" in
-	relnotes|rel-notes|release-notes) ;;
+	rel|rel-notes|release-notes) ;;
 	*) die "I don't know how to finalize %s\n" "$1";;
 	esac
 
@@ -3900,29 +3900,29 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 			"$ver".."$branch_to_use") ||
 		die "Already tagged: %s\n" "$ver"
 
-		nextver=${ver%.windows.*}.windows.$((${ver##*.windows.}+1))
-		displayver="${ver%.windows.*}(${nextver##*.windows.})"
+		next_version=${ver%.windows.*}.windows.$((${ver##*.windows.}+1))
+		display_version="${ver%.windows.*}(${next_version##*.windows.})"
 		;;
 	*)
 		i=1
-		displayver="$ver"
+		display_version="$ver"
 		while git "$dir_option" \
 			rev-parse --verify $ver.windows.$i >/dev/null 2>&1
 		do
 			i=$(($i+1))
-			displayver="$ver($i)"
+			display_version="$ver($i)"
 		done
-		nextver=$ver.windows.$i
+		next_version=$ver.windows.$i
 		;;
 	esac
-	displayver=${displayver#v}
+	display_version=${display_version#v}
 
-	test "$displayver" != "$(version_from_release_notes)" ||
-	die "Version %s already in the release notes\n" "$displayver"
+	test "$display_version" != "$(version_from_release_notes)" ||
+	die "Version %s already in the release notes\n" "$display_version"
 
-	case "$nextver" in
+	case "$next_version" in
 	*.windows.1)
-		v=${nextver%.windows.1} &&
+		v=${next_version%.windows.1} &&
 		if ! grep -q "^\\* Comes with \\[Git $v\\]" \
 			"$sdk64"/usr/src/build-extra/ReleaseNotes.md
 		then
@@ -3937,13 +3937,13 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	test -n "$release_date" ||
 	release_date="$(today)"
 
-	sed -i -e "1s/.*/# Git for Windows v$displayver Release Notes/" \
+	sed -i -e "1s/.*/# Git for Windows v$display_version Release Notes/" \
 		-e "2s/.*/Latest update: $release_date/" \
 		"$sdk64"/usr/src/build-extra/ReleaseNotes.md ||
 	die "Could not edit release notes\n"
 
 	(cd "$sdk64"/usr/src/build-extra &&
-	 git commit -s -m "Prepare release notes for v$displayver" \
+	 git commit -s -m "Prepare release notes for v$display_version" \
 		ReleaseNotes.md) ||
 	die "Could not commit finalized release notes\n"
 
@@ -3960,7 +3960,7 @@ sign_files () {
 			"WARNING: No signing performed!" \
 			"To fix this, set alias.signtool to something like" \
 			"!'c:/PROGRA~1/MICROS~1/Windows/v7.1/Bin/signtool.exe" \
-			"sign //v //f mycert.p12 //p mypassword'" \
+			"sign //v //f my-cert.p12 //p my-password'" \
 			"The Windows Platform SDK contains the signtool.exe:" \
 			http://go.microsoft.com/fwlink/p/?linkid=84091 >&2
 	else
@@ -4142,7 +4142,7 @@ release () { # [--directory=<artifacts-directory>] [--release-date=*]
 
 	set_version_from_sdks_git
 
-	# if builtins are still original hard-links, reinstall git-extra
+	# if built-ins are still original hard-links, reinstall git-extra
 	cmp "$sdk32"/mingw32/bin/git-receive-pack.exe \
 		"$sdk32"/mingw32/bin/git.exe 2>/dev/null &&
 	"$sdk32/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
@@ -4152,9 +4152,9 @@ release () { # [--directory=<artifacts-directory>] [--release-date=*]
 	"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 		'pacman -S --noconfirm git-extra'
 
-	echo "Releasing Git for Windows $displayver" >&2
+	echo "Releasing Git for Windows $display_version" >&2
 
-	test "$displayver" = "$(version_from_release_notes)" ||
+	test "$display_version" = "$(version_from_release_notes)" ||
 	die "Incorrect version in the release notes\n"
 
 	test -n "$release_date" ||
@@ -4283,13 +4283,13 @@ publish () { #
 
 	require_3rdparty_directory
 
-	wwwdir="$sdk64/usr/src/git/3rdparty/git-for-windows.github.io"
-	if test ! -d "$wwwdir"
+	www_directory="$sdk64/usr/src/git/3rdparty/git-for-windows.github.io"
+	if test ! -d "$www_directory"
 	then
-		git clone https://github.com/git-for-windows/${wwwdir##*/} \
-			"$wwwdir"
+		git clone https://github.com/git-for-windows/${www_directory##*/} \
+			"$www_directory"
 	fi &&
-	(cd "$wwwdir" &&
+	(cd "$www_directory" &&
 	 sdk= pkgpath=$PWD ff_master &&
 	 require_push_url &&
 	 if ! type node.exe
@@ -4319,7 +4319,7 @@ publish () { #
 	sdk="$sdk64" require w3m
 
 	echo "Preparing release message"
-	name="Git for Windows $displayver"
+	name="Git for Windows $display_version"
 	text="$(sed -n \
 		"/^## Changes since/,\${s/## //;:1;p;n;/^## Changes/q;b1}" \
 		<"$sdk64"/usr/src/build-extra/ReleaseNotes.md)"
@@ -4379,9 +4379,9 @@ publish () { #
 	done
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git" &&
-	nextver=v"$version" &&
-	git -C "$git_src_dir" push git-for-windows "$nextver" ||
-	die "Could not push tag %s in %s\n" "$nextver" "$git_src_dir"
+	next_version=v"$version" &&
+	git -C "$git_src_dir" push git-for-windows "$next_version" ||
+	die "Could not push tag %s in %s\n" "$next_version" "$git_src_dir"
 
 	url=https://api.github.com/repos/git-for-windows/git/releases
 	id="$(curl --netrc -s $url |
@@ -4397,7 +4397,7 @@ publish () { #
 	die "Could not edit release for %s:\n%s\n" "$version" "$out"
 
 	echo "Updating website..." >&2
-	(cd "$wwwdir" &&
+	(cd "$www_directory" &&
 	 PATH="$sdk64/mingw64/bin/:$PATH" node.exe bump-version.js --auto &&
 	 git commit -a -s -m "New Git for Windows version" &&
 	 really_push origin HEAD) ||
@@ -4414,7 +4414,7 @@ publish () { #
 	prefix="$(printf "%s\n\n%s%s\n\n\t%s\n" \
 		"Dear Git users," \
 		"It is my pleasure to announce that Git for Windows " \
-		"$displayver is available from:" \
+		"$display_version is available from:" \
 		"https://gitforwindows.org/")"
 	rendered="$(echo "$text" |
 		"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
@@ -4425,7 +4425,7 @@ publish () { #
 		"From: $(git var GIT_COMMITTER_IDENT | sed -e 's/>.*/>/')" \
 		"Date: $(date -R)" \
 		"To: git-for-windows@googlegroups.com, git@vger.kernel.org, git-packagers@googlegroups.com" \
-		"Subject: [ANNOUNCE] Git for Windows $displayver" \
+		"Subject: [ANNOUNCE] Git for Windows $display_version" \
 		"Content-Type: text/plain; charset=UTF-8" \
 		"Content-Transfer-Encoding: 8bit" \
 		"MIME-Version: 1.0" \
@@ -4437,7 +4437,7 @@ publish () { #
 		"$(git var GIT_COMMITTER_IDENT | sed -e 's/ .*//')" \
 		> "$HOME/announce-$ver"
 
-	test -z "$(git config alias.sendannouncementmail)" ||
+	test -z "$(git config alias.sendAnnouncementMail)" ||
 	git sendAnnouncementMail "$HOME/announce-$ver" ||
 	echo "error: could not send announcement" >&2
 
@@ -4828,8 +4828,8 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	die "Could not initialize %s\n" ${git_src_dir%/src/git}/git
 
 	test -d $git_src_dir || {
-		git -c core.autocrlf=false clone --reference ${git_src_dir%/src/git}/git https://github.com/git-for-windows/git $git_src_dir &&
-		git -C $git_src_dir config core.autocrlf false
+		git -c core.autoCRLF=false clone --reference ${git_src_dir%/src/git}/git https://github.com/git-for-windows/git $git_src_dir &&
+		git -C $git_src_dir config core.autoCRLF false
 	} ||
 	die "Could not initialize %s\n" $git_src_dir
 

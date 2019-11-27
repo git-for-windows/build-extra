@@ -337,14 +337,14 @@ remove () { # <package>...
 
 
 update_local_package_databases () {
-	signopt=
-	test -z "$GPGKEY" || signopt=--sign
+	sign_option=
+	test -z "$GPGKEY" || sign_option=--sign
 	for arch in $architectures
 	do
 		(cd "$(arch_dir $arch)" &&
-		 repo-add $signopt --new git-for-windows.db.tar.xz \
+		 repo-add $sign_option --new git-for-windows.db.tar.xz \
 			*.pkg.tar.xz &&
-		 repo-add $signopt --new \
+		 repo-add $sign_option --new \
 		 git-for-windows-$(arch_to_mingw "$arch").db.tar.xz \
 		 mingw-w64-$arch-*.pkg.tar.xz) ||
 		 die "Could not update $arch package database"
@@ -418,7 +418,7 @@ push () {
 	}
 
 	test -z "$to_upload" || {
-		to_upload_basenames="$(echo "$to_upload" |
+		to_upload_base_names="$(echo "$to_upload" |
 			sed 's/-[0-9].*//' |
 			sort | uniq)"
 
@@ -523,8 +523,8 @@ push_missing_signatures () {
 		done) |
 		sort | uniq)"
 
-	signopt=
-	test -z "$GPGKEY" || signopt=--sign
+	sign_option=
+	test -z "$GPGKEY" || sign_option=--sign
 
 	for name in $list
 	do
@@ -587,15 +587,15 @@ push_missing_signatures () {
 		die "Could not cd to $arch/"
 
 		list2=" $(echo "$list" | tr '\n' ' ') "
-		mingw_dbname=git-for-windows-$(arch_to_mingw $arch).db.tar.xz
-		for name in $(package_list $mingw_dbname)
+		mingw_db_name=git-for-windows-$(arch_to_mingw $arch).db.tar.xz
+		for name in $(package_list $mingw_db_name)
 		do
 			case "$list2" in
 			*" $name "*) ;; # okay, it's also in the full db
 			*)
-				repo-remove $signopt $mingw_dbname \
+				repo-remove $sign_option $mingw_db_name \
 					${name%%-[0-9]*} ||
-				die "Could not remove $name from $mingw_dbname"
+				die "Could not remove $name from $mingw_db_name"
 				count=$(($count+1))
 				;;
 			esac
@@ -611,13 +611,13 @@ push_missing_signatures () {
 			mingw-w64-$arch-*)
 				filename=$name-any.pkg.tar.xz
 				s=$(arch_to_mingw $arch)
-				dbname=git-for-windows-$s.db.tar.xz
-				out="$(tar Oxf $dbname $name/desc)" ||
+				db_name=git-for-windows-$s.db.tar.xz
+				out="$(tar Oxf $db_name $name/desc)" ||
 				die "Could not look for $name in $arch/mingw"
 
 				test "a" = "a${out##*PGPSIG*}" || {
 					count=$(($count+1))
-					repo-add $signopt $dbname $filename ||
+					repo-add $sign_option $db_name $filename ||
 					die "Could not add $name in $arch/mingw"
 				}
 				;;
@@ -631,7 +631,7 @@ push_missing_signatures () {
 
 			test "a" = "a${out##*PGPSIG*}" || {
 				count=$(($count+1))
-				repo-add $signopt git-for-windows.db.tar.xz \
+				repo-add $sign_option git-for-windows.db.tar.xz \
 					$filename ||
 				die "Could not add $name in $arch"
 				echo "$name is missing sig in $arch"
