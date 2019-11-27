@@ -38,7 +38,7 @@ export CURL_CA_BUNDLE
 
 mode=
 case "$1" in
-fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists|lock|unlock)
+fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists|lock|unlock|quick_add)
 	mode="$1"
 	shift
 	;;
@@ -466,6 +466,126 @@ push () {
 	}
 
 	push_next_db_version
+}
+
+quick_add () { # <file>...
+	test $# -gt 0 ||
+	die "Need at least one file"
+
+	# Create a temporary directory to work with
+	dir="$(mktemp -d)" &&
+	mkdir "$dir/x86_64" "$dir/i686" "$dir/sources" ||
+	die "Could not create temporary directory"
+
+	i686_mingw=
+	i686_msys=
+	x86_64_mingw=
+	x86_64_msys=
+	all_files=
+
+	# Copy the file(s) to the temporary directory, and schedule their addition to the appropriate index(es)
+	for path
+	do
+		file="${path##*/}"
+		mingw=
+		case "${path##*/}" in
+		mingw-w64-*.pkg.tar.xz) arch=${file##mingw-w64-}; arch=${arch%%-*}; key=${arch}_mingw;;
+		*-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; key=${arch}_msys;;
+		*.src.tar.gz) arch=sources; key= ;;
+		*) echo "Skipping unknown file: $file" >&2; continue;;
+		esac
+		case " $architectures sources " in
+		*" $arch "*) ;;  # okay
+		*) echo "Skipping file with unknown arch: $file" >&2; continue;;
+		esac
+
+		echo "Copying $file to $arch/..." >&2
+		test -z "$key" || eval "$key=\$$key\\ $file"
+		all_files="$all_files $arch/$file"
+
+		cp "$path" "$dir/$arch" ||
+		die "Could not copy $path to $dir/$arch"
+
+		if test -n "$GPGKEY"
+		then
+			echo "Signing $arch/$file..." >&2
+			call_gpg --detach-sign --no-armor -u $GPGKEY "$dir/$arch/$file"
+			all_files="$all_files $arch/$file.sig"
+		fi
+	done
+
+	# Acquire lease
+	PACMAN_DB_LEASE="$(lock)" ||
+	die 'Could not obtain a lock for uploading'
+
+	# Download indexes into the temporary directory and add files
+	sign_option=
+	test -z "$GPGKEY" || sign_option=--sign
+	dbs=
+	for arch in $architectures
+	do
+		eval "msys=\$${arch}_msys"
+		eval "mingw=\$${arch}_mingw"
+		test -n "$msys$mingw" || continue
+
+		case "$arch,$mingw" in *,) db2=;; i686,*) db2=mingw32;; *) db2=mingw64;; esac
+		for db in git-for-windows ${db2:+git-for-windows-$db2}
+		do
+			for infix in db files
+			do
+				file=$db.$infix.tar.xz
+				echo "Downloading current $arch/$file..." >&2
+				curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$file" || return 1
+				dbs="$dbs $arch/$file $arch/${file%.tar.xz}"
+				test -z "$sign_option" ||
+				dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
+			done
+		done
+		(cd "$dir/$arch" &&
+		 repo-add $sign_option git-for-windows.db.tar.xz $msys $mingw &&
+		 cp git-for-windows.db.tar.xz git-for-windows.db &&
+		 { test -z "$sign_option" || cp git-for-windows.db.tar.xz.sig git-for-windows.db.sig; } &&
+		 if test -n "$db2"
+		 then
+			repo-add $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
+			cp git-for-windows-$db2.db.tar.xz git-for-windows-$db2.db &&
+			{ test -z "$sign_option" || cp git-for-windows-$db2.db.tar.xz.sig git-for-windows-$db2.db.sig; }
+		 fi) ||
+		die "Could not add $msys $mingw to db in $arch"
+	done
+
+	# Upload the file(s) and the appropriate index(es)
+	(cd "$dir" &&
+	 if test -z "$PACMANDRYRUN$azure_blobs_token"
+	 then
+		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
+		test -n "$azure_blobs_token" ||
+		die "Could not read token from ~/.azure-blobs-token"
+	 fi &&
+	 for path in $all_files $dbs
+	 do
+		# Upload the 64-bit database with the lease
+		action=upload
+		test x86_64/git-for-windows.db != $path || action="upload-with-lease ${PACMAN_DB_LEASE:-<lease>}"
+
+		if test -n "$PACMANDRYRUN"
+		then
+			echo "upload: wingit-snapshot-helper.sh wingit $(map_arch ${path%%/*}) <token> $action $dir/$path" >&2
+		else
+			"$this_script_dir"/wingit-snapshot-helper.sh wingit $(map_arch ${path%%/*}) "$azure_blobs_token" $action "$path"
+		fi ||
+		die "Could not upload $path"
+	 done) ||
+	die "Could not upload $all_files $dbs"
+
+	# Release the lease, i.e. finalize the transaction
+	unlock "$PACMAN_DB_LEASE" ||
+	die 'Could not release lock for uploading\n'
+	PACMAN_DB_LEASE=
+
+	# Remove the temporary directory
+	rm -r "$dir" ||
+	die "Could not remove $dir/"
 }
 
 lock () { #
