@@ -213,15 +213,15 @@ fetch () {
 }
 
 upload () { # <package> <version> <arch> <filename>
+	test -z "$PACMANDRYRUN" || {
+		echo "upload: wingit-snapshot-helper.sh wingit $(map_arch $3) <token> upload $4"
+		return
+	}
+
 	test -n "$azure_blobs_token" || {
 		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
 		test -n "$azure_blobs_token" ||
 		die "Could not read token from ~/.azure-blobs-token"
-	}
-
-	test -z "$PACMANDRYRUN" || {
-		echo "upload: wingit-snapshot-helper.sh wingit $(map_arch $3) <token> upload $4"
-		return
 	}
 
 	echo "Uploading $1..." >&2
@@ -589,15 +589,15 @@ quick_add () { # <file>...
 }
 
 lock () { #
+	test -z "$PACMANDRYRUN" || {
+		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> lock git-for-windows.db" >&2
+		return
+	}
+
 	test -n "$azure_blobs_token" || {
 		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
 		test -n "$azure_blobs_token" ||
 		die "Could not read token from ~/.azure-blobs-token"
-	}
-
-	test -z "$PACMANDRYRUN" || {
-		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> lock git-for-windows.db"
-		return
 	}
 
 	echo "Trying to lock for upload..." >&2
@@ -616,15 +616,15 @@ lock () { #
 }
 
 unlock () { # <lease-ID>
+	test -z "$PACMANDRYRUN" || {
+		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> unlock ${1:-<lease>} git-for-windows.db" >&2
+		return
+	}
+
 	test -n "$azure_blobs_token" || {
 		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
 		test -n "$azure_blobs_token" ||
 		die "Could not read token from ~/.azure-blobs-token"
-	}
-
-	test -z "$PACMANDRYRUN" || {
-		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> unlock $1 git-for-windows.db"
-		return
 	}
 
 	"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
