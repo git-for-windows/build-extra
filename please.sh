@@ -4522,7 +4522,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	mode=
 	case "$1" in
 	minimal|git-sdk-minimal) mode=minimal-sdk;;
-	minimal-sdk|makepkg-git|makepkg-git-i686|build-installers) mode=$1;;
+	minimal-sdk|makepkg-git|build-installers) mode=$1;;
 	*) die "Unhandled artifact: '%s'\n" "$1";;
 	esac
 
@@ -4618,15 +4618,14 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			sed -e 's|[][]|\\&|g' >>"$sparse_checkout_file"
 			;;
 		*)
-			tmp_ignore="$output_path/.tmp" &&
-			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$tmp_ignore" &&
-			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$tmp_ignore" &&
-			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$tmp_ignore" &&
+			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
+			printf '\n' >>"$sparse_checkout_file" &&
+			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
+			printf '\n' >>"$sparse_checkout_file" &&
+			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file" &&
+			printf '\n' >>"$sparse_checkout_file" &&
 			BITNESS=64 ARCH=x86_64 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
-			"${this_script_path%/*}/make-file-list.sh" |
-			git -C "$output_path" -c core.excludesfile="$tmp_ignore" check-ignore -v -n --no-index --stdin |
-			sed -ne 's|[][]|\\&|g' -e 's|^::.|/|p' >"$sparse_checkout_file" &&
-			rm "$tmp_ignore"
+			"${this_script_path%/*}/make-file-list.sh" | sed -e 's|[][]|\\&|g' -e 's|^|/|' >>"$sparse_checkout_file"
 			;;
 		esac &&
 		rm "$output_path/etc/profile" &&
@@ -4647,7 +4646,14 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		cp "$sparse_checkout_file" "$output_path/.sparse/build-installers"
 		;;
 	*)
-		git -C "$git_sdk_path" show HEAD:.sparse/$mode >"$sparse_checkout_file"
+		git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
+		if test makepkg-git = $mode
+		then
+			printf '\n' >>"$sparse_checkout_file" &&
+			git -C "$git_sdk_path" show HEAD:.sparse/$mode >>"$sparse_checkout_file" &&
+			printf '\n' >>"$sparse_checkout_file" &&
+			git -C "$git_sdk_path" show HEAD:.sparse/$mode-i686 >>"$sparse_checkout_file"
+		fi
 		;;
 	esac &&
 	git -C "$output_path" checkout -- &&
