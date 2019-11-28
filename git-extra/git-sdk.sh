@@ -132,7 +132,15 @@ sdk () {
 	# for building
 	makepkg|makepkg-mingw)
 		cmd=$1; shift
+		WITHOUT_PDBS="$(! grep -q WITHOUT_PDBS PKGBUILD || sdk find_mspdb_dll || echo true)" \
 		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} $cmd --syncdeps --noconfirm --skipchecksums --skippgpcheck "$@"
+		;;
+	find_mspdb_dll)
+		for v in 140 120 110 100 80
+		do
+			type -p mspdb$v.dll 2>/dev/null && return 0
+		done
+		return 1
 		;;
 	# here start the commands
 	init-lazy)
