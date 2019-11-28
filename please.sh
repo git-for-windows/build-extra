@@ -3622,6 +3622,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	gnupg)
 		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=tags'
 		tags="$(curl -s "$url")" ||
+		test $? = 56 ||
 		die 'Could not obtain download page from %s\n' "$url"
 		version="$(echo "$tags" |
 			sed -n '/ href=[^>]*>gnupg-[1-9][.0-9]*</{s/.*>gnupg-\([.0-9]*\).*/\1/p;q}')"
