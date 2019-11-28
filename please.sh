@@ -2875,7 +2875,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 sed -i -e 's/^\(  srcdir2=\).*/\1"${srcdir}\/'$srcdir2'"/' \
 			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
-		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD) &&
+		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD &&
+		 create_bundle_artifact) &&
 		url=https://github.com/$repo/releases/tag/$tag_name &&
 		release_notes_feature='Comes with [Git Credential Manager v'$version']('"$url"').'
 		;;
@@ -2885,7 +2886,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 git update-index -q --refresh &&
 		 if ! git diff-files --quiet -- PKGBUILD
 		 then
-			git commit -s -m "git-extra: adjust checksums" PKGBUILD
+			git commit -s -m "git-extra: adjust checksums" PKGBUILD &&
+			create_bundle_artifact
 		 fi &&
 		 if test git-extra.install.in -nt git-extra.install
 		 then
@@ -2917,7 +2919,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
-		 git commit -s -m "curl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
+		 git commit -s -m "curl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
 		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master &&
@@ -2943,6 +2946,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 updpkgsums &&
 		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
 		 git commit -s -m "curl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact &&
 
 		 if test -z "$skip_build"
 		 then
@@ -3052,7 +3056,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 -e "/^x86_64)/{N;N;N;N;$s1$dir64/;$s2$sha256_64/;$s3;$s4_64}" \
 			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
-		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD) &&
+		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD &&
+		 create_bundle_artifact) &&
 		url=https://github.com/$repo/releases/tag/v$version &&
 		release_notes_feature='Comes with [Git LFS v'$version']('"$url"').'
 		;;
@@ -3159,11 +3164,12 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
 				-e "s/^\\(pkgrel=\\).*/\\11/" PKGBUILD
 		 fi &&
-			 git commit -s -m "$package: update to v$version${pkgrel:+ ($pkgrel)}" PKGBUILD &&
+		 git commit -s -m "$package: update to v$version${pkgrel:+ ($pkgrel)}" PKGBUILD &&
 		 MSYSTEM=msys PATH="$sdk64/usr/bin:$PATH" \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			./update-patches.sh &&
-		 git commit --amend -C HEAD ||
+		 git commit --amend --no-edit -C HEAD &&
+		 create_bundle_artifact ||
 		 die "Could not update PKGBUILD of '%s' to version %s\n" \
 			"$package" "$version" &&
 		 git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master
@@ -3215,6 +3221,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			'makepkg-mingw --nobuild -s --noconfirm' &&
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
 		 git commit -s -m "busybox: upgrade to $version" PKGBUILD &&
+		 create_bundle_artifact &&
 		 url=$url/commit/${version##*.} &&
 		 echo "Comes with [BusyBox v$version]($url)." \
 			>../.git/release_notes) || exit
@@ -3245,7 +3252,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 grep "sha256sums.*$sha256" PKGBUILD &&
-		 git commit -s -m "openssh: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
+		 git commit -s -m "openssh: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
 		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
@@ -3266,7 +3274,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 updpkgsums &&
 		 gpg --verify openssl-$version.tar.gz.asc \
 		 	openssl-$version.tar.gz &&
-		 git commit -s -m "openssl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) &&
+		 git commit -s -m "openssl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) &&
 		test 0 = $? ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
@@ -3290,6 +3299,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 gpg --verify openssl-$version.tar.gz.asc \
 		 	openssl-$version.tar.gz &&
 		 git commit -s -m "openssl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact &&
 
 		 if test -z "$skip_build"
 		 then
@@ -3318,7 +3328,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 then
 			git commit -s -m \
 				"${package#mingw-w64-}: upgrade to $version" \
-				PKGBUILD
+				PKGBUILD &&
+			create_bundle_artifact
 		 fi &&
 		 git update-index -q --refresh &&
 		 git diff-files --quiet --)
@@ -3340,7 +3351,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 v="$version.$patchlevel${force_pkgrel:+-$force_pkgrel}" &&
-		 git commit -s -m "bash: new version ($v)" PKGBUILD) ||
+		 git commit -s -m "bash: new version ($v)" PKGBUILD &&
+		 create_bundle_artifact) ||
 		exit
 		v="$version patchlevel $patchlevel ${force_pkgrel:+ ($force_pkgrel)}" &&
 		url=https://tiswww.case.edu/php/chet/bash/NEWS &&
@@ -3363,7 +3375,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "heimdal: new version ($ver)" PKGBUILD) ||
+		 git commit -s -m "heimdal: new version ($ver)" PKGBUILD &&
+		 create_bundle_artifact) ||
 		exit
 
 		url=http://h5l.org/releases.html &&
@@ -3388,7 +3401,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/msys-perl[1-9][0-9.]*\.dll/'$dll/ PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "perl: new version ($ver)" PKGBUILD) ||
+		 git commit -s -m "perl: new version ($ver)" PKGBUILD &&
+		 create_bundle_artifact) ||
 		exit
 
 		url=http://search.cpan.org/dist/perl-$ver/pod/perldelta.pod &&
@@ -3415,7 +3429,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "$package: new version ($ver)" PKGBUILD) ||
+		 git commit -s -m "$package: new version ($ver)" PKGBUILD &&
+		 create_bundle_artifact) ||
 		exit
 
 		url=https://metacpan.org/source/$metapath-$ver/Changes &&
@@ -3438,7 +3453,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "$package: upgrade to v$version" PKGBUILD) ||
+		 git commit -s -m "$package: upgrade to v$version" PKGBUILD &&
+		 create_bundle_artifact) ||
 		exit
 
 		url=https://github.com/jonas/tig/releases/tag/tig-$version &&
@@ -3460,7 +3476,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "$package: upgrade to v$version" PKGBUILD) ||
+		 git commit -s -m "$package: upgrade to v$version" PKGBUILD &&
+		 create_bundle_artifact) ||
 		exit
 
 		url=https://svn.apache.org/repos/asf/subversion/tags/$version &&
@@ -3483,7 +3500,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "$package: upgrade to v$version" PKGBUILD) ||
+		 git commit -s -m "$package: upgrade to v$version" PKGBUILD &&
+		 create_bundle_artifact) ||
 		exit
 
 		url=http://git.savannah.gnu.org/cgit/gawk.git/plain &&
@@ -3517,7 +3535,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 -e "/^x86_64)/{N;N;$s1$sha256_64/}" \
 			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
-		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD)
+		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD &&
+		 create_bundle_artifact)
 		;;
 	mingw-w64-nodejs)
 		url=https://nodejs.org/en/download/
@@ -3535,7 +3554,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "$package: upgrade to v$version" PKGBUILD) ||
+		 git commit -s -m "$package: upgrade to v$version" PKGBUILD &&
+		 create_bundle_artifact) ||
 		exit
 
 		url=https://nodejs.org/en/blog/release/v$version/ &&
@@ -3563,7 +3583,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD)
+		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD &&
+		 create_bundle_artifact)
 		;;
 	git-flow)
 		repo=petervanderdoes/gitflow-avh
@@ -3589,7 +3610,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 grep "sha256sums.*$sha256" PKGBUILD &&
-		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
 		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
@@ -3616,7 +3638,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
 		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
@@ -3658,7 +3681,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
 		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
@@ -3679,7 +3703,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 git commit -s -m "$package: upgrade to v$version" PKGBUILD) ||
+		 git commit -s -m "$package: upgrade to v$version" PKGBUILD &&
+		 create_bundle_artifact) ||
 		exit
 
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
