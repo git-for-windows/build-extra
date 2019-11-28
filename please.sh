@@ -2933,7 +2933,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 set_package mingw-w64-$1 &&
 		 maybe_init_repository "$sdk64/$pkgpath" &&
 		 cd "$sdk64/$pkgpath" &&
-		 require_push_url origin &&
+		 { test -n "$skip_upload" ||
+		   require_push_url origin; } &&
 		 sdk="$sdk64" ff_master || exit
 
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
