@@ -60,7 +60,6 @@ esac
 this_script_dir="$(cygpath -am "${0%/*}")"
 base_url=https://wingit.blob.core.windows.net
 mirror=/var/local/pacman-mirror
-azure_blobs_token=
 
 architectures="i686 x86_64"
 
