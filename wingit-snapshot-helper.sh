@@ -254,14 +254,14 @@ add_snapshot () {
 	lease_id="$(req lock index.html)" || die "Could not lock 'index.html'"
 	test -n "$lease_id" || die "Could not find lease ID in $response"
 
-	urlbase="https://$storage_account.$blob_store_url/$container_name"
+	url_base="https://$storage_account.$blob_store_url/$container_name"
 
-	curl --fail --head "$urlbase/GitForWindows.css" 2>/dev/null ||
+	curl --fail --head "$url_base/GitForWindows.css" 2>/dev/null ||
 	req upload --filename=GitForWindows.css \
 		"$script_dir/ReleaseNotes.css" ||
 	die "Could not upload GitForWindows.css"
 
-	if html="$(curl --silent --fail "$urlbase/index.html")"
+	if html="$(curl --silent --fail "$url_base/index.html")"
 	then
 		html="${html%%<h2*}$html_item${html#*</h1>}"
 	else
