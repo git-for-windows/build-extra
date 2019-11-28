@@ -2817,6 +2817,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	test mingw-w64-git = "$package" ||
 	die "The --use-branch option is supported only for git\n"
 
+	test -n "$skip_build" ||
 	case "$package" in
 	msys2-runtime)
 		require_not_in_use "$sdk32" "usr/bin/msys-2.0.dll"
