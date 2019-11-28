@@ -4654,7 +4654,18 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			BITNESS=32 ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
 			"${this_script_path%/*}/make-file-list.sh" |
 			# escape the `[` in `[.exe`
-			sed -e 's|[][]|\\&|g' >>"$sparse_checkout_file"
+			sed -e 's|[][]|\\&|g' >>"$sparse_checkout_file" &&
+			cat <<-EOF >>"$sparse_checkout_file"
+
+			# For code-signing
+			/mingw32/bin/osslsigncode.exe
+			/mingw32/bin/libgsf-[0-9]*.dll
+			/mingw32/bin/libglib-[0-9]*.dll
+			/mingw32/bin/libgobject-[0-9]*.dll
+			/mingw32/bin/libgio-[0-9]*.dll
+			/mingw32/bin/libxml2-[0-9]*.dll
+			/mingw32/bin/libgmodule-[0-9]*.dll
+			EOF
 			;;
 		*)
 			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
