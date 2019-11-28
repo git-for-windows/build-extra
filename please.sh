@@ -553,8 +553,8 @@ foreach_sdk () {
 		test MINGW != "$type" ||
 		continue
 
-		(cd "$sdk/$pkgpath" ||
-		 die "%s does not exist\n" "$sdk/$pkgpath"
+		(cd "$sdk$pkgpath" ||
+		 die "%s does not exist\n" "$sdk$pkgpath"
 
 		 "$@") ||
 		die "Could not run '%s' in '%s'\n" "$*" "$sdk"
@@ -565,17 +565,17 @@ require_clean_worktree () {
 	git update-index -q --ignore-submodules --refresh &&
 	git diff-files --quiet --ignore-submodules &&
 	git diff-index --cached --quiet --ignore-submodules HEAD ||
-	die "%s not up-to-date\n" "$sdk/$pkgpath"
+	die "%s not up-to-date\n" "$sdk$pkgpath"
 }
 
 ff_master () {
 	test refs/heads/master = "$(git rev-parse --symbolic-full-name HEAD)" ||
-	die "%s: Not on 'master'\n" "$sdk/$pkgpath"
+	die "%s: Not on 'master'\n" "$sdk$pkgpath"
 
 	require_clean_worktree
 
 	git pull --ff-only origin master ||
-	die "%s: cannot fast-forward 'master'\n" "$sdk/$pkgpath"
+	die "%s: cannot fast-forward 'master'\n" "$sdk$pkgpath"
 }
 
 update () { # <package>
@@ -666,12 +666,12 @@ pkg_build () {
 			 fi &&
 			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
 				'"$extra_makepkg_opts" ||
-		die "%s: could not build\n" "$sdk/$pkgpath"
+		die "%s: could not build\n" "$sdk$pkgpath"
 
 		git update-index -q --refresh &&
 		git diff-files --quiet --ignore-submodules PKGBUILD ||
 		git commit -s -m "$package: new version" PKGBUILD ||
-		die "%s: could not commit after build\n" "$sdk/$pkgpath"
+		die "%s: could not commit after build\n" "$sdk$pkgpath"
 		;;
 	MSYS)
 		require msys2-devel binutils
@@ -709,14 +709,14 @@ pkg_build () {
 			 MAKEFLAGS=-j5 makepkg -s --noconfirm \
 				'"$extra_makepkg_opts"' &&
 			 makepkg --allsource '"$extra_makepkg_opts" ||
-		die "%s: could not build\n" "$sdk/$pkgpath"
+		die "%s: could not build\n" "$sdk$pkgpath"
 
 		if test "a$sdk32" = "a$sdk"
 		then
 			git update-index -q --refresh &&
 			git diff-files --quiet --ignore-submodules PKGBUILD ||
 			git commit -s -m "$package: new version" PKGBUILD ||
-			die "%s: could not commit after build\n" "$sdk/$pkgpath"
+			die "%s: could not commit after build\n" "$sdk$pkgpath"
 		else
 			git add PKGBUILD &&
 			git pull "$sdk32/${pkgpath%/*}/.git" \
@@ -747,14 +747,14 @@ up_to_date () {
 
 	foreach_sdk require_clean_worktree
 
-	commit32="$(cd "$sdk32/$pkgpath" && git rev-parse --verify HEAD)" &&
-	commit64="$(cd "$sdk64/$pkgpath" && git rev-parse --verify HEAD)" ||
+	commit32="$(cd "$sdk32$pkgpath" && git rev-parse --verify HEAD)" &&
+	commit64="$(cd "$sdk64$pkgpath" && git rev-parse --verify HEAD)" ||
 	die "Could not determine HEAD commit in %s\n" "$pkgpath"
 
 	if test "a$commit32" != "a$commit64"
 	then
-		fast_forward "$sdk32/$pkgpath" "$sdk64/$pkgpath" "$commit64" ||
-		fast_forward "$sdk64/$pkgpath" "$sdk32/$pkgpath" "$commit32" ||
+		fast_forward "$sdk32$pkgpath" "$sdk64$pkgpath" "$commit64" ||
+		fast_forward "$sdk64$pkgpath" "$sdk32$pkgpath" "$commit32" ||
 		die "%s: commit %s (32-bit) != %s (64-bit)\n" \
 			"$pkgpath" "$commit32" "$commit64"
 	fi
@@ -2453,7 +2453,7 @@ version_from_pkgbuild () { # <PKGBUILD>
 pkg_files () {
 	pkgver="$(version_from_pkgbuild PKGBUILD)"
 	test -n "$pkgver" ||
-	die "%s: could not determine pkgver\n" "$sdk/$pkgpath"
+	die "%s: could not determine pkgver\n" "$sdk$pkgpath"
 
 	test a--for-upload != "a$1" ||
 	echo $package-$pkgver.src.tar.gz
@@ -2609,7 +2609,7 @@ upload () { # <package>
 	test -s "$HOME"/.azure-blobs-token ||
 	die "Missing token in ~/.azure-blobs-token\n"
 
-	(cd "$sdk64/$pkgpath" &&
+	(cd "$sdk64$pkgpath" &&
 	 require_push_url origin) || exit
 
 	PACMAN_DB_LEASE="$(pacman_helper lock)" ||
@@ -2627,7 +2627,7 @@ upload () { # <package>
 	# Here, we exploit the fact that the 64-bit SDK is either the only
 	# SDK where the package was built (MinGW) or it agrees with the 32-bit
 	# SDK's build product (MSYS2).
-	(cd "$sdk64/$pkgpath" &&
+	(cd "$sdk64$pkgpath" &&
 	 test -z "$(git rev-list refs/remotes/origin/master..)" ||
 	 if test refs/heads/master = \
 		"$(git rev-parse --symbolic-full-name HEAD)"
@@ -2636,7 +2636,7 @@ upload () { # <package>
 	 else
 		printf "The local branch '%s' in '%s' has unpushed changes\n" \
 			"$(git rev-parse --symbolic-full-name HEAD)" \
-			"$sdk64/$pkgpath" >&2
+			"$sdk64$pkgpath" >&2
 	 fi) ||
 	die "Could not push commits in %s/%s\n" "$sdk64" "$pkgpath"
 }
@@ -2831,11 +2831,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		;;
 	esac
 
-	maybe_init_repository "$sdk64/$pkgpath"
-	test -n "$skip_build" || test MSYS != "$type" || maybe_init_repository "$sdk32/$pkgpath"
+	maybe_init_repository "$sdk64$pkgpath"
+	test -n "$skip_build" || test MSYS != "$type" || maybe_init_repository "$sdk32$pkgpath"
 
 	test -n "$skip_upload" ||
-	(cd "$sdk64/$pkgpath" &&
+	(cd "$sdk64$pkgpath" &&
 	 require_push_url origin &&
 	 sdk="$sdk64" ff_master) || exit
 
@@ -2865,7 +2865,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]*/\1'$zip_prefix'${_realver}.zip/'
 		fi
 		src_zip_prefix=${tag_name%$version}
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" -e "$zip_replace" \
 		 -e 's/^\(src_zip_url=.*\/\).*\(\$.*\)/\1'$src_zip_prefix'\2/' \
 		 -e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
@@ -2880,7 +2880,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		release_notes_feature='Comes with [Git Credential Manager v'$version']('"$url"').'
 		;;
 	git-extra)
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 updpkgsums &&
 		 git update-index -q --refresh &&
 		 if ! git diff-files --quiet -- PKGBUILD
@@ -2911,16 +2911,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		ensure_gpg_key B71E12C2 || exit
 
 		test -n "$only_mingw" ||
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 gpg --verify curl-$version.tar.bz2.asc curl-$version.tar.bz2 &&
 		 git commit -s -m "curl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
-		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master &&
 
 		case "$version,$force_pkgrel" in 7.58.0,|7.62.0,)
 			: skip because of partially successful upgrade
@@ -2931,8 +2931,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			 exit 0
 		 fi &&
 		 set_package mingw-w64-$1 &&
-		 maybe_init_repository "$sdk64/$pkgpath" &&
-		 cd "$sdk64/$pkgpath" &&
+		 maybe_init_repository "$sdk64$pkgpath" &&
+		 cd "$sdk64$pkgpath" &&
 		 { test -n "$skip_upload" ||
 		   require_push_url origin; } &&
 		 sdk="$sdk64" ff_master || exit
@@ -3024,7 +3024,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			sed -n "s/$needle1-amd64-$extra_v$needle2/\1/p")"
 		test 64 = $(echo -n "$sha256_64" | wc -c) ||
 		die "Could not determine SHA-256 of 64-bit %s\n" "$package"
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 url=https://github.com/$repo/releases/download/v$version/ &&
 		 zip32="git-lfs-windows-386-$extra_v$version.zip" &&
 		 zip64="git-lfs-windows-amd64-$extra_v$version.zip" &&
@@ -3166,12 +3166,12 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 git commit --amend -C HEAD ||
 		 die "Could not update PKGBUILD of '%s' to version %s\n" \
 			"$package" "$version" &&
-		 git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master
+		 git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master
 		) || exit
-		release_notes_feature="$(cat "$sdk64/$pkgpath/../.git/release_notes")"
+		release_notes_feature="$(cat "$sdk64$pkgpath/../.git/release_notes")"
 		;;
 	mingw-w64-busybox)
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 if test ! -d src/busybox-w32
 		 then
 			MINGW_INSTALLS=mingw64 \
@@ -3218,7 +3218,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 url=$url/commit/${version##*.} &&
 		 echo "Comes with [BusyBox v$version]($url)." \
 			>../.git/release_notes) || exit
-		release_notes_feature="$(cat "$sdk64/$pkgpath/../.git/release_notes")"
+		release_notes_feature="$(cat "$sdk64$pkgpath/../.git/release_notes")"
 		;;
 	openssh)
 		url=https://www.openssh.com
@@ -3239,17 +3239,17 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			sed -n "s/.*SHA256 (openssh-$version\\.tar\\.gz) = \([^ ]*\).*/\\1/p" |
 			base64 -d | hexdump -e '1/1 "%02x"')"
 
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 grep "sha256sums.*$sha256" PKGBUILD &&
 		 git commit -s -m "openssh: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
-		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
-		die "Could not update $sdk32/$pkgpath"
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		die "Could not update $sdk32$pkgpath"
 		;;
 	openssl)
 		version="$(curl -s https://www.openssl.org/source/ |
@@ -3259,7 +3259,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 		ensure_gpg_key 0E604491 || exit
 
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(_ver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
@@ -3268,17 +3268,17 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 	openssl-$version.tar.gz &&
 		 git commit -s -m "openssl: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) &&
 		test 0 = $? ||
-		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master &&
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master &&
 
 		(if test -n "$skip_mingw"
 		 then
 			 exit 0
 		 fi &&
 		 set_package mingw-w64-$1 &&
-		 maybe_init_repository "$sdk64/$pkgpath" &&
-		 cd "$sdk64/$pkgpath" &&
+		 maybe_init_repository "$sdk64$pkgpath" &&
+		 cd "$sdk64$pkgpath" &&
 		 { test -n "$skip_upload" ||
 		   require_push_url origin; } &&
 		 sdk="$sdk64" ff_master || exit
@@ -3308,7 +3308,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		release_notes_feature='Comes with [OpenSSL v'$version']('"$url"').'
 		;;
 	mingw-w64-wintoast|mingw-w64-cv2pdb)
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 MINGW_INSTALLS=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			'makepkg-mingw --nobuild -s --noconfirm' &&
@@ -3502,7 +3502,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		test -n "$version" ||
 		die "Could not determine version of %s\n" "$package"
 
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 url=https://github.com/$repo/releases/download/v$version/ &&
 		 zip32="git-sizer-$version-windows-386.zip" &&
 		 zip64="git-sizer-$version-windows-amd64.zip" &&
@@ -3557,7 +3557,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		test -n "$version" ||
 		die "Could not determine version of %s\n" "$package"
 
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 sed -i -e "s/^\\(pkgver=\\).*/\\1$version/" \
 		 -e "s/^\\(pkgrel=\\).*/\\11/" \
 			PKGBUILD &&
@@ -3583,17 +3583,17 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		test 1.12.1 != "$version" ||
 		version=1.12.2
 
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 grep "sha256sums.*$sha256" PKGBUILD &&
 		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
-		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
-		die "Could not update $sdk32/$pkgpath"
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		die "Could not update $sdk32$pkgpath"
 
 		url=https://github.com/$repo/releases/tag/$version &&
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
@@ -3611,16 +3611,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		url=https://svn.apache.org/repos/asf/serf/trunk/CHANGES
 		release_notes_feature='Comes with ['$package' v'$version']('"$url"').'
 
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
-		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
-		die "Could not update $sdk32/$pkgpath"
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		die "Could not update $sdk32$pkgpath"
 		;;
 	gnupg)
 		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=tags'
@@ -3653,16 +3653,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Did not find announcement mail for GNU Privacy Guard %s\n" "$v"
 		release_notes_feature='Comes with [GNU Privacy Guard '"$v"']('"$announce_url"').'
 
-		(cd "$sdk64/$pkgpath" &&
+		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD) ||
-		die "Could not update %s\n" "$sdk64/$pkgpath/PKGBUILD"
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32/$pkgpath" pull "$sdk64/$pkgpath/.." master ||
-		die "Could not update $sdk32/$pkgpath"
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		die "Could not update $sdk32$pkgpath"
 		;;
 	mingw-w64-pcre2)
 		url=https://pcre.org/changelog.txt
@@ -3764,10 +3764,10 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 
 	quoted="* $(echo "$*" | sed "s/[\\\/\"'&]/\\\\&/g")"
 
-	if test ! -d "$sdk32/$pkgpath"; then
-		(cd "$sdk64/$pkgpath" && require_clean_worktree)
+	if test ! -d "$sdk32$pkgpath"; then
+		(cd "$sdk64$pkgpath" && require_clean_worktree)
 	fi ||
-	up_to_date usr/src/build-extra ||
+	up_to_date /usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
 	release_notes="$sdk64"/usr/src/build-extra/ReleaseNotes.md
@@ -3844,17 +3844,17 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	*) die "I don't know how to finalize %s\n" "$1";;
 	esac
 
-	up_to_date usr/src/build-extra ||
+	up_to_date /usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
 	update git &&
-	git_src_dir="$sdk64/$pkgpath"/src/git &&
+	git_src_dir="$sdk64$pkgpath"/src/git &&
 	require_git_src_dir &&
 	(cd "$git_src_dir"/.git &&
 	 require_remote upstream https://github.com/git/git &&
 	 require_remote git-for-windows \
 		https://github.com/git-for-windows/git) &&
-	dir_option="--git-dir=$sdk64/$pkgpath"/src/git/.git &&
+	dir_option="--git-dir=$sdk64$pkgpath"/src/git/.git &&
 	git "$dir_option" fetch --tags git-for-windows &&
 	git "$dir_option" fetch --tags upstream ||
 	die "Could not update Git\n"
@@ -4141,7 +4141,7 @@ release () { # [--directory=<artifacts-directory>] [--release-date=*]
 	test $# = 0 ||
 	die "Expected no argument, got $#: %s\n" "$*"
 
-	up_to_date usr/src/build-extra ||
+	up_to_date /usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
 	set_version_from_sdks_git
@@ -4452,7 +4452,7 @@ release_sdk () { # <version>
 	version="$1"
 	tag=git-sdk-"$version"
 
-	up_to_date usr/src/build-extra ||
+	up_to_date /usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
 	! git rev-parse --git-dir="$sdk64"/usr/src/build-extra \
@@ -4464,7 +4464,7 @@ release_sdk () { # <version>
 		"$sdk"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			'cd /usr/src/build-extra/sdk-installer &&
 			 ./release.sh '"$version" ||
-		die "%s: could not build\n" "$sdk/$pkgpath"
+		die "%s: could not build\n" "$sdk$pkgpath"
 	done
 
 	sign_files "$HOME"/git-sdk-installer-"$version"-64.7z.exe \
@@ -4476,7 +4476,7 @@ release_sdk () { # <version>
 }
 
 publish_sdk () { #
-	up_to_date usr/src/build-extra ||
+	up_to_date /usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
 	tag="$(git --git-dir="$sdk64"/usr/src/build-extra/.git for-each-ref \
