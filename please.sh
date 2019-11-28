@@ -123,7 +123,7 @@ cygpath () { # [<short-options>] <path>
 }
 
 sdk_path () { # <bitness>
-	result="$(git config windows.sdk"$1".path)" && test -n "$result" || {
+	result="$(git config windows.sdk"$1".path)" || {
 		result="C:/git-sdk-$1" && test -e "$result" ||
 		die "%s\n\n\t%s\n%s\n" \
 			"No $1-bit Git for Windows SDK found at location:" \
