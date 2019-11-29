@@ -489,7 +489,8 @@ quick_add () { # <file>...
 		mingw=
 		case "${path##*/}" in
 		mingw-w64-*.pkg.tar.xz) arch=${file##mingw-w64-}; arch=${arch%%-*}; key=${arch}_mingw;;
-		*-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; key=${arch}_msys;;
+		git-extra-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; key=${arch}_mingw;;
+		*-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; key=${arch}_msys;;
 		*.src.tar.gz) arch=sources; key= ;;
 		*) echo "Skipping unknown file: $file" >&2; continue;;
 		esac
