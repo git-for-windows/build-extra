@@ -3737,7 +3737,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 require_push_url origin)
 	fi &&
 
-	if test -z "$only_mingw" && test -z "$skip_build"
+	if { test -z "$only_mingw" || test MINGW = $type; } && test -z "$skip_build"
 	then
 		build $force $cleanbuild "$package" &&
 		foreach_sdk pkg_copy_artifacts &&
