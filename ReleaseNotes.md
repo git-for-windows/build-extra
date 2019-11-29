@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 * The command-line options of `git-bash.exe` [are now documented](https://github.com/git-for-windows/MINGW-packages/pull/36) (call `git help git-bash`).
 * Comes with [Git LFS v2.9.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.9.1).
 * Comes with [cURL v7.67.0](https://curl.haxx.se/changes.html#7_67_0).
+* Comes with [GNU Privacy Guard v2.2.18](https://lists.gnupg.org/pipermail/gnupg-announce/2019q4/000442.html).
 
 ### Bug Fixes
 
