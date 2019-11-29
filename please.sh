@@ -2910,7 +2910,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		test -n "$version" ||
 		die "Could not determine newest cURL version\n"
 
-		ensure_gpg_key B71E12C2 || exit
+		test -n "$skip_build" || ensure_gpg_key B71E12C2 || exit
 
 		test -n "$only_mingw" ||
 		(cd "$sdk64$pkgpath" &&
@@ -3265,7 +3265,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		test -n "$version" ||
 		die "Could not determine newest OpenSSL version\n"
 
-		ensure_gpg_key 0E604491 || exit
+		test -n "$skip_build" || ensure_gpg_key 0E604491 || exit
 
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(_ver=\).*/\1'$version/ \
