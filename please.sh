@@ -2813,6 +2813,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 	test -z "$only_mingw" ||
 	test curl = "$package" ||
+	test openssl = "$package" ||
 	test MINGW = "$type" ||
 	die "The --only-mingw option is supported only for curl\n"
 
@@ -3283,6 +3284,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 		test -n "$skip_build" || ensure_gpg_key 0E604491 || exit
 
+		test -n "$only_mingw" ||
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(_ver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
