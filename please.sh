@@ -2819,6 +2819,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	test -z "$skip_mingw" ||
 	test openssl = "$package" ||
 	test curl = "$package" ||
+	test MSYS = "$type" ||
 	die "The --skip-mingw option is supported only for openssl/curl\n"
 
 	test -z "$only_mingw" || test -z "$skip_mingw" ||
