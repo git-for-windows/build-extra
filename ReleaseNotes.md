@@ -52,15 +52,13 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.24.0 (November 4th 2019)
 
-### New Features
-
-* Comes with [cURL v7.67.0](https://curl.haxx.se/changes.html#7_67_0).
-
 ### Bug Fixes
 
 * Using `http.extraHeader` [no longer results in spurious crashes](https://github.com/gitgitgadget/git/pull/453).
 * The `/proc/{stdin,stdout,stderr}` pseudo-symlinks [are now installed properly even with non-US locales](https://github.com/git-for-windows/build-extra/pull/265).
 * A bug [was fixed](https://github.com/git-for-windows/git/pull/2391) that prevented `gitk` from refreshing after new changes were committed.
+* A bug in cURL v7.67.0 that caused `SSL_read: No error` with some servers [was fixed](https://github.com/git-for-windows/MINGW-packages/commit/7b39ea818c014bafcd7c75f6aefd614fef756164).
+
 
 ## Changes since Git for Windows v2.23.0 (August 17th 2019)
 
