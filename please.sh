@@ -5025,8 +5025,8 @@ build_and_copy_artifacts () { # --directory=<artifacts-directory> [--force] [--c
 	set_package "$1" &&
 
 	cd "$pkgpath" &&
-	pkg_build $force $cleanbuild &&
-	pkg_copy_artifacts ||
+	sdk= pkg_build $force $cleanbuild &&
+	sdk= pkg_copy_artifacts ||
 	die "Could not copy artifacts for '%s' to '%s'\n" "$package" "$artifactsdir"
 }
 
