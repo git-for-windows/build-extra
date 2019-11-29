@@ -2721,6 +2721,15 @@ maybe_force_pkgrel () {
 		die "Invalid pkgrel: '%s'\n" "$1"
 
 		sed -i "s/^\\(pkgrel=\\).*/\\1$1/" PKGBUILD
+	elif git diff --exit-code -G'(_realver|pkgver)' -- PKGBUILD # version was not changed
+	then
+		# Maybe there have been changes since the latest release?
+		blame_ver="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgver=/,+1' -- ./PKGBUILD)" &&
+		blame="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgrel=/,+1' -- ./PKGBUILD)" &&
+		if test 0 -lt $(git rev-list --count ${blame%% *}.. ${blame_ver%% *}.. -- PKGBUILD)
+		then
+			sed -i "s/^\\(pkgrel=\\).*/\\1"$((1+${blame##*=}))/ PKGBUILD
+		fi
 	fi
 }
 
