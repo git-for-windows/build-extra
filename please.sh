@@ -2458,9 +2458,15 @@ pkg_files () {
 	test a--for-upload != "a$1" ||
 	echo $package-$pkgver.src.tar.gz
 
-	test "a$sdk" = "a$sdk32" &&
-	arch=i686 ||
-	arch=x86_64
+	if test -z "$sdk"
+	then
+		arch="$(uname -m)"
+	elif test "a$sdk" = "a$sdk32"
+	then
+		arch=i686
+	else
+		arch=x86_64
+	fi
 
 	for p in $package $extra_packages
 	do
