@@ -35,8 +35,11 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.24.0(2) (November 6th 2019)
 
+This is a security bug release that fixes CVE-2019-1348, CVE-2019-1349, CVE-2019-1350, CVE-2019-1351, CVE-2019-1352, CVE-2019-1353, CVE-2019-1354, CVE-2019-1387, and CVE-2019-19604.
+
 ### New Features
 
+* Comes with [Git v2.24.1](https://github.com/git/git/blob/v2.24.1/Documentation/RelNotes/2.24.1.txt).
 * Comes with [tig v2.5.0](https://github.com/jonas/tig/releases/tag/tig-2.5.0).
 * Comes with [patch level 4](https://github.com/git-for-windows/msys2-runtime/commit/1bfdf956dae03d59bfe44b1e5882403ab803a67b) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.7](https://cygwin.com/ml/cygwin-announce/2019-04/msg00030.html).
 * The command-line options of `git-bash.exe` [are now documented](https://github.com/git-for-windows/MINGW-packages/pull/36) (call `git help git-bash`).
