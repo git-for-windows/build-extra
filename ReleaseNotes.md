@@ -33,6 +33,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.24.1(2) (December 10th 2019)
+
+### New Features
+
+* Comes with [GNU Privacy Guard v2.2.19](https://lists.gnupg.org/pipermail/gnupg-announce/2019q4/000443.html).
+
 ## Changes since Git for Windows v2.24.0(2) (November 6th 2019)
 
 This is a security bug release that fixes CVE-2019-1348, CVE-2019-1349, CVE-2019-1350, CVE-2019-1351, CVE-2019-1352, CVE-2019-1353, CVE-2019-1354, CVE-2019-1387, and CVE-2019-19604.
