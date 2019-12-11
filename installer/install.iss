@@ -1048,12 +1048,29 @@ end;
 
 function EnableSymlinksByDefault():Boolean;
 var
+    SymlinksForRegularUsers:Cardinal;
+    Root:Integer;
     ResultCode:Integer;
+    Version:TWindowsVersion;
 begin
+
+    RegQueryDwordValue(HKEY_LOCAL_MACHINE, 'SOFTWARE\Microsoft\Windows\CurrentVersion\AppModelUnlock', 'AllowDevelopmentWithoutDevLicense', SymlinksForRegularUsers)
+    GetWindowsVersionEx(Version);
+
+    if ((SymlinksForRegularUsers=1) and (Version.Build>=14972)) then begin
+        // awesome, Developer mode enabled, and we're in Creators update, we can create symlinks w/o being admin
+        Log('Symbolic links enabled, machine has Developer Mode enabled');
+        Result:=True
+        Exit;
+    end;
+
     if IsOriginalUserAdmin then begin
+        // detection only works when we're not running as admin
         Log('Symbolic link permission detection failed: running as admin');
         Result:=False;
     end else begin
+        // maybe rights assigned through group policy without enabling developer mode?
+        // let's test by creating a symbolic link
         ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
         Result:=DirExists(ExpandConstant('{tmp}\symbolic link'));
     end;
