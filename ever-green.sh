@@ -82,6 +82,57 @@ extract_todo_help () {
 	echo "$help"
 }
 
+# When stopped with conflicts during a rebase, this function determines whether
+# there is an upstream commit (i.e. a commit reachable from HEAD but not from
+# the original commit to be picked), and whether it is identical (except for
+# Junio's Signed-off-by: line).
+#
+# Returns 0 if it is essentially identical, 1 if it is not (or if no upstream
+# commit could be found).
+
+compare_stopped_to_upstream_commit () {
+	tip="$(cat "$(git rev-parse --git-path rebase-merge/stopped-sha)")" &&
+	git rev-parse -q --verify "$tip" || {
+		echo "Could not get stopped-sha; Not in a rebase?\n" >&2
+		return 1
+	}
+	upstream=HEAD
+	count=1
+
+	upstream_commit="$(git range-diff -s $tip^..$tip $tip.."$upstream" |
+		sed -n 's/^[^:]*:[^:]*[=!][^:]*: *\([^ ]*\).*/\1/p')"
+	test -n "$upstream_commit" ||
+		upstream_commit="$(git range-diff --creation-factor=95 -s $tip^..$tip $tip.."$upstream" |
+			sed -n 's/^[^:]*:[^:]*[=!][^:]*: *\([^ ]*\).*/\1/p')"
+	test -n "$upstream_commit" || {
+		echo "Could not find upstream commit for '$tip'" >&2
+		return 1
+	}
+
+	if git range-diff -s $tip^..$tip $upstream_commit^..$upstream_commit |
+		grep -q '^1:  [^ ]* *= '
+	then
+		echo "$tip is identical to $upstream_commit; skipping" >&2
+		return 0
+	fi
+
+	! git grep -q '^Signed-off-by: Junio.* <gitster@pobox\.com>$' "$upstream_commit" || {
+		edited_upstream_commit="$(git cat-file commit "$upstream_commit" |
+			sed '/^Signed-off-by: Junio.* <gitster@pobox\.com>$/d' |
+			git hash-object -t commit -w --stdin)"
+		if git range-diff -s $tip^..$tip $edited_upstream_commit^..$edited_upstream_commit |
+			grep -q '^1:  [^ ]* *= '
+		then
+			echo "$tip is essentially identical to $upstream_commit; skipping" >&2
+			return 0
+		fi
+	}
+
+	printf "Found upstream commit %s for %s, but they are different:\n\n" "$upstream_commit" "$tip" >&2
+	git range-diff --creation-factor=95 "$tip~$count..$tip" "$upstream_commit~$count..$upstream_commit"
+	return 1
+}
+
 continue_rebase () {
 	test -n "$ORIGINAL_GIT_EDITOR" ||
 	ORIGINAL_GIT_EDITOR="$(git var GIT_EDITOR 2>/dev/null || echo false)"
@@ -100,7 +151,11 @@ continue_rebase () {
 		git rev-parse --verify HEAD >"$(git rev-parse --git-dir)/cur-head" ||
 		die "Could not record current HEAD"
 
-		git diff-files --quiet ||
+		git diff-files --quiet || {
+			compare_stopped_to_upstream_commit &&
+			git add -u &&
+			git reset --hard
+		} ||
 		die "There are unstaged changes; Cannot continue"
 
 		git rebase --continue && break
