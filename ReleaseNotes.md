@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [GNU Privacy Guard v2.2.19](https://lists.gnupg.org/pipermail/gnupg-announce/2019q4/000443.html).
+* Comes with [Git LFS v2.9.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.9.2).
 
 ## Changes since Git for Windows v2.24.0(2) (November 6th 2019)
 
