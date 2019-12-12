@@ -1,25 +1,8 @@
-PKGBUILD eol=lf
-*.bat eol=lf
-*.c eol=lf
-*.cpp eol=lf
-*.css eol=lf
-*.install eol=lf
-*.install.in eol=lf
+* eol=lf
 *.iss eol=lf whitespace=tab-in-indent
-*.h eol=lf
-*.md eol=lf
-*.post eol=lf
-*.sh eol=lf
-*.txt eol=lf
-*.wxs eol=lf
 *.exe -text
 *.dll -text
 *.chm -text
 *.bmp -text
-/git-extra/astextplain eol=lf
-/git-extra/notepad eol=lf
-/git-extra/vi eol=lf
-/git-extra/vimrc eol=lf
-/git-extra/wordpad eol=lf
-/installer/InnoSetup/* eol=crlf
+*.ico -text
 /installer/InnoSetup/*.e32 -text
