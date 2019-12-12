@@ -562,9 +562,9 @@ foreach_sdk () {
 }
 
 require_clean_worktree () {
-	git update-index -q --ignore-submodules --refresh &&
-	git diff-files --quiet --ignore-submodules &&
-	git diff-index --cached --quiet --ignore-submodules HEAD ||
+	git update-index --ignore-submodules --refresh &&
+	git diff-files --ignore-submodules &&
+	git diff-index --cached --ignore-submodules HEAD ||
 	die "%s not up-to-date\n" "$sdk$pkgpath"
 }
 
