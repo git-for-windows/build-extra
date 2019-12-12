@@ -5,4 +5,7 @@
 *.chm -text
 *.bmp -text
 *.ico -text
+*.png -text
+*.sfx -text
+*.cub -text
 /installer/InnoSetup/*.e32 -text
