@@ -32,7 +32,6 @@ int main(int argc, char **argv)
 	IShellLink* psl;
 	IPersistFile* ppf;
 
-
 	while (argc > 2) {
 		if (argv[1][0] != '-')
 			break;
