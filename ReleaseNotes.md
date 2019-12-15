@@ -40,6 +40,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [GNU Privacy Guard v2.2.19](https://lists.gnupg.org/pipermail/gnupg-announce/2019q4/000443.html).
 * Comes with [Git LFS v2.9.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.9.2).
 
+### Bug Fixes
+
+* The startup file for GNU nano, which had been included with DOS line endings (and therefore upset `nano`) [is now included with Unix line endings again](https://github.com/git-for-windows/git/issues/2429).
+
 ## Changes since Git for Windows v2.24.0(2) (November 6th 2019)
 
 This is a security bug release that fixes CVE-2019-1348, CVE-2019-1349, CVE-2019-1350, CVE-2019-1351, CVE-2019-1352, CVE-2019-1353, CVE-2019-1354, CVE-2019-1387, and CVE-2019-19604.
