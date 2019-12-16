@@ -373,7 +373,7 @@ var
     ChosenOptions:String;
 
     // Accumulated set of custom pages that have options, and those that have 'new' parameters on them
-    CurrentCustomPageID:Integer;
+    CurrentCustomPageID,FirstCustomPageID:Integer;
     AllCustomPages,CustomPagesWithUnseenOptions:String;
 
     // Previous Git for Windows version (if upgrading)
@@ -927,6 +927,32 @@ begin
         ASet:=ASet+IntToStr(Value)+',';
 end;
 
+function IsLastPageBeforeInstall(PageID:Integer):Boolean;
+begin
+    if (OnlyShowNewOptions.Checked) then begin
+        // The "Select Program Group" page is suppressed when
+        // re-installing/upgrading/downgrading, but not the Components page.
+        if (PageID=wpSelectProgramGroup) or ((PreviousGitForWindowsVersion<>'') and (PageID=wpSelectComponents)) then
+            PageID:=FirstCustomPageID;
+        while (PageID<PageIDBeforeInstall) and IsInSet(AllCustomPages,PageID) and not IsInSet(CustomPagesWithUnseenOptions,PageID) do
+            PageID:=PageID+1;
+    end;
+    Result:=(PageID=PageIDBeforeInstall);
+end;
+
+procedure AdjustNextButtonLabel(Sender:TObject);
+begin
+    if (CurrentCustomPageID=ProcessesPage.ID) then
+        WizardForm.NextButton.Caption:=SetupMessage(msgButtonInstall)
+    else if IsLastPageBeforeInstall(CurrentCustomPageID) then begin
+        RefreshProcessList(NIL);
+        if GetArrayLength(Processes)=0 then
+            WizardForm.NextButton.Caption:=SetupMessage(msgButtonInstall)
+        else
+            WizardForm.NextButton.Caption:=SetupMessage(msgButtonNext);
+    end else
+        WizardForm.NextButton.Caption:=SetupMessage(msgButtonNext);
+end;
 
 function InitializeSetup:Boolean;
 var
@@ -1110,6 +1136,8 @@ function CreatePage(var PrevPageID:Integer;const Caption,Description:String;var 
 begin
     Result:=CreateCustomPage(PrevPageID,Caption,Description);
     CurrentCustomPageID:=Result.ID;
+    if (FirstCustomPageID=0) then
+        FirstCustomPageID:=Result.ID;
     PrevPageID:=Result.ID;
     TabOrder:=0;
     Top:=8;
@@ -1120,6 +1148,8 @@ function CreateFilePage(var PrevPageID:Integer;const Caption,Description,SubCapt
 begin
     Result:=CreateInputFilePage(PrevPageID,Caption,Description,SubCaption);
     CurrentCustomPageID:=Result.ID;
+    if (FirstCustomPageID=0) then
+        FirstCustomPageID:=Result.ID;
     PrevPageID:=Result.ID;
     TabOrder:=0;
     Top:=8;
@@ -1574,6 +1604,7 @@ begin
         Width:=GetTextWidth(Caption,Font)+20; // 20 is the estimated width of the checkbox itself
         Left:=WizardForm.BackButton.Left-Width-(WizardForm.CancelButton.Left-WizardForm.NextButton.Left-WizardForm.NextButton.Width);
         Checked:=IsUpgrade(ExpandConstant('{#APP_VERSION}'),PreviousGitForWindowsVersion);
+        OnClick:=@AdjustNextButtonLabel;
         Height:=WizardForm.CancelButton.Height;
         Top:=WizardForm.CancelButton.Top;
     end;
@@ -2091,6 +2122,7 @@ end;
 
 procedure CurPageChanged(CurPageID:Integer);
 begin
+    CurrentCustomPageID:=CurPageID;
     if CurPageID=wpInfoBefore then begin
         if WizardForm.NextButton.Enabled then begin
             // By default, do not show a blinking cursor for InfoBeforeFile.
@@ -2102,10 +2134,6 @@ begin
             // This will be checked later again when the user clicks "Next".
             WizardForm.DirEdit.Text:=ExpandConstant('{userpf}\{#APP_NAME}');
         end;
-    end else if CurPageID=PageIDBeforeInstall then begin
-        RefreshProcessList(NIL);
-        if GetArrayLength(Processes)=0 then
-            WizardForm.NextButton.Caption:=SetupMessage(msgButtonInstall);
     end else if (ProcessesPage<>NIL) and (CurPageID=ProcessesPage.ID) then begin
         // Show the "Refresh" button only on the processes page.
         ProcessesRefresh.Show;
@@ -2113,6 +2141,7 @@ begin
     end else begin
         ProcessesRefresh.Hide;
     end;
+    AdjustNextButtonLabel(Nil);
 end;
 
 function NextButtonClick(CurPageID:Integer):Boolean;
