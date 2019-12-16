@@ -39,8 +39,15 @@ do
 			exit 1
 		fi
 		inno_defines="$inno_defines$LF#define DEBUG_WIZARD_PAGE '$page'$LF#define OUTPUT_TO_TEMP ''"
+		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
 		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;${LF}${LF}"
 		skip_files=t
+		;;
+	--test)
+		test_installer=t
+		inno_defines="$inno_defines$LF#define OUTPUT_TO_TEMP ''"
+		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
+		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;$LF"
 		;;
 	--output=*)
 		output_directory="$(cygpath -m "${1#*=}")" ||

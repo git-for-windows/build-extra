@@ -372,6 +372,10 @@ var
     // The options chosen at install time, to be written to /etc/install-options.txt
     ChosenOptions:String;
 
+    // Accumulated set of custom pages that have options, and those that have 'new' parameters on them
+    CurrentCustomPageID,FirstCustomPageID:Integer;
+    AllCustomPages,CustomPagesWithUnseenOptions:String;
+
     // Previous Git for Windows version (if upgrading)
     PreviousGitForWindowsVersion:String;
 
@@ -437,6 +441,7 @@ var
     ProcessesPage:TWizardPage;
     ProcessesListBox:TListBox;
     ProcessesRefresh,ContinueButton,TestCustomEditorButton:TButton;
+    OnlyShowNewOptions:TCheckBox;
     PageIDBeforeInstall:Integer;
 #ifdef DEBUG_WIZARD_PAGE
     DebugWizardPage:Integer;
@@ -508,51 +513,56 @@ var
     Caption:String;
     ManualClosingRequired:Boolean;
 begin
+    if (AppDir='') then begin
+        SetArrayLength(Processes,0);
+        Exit;
+    end;
+
     GetWindowsVersionEx(Version);
 
     // Use the Restart Manager API when installing the shell extension on Windows Vista and above.
     if Version.Major>=6 then begin
         SetArrayLength(Modules,17);
-        Modules[0]:=ExpandConstant('{app}\usr\bin\msys-2.0.dll');
-        Modules[1]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl85.dll');
-        Modules[2]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk85.dll');
-        Modules[3]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl86.dll');
-        Modules[4]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk86.dll');
-        Modules[5]:=ExpandConstant('{app}\git-cheetah\git_shell_ext.dll');
-        Modules[6]:=ExpandConstant('{app}\git-cheetah\git_shell_ext64.dll');
-        Modules[7]:=ExpandConstant('{app}\git-cmd.exe');
-        Modules[8]:=ExpandConstant('{app}\git-bash.exe');
-        Modules[9]:=ExpandConstant('{app}\bin\bash.exe');
-        Modules[10]:=ExpandConstant('{app}\bin\git.exe');
-        Modules[11]:=ExpandConstant('{app}\bin\sh.exe');
-        Modules[12]:=ExpandConstant('{app}\cmd\git.exe');
-        Modules[13]:=ExpandConstant('{app}\cmd\gitk.exe');
-        Modules[14]:=ExpandConstant('{app}\cmd\git-gui.exe');
-        Modules[15]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\git.exe');
-        Modules[16]:=ExpandConstant('{app}\usr\bin\bash.exe');
+        Modules[0]:=AppDir+'\usr\bin\msys-2.0.dll';
+        Modules[1]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl85.dll';
+        Modules[2]:=AppDir+'\{#MINGW_BITNESS}\bin\tk85.dll';
+        Modules[3]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl86.dll';
+        Modules[4]:=AppDir+'\{#MINGW_BITNESS}\bin\tk86.dll';
+        Modules[5]:=AppDir+'\git-cheetah\git_shell_ext.dll';
+        Modules[6]:=AppDir+'\git-cheetah\git_shell_ext64.dll';
+        Modules[7]:=AppDir+'\git-cmd.exe';
+        Modules[8]:=AppDir+'\git-bash.exe';
+        Modules[9]:=AppDir+'\bin\bash.exe';
+        Modules[10]:=AppDir+'\bin\git.exe';
+        Modules[11]:=AppDir+'\bin\sh.exe';
+        Modules[12]:=AppDir+'\cmd\git.exe';
+        Modules[13]:=AppDir+'\cmd\gitk.exe';
+        Modules[14]:=AppDir+'\cmd\git-gui.exe';
+        Modules[15]:=AppDir+'\{#MINGW_BITNESS}\bin\git.exe';
+        Modules[16]:=AppDir+'\usr\bin\bash.exe';
         SessionHandle:=FindProcessesUsingModules(Modules,Processes);
     end else begin
         SetArrayLength(Modules,15);
-        Modules[0]:=ExpandConstant('{app}\usr\bin\msys-2.0.dll');
-        Modules[1]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl85.dll');
-        Modules[2]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk85.dll');
-        Modules[3]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl86.dll');
-        Modules[4]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk86.dll');
-        Modules[5]:=ExpandConstant('{app}\git-cmd.exe');
-        Modules[6]:=ExpandConstant('{app}\git-bash.exe');
-        Modules[7]:=ExpandConstant('{app}\bin\bash.exe');
-        Modules[8]:=ExpandConstant('{app}\bin\git.exe');
-        Modules[9]:=ExpandConstant('{app}\bin\sh.exe');
-        Modules[10]:=ExpandConstant('{app}\cmd\git.exe');
-        Modules[11]:=ExpandConstant('{app}\cmd\gitk.exe');
-        Modules[12]:=ExpandConstant('{app}\cmd\git-gui.exe');
-        Modules[13]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\git.exe');
-        Modules[14]:=ExpandConstant('{app}\usr\bin\bash.exe');
+        Modules[0]:=AppDir+'\usr\bin\msys-2.0.dll';
+        Modules[1]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl85.dll';
+        Modules[2]:=AppDir+'\{#MINGW_BITNESS}\bin\tk85.dll';
+        Modules[3]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl86.dll';
+        Modules[4]:=AppDir+'\{#MINGW_BITNESS}\bin\tk86.dll';
+        Modules[5]:=AppDir+'\git-cmd.exe';
+        Modules[6]:=AppDir+'\git-bash.exe';
+        Modules[7]:=AppDir+'\bin\bash.exe';
+        Modules[8]:=AppDir+'\bin\git.exe';
+        Modules[9]:=AppDir+'\bin\sh.exe';
+        Modules[10]:=AppDir+'\cmd\git.exe';
+        Modules[11]:=AppDir+'\cmd\gitk.exe';
+        Modules[12]:=AppDir+'\cmd\git-gui.exe';
+        Modules[13]:=AppDir+'\{#MINGW_BITNESS}\bin\git.exe';
+        Modules[14]:=AppDir+'\usr\bin\bash.exe';
         SessionHandle:=FindProcessesUsingModules(Modules,ProcsCloseRequired);
 
         SetArrayLength(Modules,2);
-        Modules[0]:=ExpandConstant('{app}\git-cheetah\git_shell_ext.dll');
-        Modules[1]:=ExpandConstant('{app}\git-cheetah\git_shell_ext64.dll');
+        Modules[0]:=AppDir+'\git-cheetah\git_shell_ext.dll';
+        Modules[1]:=AppDir+'\git-cheetah\git_shell_ext64.dll';
         SessionHandle:=FindProcessesUsingModules(Modules,ProcsCloseOptional) or SessionHandle;
 
         // Misuse the "Restartable" flag to indicate which processes are required
@@ -899,6 +909,56 @@ begin
 #endif
 end;
 
+function IsUpgrade(CurrentVersion,PreviousVersion:String):Boolean;
+begin
+    // It is not an upgrade:
+    // - if there was no previous version
+    // - or if the previous version is identical to the current one (re-install)
+    // - or if it is actually a downgrade
+    Result:=(PreviousVersion<>'') and (CurrentVersion<>PreviousVersion) and not IsDowngrade(CurrentVersion,PreviousVersion)
+end;
+
+{ Represent a set as a string of comma-separated values }
+function IsInSet(var ASet:String;Value:Integer):Boolean;
+begin
+    Result:=(Pos(','+IntToStr(Value)+',',ASet)>0);
+end;
+
+procedure AddToSet(var ASet:String;Value:Integer);
+begin
+    if ASet='' then
+        ASet:=',';
+    if not IsInSet(ASet,Value) then
+        ASet:=ASet+IntToStr(Value)+',';
+end;
+
+function IsLastPageBeforeInstall(PageID:Integer):Boolean;
+begin
+    if (OnlyShowNewOptions.Checked) then begin
+        // The "Select Program Group" page is suppressed when
+        // re-installing/upgrading/downgrading, but not the Components page.
+        if (PageID<=wpSelectProgramGroup) then
+            PageID:=FirstCustomPageID;
+        while (PageID<PageIDBeforeInstall) and not IsInSet(CustomPagesWithUnseenOptions,PageID) do
+            PageID:=PageID+1;
+    end;
+    Result:=(PageID=PageIDBeforeInstall);
+end;
+
+procedure AdjustNextButtonLabel(Sender:TObject);
+begin
+    if (CurrentCustomPageID=ProcessesPage.ID) then
+        WizardForm.NextButton.Caption:=SetupMessage(msgButtonInstall)
+    else if IsLastPageBeforeInstall(CurrentCustomPageID) then begin
+        RefreshProcessList(NIL);
+        if GetArrayLength(Processes)=0 then
+            WizardForm.NextButton.Caption:=SetupMessage(msgButtonInstall)
+        else
+            WizardForm.NextButton.Caption:=SetupMessage(msgButtonNext);
+    end else
+        WizardForm.NextButton.Caption:=SetupMessage(msgButtonNext);
+end;
+
 function InitializeSetup:Boolean;
 var
     CurrentVersion,Msg:String;
@@ -962,6 +1022,10 @@ begin
     NoSpaces:=Key;
     StringChangeEx(NoSpaces,' ','',True);
 
+    // A side effect of ReplayChoice is to collect a set of pages that have options on them, and the subset
+    // of those pages have _new_ options (options whose values have no previously-set value)
+    AddToSet(AllCustomPages,CurrentCustomPageID);
+
     // Interpret /o:PathOption=Cmd and friends
     Result:=ExpandConstant('{param:o:'+NoSpaces+'| }');
     if Result<>' ' then
@@ -977,6 +1041,10 @@ begin
         else
             // Restore the settings chosen during a previous install.
             Result:=GetPreviousData(Key,Default);
+            // Check to see if this result was the default, or was previously set.
+            // If it was the default, the user has not seen this option yet.
+            if GetPreviousData(Key,'z'+Result)<>Result then
+                AddToSet(CustomPagesWithUnseenOptions,CurrentCustomPageID)
     end;
 end;
 
@@ -1089,6 +1157,9 @@ end;
 function CreatePage(var PrevPageID:Integer;const Caption,Description:String;var TabOrder,Top,Left:Integer):TWizardPage;
 begin
     Result:=CreateCustomPage(PrevPageID,Caption,Description);
+    CurrentCustomPageID:=Result.ID;
+    if (FirstCustomPageID=0) then
+        FirstCustomPageID:=Result.ID;
     PrevPageID:=Result.ID;
     TabOrder:=0;
     Top:=8;
@@ -1098,6 +1169,9 @@ end;
 function CreateFilePage(var PrevPageID:Integer;const Caption,Description,SubCaption:String;var TabOrder,Top,Left:Integer):TInputFileWizardPage;
 begin
     Result:=CreateInputFilePage(PrevPageID,Caption,Description,SubCaption);
+    CurrentCustomPageID:=Result.ID;
+    if (FirstCustomPageID=0) then
+        FirstCustomPageID:=Result.ID;
     PrevPageID:=Result.ID;
     TabOrder:=0;
     Top:=8;
@@ -1542,6 +1616,24 @@ begin
     PrevPageID:=wpSelectProgramGroup;
 
     (*
+     * Allow skipping pages that contain only previously-seen options.
+     * For upgrades, default to skipping.
+     *)
+    OnlyShowNewOptions:=TCheckBox.Create(WizardForm);
+    with OnlyShowNewOptions do begin
+        Parent:=WizardForm;
+        Caption:='&Only show new options';
+        Width:=GetTextWidth(Caption,Font)+20; // 20 is the estimated width of the checkbox itself
+        Left:=WizardForm.BackButton.Left-Width-(WizardForm.CancelButton.Left-WizardForm.NextButton.Left-WizardForm.NextButton.Width);
+        Checked:=IsUpgrade(ExpandConstant('{#APP_VERSION}'),PreviousGitForWindowsVersion);
+        OnClick:=@AdjustNextButtonLabel;
+        Height:=WizardForm.CancelButton.Height;
+        Top:=WizardForm.CancelButton.Top;
+    end;
+    if (PreviousGitForWindowsVersion='') then
+        OnlyShowNewOptions.Hide;
+
+    (*
      * Create a custom page for configuring the default Git editor.
      *)
 
@@ -1966,6 +2058,8 @@ begin
 
 #endif
 
+    PageIDBeforeInstall:=CurrentCustomPageID;
+
     (*
      * Create a custom page for finding the processes that lock a module.
      *)
@@ -2001,12 +2095,6 @@ begin
     // This button is only used by the uninstaller.
     ContinueButton:=NIL;
 
-#ifdef HAVE_EXPERIMENTAL_OPTIONS
-    PageIDBeforeInstall:=ExperimentalOptionsPage.ID;
-#else
-    PageIDBeforeInstall:=ExtraOptionsPage.ID;
-#endif
-
 #ifdef DEBUG_WIZARD_PAGE
     DebugWizardPage:={#DEBUG_WIZARD_PAGE}.ID;
 #endif
@@ -2040,9 +2128,13 @@ begin
         end;
         RefreshProcessList(NIL);
         Result:=(GetArrayLength(Processes)=0);
-    end else begin
+    end else if OnlyShowNewOptions.Checked then begin
+        if (IsInSet(AllCustomPages,PageID)) then
+            Result:=not IsInSet(CustomPagesWithUnseenOptions,PageID)
+        else
+            Result:=(PageID<>wpInfoBefore);
+    end else
         Result:=False;
-    end;
 #ifdef DEBUG_WIZARD_PAGE
     Result:=PageID<>DebugWizardPage
     Exit;
@@ -2051,6 +2143,7 @@ end;
 
 procedure CurPageChanged(CurPageID:Integer);
 begin
+    CurrentCustomPageID:=CurPageID;
     if CurPageID=wpInfoBefore then begin
         if WizardForm.NextButton.Enabled then begin
             // By default, do not show a blinking cursor for InfoBeforeFile.
@@ -2062,10 +2155,6 @@ begin
             // This will be checked later again when the user clicks "Next".
             WizardForm.DirEdit.Text:=ExpandConstant('{userpf}\{#APP_NAME}');
         end;
-    end else if CurPageID=PageIDBeforeInstall then begin
-        RefreshProcessList(NIL);
-        if GetArrayLength(Processes)=0 then
-            WizardForm.NextButton.Caption:=SetupMessage(msgButtonInstall);
     end else if (ProcessesPage<>NIL) and (CurPageID=ProcessesPage.ID) then begin
         // Show the "Refresh" button only on the processes page.
         ProcessesRefresh.Show;
@@ -2073,6 +2162,7 @@ begin
     end else begin
         ProcessesRefresh.Hide;
     end;
+    AdjustNextButtonLabel(Nil);
 end;
 
 function NextButtonClick(CurPageID:Integer):Boolean;
@@ -2451,7 +2541,7 @@ var
     RootKey:Integer;
 begin
     if CurStep=ssInstall then begin
-#ifdef DEBUG_WIZARD_PAGE
+#ifdef DO_NOT_INSTALL
         ExitEarlyWithSuccess();
 #endif
         // Shutdown locking processes just before the actual installation starts.
