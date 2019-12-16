@@ -513,51 +513,56 @@ var
     Caption:String;
     ManualClosingRequired:Boolean;
 begin
+    if (AppDir='') then begin
+        SetArrayLength(Processes,0);
+        Exit;
+    end;
+
     GetWindowsVersionEx(Version);
 
     // Use the Restart Manager API when installing the shell extension on Windows Vista and above.
     if Version.Major>=6 then begin
         SetArrayLength(Modules,17);
-        Modules[0]:=ExpandConstant('{app}\usr\bin\msys-2.0.dll');
-        Modules[1]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl85.dll');
-        Modules[2]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk85.dll');
-        Modules[3]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl86.dll');
-        Modules[4]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk86.dll');
-        Modules[5]:=ExpandConstant('{app}\git-cheetah\git_shell_ext.dll');
-        Modules[6]:=ExpandConstant('{app}\git-cheetah\git_shell_ext64.dll');
-        Modules[7]:=ExpandConstant('{app}\git-cmd.exe');
-        Modules[8]:=ExpandConstant('{app}\git-bash.exe');
-        Modules[9]:=ExpandConstant('{app}\bin\bash.exe');
-        Modules[10]:=ExpandConstant('{app}\bin\git.exe');
-        Modules[11]:=ExpandConstant('{app}\bin\sh.exe');
-        Modules[12]:=ExpandConstant('{app}\cmd\git.exe');
-        Modules[13]:=ExpandConstant('{app}\cmd\gitk.exe');
-        Modules[14]:=ExpandConstant('{app}\cmd\git-gui.exe');
-        Modules[15]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\git.exe');
-        Modules[16]:=ExpandConstant('{app}\usr\bin\bash.exe');
+        Modules[0]:=AppDir+'\usr\bin\msys-2.0.dll';
+        Modules[1]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl85.dll';
+        Modules[2]:=AppDir+'\{#MINGW_BITNESS}\bin\tk85.dll';
+        Modules[3]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl86.dll';
+        Modules[4]:=AppDir+'\{#MINGW_BITNESS}\bin\tk86.dll';
+        Modules[5]:=AppDir+'\git-cheetah\git_shell_ext.dll';
+        Modules[6]:=AppDir+'\git-cheetah\git_shell_ext64.dll';
+        Modules[7]:=AppDir+'\git-cmd.exe';
+        Modules[8]:=AppDir+'\git-bash.exe';
+        Modules[9]:=AppDir+'\bin\bash.exe';
+        Modules[10]:=AppDir+'\bin\git.exe';
+        Modules[11]:=AppDir+'\bin\sh.exe';
+        Modules[12]:=AppDir+'\cmd\git.exe';
+        Modules[13]:=AppDir+'\cmd\gitk.exe';
+        Modules[14]:=AppDir+'\cmd\git-gui.exe';
+        Modules[15]:=AppDir+'\{#MINGW_BITNESS}\bin\git.exe';
+        Modules[16]:=AppDir+'\usr\bin\bash.exe';
         SessionHandle:=FindProcessesUsingModules(Modules,Processes);
     end else begin
         SetArrayLength(Modules,15);
-        Modules[0]:=ExpandConstant('{app}\usr\bin\msys-2.0.dll');
-        Modules[1]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl85.dll');
-        Modules[2]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk85.dll');
-        Modules[3]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tcl86.dll');
-        Modules[4]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\tk86.dll');
-        Modules[5]:=ExpandConstant('{app}\git-cmd.exe');
-        Modules[6]:=ExpandConstant('{app}\git-bash.exe');
-        Modules[7]:=ExpandConstant('{app}\bin\bash.exe');
-        Modules[8]:=ExpandConstant('{app}\bin\git.exe');
-        Modules[9]:=ExpandConstant('{app}\bin\sh.exe');
-        Modules[10]:=ExpandConstant('{app}\cmd\git.exe');
-        Modules[11]:=ExpandConstant('{app}\cmd\gitk.exe');
-        Modules[12]:=ExpandConstant('{app}\cmd\git-gui.exe');
-        Modules[13]:=ExpandConstant('{app}\{#MINGW_BITNESS}\bin\git.exe');
-        Modules[14]:=ExpandConstant('{app}\usr\bin\bash.exe');
+        Modules[0]:=AppDir+'\usr\bin\msys-2.0.dll';
+        Modules[1]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl85.dll';
+        Modules[2]:=AppDir+'\{#MINGW_BITNESS}\bin\tk85.dll';
+        Modules[3]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl86.dll';
+        Modules[4]:=AppDir+'\{#MINGW_BITNESS}\bin\tk86.dll';
+        Modules[5]:=AppDir+'\git-cmd.exe';
+        Modules[6]:=AppDir+'\git-bash.exe';
+        Modules[7]:=AppDir+'\bin\bash.exe';
+        Modules[8]:=AppDir+'\bin\git.exe';
+        Modules[9]:=AppDir+'\bin\sh.exe';
+        Modules[10]:=AppDir+'\cmd\git.exe';
+        Modules[11]:=AppDir+'\cmd\gitk.exe';
+        Modules[12]:=AppDir+'\cmd\git-gui.exe';
+        Modules[13]:=AppDir+'\{#MINGW_BITNESS}\bin\git.exe';
+        Modules[14]:=AppDir+'\usr\bin\bash.exe';
         SessionHandle:=FindProcessesUsingModules(Modules,ProcsCloseRequired);
 
         SetArrayLength(Modules,2);
-        Modules[0]:=ExpandConstant('{app}\git-cheetah\git_shell_ext.dll');
-        Modules[1]:=ExpandConstant('{app}\git-cheetah\git_shell_ext64.dll');
+        Modules[0]:=AppDir+'\git-cheetah\git_shell_ext.dll';
+        Modules[1]:=AppDir+'\git-cheetah\git_shell_ext64.dll';
         SessionHandle:=FindProcessesUsingModules(Modules,ProcsCloseOptional) or SessionHandle;
 
         // Misuse the "Restartable" flag to indicate which processes are required
