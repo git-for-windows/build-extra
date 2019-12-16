@@ -1577,6 +1577,8 @@ begin
         Height:=WizardForm.CancelButton.Height;
         Top:=WizardForm.CancelButton.Top;
     end;
+    if (PreviousGitForWindowsVersion='') then
+        OnlyShowNewOptions.Hide;
 
     (*
      * Create a custom page for configuring the default Git editor.
