@@ -937,9 +937,9 @@ begin
     if (OnlyShowNewOptions.Checked) then begin
         // The "Select Program Group" page is suppressed when
         // re-installing/upgrading/downgrading, but not the Components page.
-        if (PageID=wpSelectProgramGroup) or ((PreviousGitForWindowsVersion<>'') and (PageID=wpSelectComponents)) then
+        if (PageID<=wpSelectProgramGroup) then
             PageID:=FirstCustomPageID;
-        while (PageID<PageIDBeforeInstall) and IsInSet(AllCustomPages,PageID) and not IsInSet(CustomPagesWithUnseenOptions,PageID) do
+        while (PageID<PageIDBeforeInstall) and not IsInSet(CustomPagesWithUnseenOptions,PageID) do
             PageID:=PageID+1;
     end;
     Result:=(PageID=PageIDBeforeInstall);
@@ -2111,9 +2111,12 @@ begin
         end;
         RefreshProcessList(NIL);
         Result:=(GetArrayLength(Processes)=0);
-    end else if OnlyShowNewOptions.Checked then
-        Result:=IsInSet(AllCustomPages,PageID) and not IsInSet(CustomPagesWithUnseenOptions,PageID)
-    else
+    end else if OnlyShowNewOptions.Checked then begin
+        if (IsInSet(AllCustomPages,PageID)) then
+            Result:=not IsInSet(CustomPagesWithUnseenOptions,PageID)
+        else
+            Result:=(PageID<>wpInfoBefore);
+    end else
         Result:=False;
 #ifdef DEBUG_WIZARD_PAGE
     Result:=PageID<>DebugWizardPage
