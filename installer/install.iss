@@ -304,10 +304,6 @@ begin
 end;
 
 const
-    // Installation type options
-    GI_Skip           = 0;
-    GI_Full           = 1;
-
     // Git Editor options.
     GE_Nano           = 0;
     GE_VIM            = 1;
@@ -383,11 +379,6 @@ var
     // Previous Git for Windows version (if upgrading)
     PreviousGitForWindowsVersion:String;
 
-    // Wizard page and user choice of install type (quick or full)
-    InstallChoicePage:TWizardPage;
-    RdbInstall:array[GI_Skip..GI_Full] of TRadioButton;
-    InstallChoiceSkip:Boolean;
-
     // Wizard page and variables for the Editor options.
     EditorPage:TInputFileWizardPage;
     CbbEditor:TNewComboBox;
@@ -450,6 +441,7 @@ var
     ProcessesPage:TWizardPage;
     ProcessesListBox:TListBox;
     ProcessesRefresh,ContinueButton,TestCustomEditorButton:TButton;
+    OnlyShowNewOptions:TCheckBox;
     PageIDBeforeInstall:Integer;
 #ifdef DEBUG_WIZARD_PAGE
     DebugWizardPage:Integer;
@@ -1572,16 +1564,19 @@ begin
     PrevPageID:=wpSelectProgramGroup;
 
     (*
-     * See if this is an upgrade, and if so, create a custom page to allow the user to select whether or not to do a fast install.
+     * Allow skipping pages that contain only previously-seen options.
+     * For upgrades, default to skipping.
      *)
-    if IsUpgrade(ExpandConstant('{#APP_VERSION}'),PreviousGitForWindowsVersion) then begin
-        InstallChoicePage:=CreatePage(PrevPageID,'Select Installation Type','Would you like to skip previously set installation options?',TabOrder,Top,Left)
-        RdbInstall[GI_Skip] := CreateRadioButton(InstallChoicePage,'Skip Previously Set Options','Re-use previous installation options.',TabOrder,Top,Left);
-        RdbInstall[GI_Full] := CreateRadioButton(InstallChoicePage,'Review All Installation Options','',TabOrder,Top,Left);
-        RdbInstall[GI_Full].Checked:=True;
+    OnlyShowNewOptions:=TCheckBox.Create(WizardForm);
+    with OnlyShowNewOptions do begin
+        Parent:=WizardForm;
+        Caption:='&Only show new options';
+        Width:=GetTextWidth(Caption,Font)+20; // 20 is the estimated width of the checkbox itself
+        Left:=WizardForm.BackButton.Left-Width-(WizardForm.CancelButton.Left-WizardForm.NextButton.Left-WizardForm.NextButton.Width);
+        Checked:=IsUpgrade(ExpandConstant('{#APP_VERSION}'),PreviousGitForWindowsVersion);
+        Height:=WizardForm.CancelButton.Height;
+        Top:=WizardForm.CancelButton.Top;
     end;
-    // In all cases, default to Full installation.
-    InstallChoiceSkip:=False;
 
     (*
      * Create a custom page for configuring the default Git editor.
@@ -2082,7 +2077,7 @@ begin
         end;
         RefreshProcessList(NIL);
         Result:=(GetArrayLength(Processes)=0);
-    end else if InstallChoiceSkip then
+    end else if OnlyShowNewOptions.Checked then
         Result:=IsInSet(AllCustomPages,PageID) and not IsInSet(CustomPagesWithUnseenOptions,PageID)
     else
         Result:=False;
@@ -2142,9 +2137,7 @@ begin
         end;
     end;
 
-    if (InstallChoicePage<>NIL) and (CurPageID=InstallChoicePage.ID) then begin
-        InstallChoiceSkip:=RdbInstall[GI_Skip].Checked;
-    end else if (EditorPage<>NIL) and (CurPageID=EditorPage.ID) then begin
+    if (EditorPage<>NIL) and (CurPageID=EditorPage.ID) then begin
         EditorSelectionChanged(NIL);
         (*
          * Before continuing, we need to check one last time if the path
