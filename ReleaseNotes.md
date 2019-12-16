@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [GNU Privacy Guard v2.2.19](https://lists.gnupg.org/pipermail/gnupg-announce/2019q4/000443.html).
 * Comes with [Git LFS v2.9.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.9.2).
+* When upgrading Git for Windows, by default the installer [now only shows pages with previously-unseen options](https://github.com/git-for-windows/build-extra/pull/270).
 
 ### Bug Fixes
 
