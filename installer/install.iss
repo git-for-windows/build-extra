@@ -2496,7 +2496,7 @@ var
     RootKey:Integer;
 begin
     if CurStep=ssInstall then begin
-#ifdef DEBUG_WIZARD_PAGE
+#ifdef DO_NOT_INSTALL
         ExitEarlyWithSuccess();
 #endif
         // Shutdown locking processes just before the actual installation starts.
