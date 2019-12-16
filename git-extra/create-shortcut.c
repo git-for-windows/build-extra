@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 	const char *progname = argv[0];
 	const char *work_dir = NULL, *arguments = NULL, *icon_file = NULL;
 	const char *description = NULL;
-	int show_cmd = 1;
+	int show_cmd = 1, desktop_shortcut = 0;
 
 	static WCHAR wsz[1024];
 	HRESULT hres;
@@ -45,7 +45,12 @@ int main(int argc, char **argv)
 			icon_file = argv[2];
 		else if (!strcmp(argv[1], "--description"))
 			description = argv[2];
-		else {
+		else if (!strcmp(argv[1], "--desktop-shortcut")) {
+			desktop_shortcut = 1;
+			argc--;
+			argv++;
+			continue;
+		} else {
 			fprintf(stderr, "Unknown option: %s\n", argv[1]);
 			return 1;
 		}
@@ -59,7 +64,7 @@ int main(int argc, char **argv)
 		argv++;
 	}
 
-	if (argc < 3) {
+	if (argc != 3) {
 		fprintf(stderr, "Usage: %s [options] <source> <destination>\n",
 			progname);
 		return 1;
@@ -92,9 +97,30 @@ int main(int argc, char **argv)
 	if (description)
 		psl->lpVtbl->SetDescription(psl, description);
 
-	wsz[0] = 0;
-	MultiByteToWideChar(CP_ACP,
-			0, argv[2], -1, wsz, 1024);
+	if (!desktop_shortcut)
+		wsz[0] = 0;
+	else {
+		PWSTR p;
+
+		hres = SHGetKnownFolderPath(&FOLDERID_Desktop,
+					    KF_FLAG_DONT_UNEXPAND, NULL, &p);
+		check_hres(hres, "Could not get desktop path");
+
+		desktop_shortcut = wcslen(p);
+		if (desktop_shortcut + 2 + strlen(argv[2]) * 3 >
+		    sizeof(wsz) / sizeof(WCHAR)) {
+			fwprintf(stderr,
+				 L"Error: Too long Desktop path: %s\n", p);
+			exit(1);
+		}
+		memcpy(wsz, p, sizeof(WCHAR) * desktop_shortcut);
+		wsz[desktop_shortcut++] = L'\\';
+		wsz[desktop_shortcut] = L'\0';
+		CoTaskMemFree(p);
+	}
+	MultiByteToWideChar(CP_ACP, 0, argv[2], -1,
+			    wsz + desktop_shortcut,
+			    sizeof(wsz) / sizeof(WCHAR) - desktop_shortcut);
 	hres = ppf->lpVtbl->Save(ppf,
 			(const WCHAR*)wsz, TRUE);
 
