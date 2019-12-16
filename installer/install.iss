@@ -2036,6 +2036,8 @@ begin
 
 #endif
 
+    PageIDBeforeInstall:=CurrentCustomPageID;
+
     (*
      * Create a custom page for finding the processes that lock a module.
      *)
@@ -2070,12 +2072,6 @@ begin
 
     // This button is only used by the uninstaller.
     ContinueButton:=NIL;
-
-#ifdef HAVE_EXPERIMENTAL_OPTIONS
-    PageIDBeforeInstall:=ExperimentalOptionsPage.ID;
-#else
-    PageIDBeforeInstall:=ExtraOptionsPage.ID;
-#endif
 
 #ifdef DEBUG_WIZARD_PAGE
     DebugWizardPage:={#DEBUG_WIZARD_PAGE}.ID;
