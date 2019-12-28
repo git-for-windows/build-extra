@@ -985,7 +985,7 @@ require_git_src_dir () {
 		 echo "Checking out Git (not making it)" >&2 &&
 		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
 			'makepkg-mingw --noconfirm -s -o' &&
-		 case "$(cat src/git/.git/objects/info/alternates 2>/dev/null)" in
+		 case "$(test -x /usr/bin/git && cat src/git/.git/objects/info/alternates 2>/dev/null)" in
 		 /*)
 			echo "Dissociating worktree, to allow MINGW git to access the worktree" >&2 &&
 			/usr/bin/git -C src/git/ repack -ad &&
