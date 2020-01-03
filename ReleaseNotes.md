@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 
 * The startup file for GNU nano, which had been included with DOS line endings (and therefore upset `nano`) [is now included with Unix line endings again](https://github.com/git-for-windows/git/issues/2429).
 * Git for Windows now [fails as expected](https://github.com/git-for-windows/git/pull/2440) when trying to check out files with illegal characters in their file names.
+* Git [now works properly](https://github.com/git-for-windows/git/pull/2449) when inside a symlinked work tree.
 
 ## Changes since Git for Windows v2.24.0(2) (November 6th 2019)
 
