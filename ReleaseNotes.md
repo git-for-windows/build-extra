@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * Git [now works properly](https://github.com/git-for-windows/git/pull/2449) when inside a symlinked work tree.
 * Repositories with old commits containing backslashes in file names [can now be fetched/cloned again](https://github.com/git-for-windows/git/pull/2437) (but Git will still refuse to check out files with backslashes in their file names).
 * Git GUI [can now deal with uninitialized submodules](https://github.com/git-for-windows/git/pull/2452) (this was a Windows-specific bug).
+* It is [again possible](https://github.com/git-for-windows/git/issues/2435) to clone repositories where _some_ past revision contained file names containing backslashes (Git will of course still refuse to check out such revisions).
 
 ## Changes since Git for Windows v2.24.0(2) (November 6th 2019)
 
