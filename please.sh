@@ -3867,7 +3867,7 @@ mention () { # [--may-be-already-there] <what, e.g. bug-fix, new-feature> <relea
 	test -z "$may_be_already_there" ||
 	! git -C "$sdk64"/usr/src/build-extra --no-pager \
 		diff --exit-code --quiet HEAD ||
-	return # already added; nothing to be done anymore
+	return 0 # already added; nothing to be done anymore
 
 	(cd "$sdk64"/usr/src/build-extra &&
 	 what_singular="$(echo "$what" |
