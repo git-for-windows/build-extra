@@ -3751,7 +3751,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	then
 		(cd "$sdk64/usr/src/build-extra" &&
 		 git pull origin master &&
-		 mention feature "$release_notes_feature"&&
+		 mention --may-be-already-there feature \
+			"$release_notes_feature" &&
 		 create_bundle_artifact &&
 		 if test -z "$skip_upload"
 		 then
@@ -3797,7 +3798,12 @@ today () {
 		-e 's/1 /1st /' -e 's/2 /2nd /' -e 's/3 /3rd /'
 }
 
-mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
+mention () { # [--may-be-already-there] <what, e.g. bug-fix, new-feature> <release-notes-item>
+	may_be_already_there=
+	test --may-be-already-there != "$1" || {
+		may_be_already_there=t
+		shift
+	}
 	case "$1" in
 	bug|bugfix|bug-fix) what="Bug Fixes";;
 	new|feature|new-feature) what="New Features";;
@@ -3857,6 +3863,11 @@ mention () { # <what, e.g. bug-fix, new-feature> <release-notes-item>
 			}' -e p "$release_notes"
 		;;
 	esac
+
+	test -z "$may_be_already_there" ||
+	! git -C "$sdk64"/usr/src/build-extra --no-pager \
+		diff --exit-code --quiet HEAD ||
+	return # already added; nothing to be done anymore
 
 	(cd "$sdk64"/usr/src/build-extra &&
 	 what_singular="$(echo "$what" |
