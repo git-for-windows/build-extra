@@ -187,6 +187,7 @@ prepare_keep_despite_upgrade () { # <sdk-path>
 	keep_despite_upgrade="$(echo "$keep_despite_upgrade" | sed '/^mingw64/d')"
 
 	rm -rf "$1/.keep" &&
+	{ test -n "$keep_despite_upgrade" || return 0; } &&
 	mkdir -p "$1/.keep" &&
 	for f in $keep_despite_upgrade
 	do
@@ -200,10 +201,12 @@ prepare_keep_despite_upgrade () { # <sdk-path>
 
 process_keep_despite_upgrade () { # [--keep] <sdk-path>
 	test --keep != "$1" || {
+		test -d "$2/.keep" || return 0
 		cp -Ru "$2/.keep/"* "$2/"
 		return $?
 	}
 
+	test -d "$1/.keep" || return 0
 	cp -Ru "$1/.keep/"* "$1/" &&
 	rm -rf "$1/.keep"
 }
