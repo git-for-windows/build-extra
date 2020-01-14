@@ -112,6 +112,7 @@ git config -f "$SCRIPT_PATH/root/$etc_gitconfig" \
 die "Could not configure Git-Credential-Manager as default"
 test 64 != $BITNESS ||
 git config -f "$SCRIPT_PATH/root/$etc_gitconfig" --unset pack.packSizeLimit
+git config -f "$SCRIPT_PATH/root/$etc_gitconfig" core.fscache true
 
 case "$LIST" in
 */git-credential-helper-selector.exe*)
