@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Some corner-case bugs in the built-in `git add -i` [were fixed](https://github.com/git-for-windows/git/issues/2466).
+* The file name `COM0` [is no longer mistaken for a reserved file name](https://github.com/git-for-windows/git/issues/2470).
 
 ## Changes since Git for Windows v2.24.1(2) (December 10th 2019)
 
