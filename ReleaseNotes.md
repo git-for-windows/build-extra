@@ -39,6 +39,10 @@ This package contains software from a number of other projects including Bash, z
 
 * The Portable version of Git for Windows [now defaults to turning on the FSCache](https://github.com/git-for-windows/git/issues/2467) just like the installer does.
 
+### Bug Fixes
+
+* Some corner-case bugs in the built-in `git add -i` [were fixed](https://github.com/git-for-windows/git/issues/2466).
+
 ## Changes since Git for Windows v2.24.1(2) (December 10th 2019)
 
 ### New Features
