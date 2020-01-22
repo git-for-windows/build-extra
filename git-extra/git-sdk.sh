@@ -133,7 +133,7 @@ sdk () {
 	makepkg|makepkg-mingw)
 		cmd=$1; shift
 		WITHOUT_PDBS="$(! grep -q WITHOUT_PDBS PKGBUILD || sdk find_mspdb_dll || echo true)" \
-		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} $cmd --syncdeps --noconfirm --skipchecksums --skippgpcheck "$@"
+		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} PKGEXT='.pkg.tar.xz' $cmd --syncdeps --noconfirm --skipchecksums --skippgpcheck "$@"
 		;;
 	find_mspdb_dll)
 		for v in 140 120 110 100 80
