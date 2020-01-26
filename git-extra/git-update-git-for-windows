@@ -114,6 +114,16 @@ http_get () {
 	return "$ret"
 }
 
+get_recently_seen() {
+    git config --global winUpdater.recentlySeenVersion
+}
+
+set_recently_seen() {
+    local latest="$1"
+
+    git config --global winUpdater.recentlySeenVersion "$latest"
+}
+
 # The main function of this script
 
 update_git_for_windows () {
@@ -180,7 +190,7 @@ update_git_for_windows () {
 
 	latest=${latest_tag#v}
 	# Did we ask about this version already?
-	recently_seen="$(git config --global winUpdater.recentlySeenVersion)"
+	recently_seen="$(get_recently_seen)"
 	test -n "$quiet" && test "x$recently_seen" = "x$latest" && return
 
 	version=$(git --version | sed "s/git version //")
@@ -188,7 +198,7 @@ update_git_for_windows () {
 	if test -z "$testing" && test "$latest" = "$version"
 	then
 		echo "Up to date" >&2
-		git config --global winUpdater.recentlySeenVersion "$latest"
+		set_recently_seen "$latest"
 		return
 	fi
 	test -n "$testing" ||
@@ -237,8 +247,7 @@ update_git_for_windows () {
 				;;
 			1|17)
 				# dismiseed, or clicked No: ignore this release
-				git config --global \
-					winUpdater.recentlySeenVersion "$latest"
+				set_recently_seen "$latest"
 				return 1
 				;;
 			4|5|6|9|10)
@@ -248,8 +257,7 @@ update_git_for_windows () {
 				git askyesno \
 					--title "Git Update Available" \
 					"Download and install $name$warn?" || {
-				    git config --global \
-					winUpdater.recentlySeenVersion "$latest"
+				    set_recently_seen "$latest"
 				    return 1
 				}
 				;;
@@ -263,8 +271,7 @@ update_git_for_windows () {
 		then
 			git askyesno --title "Git Update Available" \
 				"Download and install $name$warn?" || {
-				git config --global \
-					winUpdater.recentlySeenVersion "$latest"
+				set_recently_seen "$latest"
 				return 1
 			}
 		else
@@ -273,8 +280,7 @@ update_git_for_windows () {
 			case "$yn" in
 			[Yy]*) ;;
 			*)
-				git config --global \
-					winUpdater.recentlySeenVersion "$latest"
+				set_recently_seen "$latest"
 				return 1;;
 			esac
 		fi
