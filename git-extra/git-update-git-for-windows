@@ -115,15 +115,15 @@ http_get () {
 }
 
 get_recently_seen() {
-    if [ -f ~/.git-for-windows-updater ]; then
-        git config -f ~/.git-for-windows-updater winUpdater.recentlySeenVersion
+    if [ -f "$HOME"/.git-for-windows-updater ]; then
+        git config -f "$HOME"/.git-for-windows-updater winUpdater.recentlySeenVersion
     else
         git config --global winUpdater.recentlySeenVersion
     fi
 }
 
 set_recently_seen() {
-    git config -f ~/.git-for-windows-updater winUpdater.recentlySeenVersion "$1"
+    git config -f "$HOME"/.git-for-windows-updater winUpdater.recentlySeenVersion "$1"
 }
 
 # The main function of this script
