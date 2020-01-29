@@ -39,12 +39,12 @@ This package contains software from a number of other projects including Bash, z
 
 * The Portable version of Git for Windows [now defaults to turning on the FSCache](https://github.com/git-for-windows/git/issues/2467) just like the installer does.
 * Comes with [Git LFS v2.10.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.10.0).
-* Comes with [cURL v7.68.0](https://curl.haxx.se/changes.html#7_68_0).
 
 ### Bug Fixes
 
 * Some corner-case bugs in the built-in `git add -i` [were fixed](https://github.com/git-for-windows/git/issues/2466).
 * The file name `COM0` [is no longer mistaken for a reserved file name](https://github.com/git-for-windows/git/issues/2470).
+* The `curl.exe` included in Git for Windows [can access SFTP/SSH hosts again](https://github.com/git-for-windows/git/issues/2491).
 
 ## Changes since Git for Windows v2.24.1(2) (December 10th 2019)
 
