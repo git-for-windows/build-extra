@@ -2947,6 +2947,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
+		test -n "$only_mingw" ||
 		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master &&
 
 		case "$version,$force_pkgrel" in 7.58.0,|7.62.0,)
