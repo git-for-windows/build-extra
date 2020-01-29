@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * The Portable version of Git for Windows [now defaults to turning on the FSCache](https://github.com/git-for-windows/git/issues/2467) just like the installer does.
 * Comes with [Git LFS v2.10.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.10.0).
+* Comes with [cURL v7.68.0](https://curl.haxx.se/changes.html#7_68_0).
 
 ### Bug Fixes
 
