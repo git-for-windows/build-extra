@@ -123,7 +123,7 @@ Name: "{app}\tmp"
 [Icons]
 Name: {group}\Git GUI; Filename: {app}\cmd\git-gui.exe; Parameters: ""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 Name: {group}\Git Bash; Filename: {app}\git-bash.exe; Parameters: "--cd-to-home"; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
-Name: {group}\Git CMD (Deprecated); Filename: {app}\git-cmd.exe; Parameters: "--cd-to-home"; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
+Name: {group}\Git CMD; Filename: {app}\git-cmd.exe; Parameters: "--cd-to-home"; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 
 [Messages]
 BeveledLabel={#APP_URL}
@@ -155,10 +155,10 @@ Root: HKCU; Subkey: Console\Git Bash; ValueType: dword; ValueName: FontFamily; V
 Root: HKCU; Subkey: Console\Git Bash; ValueType: dword; ValueName: FontSize; ValueData: $000e0000; Flags: createvalueifdoesntexist uninsdeletevalue uninsdeletekeyifempty
 Root: HKCU; Subkey: Console\Git Bash; ValueType: dword; ValueName: FontWeight; ValueData: $00000190; Flags: createvalueifdoesntexist uninsdeletevalue uninsdeletekeyifempty
 
-Root: HKCU; Subkey: Console\Git CMD (Deprecated); ValueType: string; ValueName: FaceName; ValueData: Lucida Console; Flags: createvalueifdoesntexist uninsdeletevalue uninsdeletekeyifempty
-Root: HKCU; Subkey: Console\Git CMD (Deprecated); ValueType: dword; ValueName: FontFamily; ValueData: $00000036; Flags: createvalueifdoesntexist uninsdeletevalue uninsdeletekeyifempty
-Root: HKCU; Subkey: Console\Git CMD (Deprecated); ValueType: dword; ValueName: FontSize; ValueData: $000e0000; Flags: createvalueifdoesntexist uninsdeletevalue uninsdeletekeyifempty
-Root: HKCU; Subkey: Console\Git CMD (Deprecated); ValueType: dword; ValueName: FontWeight; ValueData: $00000190; Flags: createvalueifdoesntexist uninsdeletevalue uninsdeletekeyifempty
+Root: HKCU; Subkey: Console\Git CMD; ValueType: string; ValueName: FaceName; ValueData: Lucida Console; Flags: createvalueifdoesntexist uninsdeletevalue uninsdeletekeyifempty
+Root: HKCU; Subkey: Console\Git CMD; ValueType: dword; ValueName: FontFamily; ValueData: $00000036; Flags: createvalueifdoesntexist uninsdeletevalue uninsdeletekeyifempty
+Root: HKCU; Subkey: Console\Git CMD; ValueType: dword; ValueName: FontSize; ValueData: $000e0000; Flags: createvalueifdoesntexist uninsdeletevalue uninsdeletekeyifempty
+Root: HKCU; Subkey: Console\Git CMD; ValueType: dword; ValueName: FontWeight; ValueData: $00000190; Flags: createvalueifdoesntexist uninsdeletevalue uninsdeletekeyifempty
 
 ; Note that we write the Registry values below either to HKLM or to HKCU depending on whether the user running the installer
 ; is a member of the local Administrators group or not (see the "Check" argument).
