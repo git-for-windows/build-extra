@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * The Portable version of Git for Windows [now defaults to turning on the FSCache](https://github.com/git-for-windows/git/issues/2467) just like the installer does.
 * Comes with [Git LFS v2.10.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.10.0).
 * Portable Git [can now be run from a RAM disk](https://github.com/git-for-windows/git/issues/2493), too.
+* The deprecation of `Git CMD` [has been reverted](https://github.com/git-for-windows/build-extra/pull/275): the security issue (`git show` would execute a `git` executable or script in the current directory instead of the intended `git.exe`) was fixed already in v2.20.0.
 
 ### Bug Fixes
 
