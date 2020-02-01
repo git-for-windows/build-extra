@@ -148,6 +148,7 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	sed -i -e '/^# Define default printer/,/^$/d' \
 		-e 's/^\(export .* \)PRINTER /\1/' /etc/profile
 
+	test ! -f /usr/share/vim/vim81/defaults.vim ||
 	! grep -A3 '^ *autocmd BufReadPost \*' \
 		/usr/share/vim/vim81/defaults.vim |
 	grep -q ' exe "normal! g`\\""' ||
