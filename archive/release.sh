@@ -12,6 +12,28 @@ die () {
 	exit 1
 }
 
+output_directory="$HOME"
+while test $# -gt 0
+do
+	case "$1" in
+	--output)
+		shift
+		output_directory="$1"
+		;;
+	--output=*)
+		output_directory="${1#*=}"
+		;;
+	-*)
+		die "Unknown option: $1"
+		;;
+	*)
+		break
+	esac
+	shift
+done
+VERSION=$1
+shift
+
 ARCH="$(uname -m)"
 case "$ARCH" in
 i686)
@@ -24,9 +46,7 @@ x86_64)
 	die "Unhandled architecture: $ARCH"
 	;;
 esac
-VERSION=$1
-shift
-TARGET="$HOME"/Git-"$VERSION"-"$BITNESS"-bit.tar.bz2
+TARGET="$(cygpath -au "$output_directory")"/Git-"$VERSION"-"$BITNESS"-bit.tar.bz2
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
 case "$SCRIPT_PATH" in

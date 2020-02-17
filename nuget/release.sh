@@ -14,6 +14,7 @@ TITLE="Git for Windows"
 DESCRIPTION='Git for Windows focuses on offering a lightweight, native set of tools that bring the full feature set of the Git to Windows while providing appropriate user interfaces for experienced users.'
 SUMMARY='The power of Git on Windows.'
 EXTRATAGS=
+output_directory="$HOME"
 while test $# -gt 1
 do
 	case "$1" in
@@ -27,6 +28,13 @@ do
 		SUMMARY="$SUMMARY Offering a lightweight, native set of tools that bring the core feature set of Git to Windows."
 		EXTRATAGS=" mingit$EXTRATAGS"
 		export MINIMAL_GIT=1
+		;;
+	--output)
+		shift
+		output_directory="$1"
+		;;
+	--output=*)
+		output_directory="${1#*=}"
 		;;
 	-*) die "Unknown option: $1";;
 	*) break;;
@@ -121,4 +129,4 @@ die "Could not move the core Git .exe files out of libexec/git-core"
 sed '1,/@@FILELIST@@/d' <"$SPECIN" >>"$SPEC"
 
 nuget pack -BasePath / -Properties buildextra="$(cygpath -aw "$BUILDEXTRA")" \
-	-OutputDirectory "$HOME" -Verbosity detailed "$SPEC"
+	-OutputDirectory "$output_directory" -Verbosity detailed "$SPEC"

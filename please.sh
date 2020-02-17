@@ -4933,7 +4933,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 }
 
 # This function does not "clean up" after installing the packages
-make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--installer] [--portable] [--mingit] [--mingit-busybox]
+make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--installer] [--portable] [--mingit] [--mingit-busybox] [--nuget] [--nuget-mingit] [--archive]
 	modes=
 	install_package=
 	output=
@@ -4957,10 +4957,10 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--in
 			test -z "$candidate" || version="$candidate"
 		done
 		;;
-	--installer|--portable|--mingit|--mingit-busybox)
+	--installer|--portable|--mingit|--mingit-busybox|--nuget|--nuget-mingit|--archive)
 		modes="${modes:+$modes }${1#--}"
 		;;
-	--only-installer|--only-portable|--only-mingit|--only-mingit-busybox)
+	--only-installer|--only-portable|--only-mingit|--only-mingit-busybox|--only-nuget|--only-nuget-mingit|--only-archive)
 		modes="${1#--only-}"
 		;;
 	--out|--output|-o)
@@ -5001,6 +5001,11 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--in
 		test mingit-busybox != $mode || {
 			mode=mingit
 			extra="${extra:+$extra }--busybox"
+		}
+
+		test nuget-mingit != $mode || {
+			mode=nuget
+			extra="${extra:+$extra }--mingit"
 		}
 
 		test installer != $mode ||
