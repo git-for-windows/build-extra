@@ -2393,8 +2393,7 @@ tag_git () { # [--force]
 	(cd "$git_src_dir" &&
 	 require_remote upstream https://github.com/git/git &&
 	 require_remote git-for-windows \
-		https://github.com/git-for-windows/git &&
-	 require_push_url git-for-windows) || exit
+		https://github.com/git-for-windows/git) || exit
 
 	case "$branch_to_use" in
 	*@*)
