@@ -3769,14 +3769,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	fi
 }
 
-set_version_from_sdks_git () {
-	version="$("$sdk64/cmd/git.exe" version)"
-	version32="$("$sdk32/cmd/git.exe" version)"
-	test -n "$version" &&
-	test "a$version" = "a$version32" ||
-	die "Version mismatch in 32/64-bit: %s vs %s\n" "$version32" "$version"
-
-	version="${version#git version }"
+set_version_from_tag_name () {
+	version="${1#refs/tags/}"
+	version="${version#v}"
 	ver="$(echo "$version" | sed -n \
 	 's/^\([0-9]*\.[0-9]*\.[0-9]*\)\.windows\(\.1\|\(\.[0-9]*\)\)$/\1\3/p')"
 	test -n "$ver" ||
@@ -3788,6 +3783,17 @@ set_version_from_sdks_git () {
 		display_version="${display_version%.*}(${display_version##*.})"
 		;;
 	esac
+}
+
+set_version_from_sdks_git () {
+	version="$("$sdk64/cmd/git.exe" version)"
+	version32="$("$sdk32/cmd/git.exe" version)"
+	test -n "$version" &&
+	test "a$version" = "a$version32" ||
+	die "Version mismatch in 32/64-bit: %s vs %s\n" "$version32" "$version"
+
+	version="${version#git version }"
+	set_version_from_tag_name "$version"
 }
 
 version_from_release_notes () {
@@ -4335,6 +4341,61 @@ require_3rdparty_directory () {
 	die "Could not make /usr/src/3rdparty in SDK-64\n"
 }
 
+render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256>...]
+	test -d "$1" || mkdir "$1" || die "Could not create '%s'\n" "$1"
+	set_version_from_tag_name "$2"
+
+	name="Git for Windows $display_version"
+	text="$(sed -n \
+		"/^## Changes since/,\${s/## //;:1;p;n;/^## Changes/q;b1}" \
+		<"$sdk64"/usr/src/build-extra/ReleaseNotes.md)"
+	checksums="$(printf '%s | %s\n' \
+		Git-"$ver"-64-bit.exe $3 \
+		Git-"$ver"-32-bit.exe $4 \
+		PortableGit-"$ver"-64-bit.7z.exe $5 \
+		PortableGit-"$ver"-32-bit.7z.exe $6 \
+		MinGit-"$ver"-64-bit.zip $7 \
+		MinGit-"$ver"-32-bit.zip $8 \
+		MinGit-"$ver"-busybox-64-bit.zip $9 \
+		MinGit-"$ver"-busybox-32-bit.zip ${10} \
+		Git-"$ver"-64-bit.tar.bz2 ${11} \
+		Git-"$ver"-32-bit.tar.bz2 ${12})"
+	body="$(printf "%s\n\n%s\n%s\n%s" "$text" \
+		'Filename | SHA-256' '-------- | -------' "$checksums")"
+	echo "$body" >"$1/release-notes-$ver"
+
+	# Required to render the release notes for the announcement mail
+	sdk="$sdk64" require w3m
+
+	prefix="$(printf "%s\n\n%s%s\n\n\t%s\n" \
+		"Dear Git users," \
+		"It is my pleasure to announce that Git for Windows " \
+		"$display_version is available from:" \
+		"https://gitforwindows.org/")"
+	rendered="$(echo "$text" |
+		"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			'markdown |
+			 LC_CTYPE=C w3m -dump -cols 72 -T text/html')"
+	printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n%s\n" \
+		"From $version Mon Sep 17 00:00:00 2001" \
+		"From: $(git var GIT_COMMITTER_IDENT | sed -e 's/>.*/>/')" \
+		"Date: $(date -R)" \
+		"To: git-for-windows@googlegroups.com, git@vger.kernel.org, git-packagers@googlegroups.com" \
+		"Subject: [ANNOUNCE] Git for Windows $display_version" \
+		"Content-Type: text/plain; charset=UTF-8" \
+		"Content-Transfer-Encoding: 8bit" \
+		"MIME-Version: 1.0" \
+		"Fcc: Sent" \
+		"$prefix" \
+		"$rendered" \
+		"$checksums" \
+		"Ciao," \
+		"$(git var GIT_COMMITTER_IDENT | sed -e 's/ .*//')" \
+		>"$1/announce-$ver"
+
+	echo "Announcement saved as $1/announcement-$ver" >&2
+}
+
 publish () { #
 	set_version_from_sdks_git
 
@@ -4381,16 +4442,9 @@ publish () { #
 	} ||
 	die "Could not execute node.exe\n"
 
-	# Required to render the release notes for the announcement mail
-	sdk="$sdk64" require w3m
-
 	echo "Preparing release message"
-	name="Git for Windows $display_version"
-	text="$(sed -n \
-		"/^## Changes since/,\${s/## //;:1;p;n;/^## Changes/q;b1}" \
-		<"$sdk64"/usr/src/build-extra/ReleaseNotes.md)"
-	checksums="$(printf 'Filename | SHA-256\n-------- | -------\n'
-		(cd "$HOME" && sha256sum.exe \
+	render_release_notes_and_mail "$HOME" "$version" \
+		$(cd "$HOME" && sha256sum.exe \
 			Git-"$ver"-64-bit.exe \
 			Git-"$ver"-32-bit.exe \
 			PortableGit-"$ver"-64-bit.7z.exe \
@@ -4402,9 +4456,8 @@ publish () { #
 			Git-"$ver"-64-bit.tar.bz2 \
 			Git-"$ver"-32-bit.tar.bz2 \
 			pdbs-for-git-64-bit-$git_pkgver.zip \
-			pdbs-for-git-32-bit-$git_pkgver.zip) |
-		sed -n 's/\([^ ]*\) \*\(.*\)/\2 | \1/p')"
-	body="$(printf "%s\n\n%s" "$text" "$checksums")"
+			pdbs-for-git-32-bit-$git_pkgver.zip |
+		 sed -n 's/\([^ ]*\) \*\(.*\)/\1/p')
 	quoted="$(echo "$body" |
 		sed -e ':1;${s/[\\"]/\\&/g;s/\n/\\n/g};N;b1')"
 
@@ -4477,37 +4530,9 @@ publish () { #
 	 really_push origin HEAD) ||
 	die "Could not update download-stats.sh\n"
 
-	prefix="$(printf "%s\n\n%s%s\n\n\t%s\n" \
-		"Dear Git users," \
-		"It is my pleasure to announce that Git for Windows " \
-		"$display_version is available from:" \
-		"https://gitforwindows.org/")"
-	rendered="$(echo "$text" |
-		"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'markdown |
-			 LC_CTYPE=C w3m -dump -cols 72 -T text/html')"
-	printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n%s\n" \
-		"From $version Mon Sep 17 00:00:00 2001" \
-		"From: $(git var GIT_COMMITTER_IDENT | sed -e 's/>.*/>/')" \
-		"Date: $(date -R)" \
-		"To: git-for-windows@googlegroups.com, git@vger.kernel.org, git-packagers@googlegroups.com" \
-		"Subject: [ANNOUNCE] Git for Windows $display_version" \
-		"Content-Type: text/plain; charset=UTF-8" \
-		"Content-Transfer-Encoding: 8bit" \
-		"MIME-Version: 1.0" \
-		"Fcc: Sent" \
-		"$prefix" \
-		"$rendered" \
-		"$checksums" \
-		"Ciao," \
-		"$(git var GIT_COMMITTER_IDENT | sed -e 's/ .*//')" \
-		> "$HOME/announce-$ver"
-
 	test -z "$(git config alias.sendAnnouncementMail)" ||
 	git sendAnnouncementMail "$HOME/announce-$ver" ||
 	echo "error: could not send announcement" >&2
-
-	echo "Announcement saved as ~/announcement-$ver" >&2
 }
 
 release_sdk () { # <version>
