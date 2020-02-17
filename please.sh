@@ -4951,7 +4951,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	test -z "$output_path" || {
 		pkgpattern="$(sed -n '/^pkgver=/{N;s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2/p}' <${git_src_dir%/src/git}/PKGBUILD.$tag)" &&
 		mkdir -p "$output_path" &&
-		cp ${git_src_dir%/src/git}/*-"$pkgpattern"-any.pkg.tar.xz "$output_path/"
+		cp ${git_src_dir%/src/git}/*-"$pkgpattern"-any.pkg.tar.xz ${git_src_dir%/src/git}/PKGBUILD.$tag "$output_path/"
 	} ||
 	die "Could not copy artifact(s) to %s\n" "$output_path"
 }
