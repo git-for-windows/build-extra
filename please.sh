@@ -2997,6 +2997,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		if test -n "$artifactsdir"
 		then
 			echo "$next_version" >"$artifactsdir/next_version" &&
+			echo "$display_version" >"$artifactsdir/display_version" &&
+			set_version_from_tag_name "$next_version" &&
+			echo "$ver" >"$artifactsdir/ver" &&
 			git -C "$git_src_dir" bundle create \
 				"$artifactsdir/git.bundle" \
 				git-for-windows/master..$next_version &&
