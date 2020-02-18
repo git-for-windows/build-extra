@@ -4948,7 +4948,13 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 		export WITHOUT_PDBS
 	}
 
-	(cd ${git_src_dir%/src/git}/ && MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag) ||
+	(if test -n "$(git config alias.signtool)"
+	 then
+		d="$(git rev-parse --absolute-git-dir)"
+		export SIGNTOOL="git ${d:+--git-dir="$d"} signtool"
+	 fi &&
+	 cd ${git_src_dir%/src/git}/ &&
+	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag) ||
 	die "Could not build mingw-w64-git\n"
 
 	test -z "$output_path" || {
