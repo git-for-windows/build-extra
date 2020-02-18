@@ -4960,7 +4960,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 }
 
 # This function does not "clean up" after installing the packages
-make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--installer] [--portable] [--mingit] [--mingit-busybox] [--nuget] [--nuget-mingit] [--archive]
+make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--version=<version>] [--installer] [--portable] [--mingit] [--mingit-busybox] [--nuget] [--nuget-mingit] [--archive]
 	modes=
 	install_package=
 	output=
@@ -4972,7 +4972,7 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--in
 		for file in ${1#*=}
 		do
 			candidate="$(echo $file | sed -n 's/.*git-\([0-9][.0-9a-f]*\).*/\1/p')"
-			test -z "$candidate" || version="$candidate"
+			test 0-test != "$version" || test -z "$candidate" || version="$candidate"
 		done
 		;;
 	--pkg)
@@ -4981,8 +4981,15 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--in
 		for file in $1
 		do
 			candidate="$(echo $file | sed -n 's/.*git-\([0-9][.0-9a-f]*\).*/\1/p')"
-			test -z "$candidate" || version="$candidate"
+			test 0-test != "$version" || test -z "$candidate" || version="$candidate"
 		done
+		;;
+	--version)
+		shift
+		version=$1
+		;;
+	--version=*)
+		version=${1#*=}
 		;;
 	--installer|--portable|--mingit|--mingit-busybox|--nuget|--nuget-mingit|--archive)
 		modes="${modes:+$modes }${1#--}"
