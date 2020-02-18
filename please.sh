@@ -4871,6 +4871,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	output_path=
 	sed_makepkg_e=
 	force=
+	src_pkg=
 	while case "$1" in
 	--only-32-bit)
 		MINGW_INSTALLS=mingw32
@@ -4888,6 +4889,9 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 		;;
 	--skip-doc-html)
 		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-doc-html"//'
+		;;
+	--build-src-pkg)
+		src_pkg=t
 		;;
 	--force)
 		force=--force
@@ -4954,12 +4958,17 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 		export SIGNTOOL="git ${d:+--git-dir="$d"} signtool"
 	 fi &&
 	 cd ${git_src_dir%/src/git}/ &&
-	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag) ||
+	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag &&
+	 if test -n "$src_pkg"
+	 then
+		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_INSTALLS=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.$tag
+	 fi) ||
 	die "Could not build mingw-w64-git\n"
 
 	test -z "$output_path" || {
 		pkgpattern="$(sed -n '/^pkgver=/{N;s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2/p}' <${git_src_dir%/src/git}/PKGBUILD.$tag)" &&
 		mkdir -p "$output_path" &&
+		{ test -z "$src_pkg" || cp ${git_src_dir%/src/git}/*-"$pkgpattern".src.tar.gz "$output_path/"; } &&
 		cp ${git_src_dir%/src/git}/*-"$pkgpattern"-any.pkg.tar.xz ${git_src_dir%/src/git}/PKGBUILD.$tag "$output_path/"
 	} ||
 	die "Could not copy artifact(s) to %s\n" "$output_path"
