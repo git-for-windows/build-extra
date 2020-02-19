@@ -4682,7 +4682,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		fi
 	else
 		test auto != "$bitness" ||
-		die "No SDK found at '%s'; Please use `--bitness=<n>` to indicate which SDK to use" "$git_sdk_path"
+		die "No SDK found at '%s'; Please use \`--bitness=<n>\` to indicate which SDK to use" "$git_sdk_path"
 
 		test "z$git_sdk_path" != "z${git_sdk_path%.git}" ||
 		git_sdk_path="$git_sdk_path.git"
