@@ -4367,6 +4367,7 @@ render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256
 	echo "$body" >"$1/release-notes-$ver"
 
 	# Required to render the release notes for the announcement mail
+	type w3m ||
 	sdk="$sdk64" require w3m
 
 	prefix="$(printf "%s\n\n%s%s\n\n\t%s\n" \
@@ -4375,9 +4376,15 @@ render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256
 		"$display_version is available from:" \
 		"https://gitforwindows.org/")"
 	rendered="$(echo "$text" |
-		"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'markdown |
-			 LC_CTYPE=C w3m -dump -cols 72 -T text/html')"
+		if type markdown >&2
+		then
+			markdown |
+			LC_CTYPE=C w3m -dump -cols 72 -T text/html
+		else
+			"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+				'markdown |
+				LC_CTYPE=C w3m -dump -cols 72 -T text/html'
+		fi)"
 	printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n%s\n" \
 		"From $version Mon Sep 17 00:00:00 2001" \
 		"From: $(git var GIT_COMMITTER_IDENT | sed -e 's/>.*/>/')" \
