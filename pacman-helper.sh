@@ -483,7 +483,7 @@ quick_add () { # <file>...
 	all_files=
 
 	# Copy the file(s) to the temporary directory, and schedule their addition to the appropriate index(es)
-	for path
+	for path in "$@"
 	do
 		file="${path##*/}"
 		mingw=
@@ -832,4 +832,4 @@ orphans () {
 	pacman -Rns $(pacman -Qtdq) 2> /dev/null || echo 'no orphans found..'
 }
 
-eval "$mode" "$@"
+"$mode" "$@"
