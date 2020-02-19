@@ -62,7 +62,7 @@ tar2zip () {
 	mkdir $unpackdir &&
 	(cd $unpackdir && tar xzf -) <"$1" &&
 	(cd $unpackdir/* &&
-	 CARCH=x86_64 \
+	 CARCH=x86_64 MSBUILD_DIR=. \
 	 bash -c 'source PKGBUILD &&
 		repo= &&
 		case "${source[0]}" in
