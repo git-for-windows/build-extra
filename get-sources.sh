@@ -163,6 +163,11 @@ do
 		# the package was called crypt
 		test "$version" != 2.1-1 ||
 		name=crypt
+		;;
+	libnghttp2)
+		# built as secondary package (see MSYS2-packages/*/PKGBUILD)
+		name=nghttp2
+		;;
 	esac
 
 	# Work around mismatched version uploaded in MSYS2/Git for Windows
