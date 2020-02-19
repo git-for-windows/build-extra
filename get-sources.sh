@@ -62,7 +62,7 @@ tar2zip () {
 	mkdir $unpackdir &&
 	(cd $unpackdir && tar xzf -) <"$1" &&
 	(cd $unpackdir/* &&
-	 CARCH=x86_64 \
+	 CARCH=x86_64 MSBUILD_DIR=. \
 	 bash -c 'source PKGBUILD &&
 		repo= &&
 		case "${source[0]}" in
@@ -163,6 +163,11 @@ do
 		# the package was called crypt
 		test "$version" != 2.1-1 ||
 		name=crypt
+		;;
+	libnghttp2)
+		# built as secondary package (see MSYS2-packages/*/PKGBUILD)
+		name=nghttp2
+		;;
 	esac
 
 	# Work around mismatched version uploaded in MSYS2/Git for Windows
@@ -206,7 +211,7 @@ do
 	then
 
 		case "$name" in
-		git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|msys2-runtime|mingw-w64-x86_64-git-credential-manager|mingw-w64-i686-git-credential-manager|mingw-w64-i686-git-lfs|mingw-w64-x86_64-git-lfs|curl|mingw-w64-i686-curl|mingw-w64-x86_64-curl|mingw-w64-i686-wintoast|mingw-w64-x86_64-wintoast|bash|heimdal|perl)
+		git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|msys2-runtime|mingw-w64-x86_64-git-credential-manager|mingw-w64-i686-git-credential-manager|mingw-w64-i686-git-lfs|mingw-w64-x86_64-git-lfs|curl|mingw-w64-i686-curl|mingw-w64-x86_64-curl|mingw-w64-i686-wintoast|mingw-w64-x86_64-wintoast|bash|heimdal|perl|openssh)
 			url="$azure_blobs_source_url/$filename"
 			sf1_url=
 			sf2_url=
