@@ -4368,7 +4368,18 @@ render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256
 
 	# Required to render the release notes for the announcement mail
 	type w3m ||
-	sdk="$sdk64" require w3m
+	case "$(uname -s)" in
+	Linux)
+		sudo apt-get -y install w3m ||
+		die "Could not install w3m\n"
+		;;
+	MINGW*|MSYS)
+		sdk="$sdk64" require w3m
+		;;
+	*)
+		die "Could not install w3m\n"
+		;;
+	esac
 
 	prefix="$(printf "%s\n\n%s%s\n\n\t%s\n" \
 		"Dear Git users," \
