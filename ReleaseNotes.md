@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.25.1](https://github.com/git/git/blob/v2.25.1/Documentation/RelNotes/2.25.1.txt).
 * The Portable version of Git for Windows [now defaults to turning on the FSCache](https://github.com/git-for-windows/git/issues/2467) just like the installer does.
 * Comes with [Git LFS v2.10.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.10.0).
 * Portable Git [can now be run from a RAM disk](https://github.com/git-for-windows/git/issues/2493), too.
