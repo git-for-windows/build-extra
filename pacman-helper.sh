@@ -492,6 +492,7 @@ quick_add () { # <file>...
 		git-extra-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; key=${arch}_mingw;;
 		*-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; key=${arch}_msys;;
 		*.src.tar.gz) arch=sources; key= ;;
+		*.sig) continue;; # skip explicit signatures; we copy them automatically
 		*) echo "Skipping unknown file: $file" >&2; continue;;
 		esac
 		case " $architectures sources " in
@@ -506,7 +507,11 @@ quick_add () { # <file>...
 		cp "$path" "$dir/$arch" ||
 		die "Could not copy $path to $dir/$arch"
 
-		if test -n "$GPGKEY"
+		if test -f "$path".sig
+		then
+			cp "$path".sig "$dir/$arch/" ||
+			die "Could not copy $path.sig to $dir/$arch"
+		elif test -n "$GPGKEY"
 		then
 			echo "Signing $arch/$file..." >&2
 			call_gpg --detach-sign --no-armor -u $GPGKEY "$dir/$arch/$file"
