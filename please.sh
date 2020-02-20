@@ -218,10 +218,17 @@ process_keep_despite_upgrade () { # [--keep] <sdk-path>
 sync () { # [--force]
 	force=
 	y_opt=y
+	only=
 	while case "$1" in
 	--force)
 		force='--overwrite=\*'
 		y_opt=yy
+		;;
+	--only-i686|--only-32-bit)
+		only="$sdk32"
+		;;
+	--only-x86_64|--only-64-bit)
+		only="$sdk64"
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -233,6 +240,10 @@ sync () { # [--force]
 	export MSYS2_PATH_TYPE=minimal
 	for sdk in "$sdk32" "$sdk64"
 	do
+		test -z "$only" ||
+		test "$only" = "$sdk" ||
+		continue
+
 		mkdir -p "$sdk/var/log" ||
 		die "Could not ensure %s/var/log/ exists\n" "$sdk"
 
