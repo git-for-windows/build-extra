@@ -511,6 +511,7 @@ quick_add () { # <file>...
 		then
 			cp "$path".sig "$dir/$arch/" ||
 			die "Could not copy $path.sig to $dir/$arch"
+                        all_files="$all_files $arch/$file.sig"
 		elif test -n "$GPGKEY"
 		then
 			echo "Signing $arch/$file..." >&2
