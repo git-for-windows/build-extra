@@ -555,6 +555,14 @@ set_package () {
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
+	libcbor)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
+	libfido2)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
@@ -2748,8 +2756,11 @@ maybe_force_pkgrel () {
 	then
 		# Maybe there have been changes since the latest release?
 		blame_ver="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgver=/,+1' -- ./PKGBUILD)" &&
-		blame="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgrel=/,+1' -- ./PKGBUILD)" &&
-		if test 0 -lt $(git rev-list --count ${blame%% *}.. ${blame_ver%% *}.. -- PKGBUILD)
+		blame_ver="$(echo "$blame_ver" | sed -e 's/ .*//' -e 's/^0*//')" &&
+		blame="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgrel=/,+1' HEAD -- ./PKGBUILD)" &&
+		blame="$(echo "$blame" | sed -e 's/ .*//' -e 's/^0*//')" &&
+		if test -n "$blame_ver" &&
+		   test 0 -lt $(git rev-list --count ${blame:+$blame..} ${blame_ver:+$blame_ver..} -- PKGBUILD)
 		then
 			sed -i "s/^\\(pkgrel=\\).*/\\1"$((1+${blame##*=}))/ PKGBUILD
 		fi
@@ -3648,7 +3659,6 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 grep "sha256sums.*$sha256" PKGBUILD &&
 		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
@@ -3748,6 +3758,60 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
 		release_notes_feature="Comes with [PCRE2 $v]($url)."
+		;;
+	libcbor)
+		repo=PJK/libcbor
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		version="$(echo "$release" |
+			sed -n 's/^  "tag_name": "v\(.*\)",\?$/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) ||
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
+
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		die "Could not update $sdk32$pkgpath"
+
+		url=https://github.com/$repo/releases/tag/$version &&
+		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
+		release_notes_feature="Comes with [$package $v]($url)."
+		;;
+	libfido2)
+		repo=Yubico/libfido2
+		url=https://api.github.com/repos/$repo/tags?per_page=1
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		version="$(echo "$release" |
+			sed -n 's/^    "name": "\(.*\)",\?$/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) ||
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
+
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		die "Could not update $sdk32$pkgpath"
+
+		url=https://github.com/$repo/releases/tag/$version &&
+		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
+		release_notes_feature="Comes with [$package $v]($url)."
 		;;
 	*)
 		die "Unhandled package: %s\n" "$package"
