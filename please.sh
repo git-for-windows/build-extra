@@ -3651,7 +3651,6 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
-		 grep "sha256sums.*$sha256" PKGBUILD &&
 		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
