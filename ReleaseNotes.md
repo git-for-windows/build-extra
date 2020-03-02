@@ -33,6 +33,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.25.1 (February 19th 2020)
+
+### New Features
+
+* Comes with [libcbor v0.5.0](https://github.com/PJK/libcbor/releases/tag/0.5.0).
+
 ## Changes since Git for Windows v2.25.0 (January 13th 2020)
 
 ### New Features
