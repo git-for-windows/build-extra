@@ -557,10 +557,12 @@ set_package () {
 		;;
 	libcbor)
 		type=MSYS
+		extra_packages="$package-devel"
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
 	libfido2)
 		type=MSYS
+		extra_packages="$package-devel"
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
 	*)
