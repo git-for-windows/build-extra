@@ -4021,7 +4021,8 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 		describe --first-parent --match 'v[0-9]*[0-9]' \
 		"$branch_to_use")" ||
 	die "Cannot describe current revision of Git\n"
-	ver=${ver%%-*}
+
+	ver=${ver%%-[1-9]*}
 
 	# With --delete-existing-tag, delete previously generated tags, e.g.
 	# from failed automated builds
