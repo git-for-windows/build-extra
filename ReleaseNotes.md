@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [libcbor v0.5.0](https://github.com/PJK/libcbor/releases/tag/0.5.0).
+* Comes with [cURL v7.69.0](https://curl.haxx.se/changes.html#7_69_0).
 
 ## Changes since Git for Windows v2.25.0 (January 13th 2020)
 
