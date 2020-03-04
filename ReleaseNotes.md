@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [cURL v7.69.0](https://curl.haxx.se/changes.html#7_69_0).
 * Git for Windows' OpenSSH [now can use USB security tokens](https://github.com/git-for-windows/git/issues/2525) (e.g. Yubikeys).
+* The native Windows HTTPS backend (Secure Channel) [has learned to work gracefully with Fiddler and corporate proxies](https://github.com/git-for-windows/git/pull/2535).
 
 ## Changes since Git for Windows v2.25.0 (January 13th 2020)
 
