@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [libcbor v0.5.0](https://github.com/PJK/libcbor/releases/tag/0.5.0).
 * Comes with [libfido2 v1.3.1](https://github.com/Yubico/libfido2/releases/tag/1.3.1).
 * Comes with [cURL v7.69.0](https://curl.haxx.se/changes.html#7_69_0).
+* Comes with [OpenSSH v8.2p1](https://www.openssh.com/txt/release-8.2).
 
 ## Changes since Git for Windows v2.25.0 (January 13th 2020)
 
