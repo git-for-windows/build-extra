@@ -2428,8 +2428,8 @@ tag_git () { # [--force]
 	branch_to_use="${branch_to_use:-git-for-windows/master}"
 
 	next_version="$(sed -ne \
-		'1s/.* \(v[0-9][.0-9]*\)(\([0-9][0-9]*\)) .*/\1.windows.\2/p' \
-		-e '1s/.* \(v[0-9][.0-9]*\) .*/\1.windows.1/p' \
+		'1s/.* \(v[0-9][.0-9]*\(-rc[0-9]*\)\?\)(\([0-9][0-9]*\)) .*/\1.windows.\3/p' \
+		-e '1s/.* \(v[0-9][.0-9]*\(-rc[0-9]*\)\?\) .*/\1.windows.1/p' \
 		<"$build_extra_dir/ReleaseNotes.md")"
 	! git --git-dir="$git_src_dir" rev-parse --verify \
 		refs/tags/"$next_version" >/dev/null 2>&1 ||
