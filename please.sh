@@ -3852,7 +3852,7 @@ set_version_from_tag_name () {
 	version="${1#refs/tags/}"
 	version="${version#v}"
 	ver="$(echo "$version" | sed -n \
-	 's/^\([0-9]*\.[0-9]*\.[0-9]*\)\.windows\(\.1\|\(\.[0-9]*\)\)$/\1\3/p')"
+		's/^\([0-9]*\.[0-9]*\.[0-9]*\(-rc[0-9]*\)\?\)\.windows\(\.1\|\(\.[0-9]*\)\)$/\1\4/p')"
 	test -n "$ver" ||
 	die "Unexpected version format: %s\n" "$version"
 
@@ -4459,11 +4459,18 @@ render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256
 		;;
 	esac
 
-	prefix="$(printf "%s\n\n%s%s\n\n\t%s\n" \
+	url=https://gitforwindows.org/
+	case "$display_version" in
+	*-rc*)
+		url=https://github.com/git-for-windows/git/releases/tag/$2
+		;;
+	esac
+
+	prefix="$(printf "%s\n\n%s%s\n\n    %s\n" \
 		"Dear Git users," \
-		"It is my pleasure to announce that Git for Windows " \
+		"I hereby announce that Git for Windows " \
 		"$display_version is available from:" \
-		"https://gitforwindows.org/")"
+		"$url")"
 	rendered="$(echo "$text" |
 		if type markdown >&2
 		then
