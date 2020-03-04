@@ -2428,8 +2428,8 @@ tag_git () { # [--force]
 	branch_to_use="${branch_to_use:-git-for-windows/master}"
 
 	next_version="$(sed -ne \
-		'1s/.* \(v[0-9][.0-9]*\)(\([0-9][0-9]*\)) .*/\1.windows.\2/p' \
-		-e '1s/.* \(v[0-9][.0-9]*\) .*/\1.windows.1/p' \
+		'1s/.* \(v[0-9][.0-9]*\(-rc[0-9]*\)\?\)(\([0-9][0-9]*\)) .*/\1.windows.\3/p' \
+		-e '1s/.* \(v[0-9][.0-9]*\(-rc[0-9]*\)\?\) .*/\1.windows.1/p' \
 		<"$build_extra_dir/ReleaseNotes.md")"
 	! git --git-dir="$git_src_dir" rev-parse --verify \
 		refs/tags/"$next_version" >/dev/null 2>&1 ||
@@ -3852,7 +3852,7 @@ set_version_from_tag_name () {
 	version="${1#refs/tags/}"
 	version="${version#v}"
 	ver="$(echo "$version" | sed -n \
-	 's/^\([0-9]*\.[0-9]*\.[0-9]*\)\.windows\(\.1\|\(\.[0-9]*\)\)$/\1\3/p')"
+		's/^\([0-9]*\.[0-9]*\.[0-9]*\(-rc[0-9]*\)\?\)\.windows\(\.1\|\(\.[0-9]*\)\)$/\1\4/p')"
 	test -n "$ver" ||
 	die "Unexpected version format: %s\n" "$version"
 
@@ -4021,7 +4021,8 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 		describe --first-parent --match 'v[0-9]*[0-9]' \
 		"$branch_to_use")" ||
 	die "Cannot describe current revision of Git\n"
-	ver=${ver%%-*}
+
+	ver=${ver%%-[1-9]*}
 
 	# With --delete-existing-tag, delete previously generated tags, e.g.
 	# from failed automated builds
@@ -4458,11 +4459,18 @@ render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256
 		;;
 	esac
 
-	prefix="$(printf "%s\n\n%s%s\n\n\t%s\n" \
+	url=https://gitforwindows.org/
+	case "$display_version" in
+	*-rc*)
+		url=https://github.com/git-for-windows/git/releases/tag/$2
+		;;
+	esac
+
+	prefix="$(printf "%s\n\n%s%s\n\n    %s\n" \
 		"Dear Git users," \
-		"It is my pleasure to announce that Git for Windows " \
+		"I hereby announce that Git for Windows " \
 		"$display_version is available from:" \
-		"https://gitforwindows.org/")"
+		"$url")"
 	rendered="$(echo "$text" |
 		if type markdown >&2
 		then
