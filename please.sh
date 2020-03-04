@@ -506,12 +506,12 @@ set_package () {
 		;;
 	bash)
 		type=MSYS
-		extra_packages="bash-devel"
+		extra_packages="$package-devel"
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
 	heimdal)
 		type=MSYS
-		extra_packages="heimdal-libs heimdal-devel"
+		extra_packages="$package-libs $package-devel"
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
 	perl)
