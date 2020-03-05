@@ -64,31 +64,100 @@ render_release_notes () {
 		wiki=https://github.com/git-for-windows/git/wiki &&
 		faq=$wiki/FAQ &&
 		mailinglist=mailto:git@vger.kernel.org &&
-		links="$(printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" \
-		'<div class="links">' \
-		'<ul>' \
-		'<li><a href="'$homepage'">homepage</a></li>' \
-		'<li><a href="'$faq'">faq</a></li>' \
-		'<li><a href="'$contribute'">contribute</a></li>' \
-		'<li><a href="'$contribute'">bugs</a></li>' \
-		'<li><a href="'$mailinglist'">questions</a></li>' \
-		'</ul>' \
-		'</div>')" &&
-		printf '%s\n%s\n%s\n%s %s\n%s %s\n%s\n%s\n%s\n%s\n' \
-		'<!DOCTYPE html>' \
-		'<html>' \
-		'<head>' \
-		'<meta http-equiv="Content-Type" content="text/html;' \
-		'charset=UTF-8">' \
-		'<link rel="stylesheet"' \
-		'href="'$CSSDIR${CSSDIR:+/}'ReleaseNotes.css">' \
-		'</head>' \
-		'<body class="details">' \
-		"$links" \
-		'<div class="content">'
-		markdown "$SCRIPT_PATH"/ReleaseNotes.md ||
+		cat <<-EOF &&
+		<!DOCTYPE html>
+		<html>
+			<head>
+				<meta http-equiv="Content-Type" content="text/html;
+				charset=UTF-8">
+				<link rel="stylesheet"
+					href="$CSSDIR${CSSDIR:+/}ReleaseNotes.css">
+			</head>
+			<body class="details">
+				<div class="links">
+					<ul>
+					<li><a href="$homepage">homepage</a></li>
+					<li><a href="$faq">faq</a></li>
+					<li><a href="$contribute">contribute</a></li>
+					<li><a href="$contribute">bugs</a></li>
+					<li><a href="$mailinglist">questions</a></li>
+					</ul>
+					<div id="git-for-windows-logo">
+						<div id="left-pane"></div>
+						<div id="top-pane"></div>
+						<div id="right-pane"></div>
+						<div id="bottom-pane"></div>
+						<div id="diagonal-pipe"></div>
+						<div id="vertical-pipe"></div>
+						<div id="top-ball"></div>
+						<div id="bottom-ball"></div>
+						<div id="right-ball"></div>
+					</div>
+				</div>
+				<div class="content">
+		EOF
+		body="$(markdown "$SCRIPT_PATH"/ReleaseNotes.md)" ||
 		die "Could not generate ReleaseNotes.html"
-		printf '</div>\n</body>\n</html>\n') >"$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html"
+		echo "$body" | perl -pe '
+			s/^(<h1)(>Known issues)/\1 id="known-issues" class="collapsible"\2/;
+			s/^(<h2)(>Licenses.*)/\1 id="licenses" class="collapsible"\2<div>/;
+			$v = $1 if (/<h1>Git for Windows (\S+)/);
+			if (/^<h2>Changes since Git for Windows ([^ ]*)/) {
+				$previous_version = $1;
+
+				if (!$latest) {
+					s/>[^<]*/><a name="latest"$&<\/a>/;
+					$latest = 1;
+				}
+
+				# wrap the line before the date
+				s/ (\([^)]+\))</<br \/><small>$1<\/small></;
+
+				$nr = 0 if (!$nr);
+				$nr++;
+				s/^<h2/$& id="$v" nr="$nr" class="collapsible"/;
+				$v = $previous_version;
+				s/.*/<\/div>$&<div>/;
+			}'
+		cat <<-\EOF
+					</div>
+				</div>
+				<script>
+				(() => {
+					for (let el of document.getElementsByClassName('collapsible')) {
+						let arrow = document.createElement('div');
+						arrow.innerHTML = '⯆';
+						arrow.style.float = 'left';
+						arrow.style.position = 'relative';
+						arrow.style.left = '-1em';
+						arrow.style.top = '+1.5em';
+
+						const toggle = () => {
+							// this.classList.toggle('active');
+							let details = el.nextElementSibling;
+							if (details.style.display === 'none') {
+								details.style.display = 'block';
+								arrow.innerHTML = '⯆';
+							} else {
+								details.style.display = 'none';
+								arrow.innerHTML = '⯈';
+							}
+						};
+
+						if (el.getAttribute('nr') !== '1') {
+							toggle();
+						}
+
+						el.addEventListener('click', toggle);
+						arrow.addEventListener('click', toggle);
+						el.parentElement.insertBefore(arrow, el);
+					}
+				})();
+				</script>
+			</body>
+		</html>
+		EOF
+		) >"$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html"
 }
 
 COPYCSS=

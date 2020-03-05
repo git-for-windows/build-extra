@@ -275,6 +275,10 @@ footer li {
 	text-decoration: underline;
 }
 
+.details h2 a {
+	color: #FFFFFF;
+}
+
 .details h2 {
 	background-color: #4A7CC2;
 	border-bottom: solid 0.104em #7198C1;
@@ -371,3 +375,106 @@ footer li {
 	clear: both;
 }
 
+@media screen and (max-width:850px) {
+	#git-for-windows-logo {
+		display: none;
+	}
+}
+
+#git-for-windows-logo {
+	position: absolute;
+	z-index: -5;
+	width: 128px;
+	height: 128px;
+}
+
+@media screen and (max-width:924px) {
+	#git-for-windows-logo {
+		filter: blur(5px);
+	}
+}
+
+#left-pane, #top-pane, #right-pane, #bottom-pane,
+#diagonal-pipe, #vertical-pipe, #top-ball, #right-ball, #bottom-ball {
+	position: absolute;
+	box-sizing: content-box;
+}
+
+#left-pane, #top-pane, #right-pane, #bottom-pane {
+	content: "";
+	position: relative;
+	width: 40%;
+	height: 40%;
+	border-radius: 20% 0 0 0;
+}
+
+#diagonal-pipe, #vertical-pipe, #top-ball, #right-ball, #bottom-ball {
+	background-color: white;
+	z-index: +2;
+}
+
+#diagonal-pipe, #vertical-pipe {
+	width: 7%;
+}
+
+#top-ball, #right-ball, #bottom-ball {
+	width: 16.67%;
+	height: 16.67%;
+	border-radius: 50%;
+}
+
+#left-pane {
+	top: 30%;
+	left: 0;
+	background-color: #80b3ff;
+	transform: rotate(-45deg);
+}
+
+#top-pane {
+	top: -40%;
+	left: 30%;
+	background-color: #ff8080;
+	transform: rotate(+45deg);
+}
+
+#right-pane {
+	top: -50%;
+	left: 60%;
+	background-color: #8dd35f;
+	transform: rotate(+135deg);
+}
+
+#bottom-pane {
+	top: -60%;
+	left: 30%;
+	background-color: #ffe680;
+	transform: rotate(+225deg);
+}
+
+#diagonal-pipe {
+	height: 53.33%;
+	top: 1.5%;
+	left: 47.67%;
+	transform: rotate(-45deg);
+}
+
+#vertical-pipe {
+	height: 40%;
+	top: 26.67%;
+	left: 47.33%;
+}
+
+#top-ball {
+	top: 18.67%;
+	left: 42.33%;
+}
+
+#bottom-ball {
+	top: 65.33%;
+	left: 42.33%;
+}
+
+#right-ball {
+	top: 42%;
+	left: 65.33%;
+}
