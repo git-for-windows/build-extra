@@ -82,6 +82,17 @@ render_release_notes () {
 					<li><a href="$contribute">bugs</a></li>
 					<li><a href="$mailinglist">questions</a></li>
 					</ul>
+					<div id="git-for-windows-logo">
+						<div id="left-pane"></div>
+						<div id="top-pane"></div>
+						<div id="right-pane"></div>
+						<div id="bottom-pane"></div>
+						<div id="diagonal-pipe"></div>
+						<div id="vertical-pipe"></div>
+						<div id="top-ball"></div>
+						<div id="bottom-ball"></div>
+						<div id="right-ball"></div>
+					</div>
 				</div>
 				<div class="content">
 		EOF
