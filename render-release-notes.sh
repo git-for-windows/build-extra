@@ -89,8 +89,8 @@ render_release_notes () {
 		body="$(markdown "$SCRIPT_PATH"/ReleaseNotes.md)" ||
 		die "Could not generate ReleaseNotes.html"
 		echo "$body" | perl -pe '
-			s/^(<h1)(>Known issues)/\1 id="known-issues"\2/;
-			s/^(<h2)(>Licenses)/\1 id="licenses"\2/;
+			s/^(<h1)(>Known issues)/\1 id="known-issues" class="collapsible"\2/;
+			s/^(<h2)(>Licenses.*)/\1 id="licenses" class="collapsible"\2<div>/;
 			$v = $1 if (/<h1>Git for Windows (\S+)/);
 			if (/^<h2>Changes since Git for Windows ([^ ]*)/) {
 				$previous_version = $1;
@@ -100,10 +100,52 @@ render_release_notes () {
 					$latest = 1;
 				}
 
-				s/^<h2/$& id="$v"/;
+				$nr = 0 if (!$nr);
+				$nr++;
+				s/^<h2/$& id="$v" nr="$nr" class="collapsible"/;
 				$v = $previous_version;
+				s/.*/<\/div>$&<div>/;
 			}'
-		printf '</div>\n</body>\n</html>\n') >"$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html"
+		cat <<-\EOF
+		</div>
+		</div>
+		<script>
+		(() => {
+			for (let el of document.getElementsByClassName('collapsible')) {
+				let arrow = document.createElement('div');
+				arrow.innerHTML = '⯆';
+				arrow.style.float = 'left';
+				arrow.style.position = 'relative';
+				arrow.style.left = '-1em';
+				arrow.style.top = '+1.5em';
+
+				const toggle = () => {
+					// this.classList.toggle('active');
+					let details = el.nextElementSibling;
+					if (details.style.display === 'none') {
+						details.style.display = 'block';
+						arrow.innerHTML = '⯆';
+					} else {
+						details.style.display = 'none';
+						arrow.innerHTML = '⯈';
+					}
+				};
+
+				if (el.getAttribute('nr') !== '1') {
+					toggle();
+				}
+
+				el.addEventListener('click', toggle);
+				arrow.addEventListener('click', toggle);
+				el.parentElement.insertBefore(arrow, el);
+			}
+		})();
+		</script>
+
+		</body>
+		</html>
+		EOF
+		) >"$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html"
 }
 
 COPYCSS=
