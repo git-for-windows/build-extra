@@ -275,6 +275,10 @@ footer li {
 	text-decoration: underline;
 }
 
+.details h2 a {
+	color: #FFFFFF;
+}
+
 .details h2 {
 	background-color: #4A7CC2;
 	border-bottom: solid 0.104em #7198C1;

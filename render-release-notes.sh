@@ -86,8 +86,23 @@ render_release_notes () {
 		'<body class="details">' \
 		"$links" \
 		'<div class="content">'
-		markdown "$SCRIPT_PATH"/ReleaseNotes.md ||
+		body="$(markdown "$SCRIPT_PATH"/ReleaseNotes.md)" ||
 		die "Could not generate ReleaseNotes.html"
+		echo "$body" | perl -pe '
+			s/^(<h1)(>Known issues)/\1 id="known-issues"\2/;
+			s/^(<h2)(>Licenses)/\1 id="licenses"\2/;
+			$v = $1 if (/<h1>Git for Windows (\S+)/);
+			if (/^<h2>Changes since Git for Windows ([^ ]*)/) {
+				$previous_version = $1;
+
+				if (!$latest) {
+					s/>[^<]*/><a name="latest"$&<\/a>/;
+					$latest = 1;
+				}
+
+				s/^<h2/$& id="$v"/;
+				$v = $previous_version;
+			}'
 		printf '</div>\n</body>\n</html>\n') >"$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html"
 }
 
