@@ -64,28 +64,27 @@ render_release_notes () {
 		wiki=https://github.com/git-for-windows/git/wiki &&
 		faq=$wiki/FAQ &&
 		mailinglist=mailto:git@vger.kernel.org &&
-		links="$(printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n" \
-		'<div class="links">' \
-		'<ul>' \
-		'<li><a href="'$homepage'">homepage</a></li>' \
-		'<li><a href="'$faq'">faq</a></li>' \
-		'<li><a href="'$contribute'">contribute</a></li>' \
-		'<li><a href="'$contribute'">bugs</a></li>' \
-		'<li><a href="'$mailinglist'">questions</a></li>' \
-		'</ul>' \
-		'</div>')" &&
-		printf '%s\n%s\n%s\n%s %s\n%s %s\n%s\n%s\n%s\n%s\n' \
-		'<!DOCTYPE html>' \
-		'<html>' \
-		'<head>' \
-		'<meta http-equiv="Content-Type" content="text/html;' \
-		'charset=UTF-8">' \
-		'<link rel="stylesheet"' \
-		'href="'$CSSDIR${CSSDIR:+/}'ReleaseNotes.css">' \
-		'</head>' \
-		'<body class="details">' \
-		"$links" \
-		'<div class="content">'
+		cat <<-EOF &&
+		<!DOCTYPE html>
+		<html>
+			<head>
+				<meta http-equiv="Content-Type" content="text/html;
+				charset=UTF-8">
+				<link rel="stylesheet"
+					href="$CSSDIR${CSSDIR:+/}ReleaseNotes.css">
+			</head>
+			<body class="details">
+				<div class="links">
+					<ul>
+					<li><a href="$homepage">homepage</a></li>
+					<li><a href="$faq">faq</a></li>
+					<li><a href="$contribute">contribute</a></li>
+					<li><a href="$contribute">bugs</a></li>
+					<li><a href="$mailinglist">questions</a></li>
+					</ul>
+				</div>
+				<div class="content">
+		EOF
 		body="$(markdown "$SCRIPT_PATH"/ReleaseNotes.md)" ||
 		die "Could not generate ReleaseNotes.html"
 		echo "$body" | perl -pe '
@@ -107,42 +106,41 @@ render_release_notes () {
 				s/.*/<\/div>$&<div>/;
 			}'
 		cat <<-\EOF
-		</div>
-		</div>
-		<script>
-		(() => {
-			for (let el of document.getElementsByClassName('collapsible')) {
-				let arrow = document.createElement('div');
-				arrow.innerHTML = '⯆';
-				arrow.style.float = 'left';
-				arrow.style.position = 'relative';
-				arrow.style.left = '-1em';
-				arrow.style.top = '+1.5em';
-
-				const toggle = () => {
-					// this.classList.toggle('active');
-					let details = el.nextElementSibling;
-					if (details.style.display === 'none') {
-						details.style.display = 'block';
+					</div>
+				</div>
+				<script>
+				(() => {
+					for (let el of document.getElementsByClassName('collapsible')) {
+						let arrow = document.createElement('div');
 						arrow.innerHTML = '⯆';
-					} else {
-						details.style.display = 'none';
-						arrow.innerHTML = '⯈';
+						arrow.style.float = 'left';
+						arrow.style.position = 'relative';
+						arrow.style.left = '-1em';
+						arrow.style.top = '+1.5em';
+
+						const toggle = () => {
+							// this.classList.toggle('active');
+							let details = el.nextElementSibling;
+							if (details.style.display === 'none') {
+								details.style.display = 'block';
+								arrow.innerHTML = '⯆';
+							} else {
+								details.style.display = 'none';
+								arrow.innerHTML = '⯈';
+							}
+						};
+
+						if (el.getAttribute('nr') !== '1') {
+							toggle();
+						}
+
+						el.addEventListener('click', toggle);
+						arrow.addEventListener('click', toggle);
+						el.parentElement.insertBefore(arrow, el);
 					}
-				};
-
-				if (el.getAttribute('nr') !== '1') {
-					toggle();
-				}
-
-				el.addEventListener('click', toggle);
-				arrow.addEventListener('click', toggle);
-				el.parentElement.insertBefore(arrow, el);
-			}
-		})();
-		</script>
-
-		</body>
+				})();
+				</script>
+			</body>
 		</html>
 		EOF
 		) >"$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html"
