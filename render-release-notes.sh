@@ -110,6 +110,9 @@ render_release_notes () {
 					$latest = 1;
 				}
 
+				# wrap the line before the date
+				s/ (\([^)]+\))</<br \/><small>$1<\/small></;
+
 				$nr = 0 if (!$nr);
 				$nr++;
 				s/^<h2/$& id="$v" nr="$nr" class="collapsible"/;
