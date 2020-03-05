@@ -41,6 +41,10 @@ This package contains software from a number of other projects including Bash, z
 * Git for Windows' OpenSSH [now can use USB security tokens](https://github.com/git-for-windows/git/issues/2525) (e.g. Yubikeys).
 * The native Windows HTTPS backend (Secure Channel) [has learned to work gracefully with Fiddler and corporate proxies](https://github.com/git-for-windows/git/pull/2535).
 
+### Bug Fixes
+
+* Git for Windows [can now clone into directories the current user can write to, even if they lack permission to even read the parent directory](https://github.com/git-for-windows/git/pull/2533).
+
 ## Changes since Git for Windows v2.25.0 (January 13th 2020)
 
 ### New Features
