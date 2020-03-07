@@ -312,7 +312,8 @@ const
     GE_VisualStudioCodeInsiders = 4;
     GE_SublimeText = 5;
     GE_Atom = 6;
-    GE_CustomEditor = 7;
+    GE_VSCodium = 7;
+    GE_CustomEditor = 8;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -389,12 +390,14 @@ var
     VisualStudioCodeUserInstallation:Boolean;
     VisualStudioCodeInsidersUserInstallation:Boolean;
     SublimeTextUserInstallation:Boolean;
+    VSCodiumUserInstallation:Boolean;
 
     NotepadPlusPlusPath:String;
     VisualStudioCodePath:String;
     VisualStudioCodeInsidersPath:String;
     SublimeTextPath:String;
     AtomPath:String;
+    VSCodiumPath:String;
     CustomEditorPath:String;
     CustomEditorOptions:String;
 
@@ -1671,6 +1674,11 @@ begin
     end;
     EditorAvailable[GE_Atom]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\atom.exe\shell\open\command','',AtomPath);
     EditorAvailable[GE_CustomEditor]:=True;
+    EditorAvailable[GE_VSCodium]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\VSCodium.exe\shell\open\command','',VSCodiumPath);
+    if (not EditorAvailable[GE_VSCodium]) then begin
+        EditorAvailable[GE_VSCodium]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\VSCodium.exe\shell\open\command','',VSCodiumPath);
+        VSCodiumUserInstallation:=True;
+    end;
 
     // Remove `" %1"` from end and unqote the string.
     if (EditorAvailable[GE_VisualStudioCode]) then
@@ -1685,12 +1693,15 @@ begin
     if (EditorAvailable[GE_Atom]) then
         // Extract <path> from "<path>" "%1"
         AtomPath:=Copy(AtomPath, 2, Length(AtomPath) - 7);
+    if (EditorAvailable[GE_VSCodium]) then
+        // Extract <path> from "<path>" "%1"
+        VSCodiumPath:=Copy(VSCodiumPath, 2, Length(VSCodiumPath) - 7);
 
     // 1st choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use the Nano editor by default');
     Data:='<RED>(NEW!)</RED> <A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window.';
-    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode] and not EditorAvailable[GE_VisualStudioCodeInsiders] and not EditorAvailable[GE_SublimeText] and not EditorAvailable[GE_Atom]) then
+    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode] and not EditorAvailable[GE_VisualStudioCodeInsiders] and not EditorAvailable[GE_SublimeText] and not EditorAvailable[GE_Atom]) and not EditorAvailable[GE_VSCodium] then
         Data:=Data+#13+#13+'This is the recommended option for end users if no GUI editors are installed.';
     CreateItemDescription(EditorPage,Data,Top,Left,LblEditor[GE_Nano],False);
     EditorAvailable[GE_Nano]:=True;
@@ -1734,6 +1745,14 @@ begin
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Atom as Git'+#39+'s default editor');
     CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://atom.io/>Atom</A> is an open source text editor which comes with builtin support'+#13+'for Git and Github.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Atom as its default editor.',Top,Left,LblEditor[GE_Atom],False);
+
+    // 8th choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use VSCodium as Git'+#39+'s default editor');
+    if (VSCodiumUserInstallation=False) then
+        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://vscodium.com///>VSCodium</A> provides Free/Libre Open Source Software Binaries of VSCode with the same features, but without telemetry/tracking of Microsoft or any non-floss code parts. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use VSCodium as its default editor.',Top,Left,LblEditor[GE_VSCodium],False)
+    else
+        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://vscodium.com///>VSCodium</A> provides Free/Libre Open Source Software Binaries of VSCode with the same features, but without telemetry/tracking of Microsoft or any non-floss code parts. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use VSCodium as its default editor.',Top,Left,LblEditor[GE_VSCodium],False);
 
     // Custom choice
     Top:=TopOfLabels;
@@ -1786,6 +1805,12 @@ begin
     'Atom': begin
             if EditorAvailable[GE_Atom] then
                 CbbEditor.ItemIndex:=GE_Atom
+            else
+                CbbEditor.ItemIndex:=GE_VIM;
+        end;
+    'VSCodium': begin
+            if EditorAvailable[GE_VSCodium] then
+                CbbEditor.ItemIndex:=GE_VSCodium
             else
                 CbbEditor.ItemIndex:=GE_VIM;
         end;
@@ -2903,6 +2928,11 @@ begin
     end else if ((CbbEditor.ItemIndex=GE_Atom)) and (AtomPath<>'') then begin
         if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+AtomPath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Atom as core.editor in the gitconfig.');
+    else if ((CbbEditor.ItemIndex=GE_VSCodium)) and (VSCodiumPath<>'') then begin
+        if (VSCodiumUserInstallation=False) then
+            GitSystemConfigSet('core.editor','"'+VSCodiumPath+'" --wait')
+        else if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+VSCodiumPath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set VSCodium as core.editor in the gitconfig.')
     end else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then
         GitSystemConfigSet('core.editor','"'+CustomEditorPath+'" '+CustomEditorOptions);
 
@@ -2963,6 +2993,8 @@ begin
         Data:='SublimeText';
     end else if (CbbEditor.ItemIndex=GE_Atom) then begin
         Data:='Atom';
+    end else if (CbbEditor.ItemIndex=GE_VSCodium) then begin
+        Data:='VSCodium';
     end else if (CbbEditor.ItemIndex=GE_CustomEditor) then begin
         Data:='CustomEditor'
         CustomEditorData:=EditorPage.Values[0];
