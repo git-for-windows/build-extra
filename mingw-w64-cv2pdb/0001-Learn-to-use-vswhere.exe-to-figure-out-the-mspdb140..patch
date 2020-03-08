@@ -1,0 +1,122 @@
+From 0c24f477f39e0511b69faa368bfd8b0f1c699092 Mon Sep 17 00:00:00 2001
+From: Johannes Schindelin <johannes.schindelin@gmx.de>
+Date: Sun, 8 Mar 2020 00:23:35 +0100
+Subject: [PATCH] Learn to use `vswhere.exe` to figure out the mspdb140.dll
+ location
+
+Signed-off-by: Johannes Schindelin <johannes.schindelin@gmx.de>
+---
+ src/mspdb.cpp | 90 +++++++++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 90 insertions(+)
+
+diff --git a/src/mspdb.cpp b/src/mspdb.cpp
+index 00684ed..fa76ee4 100644
+--- a/src/mspdb.cpp
++++ b/src/mspdb.cpp
+@@ -143,6 +143,94 @@ bool tryLoadMsPdbVS2017(const char* mspdb, const char* path = 0)
+ 	return modMsPdb != 0;
+ }
+ 
++bool tryLoadMsPdbVSWhere(const char* mspdb)
++{
++	HANDLE read;
++	HANDLE write;
++
++	SECURITY_ATTRIBUTES securityAttributes = { 0 };
++	securityAttributes.nLength = sizeof(SECURITY_ATTRIBUTES);
++	securityAttributes.lpSecurityDescriptor = NULL;
++	securityAttributes.bInheritHandle = TRUE;
++	if(!CreatePipe(&read, &write, &securityAttributes, 0) ||
++	   !SetHandleInformation(read, HANDLE_FLAG_INHERIT, 0))
++		return false;
++
++	STARTUPINFOA startupInfo = { 0 };
++	startupInfo.cb = sizeof(startupInfo);
++	startupInfo.dwFlags = STARTF_USESTDHANDLES;
++	startupInfo.hStdInput = GetStdHandle(STD_INPUT_HANDLE);
++	startupInfo.hStdOutput = write;
++	startupInfo.hStdError = GetStdHandle(STD_ERROR_HANDLE);
++	PROCESS_INFORMATION processInformation = { 0 };
++	ZeroMemory(&processInformation, sizeof(PROCESS_INFORMATION));
++
++	char vsPath[260] = "";
++	char commandLine[] = "vswhere.exe -latest -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath";
++	if(CreateProcessA("C:\\Program Files (x86)\\Microsoft Visual Studio\\Installer\\vswhere.exe", commandLine, NULL, NULL, TRUE, 0, NULL, NULL, &startupInfo, &processInformation))
++	{
++		CloseHandle(processInformation.hProcess);
++		CloseHandle(processInformation.hThread);
++
++		DWORD length;
++		if(ReadFile(read, vsPath, sizeof(vsPath), &length, NULL) && length > 2)
++		{
++			// trim trailing CR/LF
++			if (vsPath[length - 1] == '\n')
++			{
++				vsPath[--length] = '\0';
++				if (vsPath[length - 1] == '\r')
++					vsPath[--length] = '\0';
++			}
++		}
++	}
++	CloseHandle(read);
++	CloseHandle(write);
++	if (vsPath[0] == '\0')
++		return false;
++
++	strncat(vsPath, "\\VC\\Tools\\MSVC\\*", 260);
++	WIN32_FIND_DATAA findData;
++	HANDLE find = FindFirstFileA(vsPath, &findData);
++	if (INVALID_HANDLE_VALUE == find)
++		return false;
++
++	// strip the trailing `\`
++	size_t len = strlen(vsPath);
++	vsPath[len - 1] = '\0';
++
++	// the path of the DLL relative to the MSVC subdirectory
++	char suffix[260];
++	strcpy(suffix, sizeof(void *) == 8 ? "\\bin\\Hostx64\\x64\\" : "\\bin\\Hostx86\\x86\\");
++	strncat(suffix, mspdb, 260);
++
++	FILETIME lastWriteTime = { 0 };
++	char dllPath[260] = "";
++	do
++	{
++		if (!(findData.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY))
++			continue;
++
++		WIN32_FILE_ATTRIBUTE_DATA fileData;
++		char candidate[260];
++		strcpy(candidate, vsPath);
++		strncat(candidate, findData.cFileName, 260);
++		strncat(candidate, suffix, 260);
++		if (GetFileAttributesExA(candidate, GetFileExInfoStandard, &fileData) &&
++		    CompareFileTime(&lastWriteTime, &fileData.ftLastWriteTime) < 0)
++		{
++			lastWriteTime = fileData.ftLastWriteTime;
++			strcpy(dllPath, candidate);
++		}
++	} while (FindNextFileA(find, &findData));
++
++	if (dllPath[0] == '\0')
++		return false;
++
++	tryLoadLibrary(dllPath);
++	return modMsPdb != 0;
++}
++
+ #ifdef _M_X64
+ #define BIN_DIR_GE_VS12 "..\\..\\VC\\bin\\amd64\\"
+ #define BIN_DIR_LT_VS12 BIN_DIR_GE_VS12
+@@ -217,6 +305,8 @@ void tryLoadMsPdb140(bool throughPath)
+ 	{
+ 		if(throughPath)
+ 			modMsPdb = LoadLibraryA(mspdb140_dll);
++		if(!modMsPdb && !throughPath)
++			tryLoadMsPdbVSWhere(mspdb140_dll);
+ 		if(!modMsPdb && !throughPath)
+ 			tryLoadMsPdbCom(mspdb140_dll);
+ 		if(!modMsPdb && !throughPath)
+-- 
+2.25.1.windows.1
+

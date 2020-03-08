@@ -10,3 +10,4 @@
 *.cub -text
 /installer/InnoSetup/*.e32 -text
 *.bat eol=crlf
+*.patch -text
