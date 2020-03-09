@@ -2928,7 +2928,7 @@ begin
     end else if ((CbbEditor.ItemIndex=GE_Atom)) and (AtomPath<>'') then begin
         if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+AtomPath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Atom as core.editor in the gitconfig.');
-    else if ((CbbEditor.ItemIndex=GE_VSCodium)) and (VSCodiumPath<>'') then begin
+    end else if ((CbbEditor.ItemIndex=GE_VSCodium)) and (VSCodiumPath<>'') then begin
         if (VSCodiumUserInstallation=False) then
             GitSystemConfigSet('core.editor','"'+VSCodiumPath+'" --wait')
         else if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+VSCodiumPath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
