@@ -5049,6 +5049,15 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	sed -e "s/^tag=.*/tag=${tag#v}/" $sed_makepkg_e <${git_src_dir%/src/git}/PKGBUILD >${git_src_dir%/src/git}/PKGBUILD.$tag ||
 	die "Could not write %s\n" ${git_src_dir%/src/git}/PKGBUILD.$tag
 
+	case "$tag" in
+	*[-:/\ ]*)
+		# This is a prerelease
+		sed -i -e '/^pkgver *() {/,/^}$/s/^/# /' \
+			-e 's/^\(pkgver=\).*/\1'"$(echo "${tag#v}" | tr ':/ -' .)"/ \
+			${git_src_dir%/src/git}/PKGBUILD.$tag
+		;;
+	esac
+
 	test -d ${git_src_dir%/src/git}/git ||
 	git clone --bare https://github.com/git-for-windows/git.git ${git_src_dir%/src/git}/git ||
 	die "Could not initialize %s\n" ${git_src_dir%/src/git}/git
