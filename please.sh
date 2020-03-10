@@ -4424,7 +4424,18 @@ require_3rdparty_directory () {
 
 render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256>...]
 	test -d "$1" || mkdir "$1" || die "Could not create '%s'\n" "$1"
-	set_version_from_tag_name "$2"
+	case "$2" in
+	*-[0-9]*)
+		ver="${2#v}"
+		display_version="prerelease-$2"
+		;;
+	v[0-9]*.windows.[0-9]|v[1-9]*.windows.[1-9][0-9])
+		set_version_from_tag_name "$2"
+		;;
+	*)
+		die "Unhandled version: %s\n" "$2"
+		;;
+	esac
 
 	name="Git for Windows $display_version"
 	text="$(sed -n \
@@ -4462,6 +4473,9 @@ render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256
 
 	url=https://gitforwindows.org/
 	case "$display_version" in
+	prerelease-*)
+		url=https://wingit.blob.core.windows.net/files/index.html
+		;;
 	*-rc*)
 		url=https://github.com/git-for-windows/git/releases/tag/$2
 		;;
