@@ -87,6 +87,7 @@ do
 	else
 		test "a$url2" = "a$release_url" ||
 		echo "Warning: inconsistent URL: $url2 vs $release_url" >&2
+		printf '\nresponse was:\n%s\n' "$json" >&2
 	fi
 done
 
