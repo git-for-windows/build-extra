@@ -90,9 +90,12 @@ die "Could not generate ReleaseNotes.html."
 VERSIONTAG="$(echo "$VERSION" | sed -e 's/^[1-9]/v&/' \
 	-e 's/^\(v[0-9]*\.[0-9]*\.[0-9]*\)\(\.[0-9]*\)$/\1.windows\2/' \
 	-e 's/^v[0-9]*\.[0-9]*\.[0-9]*$/&.windows.1/')"
+VERSION_IN_SPEC="$(echo "$VERSION" | sed -e 's/^[^0-9]*//' \
+	-e 's/\.windows\././g' \
+	-e 's/\.\([^0-9]\)/-\1/g')"
 SPECIN="$BUILDEXTRA"/nuget/GitForWindows.nuspec.in
 SPEC="$BUILDEXTRA/nuget/$ID".nuspec
-sed -e "s/@@VERSION@@/$VERSION/g" -e "s/@@AUTHOR@@/$AUTHOR/g" \
+sed -e "s/@@VERSION@@/$VERSION_IN_SPEC/g" -e "s/@@AUTHOR@@/$AUTHOR/g" \
 	-e "s/@@OWNERS@@/$OWNERS/g" \
 	-e "s/@@TITLE@@/$TITLE/g" -e "s/@@EXTRATAGS@@/$EXTRATAGS/g" \
 	-e "s/@@DESCRIPTION@@/$DESCRIPTION/g" -e "s/@@SUMMARY@@/$SUMMARY/g" \
