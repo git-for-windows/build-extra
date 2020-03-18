@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 * Git for Windows' release notes [have been made a bit easier to read/navigate](https://github.com/git-for-windows/build-extra/commit/3b89da01f46dc03417329c3702fc233622313397).
 * The Free/Libre [VSCodium](https://vscodium.com/) version of [Visual Studio Code](https://code.visualstudio.com) is now [also detected](https://github.com/git-for-windows/build-extra/pull/278) as an option for the default Git editor.
 * Comes with [cURL v7.69.1](https://curl.haxx.se/changes.html#7_69_1).
+* Comes with [OpenSSL v1.1.1e](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
 ### Bug Fixes
 
