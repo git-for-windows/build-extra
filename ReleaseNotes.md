@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Git for Windows [can now clone into directories the current user can write to, even if they lack permission to even read the parent directory](https://github.com/git-for-windows/git/pull/2533).
 * When asking for a password via Git GUI, [non-ASCII characters are now handled correctly](https://github.com/git-for-windows/git/issues/2215).
+* `git update-git-for-windows -y` [now is fully automatable](https://github.com/git-for-windows/build-extra/pull/279).
 
 ## Changes since Git for Windows v2.25.0 (January 13th 2020)
 
