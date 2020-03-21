@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 * The Free/Libre [VSCodium](https://vscodium.com/) version of [Visual Studio Code](https://code.visualstudio.com) is now [also detected](https://github.com/git-for-windows/build-extra/pull/278) as an option for the default Git editor.
 * Comes with [cURL v7.69.1](https://curl.haxx.se/changes.html#7_69_1).
 * Comes with [OpenSSL v1.1.1e](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [GNU Privacy Guard v2.2.20](https://lists.gnupg.org/pipermail/gnupg-announce/2020q1/000444.html).
 
 ### Bug Fixes
 
