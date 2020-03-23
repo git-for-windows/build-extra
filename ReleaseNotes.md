@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.26.0](https://github.com/git/git/blob/v2.26.0/Documentation/RelNotes/2.26.0.txt).
 * Git for Windows' OpenSSH [now can use USB security tokens](https://github.com/git-for-windows/git/issues/2525) (e.g. Yubikeys).
 * The native Windows HTTPS backend (Secure Channel) [has learned to work gracefully with Fiddler and corporate proxies](https://github.com/git-for-windows/git/pull/2535).
 * Git for Windows' release notes [have been made a bit easier to read/navigate](https://github.com/git-for-windows/build-extra/commit/3b89da01f46dc03417329c3702fc233622313397).
