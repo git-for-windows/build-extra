@@ -39,6 +39,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [OpenSSL v1.1.1f](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
+### Bug Fixes
+
+* Git [now accepts more date formats](https://github.com/git-for-windows/git/pull/2574) such as `%g` and `%V`.
+
 ## Changes since Git for Windows v2.25.1 (February 19th 2020)
 
 ### New Features
