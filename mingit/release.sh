@@ -82,8 +82,19 @@ LIST="$(ARCH=$ARCH BITNESS=$BITNESS MINIMAL_GIT=1 ETC_GITCONFIG="$etc_gitconfig"
 	sh "$SCRIPT_PATH"/../make-file-list.sh "$@")" ||
 die "Could not generate file list"
 
+# For compatibility with core Git's branches
+original_etc_gitconfig="$etc_gitconfig"
+case "$etc_gitconfig" in
+mingw$BITNESS/etc/gitconfig)
+	mkdir -p "$SCRIPT_PATH"/root/"${etc_gitconfig#/*}" &&
+	test -f /"$etc_gitconfig" ||
+	test ! -f /etc/gitconfig ||
+	original_etc_gitconfig=/etc/gitconfig
+	;;
+esac
+
 cat >"$SCRIPT_PATH"/root/"$etc_gitconfig" <<EOF ||
-$(cat "/$etc_gitconfig")
+$(cat "/$original_etc_gitconfig")
 [include]
 	; include Git for Windows' system config in order
 	; to inherit settings like \`core.autocrlf\`
