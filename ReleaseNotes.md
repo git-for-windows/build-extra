@@ -1,5 +1,5 @@
-# Git for Windows v2.26.0 Release Notes
-Latest update: March 23rd 2020
+# Git for Windows v2.26.1 Release Notes
+Latest update: April 9th 2020
 
 ## Introduction
 
@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.26.1](https://github.com/git/git/blob/v2.26.1/Documentation/RelNotes/2.26.1.txt).
 * Comes with [OpenSSL v1.1.1f](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
 ### Bug Fixes
