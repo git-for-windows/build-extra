@@ -39,6 +39,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [tig v2.5.1](https://github.com/jonas/tig/releases/tag/tig-2.5.1).
 
+### Bug Fixes
+
+* A recent regression in `gitk` that prevented it from running in bare repositories [has been fixed](https://github.com/git-for-windows/git/pull/2549).
+
 ## Changes since Git for Windows v2.26.0 (March 23rd 2020)
 
 ### New Features
