@@ -33,6 +33,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.26.1 (April 9th 2020)
+
+### New Features
+
+* Comes with [tig v2.5.1](https://github.com/jonas/tig/releases/tag/tig-2.5.1).
+
 ## Changes since Git for Windows v2.26.0 (March 23rd 2020)
 
 ### New Features
