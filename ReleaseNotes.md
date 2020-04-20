@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [tig v2.5.1](https://github.com/jonas/tig/releases/tag/tig-2.5.1).
+* Worktree updates (e.g. `git checkout`, `git reset --hard`) [got a performance boost in sparse checkouts](https://github.com/git-for-windows/git/pull/2589).
 
 ### Bug Fixes
 
