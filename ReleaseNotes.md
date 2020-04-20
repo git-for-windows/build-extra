@@ -35,6 +35,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.26.1 (April 9th 2020)
 
+Yet another security fix release: With a crafted URL that contains a newline or empty host, or lacks a scheme, the credential helper machinery can be fooled into providing credential information that is not appropriate for the protocol in use and host being contacted (CVE-2020-11008).
+
 ### New Features
 
 * Comes with [tig v2.5.1](https://github.com/jonas/tig/releases/tag/tig-2.5.1).
@@ -45,6 +47,8 @@ This package contains software from a number of other projects including Bash, z
 * A recent regression in `gitk` that prevented it from running in bare repositories [has been fixed](https://github.com/git-for-windows/git/pull/2549).
 
 ## Changes since Git for Windows v2.26.0 (March 23rd 2020)
+
+This includes a fix for CVE-2020-5260.
 
 ### New Features
 
