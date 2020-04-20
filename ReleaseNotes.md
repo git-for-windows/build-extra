@@ -39,6 +39,7 @@ Yet another security fix release: With a crafted URL that contains a newline or 
 
 ### New Features
 
+* Comes with [Git v2.26.2](https://github.com/git/git/blob/v2.26.2/Documentation/RelNotes/2.26.2.txt).
 * Comes with [tig v2.5.1](https://github.com/jonas/tig/releases/tag/tig-2.5.1).
 * Worktree updates (e.g. `git checkout`, `git reset --hard`) [got a performance boost in sparse checkouts](https://github.com/git-for-windows/git/pull/2589).
 
