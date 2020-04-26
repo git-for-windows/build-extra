@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [OpenSSL v1.1.1g](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [Perl v5.30.2](http://search.cpan.org/dist/perl-5.30.2/pod/perldelta.pod).
 
 ## Changes since Git for Windows v2.26.1 (April 9th 2020)
 
