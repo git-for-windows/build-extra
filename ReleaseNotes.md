@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSL v1.1.1g](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [Perl v5.30.2](http://search.cpan.org/dist/perl-5.30.2/pod/perldelta.pod).
 * Comes with [perl-Net-SSLeay v1.88](https://metacpan.org/source/CHRISN/Net-SSLeay-1.88/Changes).
+* Comes with [perl-YAML-Syck v1.32](https://metacpan.org/source/TODDR/YAML-Syck-1.32/Changes).
 
 ## Changes since Git for Windows v2.26.1 (April 9th 2020)
 
