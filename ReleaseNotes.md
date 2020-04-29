@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [perl-Net-SSLeay v1.88](https://metacpan.org/source/CHRISN/Net-SSLeay-1.88/Changes).
 * Comes with [perl-YAML-Syck v1.32](https://metacpan.org/source/TODDR/YAML-Syck-1.32/Changes).
 * Comes with [perl-HTML-Parser v3.72](https://metacpan.org/source/GAAS/HTML-Parser-3.72/Changes).
+* Comes with [cURL v7.70.0](https://curl.haxx.se/changes.html#7_70_0).
 
 ## Changes since Git for Windows v2.26.1 (April 9th 2020)
 
