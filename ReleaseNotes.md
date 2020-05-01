@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [perl-HTML-Parser v3.72](https://metacpan.org/source/GAAS/HTML-Parser-3.72/Changes).
 * Comes with [cURL v7.70.0](https://curl.haxx.se/changes.html#7_70_0).
 * Comes with [subversion v1.13.0](https://svn.apache.org/repos/asf/subversion/tags/1.13.0/CHANGES).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.4](https://cygwin.com/ml/cygwin-announce/2020-02/msg00006.html).
 
 ## Changes since Git for Windows v2.26.1 (April 9th 2020)
 
