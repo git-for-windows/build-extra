@@ -302,9 +302,11 @@ sdk () {
 
 			if test refs/heads/makepkg = \
 				"$(git symbolic-ref HEAD 2>/dev/null)" &&
-				{ git -C diff-files --quiet &&
-				  git -C diff-index --quiet HEAD ||
-				  test ! -s .git/index; }
+				{ git diff-files --quiet &&
+				  git diff-index --quiet HEAD ||
+				  test ! -s .git/index ||
+				  (uname_m="$(uname -m)" &&
+				    test ! -d "../build-$uname_m-pc-msys/$uname_m-pc-msys/winsup/cygwin"); }
 			then
 				# no local changes
 				cd "$src_cdup_dir" &&
