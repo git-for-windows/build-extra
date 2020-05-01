@@ -161,8 +161,8 @@ sdk () {
 			(cd "$src_dir/$2" &&
 			 test -d src/msys2-runtime ||
 			 sdk makepkg --nobuild) &&
-			src_dir="$src_dir/msys2-runtime/src/msys2-runtime" &&
-			src_cdup_dir="$src_dir" ||
+			src_cdup_dir="$src_dir/$2" &&
+			src_dir="$src_cdup_dir/src/msys2-runtime" ||
 			return 1
 			;;
 		git-extra|git-for-windows-keyring|mingw-w64-cv2pdb|\
