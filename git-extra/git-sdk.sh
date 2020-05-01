@@ -273,7 +273,8 @@ sdk () {
 		then
 			set -- "$1" "$(basename "$PWD")" &&
 			sdk init-lazy "$2" &&
-			test "a$PWD" = "a$src_dir" || {
+			test "a$PWD" = "a$src_dir" ||
+			test "a$PWD" = "a$src_cdup_dir" || {
 				sdk die "$PWD seems not to be a known project"
 				return $?
 			}
