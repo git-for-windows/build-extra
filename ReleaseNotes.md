@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v7.70.0](https://curl.haxx.se/changes.html#7_70_0).
 * Comes with [subversion v1.13.0](https://svn.apache.org/repos/asf/subversion/tags/1.13.0/CHANGES).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.4](https://cygwin.com/ml/cygwin-announce/2020-02/msg00006.html).
+* The release notes [have been made a bit more readable and are now linked from the Start Menu group](https://github.com/git-for-windows/build-extra/pull/281).
 
 ## Changes since Git for Windows v2.26.1 (April 9th 2020)
 
