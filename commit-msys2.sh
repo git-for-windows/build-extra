@@ -130,6 +130,16 @@ commit)
 	;;
 ignore)
 	shift
+
+	case "$*" in
+	-a|--all)
+		set -- $( git -C "${root%/}"/ ls-files --exclude-standard  \
+				--other var/lib/pacman/local/ |
+			sed -n 's|^var/lib/pacman/local/\([^/]*\)-[0-9][-0-9a-z_.]*-[1-9][0-9]*/.*|\1|p' |
+			uniq)
+		;;
+	esac
+
 	for pkg
 	do
 		# Remove existing entries, if any
