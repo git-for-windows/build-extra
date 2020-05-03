@@ -115,7 +115,7 @@ render_release_notes () {
 
 				$nr = 0 if (!$nr);
 				$nr++;
-				s/^<h2/$& id="$v" nr="$nr" class="collapsible"/;
+				s/^<h2>/<h2 id="$v" nr="$nr" class="collapsible"><small>$v<\/small>: /;
 				$v = $previous_version;
 				s/.*/<\/div>$&<div>/;
 			}'
