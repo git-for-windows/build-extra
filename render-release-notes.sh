@@ -115,7 +115,12 @@ render_release_notes () {
 
 				$nr = 0 if (!$nr);
 				$nr++;
-				s/^<h2/$& id="$v" nr="$nr" class="collapsible"/;
+				$id = $v;
+				if ($v eq $previous_version) {
+					# in-between version
+					$id = "snapshot"
+				}
+				s/^<h2>/<h2 id="$id" nr="$nr" class="collapsible"> /;
 				$v = $previous_version;
 				s/.*/<\/div>$&<div>/;
 			}'
