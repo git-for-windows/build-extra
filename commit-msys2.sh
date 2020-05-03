@@ -45,6 +45,28 @@ commit_package () {
 	exit
 }
 
+generate_package_gitignore () {
+	dir="$(cd "${root%/}"/var/lib/pacman/local/ && echo "$1"-[0-9]*)" &&
+	case "$dir" in
+	*' '*)
+		die "Multiple packages: $dir"
+		;;
+	'')
+		die "$1: not installed?"
+		;;
+	*)
+		test -d "${root%/}/var/lib/pacman/local/$dir" ||
+		die "$1: not installed?"
+
+		printf '\n# Package: %s\n%s\n' \
+			"$dir" "/var/lib/pacman/local/$dir/" &&
+		sed -n 's|^[^%].*[^/]$|/&|p' \
+			"${root%/}/var/lib/pacman/local/$dir/files"
+		;;
+	esac
+}
+
+
 case "$1" in
 init)
 	import_tars="${root%/}"/usr/src/git/contrib/fast-import/import-tars.perl
@@ -105,6 +127,37 @@ commit)
 	 git diff-index --exit-code --cached HEAD ||
 	 git commit -q -s -m "Update $(date +%Y%m%d-%H%M%S)") ||
 	die "Could not commit changes"
+	;;
+ignore)
+	shift
+
+	case "$*" in
+	-a|--all)
+		set -- $( git -C "${root%/}"/ ls-files --exclude-standard  \
+				--other var/lib/pacman/local/ |
+			sed -n 's|^var/lib/pacman/local/\([^/]*\)-[0-9][-0-9a-z_.]*-[1-9][0-9]*/.*|\1|p' |
+			uniq)
+		;;
+	esac
+
+	for pkg
+	do
+		# Remove existing entries, if any
+		sed -i '/^$/{
+			:1
+			N
+			/^\n# \(Package: \)\?'$pkg'\(-[0-9][-0-9a-z_.]*\)\?$/{
+				:2
+				N
+				s/.*\n//
+				/./b2
+				b1
+			}
+		}' "${root%/}"/.git/info/exclude &&
+		generate_package_gitignore "$pkg" \
+			>>"${root%/}"/.git/info/exclude ||
+		die "Could not ignore $pkg"
+	done
 	;;
 *)
 	die "Unknown command: $1"
