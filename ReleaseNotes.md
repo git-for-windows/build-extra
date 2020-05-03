@@ -54,7 +54,7 @@ Yet another security fix release: With a crafted URL that contains a newline or 
 
 ### New Features
 
-* Comes with [Git v2.26.2](https://github.com/git/git/blob/v2.26.2/Documentation/RelNotes/2.26.2.txt).
+* Comes with [Git v2.26.2 (Upstream release notes)](https://github.com/git/git/blob/v2.26.2/Documentation/RelNotes/2.26.2.txt).
 * Comes with [tig v2.5.1](https://github.com/jonas/tig/releases/tag/tig-2.5.1).
 * Worktree updates (e.g. `git checkout`, `git reset --hard`) [got a performance boost in sparse checkouts](https://github.com/git-for-windows/git/pull/2589).
 
@@ -68,7 +68,7 @@ This includes a fix for CVE-2020-5260.
 
 ### New Features
 
-* Comes with [Git v2.26.1](https://github.com/git/git/blob/v2.26.1/Documentation/RelNotes/2.26.1.txt).
+* Comes with [Git v2.26.1 (Upstream release notes)](https://github.com/git/git/blob/v2.26.1/Documentation/RelNotes/2.26.1.txt).
 * Comes with [OpenSSL v1.1.1f](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
 ### Bug Fixes
@@ -79,7 +79,7 @@ This includes a fix for CVE-2020-5260.
 
 ### New Features
 
-* Comes with [Git v2.26.0](https://github.com/git/git/blob/v2.26.0/Documentation/RelNotes/2.26.0.txt).
+* Comes with [Git v2.26.0 (Upstream release notes)](https://github.com/git/git/blob/v2.26.0/Documentation/RelNotes/2.26.0.txt).
 * Git for Windows' OpenSSH [now can use USB security tokens](https://github.com/git-for-windows/git/issues/2525) (e.g. Yubikeys).
 * The native Windows HTTPS backend (Secure Channel) [has learned to work gracefully with Fiddler and corporate proxies](https://github.com/git-for-windows/git/pull/2535).
 * Git for Windows' release notes [have been made a bit easier to read/navigate](https://github.com/git-for-windows/build-extra/commit/3b89da01f46dc03417329c3702fc233622313397).
@@ -98,7 +98,7 @@ This includes a fix for CVE-2020-5260.
 
 ### New Features
 
-* Comes with [Git v2.25.1](https://github.com/git/git/blob/v2.25.1/Documentation/RelNotes/2.25.1.txt).
+* Comes with [Git v2.25.1 (Upstream release notes)](https://github.com/git/git/blob/v2.25.1/Documentation/RelNotes/2.25.1.txt).
 * The Portable version of Git for Windows [now defaults to turning on the FSCache](https://github.com/git-for-windows/git/issues/2467) just like the installer does.
 * Comes with [Git LFS v2.10.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.10.0).
 * Portable Git [can now be run from a RAM disk](https://github.com/git-for-windows/git/issues/2493), too.
@@ -115,7 +115,7 @@ This includes a fix for CVE-2020-5260.
 
 ### New Features
 
-* Comes with [Git v2.25.0](https://github.com/git/git/blob/v2.25.0/Documentation/RelNotes/2.25.0.txt).
+* Comes with [Git v2.25.0 (Upstream release notes)](https://github.com/git/git/blob/v2.25.0/Documentation/RelNotes/2.25.0.txt).
 * Comes with [GNU Privacy Guard v2.2.19](https://lists.gnupg.org/pipermail/gnupg-announce/2019q4/000443.html).
 * Comes with [Git LFS v2.9.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.9.2).
 * When upgrading Git for Windows, by default the installer [now only shows pages with previously-unseen options](https://github.com/git-for-windows/build-extra/pull/270).
@@ -136,7 +136,7 @@ This is a security bug release that fixes CVE-2019-1348, CVE-2019-1349, CVE-2019
 
 ### New Features
 
-* Comes with [Git v2.24.1](https://github.com/git/git/blob/v2.24.1/Documentation/RelNotes/2.24.1.txt).
+* Comes with [Git v2.24.1 (Upstream release notes)](https://github.com/git/git/blob/v2.24.1/Documentation/RelNotes/2.24.1.txt).
 * Comes with [tig v2.5.0](https://github.com/jonas/tig/releases/tag/tig-2.5.0).
 * Comes with [patch level 4](https://github.com/git-for-windows/msys2-runtime/commit/1bfdf956dae03d59bfe44b1e5882403ab803a67b) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.7](https://cygwin.com/ml/cygwin-announce/2019-04/msg00030.html).
 * The command-line options of `git-bash.exe` [are now documented](https://github.com/git-for-windows/MINGW-packages/pull/36) (call `git help git-bash`).
@@ -166,7 +166,7 @@ Note! As a consequence of making `git config --system` work as expected, the loc
 
 ### New Features
 
-* Comes with [Git v2.24.0](https://github.com/git/git/blob/v2.24.0/Documentation/RelNotes/2.24.0.txt).
+* Comes with [Git v2.24.0 (Upstream release notes)](https://github.com/git/git/blob/v2.24.0/Documentation/RelNotes/2.24.0.txt).
 * Comes with [cURL v7.66.0](https://curl.haxx.se/changes.html#7_66_0).
 * Comes with [Git Credential Manager v1.20.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.20.0).
 * Comes with [OpenSSH v8.1p1](https://www.openssh.com/txt/release-8.1).
@@ -190,7 +190,7 @@ Note! As a consequence of making `git config --system` work as expected, the loc
 
 ### New Features
 
-* Comes with [Git v2.23.0](https://github.com/git/git/blob/v2.23.0/Documentation/RelNotes/2.23.0.txt).
+* Comes with [Git v2.23.0 (Upstream release notes)](https://github.com/git/git/blob/v2.23.0/Documentation/RelNotes/2.23.0.txt).
 * Comes with [patch level 3](https://github.com/git-for-windows/msys2-runtime/commit/e0e7936faa74acea8cde0f89f464402515d1caad) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.0.7](https://cygwin.com/ml/cygwin-announce/2019-04/msg00030.html).
 * Comes with [PCRE2 v10.33](https://pcre.org/changelog.txt).
 * Comes with [GNU Privacy Guard v2.2.17](https://lists.gnupg.org/pipermail/gnupg-announce/2019q3/000439.html).
@@ -210,7 +210,7 @@ Note! As a consequence of making `git config --system` work as expected, the loc
 
 ### New Features
 
-* Comes with [Git v2.22.0](https://github.com/git/git/blob/v2.22.0/Documentation/RelNotes/2.22.0.txt).
+* Comes with [Git v2.22.0 (Upstream release notes)](https://github.com/git/git/blob/v2.22.0/Documentation/RelNotes/2.22.0.txt).
 * The `awk` included in Git for Windows [now includes extensions](https://github.com/git-for-windows/build-extra/pull/232) such as `inplace`.
 * The file/product version stored in the installer's `.exe` file [now matches the version of the included `git.exe` file's](https://github.com/git-for-windows/build-extra/pull/235).
 * Comes with [OpenSSH v8.0p1](https://www.openssh.com/txt/release-8.0).
@@ -244,7 +244,7 @@ Note! As a consequence of making `git config --system` work as expected, the loc
 
 ### New Features
 
-* Comes with [Git v2.21.0](https://github.com/git/git/blob/v2.21.0/Documentation/RelNotes/2.21.0.txt).
+* Comes with [Git v2.21.0 (Upstream release notes)](https://github.com/git/git/blob/v2.21.0/Documentation/RelNotes/2.21.0.txt).
 * The custom editor setting in the installer [has been improved substantially](https://github.com/git-for-windows/build-extra/pull/221).
 * Comes with [Git Credential Manager v1.18.4.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/1.18.4.0).
 * Comes with [cURL v7.64.0](https://curl.haxx.se/changes.html#7_64_0).
@@ -270,7 +270,7 @@ Note! As a consequence of making `git config --system` work as expected, the loc
 
 ### New Features
 
-* Comes with [Git v2.20.1](https://github.com/git/git/blob/v2.20.1/Documentation/RelNotes/2.20.1.txt).
+* Comes with [Git v2.20.1 (Upstream release notes)](https://github.com/git/git/blob/v2.20.1/Documentation/RelNotes/2.20.1.txt).
 * Comes with [cURL v7.63.0](https://curl.haxx.se/changes.html#7_63_0).
 
 ### Bug Fixes
@@ -283,7 +283,7 @@ Please note that Git for Windows v2.19.2 was offered as a full release only for 
 
 ### New Features
 
-* Comes with [Git v2.20.0](https://github.com/git/git/blob/v2.20.0/Documentation/RelNotes/2.20.0.txt).
+* Comes with [Git v2.20.0 (Upstream release notes)](https://github.com/git/git/blob/v2.20.0/Documentation/RelNotes/2.20.0.txt).
 * Comes with [OpenSSL v1.1.1a](https://www.openssl.org/news/openssl-1.1.1-notes.html). The OpenSSH, cURL and Heimdal packages were rebuilt to make use of OpenSSL v1.1.1a.
 * The FSCache feature [was further optimized in particular for very large repositories](https://github.com/git-for-windows/git/pull/1937).
 * To appease certain anti-malware, MinTTY was recompiled with a patch to avoid [GCC trampolines](https://github.com/git-for-windows/MSYS2-packages/commit/63f68558c9c6a6c7765c18dacbbcac328748eb30).
@@ -308,7 +308,7 @@ Please note that Git for Windows v2.19.2 was offered as a full release only for 
 
 ### New Features
 
-* Comes with [Git v2.19.2](https://github.com/git/git/blob/v2.19.2/Documentation/RelNotes/2.19.2.txt).
+* Comes with [Git v2.19.2 (Upstream release notes)](https://github.com/git/git/blob/v2.19.2/Documentation/RelNotes/2.19.2.txt).
 * Comes with [OpenSSH v7.9p1](https://www.openssh.com/txt/release-7.9).
 * The description of the editor option to choose Vim [has been clarified](https://github.com/git-for-windows/build-extra/pull/207) to state that this *unsets* `core.editor`.
 * Comes with [cURL v7.62.0](https://curl.haxx.se/changes.html#7_62_0).
@@ -327,7 +327,7 @@ Please note that Git for Windows v2.19.2 was offered as a full release only for 
 
 ### New Features
 
-* Comes with [Git v2.19.1](https://github.com/git/git/blob/v2.19.1/Documentation/RelNotes/2.19.1.txt).
+* Comes with [Git v2.19.1 (Upstream release notes)](https://github.com/git/git/blob/v2.19.1/Documentation/RelNotes/2.19.1.txt).
 * Comes with [Git LFS v2.5.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.5.2).
 * When FSCache is enabled, commands such as `add`, `commit`, and `reset` [are now much faster](https://github.com/git-for-windows/git/pull/1827).
 * Sublime Text, Atom, and even the new user-specific VS Code installations [can now be used as Git's default editor](https://github.com/git-for-windows/build-extra/pull/200).
@@ -342,7 +342,7 @@ Please note that Git for Windows v2.19.2 was offered as a full release only for 
 
 ### New Features
 
-* Comes with [Git v2.19.0](https://github.com/git/git/blob/v2.19.0/Documentation/RelNotes/2.19.0.txt).
+* Comes with [Git v2.19.0 (Upstream release notes)](https://github.com/git/git/blob/v2.19.0/Documentation/RelNotes/2.19.0.txt).
 * There are now *fast*, built-in versions of `git stash` and `git rebase`, [available as experimental options](https://github.com/git-for-windows/build-extra/pull/203).
 * The included OpenSSH client [now enables modern ciphers](https://github.com/git-for-windows/build-extra/pull/192).
 * The `gitweb` component was removed because it is highly unlikely to be used on Windows.
@@ -366,7 +366,7 @@ Please note that Git for Windows v2.19.2 was offered as a full release only for 
 
 ### New Features
 
-* Comes with [Git v2.18.0](https://github.com/git/git/blob/v2.18.0/Documentation/RelNotes/2.18.0.txt).
+* Comes with [Git v2.18.0 (Upstream release notes)](https://github.com/git/git/blob/v2.18.0/Documentation/RelNotes/2.18.0.txt).
 * Comes with [Git Credential Manager v1.16.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.16.2).
 
 ### Bug Fixes
@@ -391,7 +391,7 @@ Please note that Git for Windows v2.19.2 was offered as a full release only for 
 
 ### New Features
 
-* Comes with [Git v2.17.1](https://github.com/git/git/blob/v2.17.1/Documentation/RelNotes/2.17.1.txt).
+* Comes with [Git v2.17.1 (Upstream release notes)](https://github.com/git/git/blob/v2.17.1/Documentation/RelNotes/2.17.1.txt).
 * Comes with [Perl v5.26.2](http://search.cpan.org/dist/perl-5.26.2/pod/perldelta.pod).
 * The installer [now offers VS Code Insiders as option for Git's default editor](https://github.com/git-for-windows/build-extra/pull/181) if it is installed.
 * The vim configuration [was modernized](https://github.com/git-for-windows/build-extra/pull/186).
@@ -415,7 +415,7 @@ Please note that Git for Windows v2.19.2 was offered as a full release only for 
 
 ### New Features
 
-* Comes with [Git v2.17.0](https://github.com/git/git/blob/v2.17.0/Documentation/RelNotes/2.17.0.txt).
+* Comes with [Git v2.17.0 (Upstream release notes)](https://github.com/git/git/blob/v2.17.0/Documentation/RelNotes/2.17.0.txt).
 * Comes with [OpenSSL v1.0.2o](https://www.openssl.org/news/openssl-1.0.2-notes.html).
 * Comes with [Git Credential Manager v1.15.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.15.2).
 * Comes with [OpenSSH v7.7p1](https://www.openssh.com/txt/release-7.7).
@@ -428,7 +428,7 @@ Please note that Git for Windows v2.19.2 was offered as a full release only for 
 
 ### New Features
 
-* Comes with [Git v2.16.3](https://github.com/git/git/blob/v2.16.3/Documentation/RelNotes/2.16.3.txt).
+* Comes with [Git v2.16.3 (Upstream release notes)](https://github.com/git/git/blob/v2.16.3/Documentation/RelNotes/2.16.3.txt).
 * When choosing to "Use Git from the Windows Command Prompt" (i.e. add only the minimal set of Git executables to the `PATH`), and when choosing the Git LFS component, Git LFS [is now included in that minimal set](https://github.com/git-for-windows/git/issues/1503). This makes it possible to reuse Git for Windows' Git LFS, say, from Visual Studio.
 * Comes with [gawk v4.2.1](http://git.savannah.gnu.org/cgit/gawk.git/plain/NEWS?h=gawk-4.2.1).
 * In conjunction with the FSCache feature, `git checkout` [is now a lot faster when checking out a *lot* of files](https://github.com/git-for-windows/git/pull/1468).
@@ -452,7 +452,7 @@ Please note that Git for Windows v2.19.2 was offered as a full release only for 
 
 ### New Features
 
-* Comes with [Git v2.16.2](https://github.com/git/git/blob/v2.16.2/Documentation/RelNotes/2.16.2.txt).
+* Comes with [Git v2.16.2 (Upstream release notes)](https://github.com/git/git/blob/v2.16.2/Documentation/RelNotes/2.16.2.txt).
 * For every new Git for Windows version, `.zip` archives containing `.pdb` files for some of Git for Windows' components [are now published alongside the new version](https://github.com/git-for-windows/build-extra/commit/0af1701ba3329151ae8b21fa43d4f4abca11cc26).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.10.0](https://cygwin.com/ml/cygwin-announce/2018-02/msg00002.html); This required rebuilding OpenSSH, Perl (and some Perl modules) and Subversion.
 * Comes with [Bash v4.4 patchlevel 019 ](https://tiswww.case.edu/php/chet/bash/NEWS).
@@ -506,7 +506,7 @@ Note: another hotfix might be coming the day after tomorrow, as cURL announced a
 
 ### New Features
 
-* Comes with [Git v2.16.1](https://github.com/git/git/blob/v2.16.1/Documentation/RelNotes/2.16.1.txt).
+* Comes with [Git v2.16.1 (Upstream release notes)](https://github.com/git/git/blob/v2.16.1/Documentation/RelNotes/2.16.1.txt).
 
 
 ### Bug Fixes
@@ -519,7 +519,7 @@ Git for Windows now has a new homepage: [https://gitforwindows.org/](https://git
 
 ### New Features
 
-* Comes with [Git v2.16.0](https://github.com/git/git/blob/v2.16.0/Documentation/RelNotes/2.16.0.txt).
+* Comes with [Git v2.16.0 (Upstream release notes)](https://github.com/git/git/blob/v2.16.0/Documentation/RelNotes/2.16.0.txt).
 * Comes with [Git Credential Manager v1.14.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.14.0).
 * The Git for Windows installer [now offers to configure Visual Studio Code as default editor for Git](https://github.com/git-for-windows/git/issues/1356).
 * Comes with [OpenSSL v1.0.2n](https://www.openssl.org/news/openssl-1.0.2-notes.html).
@@ -543,7 +543,7 @@ Git for Windows now has a new homepage: [https://gitforwindows.org/](https://git
 
 ### New Features
 
-* Comes with [Git v2.15.1](https://github.com/git/git/blob/v2.15.1/Documentation/RelNotes/2.15.1.txt).
+* Comes with [Git v2.15.1 (Upstream release notes)](https://github.com/git/git/blob/v2.15.1/Documentation/RelNotes/2.15.1.txt).
 * Operations in massively-sparse worktrees [are now much faster if `core.fscache = true`](https://github.com/git-for-windows/git/pull/1344).
 * It is [now possible to configure `nano`](https://github.com/git-for-windows/build-extra/pull/161) or [Notepad++](https://github.com/git-for-windows/git/issues/291) as Git's default editor [instead of `vim`](https://www.xkcd.com/378/).
 * Comes with [OpenSSL v1.0.2m](https://www.openssl.org/news/cl102.txt).
@@ -560,7 +560,7 @@ Git for Windows now has a new homepage: [https://gitforwindows.org/](https://git
 
 ### New Features
 
-* Comes with [Git v2.15.0](https://github.com/git/git/blob/v2.15.0/Documentation/RelNotes/2.15.0.txt).
+* Comes with [Git v2.15.0 (Upstream release notes)](https://github.com/git/git/blob/v2.15.0/Documentation/RelNotes/2.15.0.txt).
 
 
 ### Bug Fixes
@@ -575,7 +575,7 @@ Git for Windows now has a new homepage: [https://gitforwindows.org/](https://git
 
 ### New Features
 
-* Comes with [Git v2.14.3](https://github.com/git/git/blob/v2.14.3/Documentation/RelNotes/2.14.3.txt).
+* Comes with [Git v2.14.3 (Upstream release notes)](https://github.com/git/git/blob/v2.14.3/Documentation/RelNotes/2.14.3.txt).
 * Git for Windows [now ships with a diff helper for OpenOffice documents](https://github.com/git-for-windows/build-extra/pull/148).
 * Comes with [Git LFS v2.3.4](https://github.com/git-lfs/git-lfs/releases/tag/v2.3.4).
 * Comes with [cURL v7.56.1](https://curl.haxx.se/changes.html#7_56_1).
@@ -613,7 +613,7 @@ Git for Windows now has a new homepage: [https://gitforwindows.org/](https://git
 
 ### New Features
 
-* Comes with [Git v2.14.2](https://github.com/git/git/blob/v2.14.2/Documentation/RelNotes/2.14.2.txt).
+* Comes with [Git v2.14.2 (Upstream release notes)](https://github.com/git/git/blob/v2.14.2/Documentation/RelNotes/2.14.2.txt).
 * Comes with [cURL v7.55.1](https://curl.haxx.se/changes.html#7_55_1).
 * The XP-compatibility layer emulating pthreads (which is [no longer needed](https://git-for-windows.github.io/requirements.html)) [was dropped in favor of modern Windows threading APIs](https://github.com/git-for-windows/git/pull/1214); This should make threaded operations slightly faster and more robust.
 * On Windows, UNC paths can [now be accessed via `file://host/share/repo.git`-style paths](https://github.com/git-for-windows/git/commit/a352941117bc8d00dfddd7a594adf095d084d844).
@@ -645,7 +645,7 @@ Note: there have been MinGit-only releases v2.12.2(3) and v2.13.1(3) with backpo
 
 ### New Features
 
-* Comes with [Git v2.14.1](https://github.com/git/git/blob/v2.14.1/Documentation/RelNotes/2.14.1.txt).
+* Comes with [Git v2.14.1 (Upstream release notes)](https://github.com/git/git/blob/v2.14.1/Documentation/RelNotes/2.14.1.txt).
 * Comes with [cURL v7.55.0](https://curl.haxx.se/changes.html#7_55_0).
 * The *Git Bash Here* context menu item [is now also available](https://github.com/git-for-windows/build-extra/pull/150) in the special [Libraries folders](https://msdn.microsoft.com/en-us/library/windows/desktop/dd758096.aspx).
 
@@ -659,7 +659,7 @@ Note: there have been MinGit-only releases v2.12.2(3) and v2.13.1(3) with backpo
 
 ### New Features
 
-* Comes with [Git v2.14.0](https://github.com/git/git/blob/v2.14.0/Documentation/RelNotes/2.14.0.txt).
+* Comes with [Git v2.14.0 (Upstream release notes)](https://github.com/git/git/blob/v2.14.0/Documentation/RelNotes/2.14.0.txt).
 * Comes with [BusyBox v1.28.0pre.15857.9480dca7c](https://github.com/git-for-windows/busybox-w32/commit/9480dca7c).
 * Comes with [Git Credential Manager v1.12.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.12.0).
 * It is now possible to switch between Secure Channel and OpenSSL for Git's HTTPS transport by [setting the `http.sslBackend` config variable to "openssl" or "schannel"](https://github.com/git-for-windows/git/commit/d81216ee4dd46ae59a388044d1266d6fa9030c19); This [is now also the method used by the installer](https://github.com/git-for-windows/build-extra/commit/7c5a23970126e3cff1e1a7a763216b2a67005593) (rather than copying `libcurl-4.dll` files around).
@@ -676,7 +676,7 @@ Note: there have been MinGit-only releases v2.12.2(3) and v2.13.1(3) with backpo
 
 ### New Features
 
-* Comes with [Git v2.13.3](https://github.com/git/git/blob/v2.13.3/Documentation/RelNotes/2.13.3.txt).
+* Comes with [Git v2.13.3 (Upstream release notes)](https://github.com/git/git/blob/v2.13.3/Documentation/RelNotes/2.13.3.txt).
 * Comes with [Git LFS v2.2.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.2.1).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 2.8.2](https://cygwin.com/ml/cygwin-announce/2017-07/msg00044.html).
 
@@ -688,7 +688,7 @@ Note: there have been MinGit-only releases v2.12.2(3) and v2.13.1(3) with backpo
 
 ### New Features
 
-* Comes with [Git v2.13.2](https://github.com/git/git/blob/v2.13.2/Documentation/RelNotes/2.13.2.txt).
+* Comes with [Git v2.13.2 (Upstream release notes)](https://github.com/git/git/blob/v2.13.2/Documentation/RelNotes/2.13.2.txt).
 * Comes with [Git Credential Manager v1.10.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.10.1).
 * The Git Bash prompt [can now be overridden by creating the file `.config\git\git-prompt.sh`](https://github.com/git-for-windows/build-extra/pull/145).
 * Comes with [cURL v7.54.1](https://curl.haxx.se/changes.html#7_54_1).
@@ -703,7 +703,7 @@ Note: there have been MinGit-only releases v2.12.2(3) and v2.13.1(3) with backpo
 
 ### New Features
 
-* Comes with [Git v2.13.1](https://github.com/git/git/blob/v2.13.1/Documentation/RelNotes/2.13.1.txt).
+* Comes with [Git v2.13.1 (Upstream release notes)](https://github.com/git/git/blob/v2.13.1/Documentation/RelNotes/2.13.1.txt).
 * Comes with [Git Credential Manager v1.10.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.10.0).
 * Comes with [OpenSSH 7.5p1](https://www.openssh.com/releasenotes.html#7.5p1).
 * Comes with [Git Flow v1.11.0](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.11.0).
@@ -724,7 +724,7 @@ Note: there have been MinGit-only releases v2.12.2(3) and v2.13.1(3) with backpo
 
 ### New Features
 
-* Comes with [Git v2.13.0](https://github.com/git/git/blob/v2.13.0/Documentation/RelNotes/2.13.0.txt).
+* Comes with [Git v2.13.0 (Upstream release notes)](https://github.com/git/git/blob/v2.13.0/Documentation/RelNotes/2.13.0.txt).
 * Comes with [cURL v7.54.0](https://curl.haxx.se/changes.html).
 * Comes with [Git LFS v2.1.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.1.0).
 
@@ -758,7 +758,7 @@ Note: there have been MinGit-only releases v2.12.2(3) and v2.13.1(3) with backpo
 
 ### New Features
 
-* Comes with [Git v2.12.2](https://github.com/git/git/blob/v2.12.2/Documentation/RelNotes/2.12.2.txt).
+* Comes with [Git v2.12.2 (Upstream release notes)](https://github.com/git/git/blob/v2.12.2/Documentation/RelNotes/2.12.2.txt).
 * An earlier iteration of the changes speeding up the case-insensitive cache of file names was replaced by [a new iteration](https://github.com/git-for-windows/git/commit/212247dd6345c820deeae61fcdf2f10cea10525a).
 
 ## Changes since Git for Windows v2.12.0 (February 25th 2017)
@@ -767,7 +767,7 @@ A [MinGit-only v2.12.0(2)](https://github.com/git-for-windows/git/releases/tag/v
 
 ### New Features
 
-* Comes with [Git v2.12.1](https://github.com/git/git/blob/v2.12.1/Documentation/RelNotes/2.12.1.txt).
+* Comes with [Git v2.12.1 (Upstream release notes)](https://github.com/git/git/blob/v2.12.1/Documentation/RelNotes/2.12.1.txt).
 * In addition to the GitForWindows NuGet package, we now also publish [MinGit as a NuGet package](https://www.nuget.org/packages/Git-Windows-Minimal/).
 * Git for Windows now bundles [Git LFS](https://git-lfs.github.com/).
 * Comes with Git Credential Manager [v1.9.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.9.0).
@@ -788,7 +788,7 @@ A [MinGit-only v2.12.0(2)](https://github.com/git-for-windows/git/releases/tag/v
 
 ### New Features
 
-* Comes with [Git v2.12.0](https://github.com/git/git/blob/v2.12.0/Documentation/RelNotes/2.12.0.txt).
+* Comes with [Git v2.12.0 (Upstream release notes)](https://github.com/git/git/blob/v2.12.0/Documentation/RelNotes/2.12.0.txt).
 * The builtin difftool is no longer opt-in, as it graduated to be officially adopted by the Git project.
 * Comes with v2.7.0 of the POSIX emulation layer based on the [Cygwin runtime](https://cygwin.com/ml/cygwin-announce/2017-02/msg00022.html).
 * Includes [cURL 7.53.1](https://curl.haxx.se/changes.html#7_53_1).
@@ -808,7 +808,7 @@ A [MinGit-only v2.12.0(2)](https://github.com/git-for-windows/git/releases/tag/v
 
 ### New Features
 
-* Comes with [Git v2.11.1](https://github.com/git/git/blob/v2.11.1/Documentation/RelNotes/2.11.1.txt).
+* Comes with [Git v2.11.1 (Upstream release notes)](https://github.com/git/git/blob/v2.11.1/Documentation/RelNotes/2.11.1.txt).
 * Performance [was enhanced when using fscache in a massively sparse checkout](https://github.com/git-for-windows/git/pull/994).
 * Git hooks [can now be `.exe` files](https://github.com/git-for-windows/git/commit/1c6c2420ff6683d93a61fc790842ab712f2a926b).
 
@@ -850,7 +850,7 @@ A [MinGit-only v2.12.0(2)](https://github.com/git-for-windows/git/releases/tag/v
 
 ### New Features
 
-* Comes with [Git v2.11.0](https://github.com/git/git/blob/v2.11.0/Documentation/RelNotes/2.11.0.txt).
+* Comes with [Git v2.11.0 (Upstream release notes)](https://github.com/git/git/blob/v2.11.0/Documentation/RelNotes/2.11.0.txt).
 * Performance of `git add` in large worktrees [was improved](https://github.com/git-for-windows/git/pull/971).
 * A [new, experimental, builtin version of the difftool](https://github.com/git-for-windows/git/commit/5f3656e4b4b8ceeff40bc7fcf03aba3560bff17c) is available as [an opt-in feature](https://github.com/git-for-windows/build-extra/commit/74339bdd9fab9fbf890f079c9024ff4f1309bb6d).
 * Support [has been added](https://github.com/git-for-windows/git/commit/056b41311688e9f433fe28e6b3aa6687fa36ca70) to generate project files for Visual Studio 2010 and later.
@@ -874,7 +874,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 
 ### New Features
 
-* Comes with [Git v2.10.2](https://github.com/git/git/blob/v2.10.2/Documentation/RelNotes/2.10.2.txt).
+* Comes with [Git v2.10.2 (Upstream release notes)](https://github.com/git/git/blob/v2.10.2/Documentation/RelNotes/2.10.2.txt).
 * Comes with Git Credential Manager [v1.8.1](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.8.1).
 * Comes with cURL [v7.51.0](https://github.com/curl/curl/releases/tag/curl-7_51_0).
 * Git for Windows [can now be built easily with Visual C++ 2015](https://github.com/git-for-windows/git/pull/773).
@@ -899,7 +899,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 
 ### New Features
 
-* Comes with [Git v2.10.1](https://github.com/git/git/blob/v2.10.1/Documentation/RelNotes/2.10.1.txt).
+* Comes with [Git v2.10.1 (Upstream release notes)](https://github.com/git/git/blob/v2.10.1/Documentation/RelNotes/2.10.1.txt).
 * Comes with Git Credential Manager [v1.7.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.7.0).
 * Comes with [Git Flow v1.10.0](https://github.com/petervanderdoes/gitflow-avh/releases/tag/1.10.0).
 * We [now produce nice diffs for `.docm` and `.dotm` files](https://github.com/git-for-windows/build-extra/pull/128), just as we did for `.docx` files already.
@@ -918,7 +918,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 
 ### New Features
 
-* Comes with [Git v2.10.0](https://github.com/git/git/blob/v2.10.0/Documentation/RelNotes/2.10.0.txt).
+* Comes with [Git v2.10.0 (Upstream release notes)](https://github.com/git/git/blob/v2.10.0/Documentation/RelNotes/2.10.0.txt).
 * The `git rebase -i` command was made faster [by reimplementing large parts in C](https://github.com/git-for-windows/git/compare/3259f1f348b8173050c269dde7dc02346db759f3^...3259f1f348b8173050c269dde7dc02346db759f3^2).
 * After helping the end-users to use the new defaults for PATH and FSCache, the installer [now respects the saved settings again](https://github.com/git-for-windows/build-extra/compare/a0a8613c54c0bd651904432f07f7b2999790b097~2...a0a8613c54c0bd651904432f07f7b2999790b097).
 * `git version --build-options` now [also reports the architecture](https://github.com/git-for-windows/git/pull/866).
@@ -995,13 +995,13 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 
 ### New Features
 
-* Comes with [Git v2.8.3](https://github.com/git/git/blob/v2.8.3/Documentation/RelNotes/2.8.3.txt).
+* Comes with [Git v2.8.3 (Upstream release notes)](https://github.com/git/git/blob/v2.8.3/Documentation/RelNotes/2.8.3.txt).
 
 ## Changes since Git for Windows v2.8.1 (April 4th 2016)
 
 ### New Features
 
-* Comes with [Git v2.8.2](https://github.com/git/git/raw/v2.8.2/Documentation/RelNotes/2.8.2.txt).
+* Comes with [Git v2.8.2 (Upstream release notes)](https://github.com/git/git/raw/v2.8.2/Documentation/RelNotes/2.8.2.txt).
 * Starting with version 2.8.2, [Git for Windows is also published as a NuGet package](https://www.nuget.org/packages/GitForWindows/).
 * Comes with Git Credential Manager v1.3.0.
 
@@ -1016,7 +1016,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 
 ### New Features
 
-* Comes with [Git v2.8.1](http://article.gmane.org/gmane.linux.kernel/2189878).
+* Comes with [Git v2.8.1 (Upstream release notes)](http://article.gmane.org/gmane.linux.kernel/2189878).
 * The Git for Windows project updated its contributor guidelines to the [Contributor Covenant 1.4](https://github.com/git-for-windows/git/pull/661).
 
 ### Bug Fixes
@@ -1028,7 +1028,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 
 ### New Features
 
-* Comes with [Git v2.8.0](http://article.gmane.org/gmane.linux.kernel/2185094).
+* Comes with [Git v2.8.0 (Upstream release notes)](http://article.gmane.org/gmane.linux.kernel/2185094).
 * Comes with the [Git Credential Manager v1.2.2](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.2.2).
 * The FSCache feature (which was labeled experimental for quite some time) [is now enabled by default](https://github.com/git-for-windows/build-extra/pull/101).
 * Git is now [added to the `PATH` by default](https://github.com/git-for-windows/build-extra/pull/102) (previously, the default was for Git to be available only from Git Bash/CMD).
@@ -1054,7 +1054,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 ### New Features
 
 * Git for Windows [now ships with](https://github.com/git-for-windows/git/issues/466) the [Git Credential Manager for Windows](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/).
-* Comes with [Git v2.7.3](http://article.gmane.org/gmane.linux.kernel/2174435).
+* Comes with [Git v2.7.3 (Upstream release notes)](http://article.gmane.org/gmane.linux.kernel/2174435).
 
 ### Bug Fixes
 
@@ -1124,7 +1124,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 
 ### New Features
 
-* Comes with [Git v2.7.0](http://article.gmane.org/gmane.linux.kernel/2118402).
+* Comes with [Git v2.7.0 (Upstream release notes)](http://article.gmane.org/gmane.linux.kernel/2118402).
 
 ## Bug Fixes
 
@@ -1134,7 +1134,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 
 ### New Features
 
-* Comes with [Git v2.6.4](http://article.gmane.org/gmane.linux.kernel/2103498).
+* Comes with [Git v2.6.4 (Upstream release notes)](http://article.gmane.org/gmane.linux.kernel/2103498).
 * Also available as `.tar.bz2` packages (you need an MSYS2/Cygwin-compatible unpacker to recreate the symbolic links correctly).
 
 ## Bug Fixes
@@ -1147,7 +1147,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 
 ### New Features
 
-* Comes with [Git v2.6.3](http://article.gmane.org/gmane.comp.version-control.git/280947).
+* Comes with [Git v2.6.3 (Upstream release notes)](http://article.gmane.org/gmane.comp.version-control.git/280947).
 * [Enables the stack smasher to protect against buffer overflows](https://github.com/git-for-windows/git/issues/501).
 
 ### Bug Fixes
