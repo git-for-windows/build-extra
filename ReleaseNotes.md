@@ -47,6 +47,7 @@ This package contains software from a number of other projects including Bash, z
 * The Frequently Asked Questions (FAQ) [are now linked in a Start Menu item](https://github.com/git-for-windows/build-extra/pull/283).
 * Comes with [Perl v5.30.2](http://search.cpan.org/dist/perl-5.30.2/pod/perldelta.pod).
 * Comes with [perl-Net-SSLeay v1.88](https://metacpan.org/source/CHRISN/Net-SSLeay-1.88/Changes).
+* Comes with [perl-TermReadKey v2.38](https://metacpan.org/source/JSTOWE/TermReadKey-2.38/Changes).
 
 ## Changes since Git for Windows v2.26.1 (April 9th 2020)
 
