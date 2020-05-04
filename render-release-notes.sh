@@ -96,7 +96,7 @@ render_release_notes () {
 				</div>
 				<div class="content">
 		EOF
-		body="$(markdown "$SCRIPT_PATH"/ReleaseNotes.md)" ||
+		body="$(sed -r 's|(^\* Comes with \[Git v[0-9].*\))|\1 \(Product release notes\)|' "$SCRIPT_PATH"/ReleaseNotes.md | markdown)" ||
 		die "Could not generate ReleaseNotes.html"
 		echo "$body" | perl -pe '
 			s/^(<h1)(>Known issues)/\1 id="known-issues" class="collapsible"\2/;
