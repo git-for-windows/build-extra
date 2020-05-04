@@ -38,7 +38,6 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [OpenSSL v1.1.1g](https://www.openssl.org/news/openssl-1.1.1-notes.html).
-* Comes with [Perl v5.30.2](http://search.cpan.org/dist/perl-5.30.2/pod/perldelta.pod).
 * Comes with [perl-Net-SSLeay v1.88](https://metacpan.org/source/CHRISN/Net-SSLeay-1.88/Changes).
 * Comes with [perl-YAML-Syck v1.32](https://metacpan.org/source/TODDR/YAML-Syck-1.32/Changes).
 * Comes with [perl-HTML-Parser v3.72](https://metacpan.org/source/GAAS/HTML-Parser-3.72/Changes).
@@ -47,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.4](https://cygwin.com/ml/cygwin-announce/2020-02/msg00006.html).
 * The release notes [have been made a bit more readable and are now linked from the Start Menu group](https://github.com/git-for-windows/build-extra/pull/281).
 * The Frequently Asked Questions (FAQ) [are now linked in a Start Menu item](https://github.com/git-for-windows/build-extra/pull/283).
+* Comes with [Perl v5.30.2](http://search.cpan.org/dist/perl-5.30.2/pod/perldelta.pod).
 
 ## Changes since Git for Windows v2.26.1 (April 9th 2020)
 
