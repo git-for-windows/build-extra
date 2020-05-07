@@ -2758,7 +2758,7 @@ maybe_force_pkgrel () {
 	then
 		# Maybe there have been changes since the latest release?
 		blame_ver="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgver=/,+1' -- ./PKGBUILD)" &&
-		blame_ver="$(echo "$blame_ver" | sed -e 's/ .*//' -e 's/^0*//')" &&
+		blame_ver="$(echo "$blame_ver" | sed -e 's/ .*//' -e 's/^0*$//')" &&
 		blame="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgrel=/,+1' HEAD -- ./PKGBUILD)" &&
 		blame="$(echo "$blame" | sed -e '/^00* /d')" &&
 		if test -n "$blame_ver" &&
