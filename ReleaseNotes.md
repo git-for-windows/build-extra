@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.4](https://cygwin.com/ml/cygwin-announce/2020-02/msg00006.html).
 * The release notes [have been made a bit more readable and are now linked from the Start Menu group](https://github.com/git-for-windows/build-extra/pull/281).
 * The Frequently Asked Questions (FAQ) [are now linked in a Start Menu item](https://github.com/git-for-windows/build-extra/pull/283).
+* Comes with [perl-Locale-Gettext v1.07](https://metacpan.org/source/PVANDRY/gettext-1.07/Changes).
 
 ### Bug Fixes
 
