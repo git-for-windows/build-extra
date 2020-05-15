@@ -38,14 +38,11 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [OpenSSL v1.1.1g](https://www.openssl.org/news/openssl-1.1.1-notes.html).
-* Comes with [perl-YAML-Syck v1.32](https://metacpan.org/source/TODDR/YAML-Syck-1.32/Changes).
-* Comes with [perl-HTML-Parser v3.72](https://metacpan.org/source/GAAS/HTML-Parser-3.72/Changes).
 * Comes with [cURL v7.70.0](https://curl.haxx.se/changes.html#7_70_0).
 * Comes with [subversion v1.13.0](https://svn.apache.org/repos/asf/subversion/tags/1.13.0/CHANGES).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.4](https://cygwin.com/ml/cygwin-announce/2020-02/msg00006.html).
 * The release notes [have been made a bit more readable and are now linked from the Start Menu group](https://github.com/git-for-windows/build-extra/pull/281).
 * The Frequently Asked Questions (FAQ) [are now linked in a Start Menu item](https://github.com/git-for-windows/build-extra/pull/283).
-* Comes with [perl-Locale-Gettext v1.07](https://metacpan.org/source/PVANDRY/gettext-1.07/Changes).
 * Comes with [Git LFS v2.11.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.11.0).
 
 ### Bug Fixes
