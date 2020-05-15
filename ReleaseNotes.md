@@ -35,6 +35,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.26.2 (April 20th 2020)
 
+This release comes with a version of the MSYS2 runtime that uses the [Windows-native pseudo terminals](https://devblogs.microsoft.com/commandline/windows-command-line-introducing-the-windows-pseudo-console-conpty/) by default. Meaning: Git Bash supports interactive native console programs such as `node.exe`, Python or PHP, without using the `winpty` helper (see [_Known Issues_ above](#known-issues)). Note that this is still a very new feature and is therefore it is expected to have some corner-case bugs. You can disable this feature by setting the environment variable to `MSYS=disable_pcon` _before_ starting the Git Bash (e.g. in the _System Properties_).
+
 ### New Features
 
 * Comes with [OpenSSL v1.1.1g](https://www.openssl.org/news/openssl-1.1.1-notes.html).
