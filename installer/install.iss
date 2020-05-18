@@ -112,7 +112,9 @@ Filename: {app}\ReleaseNotes.html; Description: View Release Notes; Flags: shell
 Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\..\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore; Check: ParamIsSet('VSNOTICE')
+#ifdef INCLUDE_EDIT_GIT_BASH
 Source: {#SourcePath}\..\edit-git-bash.exe; Flags: dontcopy
+#endif
 
 [Dirs]
 Name: "{app}\dev"
@@ -285,12 +287,18 @@ function OverrideGitBashCommandLine(GitBashPath:String;CommandLine:String):Integ
 var
     Msg:String;
 begin
+#ifdef INCLUDE_EDIT_GIT_BASH
     if not FileExists(ExpandConstant('{tmp}\edit-git-bash.exe')) then
         ExtractTemporaryFile('edit-git-bash.exe');
+#endif
     StringChangeEx(GitBashPath,'"','\"',True);
     StringChangeEx(CommandLine,'"','\"',True);
     CommandLine:='"'+GitBashPath+'" "'+CommandLine+'"';
+#ifdef INCLUDE_EDIT_GIT_BASH
     Exec(ExpandConstant('{tmp}\edit-git-bash.exe'),CommandLine,'',SW_HIDE,ewWaitUntilTerminated,Result);
+#else
+    Exec(ExpandConstant('{app}\{#MINGW_BITNESS}\share\git\edit-git-bash.exe'),CommandLine,'',SW_HIDE,ewWaitUntilTerminated,Result);
+#endif
     if Result<>0 then begin
         if Result=1 then begin
             Msg:='Unable to edit '+GitBashPath+' (out of memory).';
