@@ -46,6 +46,7 @@ This release comes with a version of the MSYS2 runtime that uses the [Windows-na
 * The release notes [have been made a bit more readable and are now linked from the Start Menu group](https://github.com/git-for-windows/build-extra/pull/281).
 * The Frequently Asked Questions (FAQ) [are now linked in a Start Menu item](https://github.com/git-for-windows/build-extra/pull/283).
 * Comes with [Git LFS v2.11.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.11.0).
+* Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/815446179f59e0898d8e220a9a20562b09b090c9) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.4](https://cygwin.com/ml/cygwin-announce/2020-02/msg00006.html).
 
 ### Bug Fixes
 
