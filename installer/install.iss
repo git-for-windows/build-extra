@@ -368,12 +368,17 @@ const
 #define HAVE_EXPERIMENTAL_OPTIONS 1
 #endif
 
+#ifdef WITH_EXPERIMENTAL_PCON
+#define HAVE_EXPERIMENTAL_OPTIONS 1
+#endif
+
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Experimental options
     GP_BuiltinDifftool = 1;
     GP_BuiltinRebase   = 2;
     GP_BuiltinStash    = 3;
     GP_BuiltinAddI     = 4;
+    GP_EnablePCon      = 5;
 #endif
 
 var
@@ -440,7 +445,7 @@ var
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Wizard page and variables for the experimental options.
     ExperimentalOptionsPage:TWizardPage;
-    RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_BuiltinAddI] of TCheckBox;
+    RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_EnablePCon] of TCheckBox;
 #endif
 
     // Mapping controls to hyperlinks
@@ -2091,6 +2096,14 @@ begin
     RdbExperimentalOptions[GP_BuiltinAddI].Checked:=ReplayChoice('Enable Builtin Interactive Add','Auto')='Enabled';
 #endif
 
+#ifdef WITH_EXPERIMENTAL_PCON
+    // 5th option
+    RdbExperimentalOptions[GP_EnablePCon]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental support for pseudo consoles.','<RED>(NEW!)</RED> This allows running native console programs like Node or Python in a'+#13+'Git Bash window without using winpty, but it still has known bugs.',TabOrder,Top,Left);
+
+    // Restore the settings chosen during a previous install
+    RdbExperimentalOptions[GP_EnablePCon].Checked:=ReplayChoice('Enable Pseudo Console Support','Auto')='Disabled';
+#endif
+
 #endif
 
     PageIDBeforeInstall:=CurrentCustomPageID;
@@ -2769,6 +2782,12 @@ begin
         GitSystemConfigSet('add.interactive.useBuiltin',#0);
 #endif
 
+#ifdef WITH_EXPERIMENTAL_PCON
+    if RdbExperimentalOptions[GP_EnablePCon].checked and
+       not SaveStringToFile(ExpandConstant('{app}\etc\git-bash.config'),'MSYS=enable_pcon',False) then
+        LogError('Could not write to '+ExpandConstant('{app}\etc\git-bash.config'));
+#endif
+
     {
         Modify the environment
 
@@ -3110,6 +3129,14 @@ begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Enable Builtin Interactive Add',Data);
+#endif
+
+#ifdef WITH_EXPERIMENTAL_PCON
+    Data:='Disabled';
+    if RdbExperimentalOptions[GP_EnablePCon].Checked then begin
+        Data:='Enabled';
+    end;
+    RecordChoice(PreviousDataKey,'Enable Pseudo Console Support',Data);
 #endif
 
     Path:=ExpandConstant('{app}\etc\install-options.txt');

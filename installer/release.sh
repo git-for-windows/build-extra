@@ -181,6 +181,11 @@ then
 	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_BUILTIN_ADD_I 1"
 fi
 
+if grep -q enable_pcon /usr/bin/msys-2.0.dll
+then
+	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_PCON 1"
+fi
+
 GITCONFIG_PATH="$(echo "$LIST" | grep "^$etc_gitconfig\$")"
 test -z "$GITCONFIG_PATH" || {
 	keys="$(git config -f "/$GITCONFIG_PATH" -l --name-only)" &&
