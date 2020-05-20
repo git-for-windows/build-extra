@@ -112,7 +112,9 @@ Filename: {app}\ReleaseNotes.html; Description: View Release Notes; Flags: shell
 Source: {#SourcePath}\ReleaseNotes.html; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\..\LICENSE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore
 Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; AfterInstall: DeleteFromVirtualStore; Check: ParamIsSet('VSNOTICE')
+#ifdef INCLUDE_EDIT_GIT_BASH
 Source: {#SourcePath}\..\edit-git-bash.exe; Flags: dontcopy
+#endif
 
 [Dirs]
 Name: "{app}\dev"
@@ -285,12 +287,18 @@ function OverrideGitBashCommandLine(GitBashPath:String;CommandLine:String):Integ
 var
     Msg:String;
 begin
+#ifdef INCLUDE_EDIT_GIT_BASH
     if not FileExists(ExpandConstant('{tmp}\edit-git-bash.exe')) then
         ExtractTemporaryFile('edit-git-bash.exe');
+#endif
     StringChangeEx(GitBashPath,'"','\"',True);
     StringChangeEx(CommandLine,'"','\"',True);
     CommandLine:='"'+GitBashPath+'" "'+CommandLine+'"';
+#ifdef INCLUDE_EDIT_GIT_BASH
     Exec(ExpandConstant('{tmp}\edit-git-bash.exe'),CommandLine,'',SW_HIDE,ewWaitUntilTerminated,Result);
+#else
+    Exec(ExpandConstant('{app}\{#MINGW_BITNESS}\share\git\edit-git-bash.exe'),CommandLine,'',SW_HIDE,ewWaitUntilTerminated,Result);
+#endif
     if Result<>0 then begin
         if Result=1 then begin
             Msg:='Unable to edit '+GitBashPath+' (out of memory).';
@@ -339,6 +347,11 @@ const
     GB_MinTTY         = 1;
     GB_ConHost        = 2;
 
+    // `git pull` behavior settings.
+    GP_GitPullMerge   = 1;
+    GP_GitPullRebase  = 2;
+    GP_GitPullFFOnly  = 3;
+
     // Extra options
     GP_FSCache        = 1;
     GP_GCM            = 2;
@@ -360,12 +373,17 @@ const
 #define HAVE_EXPERIMENTAL_OPTIONS 1
 #endif
 
+#ifdef WITH_EXPERIMENTAL_PCON
+#define HAVE_EXPERIMENTAL_OPTIONS 1
+#endif
+
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Experimental options
     GP_BuiltinDifftool = 1;
     GP_BuiltinRebase   = 2;
     GP_BuiltinStash    = 3;
     GP_BuiltinAddI     = 4;
+    GP_EnablePCon      = 5;
 #endif
 
 var
@@ -425,6 +443,10 @@ var
     BashTerminalPage:TWizardPage;
     RdbBashTerminal:array[GB_MinTTY..GB_ConHost] of TRadioButton;
 
+    // Wizard page and variables for the `git pull` options.
+    GitPullBehaviorPage:TWizardPage;
+    RdbGitPullBehavior:array[GP_GitPullMerge..GP_GitPullFFOnly] of TRadioButton;
+
     // Wizard page and variables for the extra options.
     ExtraOptionsPage:TWizardPage;
     RdbExtraOptions:array[GP_FSCache..GP_Symlinks] of TCheckBox;
@@ -432,7 +454,7 @@ var
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Wizard page and variables for the experimental options.
     ExperimentalOptionsPage:TWizardPage;
-    RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_BuiltinAddI] of TCheckBox;
+    RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_EnablePCon] of TCheckBox;
 #endif
 
     // Mapping controls to hyperlinks
@@ -2005,6 +2027,30 @@ begin
     end;
 
     (*
+     * Create a custom page for the default behavior of `git pull`.
+     *)
+
+    GitPullBehaviorPage:=CreatePage(PrevPageID,'Choose the default behavior of `git pull`','What should `git pull` do by default?',TabOrder,Top,Left);
+
+    // 1st choice
+    RdbGitPullBehavior[GP_GitPullMerge]:=CreateRadioButton(GitPullBehaviorPage,'Default (fast-forward or merge)','This is the standard behavior of `git pull`: fast-forward the current branch to'+#13+'the fetched branch when possible, otherwise create a merge commit.',TabOrder,Top,Left);
+
+    // 2nd choice
+    RdbGitPullBehavior[GP_GitPullRebase]:=CreateRadioButton(GitPullBehaviorPage,'Rebase','Rebase the current branch onto the fetched branch. If there are no local'+#13+'commits to rebase, this is equivalent to a fast-forward.',TabOrder,Top,Left);
+
+    // 3rd choice
+    RdbGitPullBehavior[GP_GitPullFFOnly]:=CreateRadioButton(GitPullBehaviorPage,'Only ever fast-forard','Fast-forward to the fetched branch. Fail if that is not possible.',TabOrder,Top,Left);
+
+    // Restore the setting chosen during a previous install.
+    case ReplayChoice('Git Pull Behavior Option','Merge') of
+        'Merge': RdbGitPullBehavior[GP_GitPullMerge].Checked:=True;
+        'Rebase': RdbGitPullBehavior[GP_GitPullRebase].Checked:=True;
+        'FFOnly': RdbGitPullBehavior[GP_GitPullFFOnly].Checked:=True;
+    else
+        RdbGitPullBehavior[GP_GitPullMerge].Checked:=True;
+    end;
+
+    (*
      * Create a custom page for extra options.
      *)
 
@@ -2081,6 +2127,14 @@ begin
 
     // Restore the settings chosen during a previous install
     RdbExperimentalOptions[GP_BuiltinAddI].Checked:=ReplayChoice('Enable Builtin Interactive Add','Auto')='Enabled';
+#endif
+
+#ifdef WITH_EXPERIMENTAL_PCON
+    // 5th option
+    RdbExperimentalOptions[GP_EnablePCon]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental support for pseudo consoles.','<RED>(NEW!)</RED> This allows running native console programs like Node or Python in a'+#13+'Git Bash window without using winpty, but it still has known bugs.',TabOrder,Top,Left);
+
+    // Restore the settings chosen during a previous install
+    RdbExperimentalOptions[GP_EnablePCon].Checked:=ReplayChoice('Enable Pseudo Console Support','Auto')='Disabled';
 #endif
 
 #endif
@@ -2714,6 +2768,18 @@ begin
     end;
 
     {
+        Configure the default `git pull` behavior
+    }
+
+    if RdbGitPullBehavior[GP_GitPullMerge].Checked then begin
+        GitSystemConfigSet('pull.rebase','false')
+    end else if RdbGitPullBehavior[GP_GitPullRebase].Checked then begin
+        GitSystemConfigSet('pull.rebase','true')
+    end else if RdbGitPullBehavior[GP_GitPullFFOnly].Checked then begin
+        GitSystemConfigSet('pull.ff','only')
+    end;
+
+    {
         Configure extra options
     }
 
@@ -2759,6 +2825,12 @@ begin
         GitSystemConfigSet('add.interactive.useBuiltin','true')
     else
         GitSystemConfigSet('add.interactive.useBuiltin',#0);
+#endif
+
+#ifdef WITH_EXPERIMENTAL_PCON
+    if RdbExperimentalOptions[GP_EnablePCon].checked and
+       not SaveStringToFile(ExpandConstant('{app}\etc\git-bash.config'),'MSYS=enable_pcon',False) then
+        LogError('Could not write to '+ExpandConstant('{app}\etc\git-bash.config'));
 #endif
 
     {
@@ -3054,6 +3126,15 @@ begin
     end;
     RecordChoice(PreviousDataKey,'Bash Terminal Option',Data);
 
+    // Default behavior of `git pull`.
+    Data:='Merge';
+    if RdbGitPullBehavior[GP_GitPullRebase].Checked then begin
+        Data:='Rebase'
+    end else if RdbGitPullBehavior[GP_GitPullRebase].Checked then begin
+        Data:='FFOnly'
+    end;
+    RecordChoice(PreviousDataKey,'Git Pull Behavior Option',Data);
+
     // Extra options.
     Data:='Disabled';
     if RdbExtraOptions[GP_FSCache].Checked then begin
@@ -3102,6 +3183,14 @@ begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Enable Builtin Interactive Add',Data);
+#endif
+
+#ifdef WITH_EXPERIMENTAL_PCON
+    Data:='Disabled';
+    if RdbExperimentalOptions[GP_EnablePCon].Checked then begin
+        Data:='Enabled';
+    end;
+    RecordChoice(PreviousDataKey,'Enable Pseudo Console Support',Data);
 #endif
 
     Path:=ExpandConstant('{app}\etc\install-options.txt');

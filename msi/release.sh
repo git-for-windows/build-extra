@@ -120,10 +120,6 @@ die "Could not switch directory to $SCRIPT_PATH"
 ../render-release-notes.sh --css usr/share/git/ ||
 die "Could not generate ReleaseNotes.html."
 
-# Compile edit-git-bash.exe
-make -C ../ edit-git-bash.exe ||
-die "Could not build edit-git-bash.exe."
-
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/package-versions.txt \
@@ -159,10 +155,6 @@ BUILD_EXTRA_WINPATH="$(cd "$SCRIPT_PATH"/.. && pwd -W | tr / \\\\)"
             </Component>
             <Component Directory="INSTALLFOLDER:\\usr\\share\\git\\">
                 <File Id="ReleaseNotes_Css" Source="$BUILD_EXTRA_WINPATH\\ReleaseNotes.css" />
-            </Component>
-            <Component Directory="INSTALLFOLDER" Guid="">
-                <Condition>TERMINAL = "CmdPrompt"</Condition>
-                <File DoNotBind Id="EditGitBash" Source="$BUILD_EXTRA_WINPATH\\edit-git-bash.exe" KeyPath="yes" />
             </Component>
 EOF
 echo "$LIST" |

@@ -102,9 +102,16 @@ echo "Generating release notes to be included in the installer ..."
 ../render-release-notes.sh --css usr/share/git/ ||
 die "Could not generate release notes"
 
-echo "Compiling edit-git-bash.exe ..."
-make -C ../ edit-git-bash.exe ||
-die "Could not build edit-git-bash.exe"
+if grep -q edit-git-bash /var/lib/pacman/local/mingw-w64-$ARCH-git-[1-9]*/files
+then
+	INCLUDE_EDIT_GIT_BASH=
+else
+	INCLUDE_EDIT_GIT_BASH=1
+	inno_defines="$inno_defines$LF#define INCLUDE_EDIT_GIT_BASH$LF"
+	echo "Compiling edit-git-bash.exe ..."
+	make -C ../ edit-git-bash.exe ||
+	die "Could not build edit-git-bash.exe"
+fi
 
 etc_gitconfig="$(git -c core.editor=echo config --system -e 2>/dev/null)" &&
 etc_gitconfig="$(cygpath -au "$etc_gitconfig")" &&
@@ -172,6 +179,11 @@ if test "$(GIT_CONFIG_NOSYSTEM=1 HOME=. git add --patch=123 2>&1)" != \
 	"$(git -c add.interactive.usebuiltin=1 add --patch=123 2>&1)"
 then
 	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_BUILTIN_ADD_I 1"
+fi
+
+if grep -q enable_pcon /usr/bin/msys-2.0.dll
+then
+	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_PCON 1"
 fi
 
 GITCONFIG_PATH="$(echo "$LIST" | grep "^$etc_gitconfig\$")"

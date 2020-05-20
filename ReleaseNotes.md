@@ -16,7 +16,7 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
   > `MSYS_NO_PATHCONV=1 git blame -L/pathconv/ msys2_path_conv.cc`
 
   Alternatively, you can double the first slash to avoid POSIX-to-Windows path conversion, e.g. "`//usr/bin/bash.exe`".
-* Windows drives are normally recognised within the POSIX path as `/c/path/to/dir/` where `/c/` (or appropriate drive letter) is equivalent to the `C:\` Windows prefix to the `\path\to\dir`. If this is not recognised, revert to the `C:\path\to\dir` Windows style.
+* Windows drives are normally recognized within the POSIX path as `/c/path/to/dir/` where `/c/` (or appropriate drive letter) is equivalent to the `C:\` Windows prefix to the `\path\to\dir`. If this is not recognized, revert to the `C:\path\to\dir` Windows style.
 * Git for Windows will not allow commits containing DOS-style truncated 8.3-format filenames ending with a tilde and digit, such as `mydocu~1.txt`. A workaround is to call `git config core.protectNTFS false`, which is not advised. Instead, add a rule to .gitignore to ignore the file(s), or rename the file(s).
 * Many Windows programs (including the Windows Explorer) have problems with directory trees nested so deeply that the absolute path is longer than 260 characters. Therefore, Git for Windows refuses to check out such files by default. You can overrule this default by setting `core.longPaths`, e.g. `git clone -c core.longPaths=true ...`.
 * Some commands are not yet supported on Windows and excluded from the installation.
@@ -35,7 +35,7 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.26.2 (April 20th 2020)
 
-This release comes with a version of the MSYS2 runtime that uses the [Windows-native pseudo terminals](https://devblogs.microsoft.com/commandline/windows-command-line-introducing-the-windows-pseudo-console-conpty/) by default. Meaning: Git Bash supports interactive native console programs such as `node.exe`, Python or PHP, without using the `winpty` helper (see [_Known Issues_ above](#known-issues)). Note that this is still a very new feature and is therefore it is expected to have some corner-case bugs. You can disable this feature by setting the environment variable to `MSYS=disable_pcon` _before_ starting the Git Bash (e.g. in the _System Properties_).
+This release comes with a Git Bash that optionally uses [Windows-native pseudo consoles](https://devblogs.microsoft.com/commandline/windows-command-line-introducing-the-windows-pseudo-console-conpty/). Meaning: finally, Git Bash can accommodate console programs like `node.exe`, Python or PHP, without using the `winpty` helper (see [_Known Issues_ above](#known-issues)). Note that this is still a very new feature and is therefore known to have some corner-case bugs.
 
 ### New Features
 
@@ -46,7 +46,6 @@ This release comes with a version of the MSYS2 runtime that uses the [Windows-na
 * The release notes [have been made a bit more readable and are now linked from the Start Menu group](https://github.com/git-for-windows/build-extra/pull/281).
 * The Frequently Asked Questions (FAQ) [are now linked in a Start Menu item](https://github.com/git-for-windows/build-extra/pull/283).
 * Comes with [Git LFS v2.11.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.11.0).
-* Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/815446179f59e0898d8e220a9a20562b09b090c9) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.4](https://cygwin.com/ml/cygwin-announce/2020-02/msg00006.html).
 
 ### Bug Fixes
 
