@@ -7,7 +7,7 @@ These release notes describe issues specific to the Git for Windows release. The
 
 See [http://git-scm.com/](http://git-scm.com/) for further details about Git including ports to other operating systems. Git for Windows is hosted at [https://gitforwindows.org/](https://gitforwindows.org/).
 
-# Known issues
+## Known issues
 * On Windows 10 before 1703, or when Developer Mode is turned off, special permissions are required when cloning repositories with symbolic links, therefore support for symbolic links is disabled by default. Use `git clone -c core.symlinks=true <URL>` to enable it, see details [here](https://github.com/git-for-windows/git/wiki/Symbolic-Links).
 * If configured to use Plink, you will have to connect with [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/) first and accept the host key.
 * Some console programs, most notably non-MSYS2 Python, PHP, Node and OpenSSL, interact correctly with MinTTY only when called through `winpty` (e.g. the Python console needs to be started as `winpty python` instead of just `python`).
@@ -24,6 +24,7 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
 * The Quick Launch icon will only be installed for the user running setup (typically the Administrator). This is a technical restriction and will not change.
 * Older versions of the Windows Explorer do *not* calculate Git for Windows' on-disk size correctly, as it is unaware of hard links. Therefore, it might look like Git for Windows takes up 1.5GB when in reality it is about a third of that.
 
+#### Other Problems
 Should you encounter other problems, please first search [the bug tracker](https://github.com/git-for-windows/git/issues) (also look at the closed issues) and [the mailing list](http://groups.google.com/group/git-for-windows), chances are that the problem was reported already. Also make sure that you use an up to date Git for Windows version (or a [current snapshot build](https://wingit.blob.core.windows.net/files/index.html)). If it has not been reported, please follow [our bug reporting guidelines](https://github.com/git-for-windows/git/wiki/Issue-reporting-guidelines) and [report the bug](https://github.com/git-for-windows/git/issues/new).
 
 ## Licenses

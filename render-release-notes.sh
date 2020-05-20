@@ -99,7 +99,7 @@ render_release_notes () {
 		body="$(markdown "$SCRIPT_PATH"/ReleaseNotes.md)" ||
 		die "Could not generate ReleaseNotes.html"
 		echo "$body" | perl -pe '
-			s/^(<h1)(>Known issues)/\1 id="known-issues" class="collapsible"\2/;
+			s/^(<h2)(>Known issues)/\1 id="known-issues" class="collapsible"\2/;
 			s/^(<h2)(>Licenses.*)/\1 id="licenses" class="collapsible"\2<div>/;
 			$v = $1 if (/<h1>Git for Windows (\S+)/);
 			if (/^<h2>Changes since Git for Windows ([^ ]*)/) {
