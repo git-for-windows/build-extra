@@ -126,12 +126,11 @@ render_release_notes () {
 				(() => {
 					for (let el of document.getElementsByClassName('collapsible')) {
 						let arrow = document.createElement('div');
-						arrow.innerHTML = '▽';
+						arrow.innerHTML = '▽ ' + el.id;
 						arrow.style.float = 'left';
 						arrow.style.position = 'relative';
 						arrow.style.left = '-1em';
 						arrow.style.top = '+1.5em';
-						arrow.style.fontSize = 'larger';
 						arrow.style.cursor = 'pointer';
 
 						const toggle = () => {
@@ -139,10 +138,10 @@ render_release_notes () {
 							let details = el.nextElementSibling;
 							if (details.style.display === 'none') {
 								details.style.display = 'block';
-								arrow.innerHTML = '▽';
+								arrow.innerHTML = '▽ ' + el.id;
 							} else {
 								details.style.display = 'none';
-								arrow.innerHTML = '▷';
+								arrow.innerHTML = '▷ ' + el.id;
 							}
 						};
 
