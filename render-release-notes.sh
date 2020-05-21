@@ -102,8 +102,8 @@ render_release_notes () {
 			s/^(<h1)(>Known issues)/\1 id="known-issues" class="collapsible"\2/;
 			s/^(<h2)(>Licenses.*)/\1 id="licenses" class="collapsible"\2<div>/;
 			$v = $1 if (/<h1>Git for Windows (\S+)/);
-			if (/^<h2>Changes since Git for Windows ([^ ]*)/) {
-				$previous_version = $1;
+			if ((/^<h2>Changes since (Git for Windows ([^ <]*)|(Win)?Git-([^ <]*))/)) {
+				$previous_version = $2 ? $2 : "v$4";
 
 				if (!$latest) {
 					s/>[^<]*/><a name="latest"$&<\/a>/;
@@ -115,7 +115,12 @@ render_release_notes () {
 
 				$nr = 0 if (!$nr);
 				$nr++;
-				s/^<h2/$& id="$v" nr="$nr" class="collapsible"/;
+				$id = $v;
+				if ($v eq $previous_version) {
+					# in-between version
+					$id = "snapshot"
+				}
+				s/^<h2>/<h2 id="$id" nr="$nr" class="collapsible"> /;
 				$v = $previous_version;
 				s/.*/<\/div>$&<div>/;
 			}'
@@ -124,6 +129,9 @@ render_release_notes () {
 				</div>
 				<script>
 				(() => {
+					const hideEl = window.location.hash && window.location.hash != '#latest' ?
+						(el) => "#" + el.id !== window.location.hash :
+						(el) => el.getAttribute('nr') !== '1';
 					for (let el of document.getElementsByClassName('collapsible')) {
 						let arrow = document.createElement('div');
 						arrow.innerHTML = '▽';
@@ -146,7 +154,7 @@ render_release_notes () {
 							}
 						};
 
-						if (el.getAttribute('nr') !== '1') {
+						if (hideEl(el)) {
 							toggle();
 						}
 
