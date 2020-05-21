@@ -128,6 +128,8 @@ Name: {group}\Git Bash; Filename: {app}\git-bash.exe; Parameters: "--cd-to-home"
 Name: {group}\Git CMD; Filename: {app}\git-cmd.exe; Parameters: "--cd-to-home"; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 Name: {group}\Git Release Notes; Filename: {app}\ReleaseNotes.html; Parameters: ""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 Name: {group}\Git FAQs (Frequently Asked Questions); Filename: https://github.com/git-for-windows/git/wiki/FAQ; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
+Name: {group}\Git User Manual; Filename: {app}\{#MINGW_BITNESS}\share\doc\git-doc\user-manual.html; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
+Name: {group}\Pro Git book (Chacon & Straub); Filename: https://git-scm.com/book/en/v2; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 
 [Messages]
 BeveledLabel={#APP_URL}
