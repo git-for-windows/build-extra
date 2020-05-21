@@ -129,6 +129,9 @@ render_release_notes () {
 				</div>
 				<script>
 				(() => {
+					const hideEl = window.location.hash && window.location.hash != '#latest' ?
+						(el) => "#" + el.id !== window.location.hash :
+						(el) => el.getAttribute('nr') !== '1';
 					for (let el of document.getElementsByClassName('collapsible')) {
 						let arrow = document.createElement('div');
 						arrow.innerHTML = '▽';
@@ -151,7 +154,7 @@ render_release_notes () {
 							}
 						};
 
-						if (el.getAttribute('nr') !== '1') {
+						if (hideEl(el)) {
 							toggle();
 						}
 
