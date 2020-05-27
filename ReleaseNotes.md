@@ -46,6 +46,7 @@ This release comes with a Git Bash that optionally uses [Windows-native pseudo c
 * The release notes [have been made a bit more readable and are now linked from the Start Menu group](https://github.com/git-for-windows/build-extra/pull/281).
 * The Frequently Asked Questions (FAQ) [are now linked in a Start Menu item](https://github.com/git-for-windows/build-extra/pull/283).
 * Comes with [Git LFS v2.11.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.11.0).
+* Comes with [OpenSSH v8.3p1](https://www.openssh.com/txt/release-8.3).
 
 ### Bug Fixes
 
