@@ -35,6 +35,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.26.2 (April 20th 2020)
 
+Due to [a bug when handling symbolic links that was fixed in this version](https://github.com/git-for-windows/git/pull/2637), `git status` will show symbolic links as modified even as `git diff` won't report any changes. The quickest work-around is to call `git add -u` which lets Git realize that nothing changed, actually.
+
 This release comes with a Git Bash that optionally uses [Windows-native pseudo consoles](https://devblogs.microsoft.com/commandline/windows-command-line-introducing-the-windows-pseudo-console-conpty/). Meaning: finally, Git Bash can accommodate console programs like `node.exe`, Python or PHP, without using the `winpty` helper (see [_Known Issues_ above](#known-issues)). Note that this is still a very new feature and is therefore known to have some corner-case bugs.
 
 ### New Features
