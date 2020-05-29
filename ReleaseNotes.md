@@ -51,6 +51,7 @@ This release comes with a Git Bash that optionally uses [Windows-native pseudo c
 ### Bug Fixes
 
 * Some Perl packages (e.g. `Net::SSLeay`) that [had been broken recently](https://github.com/git-for-windows/git/issues/2598) have been fixed.
+* Git for Windows and WSL Git [now have the same idea of symbolic links' length](https://github.com/git-for-windows/git/pull/2637), i.e. `git status` will no longer mark them as modified in Git for Windows after checking them out in WSL.
 
 ## Changes since Git for Windows v2.26.1 (April 9th 2020)
 
