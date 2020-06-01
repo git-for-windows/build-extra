@@ -41,6 +41,7 @@ This release comes with a Git Bash that optionally uses [Windows-native pseudo c
 
 ### New Features
 
+* Comes with [Git v2.27.0](https://github.com/git/git/blob/v2.27.0/Documentation/RelNotes/2.27.0.txt).
 * Comes with [OpenSSL v1.1.1g](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [cURL v7.70.0](https://curl.haxx.se/changes.html#7_70_0).
 * Comes with [subversion v1.13.0](https://svn.apache.org/repos/asf/subversion/tags/1.13.0/CHANGES).
