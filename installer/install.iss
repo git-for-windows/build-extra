@@ -2039,7 +2039,7 @@ begin
     RdbGitPullBehavior[GP_GitPullRebase]:=CreateRadioButton(GitPullBehaviorPage,'Rebase','Rebase the current branch onto the fetched branch. If there are no local'+#13+'commits to rebase, this is equivalent to a fast-forward.',TabOrder,Top,Left);
 
     // 3rd choice
-    RdbGitPullBehavior[GP_GitPullFFOnly]:=CreateRadioButton(GitPullBehaviorPage,'Only ever fast-forard','Fast-forward to the fetched branch. Fail if that is not possible.',TabOrder,Top,Left);
+    RdbGitPullBehavior[GP_GitPullFFOnly]:=CreateRadioButton(GitPullBehaviorPage,'Only ever fast-forward','Fast-forward to the fetched branch. Fail if that is not possible.',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Git Pull Behavior Option','Merge') of
