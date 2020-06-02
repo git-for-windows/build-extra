@@ -33,6 +33,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.27.0 (June 1st 2020)
+
+### Bug Fixes
+
+* A typo [was fixed](https://github.com/git-for-windows/build-extra/pull/291) in the installer.
+
 ## Changes since Git for Windows v2.26.2 (April 20th 2020)
 
 Due to [a bug when handling symbolic links that was fixed in this version](https://github.com/git-for-windows/git/pull/2637), `git status` will show symbolic links as modified even as `git diff` won't report any changes. The quickest work-around is to call `git add -u` which lets Git realize that nothing changed, actually.
