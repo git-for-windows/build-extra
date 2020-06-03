@@ -5035,10 +5035,10 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	git clone --depth 1 --single-branch -b master https://github.com/git-for-windows/MINGW-packages /usr/src/MINGW-packages ||
 	die "Could not clone MINGW-packages\n"
 
-	tag="$(git for-each-ref --format '%(refname:short)' --points-at="${1:+HEAD}" 'refs/tags/v[0-9]*')"
+	tag="$(git for-each-ref --format '%(refname:short)' --points-at="${1:-HEAD}" 'refs/tags/v[0-9]*')"
 	test -n "$tag" || {
-		tag=$(git describe --match=v* "${1:+HEAD}" | sed 's/-.*//').$(date +%Y%m%d%H%M%S) &&
-		git tag $tag "${1:+HEAD}"
+		tag=$(git describe --match=v* "${1:-HEAD}" | sed 's/-.*//').$(date +%Y%m%d%H%M%S) &&
+		git tag $tag "${1:-HEAD}"
 	} ||
 	die "Could not create tag\n"
 
