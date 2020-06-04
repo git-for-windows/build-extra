@@ -3519,7 +3519,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not determine the latest version of %s\n" "$package"
 
 		version="$(echo "$release" | sed -n \
-		 's/.*<a href="#recommended-release">\([1-9][0-9.]*\)<.*/\1/p')"
+		 's/.*<a href="#recommended-release">\([1-9][0-9.]*\)<.*/\1/p' |
+		 sed 's/^[^.]*\.[^.]*$/&.0/')"
 		test -n "$version" ||
 		die "Could not determine version of %s\n" "$package"
 
