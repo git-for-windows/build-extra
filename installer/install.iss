@@ -3130,7 +3130,7 @@ begin
     Data:='Merge';
     if RdbGitPullBehavior[GP_GitPullRebase].Checked then begin
         Data:='Rebase'
-    end else if RdbGitPullBehavior[GP_GitPullRebase].Checked then begin
+    end else if RdbGitPullBehavior[GP_GitPullFFOnly].Checked then begin
         Data:='FFOnly'
     end;
     RecordChoice(PreviousDataKey,'Git Pull Behavior Option',Data);
