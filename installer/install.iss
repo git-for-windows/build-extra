@@ -803,6 +803,15 @@ begin
                             'true': RecordInferredDefault('Enable Symlinks','Enabled');
                             'false': RecordInferredDefault('Enable Symlinks','Disabled');
                         end;
+                    'pull.ff':
+                        case Value of
+                            'only': RecordInferredDefault('Git Pull Behavior Option','FFOnly');
+                        end;
+                    'pull.rebase':
+                        case Value of
+                            'true': RecordInferredDefault('Git Pull Behavior Option','Rebase');
+                            'false': RecordInferredDefault('Git Pull Behavior Option','Merge');
+                        end;
                 end;
             end;
             i:=j+1;
