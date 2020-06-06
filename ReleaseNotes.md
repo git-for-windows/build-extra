@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * A typo [was fixed](https://github.com/git-for-windows/build-extra/pull/291) in the installer.
+* The new `git pull` behavior option [now records the `fast-forward` choice correctly](https://github.com/git-for-windows/build-extra/pull/292).
 
 ## Changes since Git for Windows v2.26.2 (April 20th 2020)
 
