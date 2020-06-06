@@ -35,6 +35,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.27.0 (June 1st 2020)
 
+### New Features
+
+* Comes with [subversion v1.14.0](https://svn.apache.org/repos/asf/subversion/tags/1.14.0/CHANGES).
+
 ### Bug Fixes
 
 * A typo [was fixed](https://github.com/git-for-windows/build-extra/pull/291) in the installer.
