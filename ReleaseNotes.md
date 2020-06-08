@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 
 * A typo [was fixed](https://github.com/git-for-windows/build-extra/pull/291) in the installer.
 * The new `git pull` behavior option [now records the `fast-forward` choice correctly](https://github.com/git-for-windows/build-extra/pull/292).
+* In v2.27.0, [`git svn` was broken completely](https://github.com/git-for-windows/git/issues/2649), which has been fixed.
 
 ## Changes since Git for Windows v2.26.2 (April 20th 2020)
 
