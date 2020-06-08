@@ -38,6 +38,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [subversion v1.14.0](https://svn.apache.org/repos/asf/subversion/tags/1.14.0/CHANGES).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.5](https://cygwin.com/pipermail/cygwin-announce/2020-June/009561.html).
 
 ### Bug Fixes
 
