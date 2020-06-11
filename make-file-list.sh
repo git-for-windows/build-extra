@@ -49,6 +49,11 @@ then
 	UTIL_PACKAGES="$UTIL_PACKAGES tmux libevent"
 fi
 
+if test -z "$MINIMAL_GIT"
+then
+	UTIL_PACKAGES="$UTIL_PACKAGES bash-completion"
+fi
+
 this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
 
