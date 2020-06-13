@@ -105,6 +105,13 @@ render_release_notes () {
 			if ((/^<h2>Changes since (Git for Windows ([^ <]*)|(Win)?Git-([^ <]*))/)) {
 				$previous_version = $2 ? $2 : "v$4";
 
+				if ($v eq $previous_version) {
+					# in-between version
+					$v = "snapshot"
+				}
+
+				s/^<h2>Changes since(.*)/<h2>Changes in $v <small>since \1<\/small>/;
+
 				if (!$latest) {
 					s/>[^<]*/><a name="latest"$&<\/a>/;
 					$latest = 1;
@@ -116,10 +123,7 @@ render_release_notes () {
 				$nr = 0 if (!$nr);
 				$nr++;
 				$id = $v;
-				if ($v eq $previous_version) {
-					# in-between version
-					$id = "snapshot"
-				}
+
 				s/^<h2>/<h2 id="$id" nr="$nr" class="collapsible"> /;
 				$v = $previous_version;
 				s/.*/<\/div>$&<div>/;
