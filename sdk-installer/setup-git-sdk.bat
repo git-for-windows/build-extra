@@ -5,13 +5,13 @@
 @REM https://technet.microsoft.com/en-us/library/bb490909.aspx says:
 @REM <percent>~dpI Expands <percent>I to a drive letter and path only.
 @REM <percent>~fI Expands <percent>I to a fully qualified path name.
-@FOR /F "delims=" %%D in ("%~dp0") do @set cwd=%%~fD
+@FOR /F "delims=" %%D in ("%~dp0") do @set "cwd=%%~fD"
 
 @CD "%cwd%"
 @IF ERRORLEVEL 1 GOTO DIE
 
 @REM set PATH
-@set PATH=%cwd%\mini\mingw@@BITNESS@@\bin;%PATH%
+@set "PATH=%cwd%\mini\mingw@@BITNESS@@\bin;%PATH%"
 
 @ECHO Cloning the Git for Windows SDK...
 @git init
