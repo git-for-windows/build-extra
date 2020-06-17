@@ -26,7 +26,7 @@
 # 2) release a new Pacman package, e.g. git-extra or msys2-runtime
 #
 #	./please.sh sync
-#	<make sure that the 'master' branch reflects the new version>
+#	<make sure that the main branch reflects the new version>
 #	./please.sh build git-extra
 #	./please.sh install git-extra
 #	<verify that everything's alright>
