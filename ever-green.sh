@@ -347,9 +347,9 @@ self-test)
 	# on top of a newer pu branch thicket.
 
 	test_commit () { # <mark> <parent(s)> <commit-message> [<file-name> [<contents>]]
-		test -n "$2" || echo "reset refs/heads/master"
+		test -n "$2" || echo "reset refs/heads/main"
 		printf '%s\n' \
-			'commit refs/heads/master' \
+			'commit refs/heads/main' \
 			"mark :$1" \
 			"committer Ever Green <eve@rgre.en> $((1234567890+$1)) +0000" \
 			'data <<EOM' \
