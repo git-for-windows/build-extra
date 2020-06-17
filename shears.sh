@@ -21,7 +21,7 @@
 #
 # git fetch upstream
 # BASE="$(git rev-parse ":/Start the merging-rebase")"
-# shears.sh --merging --onto upstream/master $BASE
+# shears.sh --merging --onto upstream/HEAD $BASE
 #
 # Usage: shears [options] ( <upstream> | merging-rebase )
 # options:
