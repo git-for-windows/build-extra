@@ -22,7 +22,7 @@
 @IF ERRORLEVEL 1 GOTO DIE
 @git fetch --depth 1 origin
 @IF ERRORLEVEL 1 GOTO DIE
-@git -c core.fscache=true checkout -t origin/master
+@git -c core.fscache=true checkout -t origin/main
 @IF ERRORLEVEL 1 GOTO DIE
 
 @REM Cleaning up temporary git.exe
