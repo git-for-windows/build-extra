@@ -2714,7 +2714,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			https://github.com/rmyorston/busybox-w32 ||
 		  die "Could not connect remotes for '%s'\n" "$package"
 		  if test 0 -lt $(git rev-list --count \
-			git-for-windows/main..rmyorston/master)
+			git-for-windows/main..rmyorston/HEAD)
 		  then
 			{ test -n "$skip_upload" ||
 			  require_push_url git-for-windows; } &&
@@ -2722,12 +2722,12 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			git checkout git-for-windows/main &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh --merging \
-				--onto rmyorston/master merging-rebase &&
+				--onto rmyorston/HEAD merging-rebase &&
 			create_bundle_artifact &&
 			{ test -n "$skip_upload" ||
 			  git push git-for-windows HEAD:main; } ||
 			die "Could not rebase '%s' to '%s'\n" \
-				"$package" "rmyorston/master"
+				"$package" "rmyorston/HEAD"
 		  fi) ||
 		 die "Could not initialize/rebase '%s'\n" "$package"
 
@@ -2858,7 +2858,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 git diff-files --quiet --)
 		;;
 	bash)
-		url="http://git.savannah.gnu.org/cgit/bash.git/commit/?id=master" &&
+		url="http://git.savannah.gnu.org/cgit/bash.git/commit/?id=HEAD" &&
 		version=4.4 &&
 		patchlevel="$(curl $url | sed -n \
 			's/.*+#define PATCHLEVEL \([1-9][0-9]*\).*/\1/p')" &&
