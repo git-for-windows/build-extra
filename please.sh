@@ -1012,7 +1012,7 @@ require_git_src_dir () {
 			else
 				git -C "$mingw_packages_dir" fetch &&
 				git -C "$mingw_packages_dir" \
-					checkout -t origin/master ||
+					checkout -t origin/main ||
 				die "Could not check out %s\n" \
 					"$mingw_packages_dir"
 			fi
@@ -1148,7 +1148,7 @@ build_and_test_64 () {
 update_vs_branch () { # [--worktree=<path>] [--remote=<remote>] [--branch=<branch>]
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	remote=git-for-windows
-	branch=master
+	branch=main
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -1896,7 +1896,7 @@ tag_git () { # [--force]
 		branch_to_use=FETCH_HEAD
 		;;
 	esac
-	branch_to_use="${branch_to_use:-git-for-windows/master}"
+	branch_to_use="${branch_to_use:-git-for-windows/main}"
 
 	next_version="$(sed -ne \
 		'1s/.* \(v[0-9][.0-9]*\(-rc[0-9]*\)\?\)(\([0-9][0-9]*\)) .*/\1.windows.\3/p' \
@@ -2081,7 +2081,7 @@ really_push () {
 	then
 		if test "origin HEAD" = "$*"
 		then
-			git pull origin master
+			git pull origin main
 		else
 			git pull "$@"
 		fi &&
@@ -2104,7 +2104,7 @@ pkg_upload () {
 	pacman_helper add $files
 }
 
-upload () { # <package>
+main () { # <package>
 	test -n "$GPGKEY" ||
 	die "Need GPGKEY to upload packages\n"
 
@@ -2132,8 +2132,8 @@ upload () { # <package>
 	# SDK where the package was built (MinGW) or it agrees with the 32-bit
 	# SDK's build product (MSYS2).
 	(cd "$sdk64$pkgpath" &&
-	 test -z "$(git rev-list refs/remotes/origin/master..)" ||
-	 if test refs/heads/master = \
+	 test -z "$(git rev-list refs/remotes/origin/main..)" ||
+	 if test refs/heads/main = \
 		"$(git rev-parse --symbolic-full-name HEAD)"
 	 then
 		really_push origin HEAD
@@ -2171,8 +2171,8 @@ maybe_init_repository () {
 			die "Could not add remote to '%s'" "$top_dir"
 
 			git -C "$top_dir" fetch origin &&
-			git -C "$top_dir" checkout -t origin/master ||
-			die "Could not check out master in '%s'" "$top_dir"
+			git -C "$top_dir" checkout -t origin/main ||
+			die "Could not check out main branch in '%s'" "$top_dir"
 		fi
 		;;
 	*)
@@ -2196,12 +2196,12 @@ ensure_gpg_key () {
 
 create_bundle_artifact () {
 	test -n "$artifactsdir" || return
-	upstream_master="$(git rev-parse --verify -q git-for-windows/master)" ||
-	upstream_master="$(git rev-parse --verify -q origin/master)" ||
+	upstream_main_branch="$(git rev-parse --verify -q git-for-windows/main)" ||
+	upstream_main_branch="$(git rev-parse --verify -q origin/main)" ||
 	return
 	repo_name=$(git rev-parse --show-toplevel) &&
 	repo_name=${repo_name##*/} &&
-	range="$upstream_master..$(git symbolic-ref --short HEAD)" &&
+	range="$upstream_main_branch..$(git symbolic-ref --short HEAD)" &&
 	if test 0 -lt $(git rev-list --count "$range")
 	then
 		git bundle create "$artifactsdir"/$repo_name.bundle "$range"
@@ -2442,7 +2442,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
 		test -n "$only_mingw" ||
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master &&
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main &&
 
 		case "$version,$force_pkgrel" in 7.58.0,|7.62.0,)
 			: skip because of partially successful upgrade
@@ -2497,10 +2497,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			echo "$ver" >"$artifactsdir/ver" &&
 			git -C "$git_src_dir" bundle create \
 				"$artifactsdir/git.bundle" \
-				git-for-windows/master..$next_version &&
+				git-for-windows/main..$next_version &&
 			git -C "$sdk64/usr/src/build-extra" bundle create \
 				"$artifactsdir/build-extra.bundle" \
-				-9 master
+				-9 main
 		fi &&
 		rm -rf "$git_src_dir"/sha1collisiondetection
 		;;
@@ -2615,18 +2615,18 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 		 # rebase if necessary
 		 if test 0 -lt $(git rev-list --count \
-			git-for-windows/master..$tag)
+			git-for-windows/main..$tag)
 		 then
 			{ test -n "$skip_upload" ||
 			  require_push_url git-for-windows; } &&
 			git reset --hard &&
-			git checkout git-for-windows/master &&
+			git checkout git-for-windows/main &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh \
 				--merging --onto "$tag" merging-rebase &&
 			create_bundle_artifact &&
 			{ test -n "$skip_upload" ||
-			  git push git-for-windows HEAD:master; } ||
+			  git push git-for-windows HEAD:main; } ||
 			die "Could not rebase '%s' to '%s'\n" "$package" "$tag"
 		 fi
 
@@ -2634,7 +2634,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 case "$(version_from_pkgbuild ../../PKGBUILD)" in
 		 $version-[1-9]*)
 			 msys2_runtime_mtime=$(git log -1 --format=%ct \
-				git-for-windows/master --) &&
+				git-for-windows/main --) &&
 			 msys2_package_mtime=$(git -C ../.. log -1 \
 				--format=%ct -- .) &&
 			 test $msys2_runtime_mtime -gt $msys2_package_mtime
@@ -2666,7 +2666,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 die "Could not retrieve Cygwin mail about v%s\n" "$version"
 
 		 git reset --hard &&
-		 git checkout git-for-windows/master &&
+		 git checkout git-for-windows/main &&
 		 commit_url=https://github.com/git-for-windows/msys2-runtime &&
 		 commit_url=$commit_url/commit/$(git rev-parse HEAD) &&
 		 cd ../.. &&
@@ -2694,7 +2694,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact ||
 		 die "Could not update PKGBUILD of '%s' to version %s\n" \
 			"$package" "$version" &&
-		 git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master
+		 git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main
 		) || exit
 		release_notes_feature="$(cat "$sdk64$pkgpath/../.git/release_notes")"
 		;;
@@ -2714,18 +2714,18 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			https://github.com/rmyorston/busybox-w32 ||
 		  die "Could not connect remotes for '%s'\n" "$package"
 		  if test 0 -lt $(git rev-list --count \
-			git-for-windows/master..rmyorston/master)
+			git-for-windows/main..rmyorston/master)
 		  then
 			{ test -n "$skip_upload" ||
 			  require_push_url git-for-windows; } &&
 			git reset --hard &&
-			git checkout git-for-windows/master &&
+			git checkout git-for-windows/main &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh --merging \
 				--onto rmyorston/master merging-rebase &&
 			create_bundle_artifact &&
 			{ test -n "$skip_upload" ||
-			  git push git-for-windows HEAD:master; } ||
+			  git push git-for-windows HEAD:main; } ||
 			die "Could not rebase '%s' to '%s'\n" \
 				"$package" "rmyorston/master"
 		  fi) ||
@@ -2734,7 +2734,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 built_from_commit="$(sed -n \
 			's/^pkgver=.*\.\([0-9a-f]*\)$/\1/p' <PKGBUILD)" &&
 		 test 0 -lt $(git -C src/busybox-w32 rev-list --count \
-			"$built_from_commit"..git-for-windows/master) ||
+			"$built_from_commit"..git-for-windows/main) ||
 		 die "Package '%s' already up-to-date at commit '%s'\n" \
 			"$package" "$built_from_commit"
 
@@ -2778,7 +2778,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 		;;
 	openssl)
@@ -2802,7 +2802,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		test 0 = $? ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master &&
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main &&
 
 		(if test -n "$skip_mingw"
 		 then
@@ -3137,7 +3137,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 
 		url=https://github.com/$repo/releases/tag/$version &&
@@ -3165,7 +3165,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 		;;
 	gnupg)
@@ -3208,7 +3208,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 		;;
 	mingw-w64-pcre2)
@@ -3253,7 +3253,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 
 		url=https://github.com/$repo/releases/tag/$version &&
@@ -3280,7 +3280,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 
 		url=https://github.com/$repo/releases/tag/$version &&
@@ -3309,7 +3309,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	if test -n "$release_notes_feature"
 	then
 		(cd "$sdk64/usr/src/build-extra" &&
-		 git pull origin master &&
+		 git pull origin main &&
 		 mention --may-be-already-there feature \
 			"$release_notes_feature" &&
 		 create_bundle_artifact &&
@@ -3443,7 +3443,7 @@ mention () { # [--may-be-already-there] <what, e.g. bug-fix, new-feature> <relea
 
 	test ! -d "$sdk32"/usr/src/build-extra ||
 	(cd "$sdk32"/usr/src/build-extra &&
-	 git pull --ff-only "$sdk64"/usr/src/build-extra master) ||
+	 git pull --ff-only "$sdk64"/usr/src/build-extra main) ||
 	die "Could not synchronize release note edits to 32-bit SDK\n"
 }
 
@@ -3487,7 +3487,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 		branch_to_use=FETCH_HEAD
 		;;
 	esac
-	branch_to_use="${branch_to_use:-git-for-windows/master}"
+	branch_to_use="${branch_to_use:-git-for-windows/main}"
 
 	ver="$(git "$dir_option" \
 		describe --first-parent --match 'v[0-9]*[0-9]' \
@@ -3573,7 +3573,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	die "Could not commit finalized release notes\n"
 
 	(cd "$sdk32"/usr/src/build-extra &&
-	 git pull --ff-only "$sdk64"/usr/src/build-extra master) ||
+	 git pull --ff-only "$sdk64"/usr/src/build-extra main) ||
 	die "Could not update 32-bit SDK's release notes\n"
 }
 
@@ -3812,7 +3812,7 @@ release () { # [--directory=<artifacts-directory>] [--release-date=*]
 		 then
 			git -C "$sdk64/usr/src/build-extra" bundle create \
 				"$artifactsdir/build-extra.bundle" \
-				-9 master &&
+				-9 main &&
 			cp versions/package-versions-$ver-MinGit.txt \
 				versions/package-versions-$ver.txt \
 				"$artifactsdir/"
@@ -4504,7 +4504,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 
 	git_src_dir="/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	test -d ${git_src_dir%/src/git} ||
-	git clone --depth 1 --single-branch -b master https://github.com/git-for-windows/MINGW-packages /usr/src/MINGW-packages ||
+	git clone --depth 1 --single-branch -b main https://github.com/git-for-windows/MINGW-packages /usr/src/MINGW-packages ||
 	die "Could not clone MINGW-packages\n"
 
 	tag="$(git for-each-ref --format '%(refname:short)' --points-at="${1:-HEAD}" 'refs/tags/v[0-9]*')"
