@@ -343,7 +343,7 @@ self-test)
 	# Note that we do *not* want the cousins R and S to be rewritten; they
 	# should stay the exact same. This reflects the situation where we want
 	# to merge a branch from git.git's pu branch thicket into Git for
-	# Windows' master branch, and then use the ever-green.sh script to rebase
+	# Windows' main branch, and then use the ever-green.sh script to rebase
 	# on top of a newer pu branch thicket.
 
 	test_commit () { # <mark> <parent(s)> <commit-message> [<file-name> [<contents>]]

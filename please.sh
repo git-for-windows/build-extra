@@ -12,7 +12,7 @@
 #
 # 1) release a new Git version
 #
-#	<make sure that Git for Windows' 'master' reflects the new version>
+#	<make sure that Git for Windows' main branch reflects the new version>
 #	./please.sh sync
 #	./please.sh finalize release-notes
 #	./please.sh tag_git
