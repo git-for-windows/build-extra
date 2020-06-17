@@ -9,7 +9,7 @@ To check out the `build-extra` project in the Git SDK, issue the following comma
 ```sh
 cd /usr/src/build-extra
 git fetch
-git checkout master
+git checkout main
 ```
 
 # Components of the Git for Windows SDK
@@ -18,7 +18,7 @@ The build environment brings all the necessary parts required to build a Git for
 
 ## Git for Windows
 
-The most important part of Git for Windows is [Git](https://git-scm.com/), obviously. The Git for Windows project maintains [a friendly fork](https://github.com/git-for-windows/git) of the "upstream" [Git project](https://github.com/git/git). The idea is that the Git for Windows repository serves as a test bed to develop patches and patch series that are specific to the Windows port, and once the patches stabilized, they are [submitted upstream](https://github.com/git-for-windows/git/tree/master/Documentation/SubmittingPatches).
+The most important part of Git for Windows is [Git](https://git-scm.com/), obviously. The Git for Windows project maintains [a friendly fork](https://github.com/git-for-windows/git) of the "upstream" [Git project](https://github.com/git/git). The idea is that the Git for Windows repository serves as a test bed to develop patches and patch series that are specific to the Windows port, and once the patches stabilized, they are [submitted upstream](https://github.com/git-for-windows/git/tree/main/Documentation/SubmittingPatches).
 
 ## MSYS2
 
@@ -41,7 +41,7 @@ The MinGW packages are built from the `MINGW-packages` repository which can be i
 ```sh
 cd /usr/src/MINGW-packages
 git fetch
-git checkout master
+git checkout main
 ```
 
 The packages inside the `/usr/src/MINGW-packages/` directory can then be built by executing `makepkg-mingw -s` in the appropriate subdirectory.
@@ -55,7 +55,7 @@ The MSYS2 packages are built from the `MSYS2-packages` repository which can be i
 ```sh
 cd /usr/src/MSYS2-packages
 git fetch
-git checkout master
+git checkout main
 ```
 
 To build the packages inside the `/usr/src/MSYS2-packages/` directory, the user has to launch a special shell by double-clicking the `msys2_shell.bat` script in the top-level directory of the Git SDK, switch the working directory to the appropriate subdirectory of `/usr/src/MSYS2-packages/` and then execute `makepkg -s`. Before the first MSYS2 package is built, the prerequisite development packages have to be installed by executing `pacman -Sy base-devel binutils`.
@@ -70,4 +70,4 @@ The Git for Windows project aims to provide three different types of installers:
 
 ## Support scripts/files
 
-The `build-extra` repository is also the home of other resources necessary to develop and maintain Git for Windows. For example, it contains the [Git garden shears](https://github.com/git-for-windows/build-extra/blob/master/shears.sh) that help with updating Git for Windows' source code whenever new upstream Git versions are released ("merging rebase").
+The `build-extra` repository is also the home of other resources necessary to develop and maintain Git for Windows. For example, it contains the [Git garden shears](https://github.com/git-for-windows/build-extra/blob/main/shears.sh) that help with updating Git for Windows' source code whenever new upstream Git versions are released ("merging rebase").

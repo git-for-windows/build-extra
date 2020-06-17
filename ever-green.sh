@@ -343,13 +343,13 @@ self-test)
 	# Note that we do *not* want the cousins R and S to be rewritten; they
 	# should stay the exact same. This reflects the situation where we want
 	# to merge a branch from git.git's pu branch thicket into Git for
-	# Windows' master branch, and then use the ever-green.sh script to rebase
+	# Windows' main branch, and then use the ever-green.sh script to rebase
 	# on top of a newer pu branch thicket.
 
 	test_commit () { # <mark> <parent(s)> <commit-message> [<file-name> [<contents>]]
-		test -n "$2" || echo "reset refs/heads/master"
+		test -n "$2" || echo "reset refs/heads/main"
 		printf '%s\n' \
-			'commit refs/heads/master' \
+			'commit refs/heads/main' \
 			"mark :$1" \
 			"committer Ever Green <eve@rgre.en> $((1234567890+$1)) +0000" \
 			'data <<EOM' \
@@ -433,7 +433,7 @@ self-test)
 	|\  \
 	| * | E1
 	| |/
-	* | C
+	* / C
 	|/
 	* M
 	|\
@@ -496,7 +496,7 @@ self-test)
 	|\ \ \
 	| * | | E1
 	| |/ /
-	* | | C
+	* / / C
 	|/ /
 	* |   M
 	|\ \
@@ -509,7 +509,7 @@ self-test)
 	* | | F
 	o | | A
 	 / /
-	o | T
+	o / T
 	|/
 	o S
 	EOF

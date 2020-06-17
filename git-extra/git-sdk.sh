@@ -232,14 +232,19 @@ sdk () {
 		'')
 			test -n "$(git -C "$src_cdup_dir" rev-parse HEAD 2>/dev/null)" ||
 			# Not checked out yet
-			git -C "$src_cdup_dir" pull origin master
+			git -C "$src_cdup_dir" pull origin main
 			;;
 		refs/heads/master)
+			git -C "$src_cdup_dir" branch -m main &&
+			sdk "$@"
+			return $?
+			;;
+		refs/heads/main)
 			if { git -C "$src_cdup_dir" diff-files --quiet &&
 				git -C "$src_cdup_dir" diff-index --quiet HEAD ||
 				test ! -s "$src_cdup_dir"/.git/index; }
 			then
-				git -C "$src_cdup_dir" pull origin master
+				git -C "$src_cdup_dir" pull origin main
 			fi
 			;;
 		esac &&

@@ -12,7 +12,7 @@
 #
 # 1) release a new Git version
 #
-#	<make sure that Git for Windows' 'master' reflects the new version>
+#	<make sure that Git for Windows' main branch reflects the new version>
 #	./please.sh sync
 #	./please.sh finalize release-notes
 #	./please.sh tag_git
@@ -26,7 +26,7 @@
 # 2) release a new Pacman package, e.g. git-extra or msys2-runtime
 #
 #	./please.sh sync
-#	<make sure that the 'master' branch reflects the new version>
+#	<make sure that the main branch reflects the new version>
 #	./please.sh build git-extra
 #	./please.sh install git-extra
 #	<verify that everything's alright>
@@ -596,14 +596,22 @@ require_clean_worktree () {
 	die "%s not up-to-date\n" "$sdk$pkgpath"
 }
 
-ff_master () {
-	test refs/heads/master = "$(git rev-parse --symbolic-full-name HEAD)" ||
-	die "%s: Not on 'master'\n" "$sdk$pkgpath"
+ff_main_branch () {
+	case "$(git rev-parse --symbolic-full-name HEAD)" in
+	refs/heads/main) ;; # okay
+	refs/heads/master)
+		git branch -m main ||
+		die "%s: could not rename the main branch\n" "$sdk$pkgpath"
+		;;
+	*)
+		die "%s: Not on 'main'\n" "$sdk$pkgpath"
+		;;
+	esac
 
 	require_clean_worktree
 
-	git pull --ff-only origin master ||
-	die "%s: cannot fast-forward 'master'\n" "$sdk$pkgpath"
+	git pull --ff-only origin HEAD ||
+	die "%s: cannot fast-forward main branch\n" "$sdk$pkgpath"
 }
 
 update () { # <package>
@@ -614,7 +622,7 @@ update () { # <package>
 		set_package "$1"
 	fi
 
-	foreach_sdk ff_master
+	foreach_sdk ff_main_branch
 }
 
 remove_obsolete_packages () {
@@ -760,9 +768,9 @@ pkg_build () {
 fast_forward () {
 	if test -d "$2"/.git
 	then
-		git -C "$1" fetch "$2" refs/heads/master
+		git -C "$1" fetch "$2" refs/heads/main
 	else
-		git -C "$1" fetch "$2"/.. refs/heads/master
+		git -C "$1" fetch "$2"/.. refs/heads/main
 	fi &&
 	git -C "$1" merge --ff-only "$3" &&
 	test "a$3" = "a$(git -C "$1" rev-parse --verify HEAD)"
@@ -1004,7 +1012,7 @@ require_git_src_dir () {
 			else
 				git -C "$mingw_packages_dir" fetch &&
 				git -C "$mingw_packages_dir" \
-					checkout -t origin/master ||
+					checkout -t origin/main ||
 				die "Could not check out %s\n" \
 					"$mingw_packages_dir"
 			fi
@@ -1025,7 +1033,7 @@ require_git_src_dir () {
 
 	test ! -f "$git_src_dir/PKGBUILD" ||
 	(cd "$git_src_dir/../.." &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "MINGW-packages not up-to-date\n"
 
 	test false = "$(git -C "$git_src_dir" config core.autoCRLF)" ||
@@ -1137,328 +1145,10 @@ build_and_test_64 () {
 		fi'
 }
 
-rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] ( -- jump | [--redo] [--abort-previous] [--continue | --skip] <upstream-branch-or-tag> )
-	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
-	run_tests=
-	redo=
-	abort_previous=
-	continue_rebase=
-	skip_rebase=
-	full_test_log=
-	with_svn_tests=
-	while case "$1" in
-	--worktree=*)
-		git_src_dir=${1#*=}
-		test -d "$git_src_dir" ||
-		die "Worktree does not exist: %s\n" "$git_src_dir"
-		git rev-parse -q --verify e83c5163316f89bfbde7d ||
-		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
-		;;
-	--jump)
-		test $# = 1 || test $# = 2 -a a"$2" = a"${2#-}" ||
-		die "%s must be the last option\n" "--jump"
-
-		cd "$git_src_dir" &&
-		exec contrib/git-jump/git-jump merge ||
-		die "Could not run git jump merge\n"
-		;;
-	--test) run_tests=t;;
-	--full-test-log) full_test_log=--full-log;;
-	--with-svn-tests) with_svn_tests=--with-svn-tests;;
-	--redo) redo=t;;
-	--abort-previous) abort_previous=t;;
-	--continue) continue_rebase=t;;
-	--skip) skip_rebase=t;;
-	-*) die "Unknown option: %s\n" "$1";;
-	*) break;;
-	esac; do shift; done
-	test $# = 1 ||
-	die "Expected 1 argument, got $#: %s\n" "$*"
-
-	ensure_valid_login_shell 64 ||
-	die "Could not ensure valid login shell\n"
-
-	test tt != "$skip_rebase$continue_rebase" ||
-	die "Cannot continue *and* skip\n"
-
-	# special-case master and maint: we will want full tests on those
-	case "$1" in master|maint) with_svn_tests=--with-svn-tests;; esac
-
-	sdk="$sdk64"
-
-	build_extra_dir="$sdk64/usr/src/build-extra"
-	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
-	die "Could not update build-extra\n"
-
-	require_git_src_dir
-
-	(cd "$git_src_dir" &&
-	 if is_rebasing && test -z "$continue_rebase$skip_rebase"
-	 then
-		if test -n "$abort_previous"
-		then
-			git rebase --abort ||
-			die "Could not abort previous rebase\n"
-		else
-			die "Rebase already in progress.\n%s\n" \
-				"Require --continue or --abort-previous."
-		fi
-	 fi &&
-
-	 if ! is_rebasing
-	 then
-		test -z "$continue_rebase$skip_rebase" ||
-		die "No rebase was started...\n"
-
-		require_remote upstream https://github.com/git/git &&
-		require_remote git-for-windows \
-			https://github.com/git-for-windows/git &&
-		require_push_url git-for-windows ||
-		die "Could not update remotes\n"
-
-		orig_rerere_train=
-		if rerere_train2="$(git rev-parse -q --verify \
-				refs/remotes/git-for-windows/rerere-train)" &&
-			rerere_train="$(git rev-parse -q --verify \
-				refs/heads/rerere-train)"
-		then
-			orig_rerere_train="$rerere_train.."
-
-			test 0 -eq $(git rev-list --count \
-				"$rerere_train2..$rerere_train") ||
-			if test -z "$(git merge-base \
-				"$rerere_train" "$rerere_train2")"
-			then
-				rm -r "$(git rev-parse --git-path rr-cache)" ||
-				die "Could not reset rerere cache\n"
-				git update-ref refs/heads/rerere-train \
-					"$rerere_train2" ||
-				die 'Could not reset `rerere-train` branch\n'
-			else
-				die 'The `%s` branch has unpushed changes\n' \
-					rerere-train
-			fi
-		fi
-
-		if test -n "$rerere_train2"
-		then
-			rerere_train "$orig_rerere_train$rerere_train2" ||
-			die "Could not replay merge conflict resolutions\n"
-
-			git push . $rerere_train2:refs/heads/rerere-train ||
-			die "Could not update local 'rerere-train' branch\n"
-		fi
-	 fi &&
-	 if ! onto=$(git rev-parse -q --verify refs/remotes/upstream/"$1" ||
-		git rev-parse -q --verify refs/tags/"$1")
-	 then
-		die "No such upstream branch or tag: %s\n" "$1"
-	 fi &&
-	 if prev=$(git rev-parse -q --verify \
-		refs/remotes/git-for-windows/shears/"$1") &&
-		test 0 = $(git rev-list --count \
-			^"$prev" git-for-windows/master $onto)
-	 then
-		if test -z "$redo"
-		then
-			echo "shears/$1 was already rebased" >&2
-			exit 0
-		fi
-	 fi &&
-	 GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'core.editor=touch' 'rerere.enabled=true' 'rerere.autoUpdate=true' 'gc.auto=0'" &&
-	 export GIT_CONFIG_PARAMETERS &&
-	 if is_rebasing
-	 then
-		test 0 = $(git rev-list --count HEAD..$onto) ||
-		die "Current rebase is not on top of %s\n" "$1"
-
-		test -z "$skip_rebase" ||
-		git diff HEAD | git apply -R ||
-		test -z "$(git diff HEAD)" ||
-		die "Could not skip current commit in rebase\n"
-
-		# record rerere-train, update index & continue
-		record_rerere_train
-	 else
-		git checkout git-for-windows/master &&
-		if ! "$build_extra_dir"/shears.sh \
-			-f --merging --onto "$onto" merging-rebase
-		then
-			is_rebasing ||
-			die "shears aborted without starting the rebase\n"
-		fi
-	 fi &&
-	 while is_rebasing && ! has_merge_conflicts
-	 do
-		test ! -f "$(git rev-parse --git-path MERGE_HEAD)" ||
-		git commit ||
-		die "Could not continue merge\n"
-
-		git rebase --continue || true
-	 done &&
-	 if ! is_rebasing && test 0 -lt $(git rev-list --count "$onto"..)
-	 then
-		git push git-for-windows +HEAD:refs/heads/shears/"$1" ||
-		die "Could not push shears/%s\n" "$1"
-		if git rev-parse -q --verify refs/heads/rerere-train
-		then
-			git rev-parse -q --verify \
-				refs/remotes/git-for-windows/rerere-train &&
-			test 0 -eq $(git rev-list --count \
-				refs/heads/rerere-train \
-				^refs/remotes/git-for-windows/rerere-train) ||
-			git push git-for-windows refs/heads/rerere-train ||
-			die "Could not push rerere-train\n"
-		fi
-	 fi &&
-	 if is_rebasing
-	 then
-		printf "There are merge conflicts:\n\n" >&2
-		git diff >&2
-
-		die "\nRebase needs manual resolution in:\n\n\t%s\n\n%s%s\n" \
-			"$(pwd)" \
-			"(Call \`please.sh rebase --continue $1\` to " \
-			"contine, do *not* stage changes!"
-	 else
-		git gc &&
-		git prune ||
-		echo "WARNING: problems with garbage collection..." >&2
-
-		if test -n "$run_tests"
-		then
-			echo "Building and testing Git" >&2 &&
-			build_and_test_64 $full_test_log $with_svn_tests
-		fi
-	 fi) ||
-	exit
-}
-
-test_remote_branch () { # [--worktree=<dir>] [--skip-tests] [--bisect-and-comment] [--full-log] [--with-svn-tests] <remote-tracking-branch> [<commit>]
-	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
-	bisect_and_comment=
-	skip_tests=
-	full_log=
-	with_svn_tests=
-	while case "$1" in
-	--worktree=*)
-		git_src_dir=${1#*=}
-		test -d "$git_src_dir" ||
-		die "Worktree does not exist: %s\n" "$git_src_dir"
-		git rev-parse -q --verify e83c5163316f89bfbde7d ||
-		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
-		;;
-	--skip-tests)
-		skip_tests=--skip-tests
-		;;
-	--bisect-and-comment)
-		require_commitcomment_credentials
-		bisect_and_comment=t
-		;;
-	--full-log)
-		full_log=--full-log
-		;;
-	--with-svn-tests)
-		with_svn_tests=--with-svn-tests
-		;;
-	-*) die "Unknown option: %s\n" "$1";;
-	*) break;;
-	esac; do shift; done
-	case $# in
-		1) branch=$1; commit=$branch;;
-		2) branch=$1; commit=$2;;
-		*) die "Expected 1 or 2 arguments, got $#: %s\n" "$*" ;;
-	esac
-
-	test -z "$bisect_and_comment" ||
-	test -z "$skip_tests" ||
-	die "Cannot skip tests *and* bisect\n"
-
-	# special-case master and maint: we will want full tests on those
-	case "$branch" in
-	upstream/master|upstream/maint) with_svn_tests=--with-svn-tests;;
-	esac
-
-	require_git_src_dir
-
-	(cd "$git_src_dir" &&
-	 case "$branch" in
-	 git-for-windows/*|v[1-9]*.windows.[1-9]*)
-		require_remote git-for-windows \
-			https://github.com/git-for-windows/git
-		case "$branch" in git-for-windows/refs/pull/[0-9]*)
-			git fetch git-for-windows \
-			    "${branch#git-for-windows/}:refs/remotes/$branch" ||
-			die "Could not fetch %s from git-for-windows\n" \
-				"${branch#git-for-windows/}"
-			;;
-		esac
-		;;
-	 upstream/*|v[1-9]*|upstream/v[1-9]*)
-		require_remote upstream https://github.com/git/git
-		case "$branch" in
-		upstream/refs/pull/[0-9]*)
-			git fetch upstream "${branch#upstream/}:refs/remotes/$branch" ||
-			die "Could not fetch %s from upstream\n" \
-				"${branch#upstream/}"
-			;;
-		upstream/v[1-9]*)
-			git fetch upstream "refs/tags/${branch#upstream/}:refs/remotes/$branch" ||
-			die "Could not fetch %s from upstream\n" \
-				"${branch#upstream/}"
-			;;
-		esac
-		;;
-	 esac &&
-	 if test "$branch" != "$commit"
-	 then
-		if ! git merge-base --is-ancestor $commit $branch
-		then
-			case "$branch" in
-			upstream/pu|upstream/next)
-				echo "Commit $commit is not on branch $branch; skipping" >&2
-				exit 0
-				;;
-			*)
-				echo "Commit $commit is not on branch $branch; falling back to $branch" >&2
-				commit=$branch
-				;;
-			esac
-		fi
-	 fi &&
-	 git checkout -f "$commit" &&
-	 git reset --hard &&
-	 if build_and_test_64 $skip_tests $full_log $with_svn_tests
-	 then
-		: everything okay
-	 elif test -z "$bisect_and_comment"
-	 then
-		exit 1
-	 else
-		printf "\nBisecting broken Git tests...\n" >&2 &&
-		case "$branch" in
-		upstream/pu) good=upstream/next;;
-		upstream/next) good=upstream/master;;
-		upstream/master) good=upstream/maint;;
-		*) die "Cannot bisect from bad '%s'\n" "$branch";;
-		esac
-		for f in $(cat "$(git rev-parse --git-dir)/failing.txt")
-		do
-			"$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c '
-				sh "'"$this_script_path"'" bisect_broken_test \
-					--bad="'"$commit"'" --good='$good' \
-					--worktree=. --publish-comment '$f
-		done
-		exit 1
-	 fi) ||
-	exit
-}
-
 update_vs_branch () { # [--worktree=<path>] [--remote=<remote>] [--branch=<branch>]
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	remote=git-for-windows
-	branch=master
+	branch=main
 	while case "$1" in
 	--worktree=*)
 		git_src_dir=${1#*=}
@@ -1487,7 +1177,7 @@ update_vs_branch () { # [--worktree=<path>] [--remote=<remote>] [--branch=<branc
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update build-extra\n"
 
 	require_git_src_dir
@@ -1685,12 +1375,12 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	build_extra_dir="$sdk32/usr/src/build-extra"
 	test -n "$only_64_bit" ||
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update 32-bit build-extra\n"
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update build-extra\n"
 
 	if test -n "$force_version"
@@ -1819,7 +1509,7 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	fi
 
 	(cd "$git_src_dir/../.." &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update mingw-w64-git\n"
 
 	skip_makepkg=
@@ -2051,225 +1741,6 @@ add_commit_comment_on_github () { # <org/repo> <commit> <message>
 		'{"body":"'"$quoted"'"}' "$url"
 }
 
-bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision>] [--publish-comment] <test>
-	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
-	bad=
-	good=
-	skip_run=
-	publish_comment=
-	while case "$1" in
-	--worktree=*)
-		git_src_dir=${1#*=}
-		test -d "$git_src_dir" ||
-		die "Worktree does not exist: %s\n" "$git_src_dir"
-		git rev-parse -q --verify e83c5163316f89bfbde7d ||
-		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
-		;;
-	--bad=*)
-		bad=${1#*=}
-		;;
-	--good=*)
-		good=${1#*=}
-		;;
-	--skip-run)
-		# mostly for debugging
-		skip_run=t
-		;;
-	--publish-comment)
-		require_commitcomment_credentials
-		publish_comment=t
-		;;
-	-*) die "Unknown option: %s\n" "$1";;
-	*) break;;
-	esac; do shift; done
-	test $# = 1 ||
-	die "Expected 1 argument, got $#: %s\n" "$*"
-
-	if test -z "$bad"
-	then
-		test -z "$good" || die "Need --bad, too\n"
-	else
-		test -n "$good" || die "Need --good, too\n"
-	fi
-
-	broken_test="$1"
-	case "$broken_test" in
-	[0-9]*)
-		broken_test=t"$broken_test"
-		;;
-	esac
-
-	ensure_valid_login_shell 64 ||
-	die "Could not ensure valid login shell\n"
-
-	sdk="$sdk64"
-
-	build_extra_dir="$sdk64/usr/src/build-extra"
-	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
-	die "Could not update build-extra\n"
-
-	require_git_src_dir
-
-	(cd "$git_src_dir" ||
-	 die "Could not cd to %s\n" "$git_src_dir"
-
-	 test -n "$skip_run" ||
-	 test ! -f "$(git rev-parse --git-path BISECT_START)" ||
-	 git bisect reset ||
-	 die "Could not reset previous bisect\n"
-
-	 if test -n "$skip_run"
-	 then
-		test -f "$(git rev-parse --git-path BISECT_RUN)" ||
-		die "No previous bisect run detected\n"
-	 elif test -z "$bad"
-	 then
-		require_remote git-for-windows \
-			https://github.com/git-for-windows/git &&
-		require_remote upstream https://github.com/git/git ||
-		die "Could not update remotes\n"
-
-		git checkout upstream/pu ||
-		die "Could not check out pu\n"
-	 else
-		git checkout "$bad"^{commit} ||
-		die "Could not check out %s\n" "$bad"
-	 fi
-
-	 if ! test -f t/"$broken_test"
-	 then
-		broken_test="$(cd t && echo "$broken_test"*.sh)"
-		test -f t/"$broken_test" ||
-		die "Could not find test %s\n" "$broken_test"
-	 fi
-	 bisect_run="$(git rev-parse --git-dir)/bisect-run.sh" &&
-	 printf "#!/bin/sh\n\n%s\n%s\n%s%s\n%s\n" \
-		"test -f \"t/$broken_test\" || exit 0" \
-		"echo \"Running make\" >&2" \
-		"o=\"\$(make -j5 2>&1)\" || " \
-		"{ echo \"\$o\" >&2; exit 125; }" \
-		"GIT_TEST_OPTS=-i make -C t \"$broken_test\"" \
-		>"$bisect_run" &&
-	 chmod a+x "$bisect_run" ||
-	 die "Could not write %s\n" "$bisect_run"
-
-	 if test -z "$bad" && test -z "$skip_run"
-	 then
-		echo "Testing in pu..." >&2
-		! sh "$bisect_run" ||
-		die "%s does not fail in pu\n" "$broken_test"
-
-		bad=upstream/pu
-		for branch in next master maint
-		do
-			echo "Testing in $branch..." >&2
-			git checkout upstream/$branch ||
-			die "Could not check out %s\n" "$branch"
-
-			if sh "$bisect_run"
-			then
-				good=upstream/$branch
-				break
-			else
-				bad=upstream/$branch
-			fi
-		done || exit
-
-		test -n "$good" ||
-		die "%s is broken even in maint\n" "$broken_test"
-		echo "Bisecting between $good and $bad" >&2
-	 fi
-
-	 if test -z "$skip_run"
-	 then
-		git bisect start "$bad" "$good" &&
-		case "$bad $good" in
-		upstream/*' 'upstream/*)
-			# we know in which direction patches enter...
-			for b in $(git merge-base -a "$bad" "$good")
-			do
-				git bisect good "$b"
-			done
-			;;
-		esac &&
-		if test -f "$(git rev-parse --git-path BISECT_LOG)"
-		then
-			git bisect run "$bisect_run"
-		else
-			test 1 = $(git rev-list --count "$good..$bad") ||
-			die 'Could not start bisect between %s and %s\n' \
-				"$bad" "$good"
-			printf '%s is the first bad commit\n' \
-				"$(git rev-parse "$bad")" \
-			>"$(git rev-parse --git-path BISECT_RUN)"
-			printf 'No need to bisect: %s is the bad apple\n' \
-				"$(git rev-parse "$bad")"
-		fi
-	 fi) ||
-	exit
-
-	if test -n "$publish_comment"
-	then
-		# read full file name of the broken test
-		broken_test="$(sed -n 's/.* make -C t "\(.*\)"$/\1/p' \
-			<"$(git rev-parse --git-dir)/bisect-run.sh")"
-
-		bisect_run="$(git rev-parse --git-path BISECT_RUN)"
-		first_bad="$(sed -n \
-			'1s/^\([0-9a-f]*\) is the first bad commit$/\1/p' \
-			<"$bisect_run")"
-		skipped=
-		skipped_message=
-		if test -z "$first_bad"
-		then
-			skipped="$(sed -e '1,/^The first bad commit could be/d' \
-				-e '/^We cannot bisect more/,$d' <"$bisect_run")"
-			first_bad="$(echo "$skipped" | sed -n '$p')"
-			skipped="$(echo "$skipped" | sed '$d')"
-			case $(echo "$skipped" | wc -l) in
-			1)
-				skipped_message=" (or $skipped)"
-				;;
-			[2-9]*)
-				skipped_message=" (or any of these: $skipped)"
-				;;
-			esac
-		fi
-		git checkout "$first_bad" ||
-		die "Could not check out first bad commit: %s\n" "$first_bad"
-		make -j5 ||
-		die "Could not build %s\n" "$first_bad"
-		err="$(git rev-parse --git-path broken-test.err)"
-		if GIT_TEST_OPTS="-i -v -x" \
-			make -C t "$broken_test" >"$err" 2>&1
-		then
-			die "Test %s passes?\n" "$broken_test"
-		fi
-		message="$(cat <<EOF
-The [administrative script of Git for Windows](https://github.com/git-for-windows/build-extra/blob/master/please.sh) identified a problem with this commit$skipped_message while running \`$broken_test\`:
-
-\`\`\`
-`cat "$err"`
-\`\`\`
-EOF
-)"
-
-		add_commit_comment_on_github git/git "$first_bad" "$message" ||
-		die "Could not add a commit comment for %s\n" "$first_bad"
-		test -z "$skipped" || for s in $skipped
-		do
-			message="$(printf "%s %s %s" \
-				"There was a problem building Git when trying to" \
-				"bisect the failing $broken_test, see $first_bad" \
-				"for the output of the failed test.")"
-			add_commit_comment_on_github git/git "$s" "$message" ||
-			die "Could not add a commit comment for %s\n" "$first_bad"
-		done
-
-	fi
-}
-
 # <coverity-token>
 init_or_update_coverity_tool () {
 	# check once per week whether there is a new version
@@ -2338,7 +1809,7 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update build-extra\n"
 
 	require_git_src_dir
@@ -2407,7 +1878,7 @@ tag_git () { # [--force]
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update build-extra\n"
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
@@ -2425,7 +1896,7 @@ tag_git () { # [--force]
 		branch_to_use=FETCH_HEAD
 		;;
 	esac
-	branch_to_use="${branch_to_use:-git-for-windows/master}"
+	branch_to_use="${branch_to_use:-git-for-windows/main}"
 
 	next_version="$(sed -ne \
 		'1s/.* \(v[0-9][.0-9]*\(-rc[0-9]*\)\?\)(\([0-9][0-9]*\)) .*/\1.windows.\3/p' \
@@ -2610,7 +2081,7 @@ really_push () {
 	then
 		if test "origin HEAD" = "$*"
 		then
-			git pull origin master
+			git pull origin main
 		else
 			git pull "$@"
 		fi &&
@@ -2633,7 +2104,7 @@ pkg_upload () {
 	pacman_helper add $files
 }
 
-upload () { # <package>
+main () { # <package>
 	test -n "$GPGKEY" ||
 	die "Need GPGKEY to upload packages\n"
 
@@ -2661,8 +2132,8 @@ upload () { # <package>
 	# SDK where the package was built (MinGW) or it agrees with the 32-bit
 	# SDK's build product (MSYS2).
 	(cd "$sdk64$pkgpath" &&
-	 test -z "$(git rev-list refs/remotes/origin/master..)" ||
-	 if test refs/heads/master = \
+	 test -z "$(git rev-list refs/remotes/origin/main..)" ||
+	 if test refs/heads/main = \
 		"$(git rev-parse --symbolic-full-name HEAD)"
 	 then
 		really_push origin HEAD
@@ -2700,8 +2171,8 @@ maybe_init_repository () {
 			die "Could not add remote to '%s'" "$top_dir"
 
 			git -C "$top_dir" fetch origin &&
-			git -C "$top_dir" checkout -t origin/master ||
-			die "Could not check out master in '%s'" "$top_dir"
+			git -C "$top_dir" checkout -t origin/main ||
+			die "Could not check out main branch in '%s'" "$top_dir"
 		fi
 		;;
 	*)
@@ -2725,12 +2196,12 @@ ensure_gpg_key () {
 
 create_bundle_artifact () {
 	test -n "$artifactsdir" || return
-	upstream_master="$(git rev-parse --verify -q git-for-windows/master)" ||
-	upstream_master="$(git rev-parse --verify -q origin/master)" ||
+	upstream_main_branch="$(git rev-parse --verify -q git-for-windows/main)" ||
+	upstream_main_branch="$(git rev-parse --verify -q origin/main)" ||
 	return
 	repo_name=$(git rev-parse --show-toplevel) &&
 	repo_name=${repo_name##*/} &&
-	range="$upstream_master..$(git symbolic-ref --short HEAD)" &&
+	range="$upstream_main_branch..$(git symbolic-ref --short HEAD)" &&
 	if test 0 -lt $(git rev-list --count "$range")
 	then
 		git bundle create "$artifactsdir"/$repo_name.bundle "$range"
@@ -2884,7 +2355,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	test -n "$skip_upload" ||
 	(cd "$sdk64$pkgpath" &&
 	 require_push_url origin &&
-	 sdk="$sdk64" ff_master) || exit
+	 sdk="$sdk64" ff_main_branch) || exit
 
 	release_notes_feature=
 	case "$package" in
@@ -2971,7 +2442,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
 		test -n "$only_mingw" ||
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master &&
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main &&
 
 		case "$version,$force_pkgrel" in 7.58.0,|7.62.0,)
 			: skip because of partially successful upgrade
@@ -2986,7 +2457,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 cd "$sdk64$pkgpath" &&
 		 { test -n "$skip_upload" ||
 		   require_push_url origin; } &&
-		 sdk="$sdk64" ff_master || exit
+		 sdk="$sdk64" ff_main_branch || exit
 
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
@@ -3026,10 +2497,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			echo "$ver" >"$artifactsdir/ver" &&
 			git -C "$git_src_dir" bundle create \
 				"$artifactsdir/git.bundle" \
-				git-for-windows/master..$next_version &&
+				git-for-windows/main..$next_version &&
 			git -C "$sdk64/usr/src/build-extra" bundle create \
 				"$artifactsdir/build-extra.bundle" \
-				-9 master
+				-9 main
 		fi &&
 		rm -rf "$git_src_dir"/sha1collisiondetection
 		;;
@@ -3144,18 +2615,18 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 		 # rebase if necessary
 		 if test 0 -lt $(git rev-list --count \
-			git-for-windows/master..$tag)
+			git-for-windows/main..$tag)
 		 then
 			{ test -n "$skip_upload" ||
 			  require_push_url git-for-windows; } &&
 			git reset --hard &&
-			git checkout git-for-windows/master &&
+			git checkout git-for-windows/main &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh \
 				--merging --onto "$tag" merging-rebase &&
 			create_bundle_artifact &&
 			{ test -n "$skip_upload" ||
-			  git push git-for-windows HEAD:master; } ||
+			  git push git-for-windows HEAD:main; } ||
 			die "Could not rebase '%s' to '%s'\n" "$package" "$tag"
 		 fi
 
@@ -3163,7 +2634,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 case "$(version_from_pkgbuild ../../PKGBUILD)" in
 		 $version-[1-9]*)
 			 msys2_runtime_mtime=$(git log -1 --format=%ct \
-				git-for-windows/master --) &&
+				git-for-windows/main --) &&
 			 msys2_package_mtime=$(git -C ../.. log -1 \
 				--format=%ct -- .) &&
 			 test $msys2_runtime_mtime -gt $msys2_package_mtime
@@ -3195,7 +2666,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 die "Could not retrieve Cygwin mail about v%s\n" "$version"
 
 		 git reset --hard &&
-		 git checkout git-for-windows/master &&
+		 git checkout git-for-windows/main &&
 		 commit_url=https://github.com/git-for-windows/msys2-runtime &&
 		 commit_url=$commit_url/commit/$(git rev-parse HEAD) &&
 		 cd ../.. &&
@@ -3223,7 +2694,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact ||
 		 die "Could not update PKGBUILD of '%s' to version %s\n" \
 			"$package" "$version" &&
-		 git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master
+		 git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main
 		) || exit
 		release_notes_feature="$(cat "$sdk64$pkgpath/../.git/release_notes")"
 		;;
@@ -3243,27 +2714,27 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			https://github.com/rmyorston/busybox-w32 ||
 		  die "Could not connect remotes for '%s'\n" "$package"
 		  if test 0 -lt $(git rev-list --count \
-			git-for-windows/master..rmyorston/master)
+			git-for-windows/main..rmyorston/HEAD)
 		  then
 			{ test -n "$skip_upload" ||
 			  require_push_url git-for-windows; } &&
 			git reset --hard &&
-			git checkout git-for-windows/master &&
+			git checkout git-for-windows/main &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh --merging \
-				--onto rmyorston/master merging-rebase &&
+				--onto rmyorston/HEAD merging-rebase &&
 			create_bundle_artifact &&
 			{ test -n "$skip_upload" ||
-			  git push git-for-windows HEAD:master; } ||
+			  git push git-for-windows HEAD:main; } ||
 			die "Could not rebase '%s' to '%s'\n" \
-				"$package" "rmyorston/master"
+				"$package" "rmyorston/HEAD"
 		  fi) ||
 		 die "Could not initialize/rebase '%s'\n" "$package"
 
 		 built_from_commit="$(sed -n \
 			's/^pkgver=.*\.\([0-9a-f]*\)$/\1/p' <PKGBUILD)" &&
 		 test 0 -lt $(git -C src/busybox-w32 rev-list --count \
-			"$built_from_commit"..git-for-windows/master) ||
+			"$built_from_commit"..git-for-windows/main) ||
 		 die "Package '%s' already up-to-date at commit '%s'\n" \
 			"$package" "$built_from_commit"
 
@@ -3307,7 +2778,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 		;;
 	openssl)
@@ -3331,7 +2802,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		test 0 = $? ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master &&
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main &&
 
 		(if test -n "$skip_mingw"
 		 then
@@ -3342,7 +2813,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 cd "$sdk64$pkgpath" &&
 		 { test -n "$skip_upload" ||
 		   require_push_url origin; } &&
-		 sdk="$sdk64" ff_master || exit
+		 sdk="$sdk64" ff_main_branch || exit
 
 		 sed -i -e 's/^\(_ver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
@@ -3387,7 +2858,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 git diff-files --quiet --)
 		;;
 	bash)
-		url="http://git.savannah.gnu.org/cgit/bash.git/commit/?id=master" &&
+		url="http://git.savannah.gnu.org/cgit/bash.git/commit/?id=HEAD" &&
 		version=4.4 &&
 		patchlevel="$(curl $url | sed -n \
 			's/.*+#define PATCHLEVEL \([1-9][0-9]*\).*/\1/p')" &&
@@ -3666,7 +3137,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 
 		url=https://github.com/$repo/releases/tag/$version &&
@@ -3694,7 +3165,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 		;;
 	gnupg)
@@ -3737,7 +3208,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 		;;
 	mingw-w64-pcre2)
@@ -3782,7 +3253,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 
 		url=https://github.com/$repo/releases/tag/$version &&
@@ -3809,7 +3280,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
 
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." master ||
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
 		die "Could not update $sdk32$pkgpath"
 
 		url=https://github.com/$repo/releases/tag/$version &&
@@ -3838,7 +3309,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	if test -n "$release_notes_feature"
 	then
 		(cd "$sdk64/usr/src/build-extra" &&
-		 git pull origin master &&
+		 git pull origin main &&
 		 mention --may-be-already-there feature \
 			"$release_notes_feature" &&
 		 create_bundle_artifact &&
@@ -3972,7 +3443,7 @@ mention () { # [--may-be-already-there] <what, e.g. bug-fix, new-feature> <relea
 
 	test ! -d "$sdk32"/usr/src/build-extra ||
 	(cd "$sdk32"/usr/src/build-extra &&
-	 git pull --ff-only "$sdk64"/usr/src/build-extra master) ||
+	 git pull --ff-only "$sdk64"/usr/src/build-extra main) ||
 	die "Could not synchronize release note edits to 32-bit SDK\n"
 }
 
@@ -4016,7 +3487,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 		branch_to_use=FETCH_HEAD
 		;;
 	esac
-	branch_to_use="${branch_to_use:-git-for-windows/master}"
+	branch_to_use="${branch_to_use:-git-for-windows/main}"
 
 	ver="$(git "$dir_option" \
 		describe --first-parent --match 'v[0-9]*[0-9]' \
@@ -4102,7 +3573,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	die "Could not commit finalized release notes\n"
 
 	(cd "$sdk32"/usr/src/build-extra &&
-	 git pull --ff-only "$sdk64"/usr/src/build-extra master) ||
+	 git pull --ff-only "$sdk64"/usr/src/build-extra main) ||
 	die "Could not update 32-bit SDK's release notes\n"
 }
 
@@ -4341,7 +3812,7 @@ release () { # [--directory=<artifacts-directory>] [--release-date=*]
 		 then
 			git -C "$sdk64/usr/src/build-extra" bundle create \
 				"$artifactsdir/build-extra.bundle" \
-				-9 master &&
+				-9 main &&
 			cp versions/package-versions-$ver-MinGit.txt \
 				versions/package-versions-$ver.txt \
 				"$artifactsdir/"
@@ -4538,7 +4009,7 @@ publish () { #
 			"$www_directory"
 	fi &&
 	(cd "$www_directory" &&
-	 sdk= pkgpath=$PWD ff_master &&
+	 sdk= pkgpath=$PWD ff_main_branch &&
 	 require_push_url &&
 	 if ! type node.exe
 	 then
@@ -4548,7 +4019,7 @@ publish () { #
 
 	(cd "$sdk64/usr/src/build-extra" &&
 	 require_push_url &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not prepare build-extra for download-stats update\n"
 
 	test ! -x "$sdk64/mingw64/bin/node.exe" ||
@@ -5033,7 +4504,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 
 	git_src_dir="/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	test -d ${git_src_dir%/src/git} ||
-	git clone --depth 1 --single-branch -b master https://github.com/git-for-windows/MINGW-packages /usr/src/MINGW-packages ||
+	git clone --depth 1 --single-branch -b main https://github.com/git-for-windows/MINGW-packages /usr/src/MINGW-packages ||
 	die "Could not clone MINGW-packages\n"
 
 	tag="$(git for-each-ref --format '%(refname:short)' --points-at="${1:-HEAD}" 'refs/tags/v[0-9]*')"

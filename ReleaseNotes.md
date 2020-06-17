@@ -3,7 +3,7 @@ Latest update: June 1st 2020
 
 ## Introduction
 
-These release notes describe issues specific to the Git for Windows release. The release notes covering the history of the core git commands can be found [in the Git project](https://github.com/git/git/tree/master/Documentation/RelNotes).
+These release notes describe issues specific to the Git for Windows release. The release notes covering the history of the core git commands can be found [in the Git project](https://github.com/git/git/tree/HEAD/Documentation/RelNotes).
 
 See [http://git-scm.com/](http://git-scm.com/) for further details about Git including ports to other operating systems. Git for Windows is hosted at [https://gitforwindows.org/](https://gitforwindows.org/).
 
@@ -571,7 +571,7 @@ Git for Windows now has a new homepage: [https://gitforwindows.org/](https://git
 * Operations in massively-sparse worktrees [are now much faster if `core.fscache = true`](https://github.com/git-for-windows/git/pull/1344).
 * It is [now possible to configure `nano`](https://github.com/git-for-windows/build-extra/pull/161) or [Notepad++](https://github.com/git-for-windows/git/issues/291) as Git's default editor [instead of `vim`](https://www.xkcd.com/378/).
 * Comes with [OpenSSL v1.0.2m](https://www.openssl.org/news/cl102.txt).
-* Git for Windows' updater [now uses non-intrusive toast notifications on Windows 8, 8.1 and 10](https://github.com/git-for-windows/build-extra/commit/master).
+* Git for Windows' updater [now uses non-intrusive toast notifications on Windows 8, 8.1 and 10](https://github.com/git-for-windows/build-extra/commit/ab2e8b1ee14223dbfdc7981e79139727d0725e7c).
 * Running `git fetch` in a repository with lots of refs [is now considerably faster](https://github.com/git-for-windows/git/pull/1379).
 * Comes with [cURL v7.57.0](https://curl.haxx.se/changes.html#7_57_0).
 
@@ -1112,7 +1112,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 ### Bug Fixes
 
 * A bug [was fixed](https://github.com/git-for-windows/git/commit/4abc31070f683e555de95331da0990052f55caa5) where worktrees would forget their location e.g. after an interactive rebase.
-* Thanks to Eric Lawrence and Martijn Laan, [our installer sports a better way to look for system files now](https://github.com/git-for-windows/build-extra/tree/master/installer/InnoSetup).
+* Thanks to Eric Lawrence and Martijn Laan, [our installer sports a better way to look for system files now](https://github.com/git-for-windows/build-extra/tree/HEAD/installer/InnoSetup).
 
 ## Changes since Git for Windows v2.7.0(2) (February 2nd 2016)
 
