@@ -571,7 +571,7 @@ Git for Windows now has a new homepage: [https://gitforwindows.org/](https://git
 * Operations in massively-sparse worktrees [are now much faster if `core.fscache = true`](https://github.com/git-for-windows/git/pull/1344).
 * It is [now possible to configure `nano`](https://github.com/git-for-windows/build-extra/pull/161) or [Notepad++](https://github.com/git-for-windows/git/issues/291) as Git's default editor [instead of `vim`](https://www.xkcd.com/378/).
 * Comes with [OpenSSL v1.0.2m](https://www.openssl.org/news/cl102.txt).
-* Git for Windows' updater [now uses non-intrusive toast notifications on Windows 8, 8.1 and 10](https://github.com/git-for-windows/build-extra/commit/master).
+* Git for Windows' updater [now uses non-intrusive toast notifications on Windows 8, 8.1 and 10](https://github.com/git-for-windows/build-extra/commit/ab2e8b1ee14223dbfdc7981e79139727d0725e7c).
 * Running `git fetch` in a repository with lots of refs [is now considerably faster](https://github.com/git-for-windows/git/pull/1379).
 * Comes with [cURL v7.57.0](https://curl.haxx.se/changes.html#7_57_0).
 
