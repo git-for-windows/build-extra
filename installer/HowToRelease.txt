@@ -23,13 +23,13 @@ Here is a step-by-step instruction for the maintainer:
    cd /usr/src/git
    git remote add git https://github.com/git/git
    git fetch git
-   git checkout master
+   git checkout main
    BASE="$(git rev-parse ":/Start the merging-rebase")"
    ../build-extra/./shears.sh --merging --onto <git-tag> $BASE
 
    # check diff of diff (before vs after merging rebase)
-   git diff <gittag>..origin/master > prev.diff
-   git diff <gittag>..master > curr.diff
+   git diff <gittag>..origin/main > prev.diff
+   git diff <gittag>..main > curr.diff
    git diff --no-index prev.diff curr.diff
 
    # verify that the test suite passes
