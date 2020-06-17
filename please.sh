@@ -596,14 +596,22 @@ require_clean_worktree () {
 	die "%s not up-to-date\n" "$sdk$pkgpath"
 }
 
-ff_master () {
-	test refs/heads/master = "$(git rev-parse --symbolic-full-name HEAD)" ||
-	die "%s: Not on 'master'\n" "$sdk$pkgpath"
+ff_main_branch () {
+	case "$(git rev-parse --symbolic-full-name HEAD)" in
+	refs/heads/main) ;; # okay
+	refs/heads/master)
+		git branch -m main ||
+		die "%s: could not rename the main branch\n" "$sdk$pkgpath"
+		;;
+	*)
+		die "%s: Not on 'main'\n" "$sdk$pkgpath"
+		;;
+	esac
 
 	require_clean_worktree
 
-	git pull --ff-only origin master ||
-	die "%s: cannot fast-forward 'master'\n" "$sdk$pkgpath"
+	git pull --ff-only origin HEAD ||
+	die "%s: cannot fast-forward main branch\n" "$sdk$pkgpath"
 }
 
 update () { # <package>
@@ -614,7 +622,7 @@ update () { # <package>
 		set_package "$1"
 	fi
 
-	foreach_sdk ff_master
+	foreach_sdk ff_main_branch
 }
 
 remove_obsolete_packages () {
@@ -760,9 +768,9 @@ pkg_build () {
 fast_forward () {
 	if test -d "$2"/.git
 	then
-		git -C "$1" fetch "$2" refs/heads/master
+		git -C "$1" fetch "$2" refs/heads/main
 	else
-		git -C "$1" fetch "$2"/.. refs/heads/master
+		git -C "$1" fetch "$2"/.. refs/heads/main
 	fi &&
 	git -C "$1" merge --ff-only "$3" &&
 	test "a$3" = "a$(git -C "$1" rev-parse --verify HEAD)"
@@ -1025,7 +1033,7 @@ require_git_src_dir () {
 
 	test ! -f "$git_src_dir/PKGBUILD" ||
 	(cd "$git_src_dir/../.." &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "MINGW-packages not up-to-date\n"
 
 	test false = "$(git -C "$git_src_dir" config core.autoCRLF)" ||
@@ -1188,7 +1196,7 @@ rebase () { # [--worktree=<dir>] [--test [--full-test-log] [--with-svn-tests]] (
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update build-extra\n"
 
 	require_git_src_dir
@@ -1487,7 +1495,7 @@ update_vs_branch () { # [--worktree=<path>] [--remote=<remote>] [--branch=<branc
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update build-extra\n"
 
 	require_git_src_dir
@@ -1685,12 +1693,12 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	build_extra_dir="$sdk32/usr/src/build-extra"
 	test -n "$only_64_bit" ||
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update 32-bit build-extra\n"
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update build-extra\n"
 
 	if test -n "$force_version"
@@ -1819,7 +1827,7 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	fi
 
 	(cd "$git_src_dir/../.." &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update mingw-w64-git\n"
 
 	skip_makepkg=
@@ -2106,7 +2114,7 @@ bisect_broken_test () { # [--worktree=<path>] [--bad=<revision> --good=<revision
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update build-extra\n"
 
 	require_git_src_dir
@@ -2338,7 +2346,7 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update build-extra\n"
 
 	require_git_src_dir
@@ -2407,7 +2415,7 @@ tag_git () { # [--force]
 
 	build_extra_dir="$sdk64/usr/src/build-extra"
 	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not update build-extra\n"
 
 	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
@@ -2884,7 +2892,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	test -n "$skip_upload" ||
 	(cd "$sdk64$pkgpath" &&
 	 require_push_url origin &&
-	 sdk="$sdk64" ff_master) || exit
+	 sdk="$sdk64" ff_main_branch) || exit
 
 	release_notes_feature=
 	case "$package" in
@@ -2986,7 +2994,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 cd "$sdk64$pkgpath" &&
 		 { test -n "$skip_upload" ||
 		   require_push_url origin; } &&
-		 sdk="$sdk64" ff_master || exit
+		 sdk="$sdk64" ff_main_branch || exit
 
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
@@ -3342,7 +3350,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 cd "$sdk64$pkgpath" &&
 		 { test -n "$skip_upload" ||
 		   require_push_url origin; } &&
-		 sdk="$sdk64" ff_master || exit
+		 sdk="$sdk64" ff_main_branch || exit
 
 		 sed -i -e 's/^\(_ver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
@@ -4538,7 +4546,7 @@ publish () { #
 			"$www_directory"
 	fi &&
 	(cd "$www_directory" &&
-	 sdk= pkgpath=$PWD ff_master &&
+	 sdk= pkgpath=$PWD ff_main_branch &&
 	 require_push_url &&
 	 if ! type node.exe
 	 then
@@ -4548,7 +4556,7 @@ publish () { #
 
 	(cd "$sdk64/usr/src/build-extra" &&
 	 require_push_url &&
-	 sdk= pkgpath=$PWD ff_master) ||
+	 sdk= pkgpath=$PWD ff_main_branch) ||
 	die "Could not prepare build-extra for download-stats update\n"
 
 	test ! -x "$sdk64/mingw64/bin/node.exe" ||
