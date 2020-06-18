@@ -240,6 +240,12 @@ sdk () {
 			return $?
 			;;
 		refs/heads/main)
+			case "$(git -C "$src_cdup_dir" rev-parse --symbolic-full-name main@{upstream} 2>/dev/null)" in
+			refs/remotes/origin/master)
+				git -C "$src_cdup_dir" fetch origin &&
+				git -C "$src_cdup_dir" branch --set-upstream-to=origin/main main;;
+			esac &&
+
 			if { git -C "$src_cdup_dir" diff-files --quiet &&
 				git -C "$src_cdup_dir" diff-index --quiet HEAD ||
 				test ! -s "$src_cdup_dir"/.git/index; }
