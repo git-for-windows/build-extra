@@ -246,6 +246,10 @@ sdk () {
 				git -C "$src_cdup_dir" branch --set-upstream-to=origin/main main;;
 			esac &&
 
+			case "$(git -C "$src_cdup_dir" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null)" in
+			''|refs/heads/master) git -C "$src_cdup_dir" remote set-head -a origin;;
+			esac &&
+
 			if { git -C "$src_cdup_dir" diff-files --quiet &&
 				git -C "$src_cdup_dir" diff-index --quiet HEAD ||
 				test ! -s "$src_cdup_dir"/.git/index; }
