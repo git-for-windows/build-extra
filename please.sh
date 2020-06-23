@@ -2431,10 +2431,6 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" -e "$zip_replace" \
 		 -e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 updpkgsums &&
-		 srcdir2="$(unzip -l $zip_prefix$version.zip | sed -n \
-		   's/^.\{28\} *\(.*\/\)\?git-credential-manager-core.exe/\1/p')" &&
-		 sed -i -e 's/^\(  srcdir2=\).*/\1"${srcdir}\/'$srcdir2'"/' \
-			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD &&
 		 create_bundle_artifact) &&
