@@ -2408,15 +2408,15 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		release_notes_feature='Comes with [Git Credential Manager v'$version']('"$url"').'
 		;;
 	mingw-w64-git-credential-manager-core)
-		repo=microsoft/Git-Credential-Manager-Core
-		url=https://api.github.com/repos/$repo/releases/latest
+		repo=microsoft/git-credential-manager-core
+		url=https://api.github.com/repos/$repo/releases
 		release="$(curl --netrc -s $url)"
 		test -n "$release" ||
 		die "Could not determine the latest version of %s\n" "$package"
 		tag_name="$(echo "$release" |
-			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
+			sed -n 's/^    "tag_name": "\(.*\)",\?$/\1/p' | head -n 1)"
 		zip_name="$(echo "$release" | sed -n \
-			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p')"
+			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p' | head -n 1)"
 		version=${tag_name#v}
 		zip_prefix=${zip_name%$version.zip}
 		if test "$zip_prefix" = "$zip_name"
