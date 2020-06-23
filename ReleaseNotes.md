@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [subversion v1.14.0](https://svn.apache.org/repos/asf/subversion/tags/1.14.0/CHANGES).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.5](https://cygwin.com/pipermail/cygwin-announce/2020-June/009561.html).
+* [Comes with the designated successor](https://github.com/git-for-windows/build-extra/pull/294) of Git Credential Manager for Windows (GCM for Windows), [the cross-platform Git Credential Manager Core](https://github.com/microsoft/git-credential-manager-core). For now, this is opt-in, with the idea of eventually retiring GCM for Windows.
 
 ### Bug Fixes
 
