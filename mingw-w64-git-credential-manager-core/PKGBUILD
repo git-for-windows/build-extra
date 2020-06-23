@@ -24,6 +24,7 @@ package() {
   prefix="$pkgdir/${MINGW_PREFIX}"
   srcdir2="${srcdir}/"
   install -d -m755 "${prefix}"/libexec/git-core
-  install -m755 "$srcdir2"/*.{dll,exe} "${prefix}"/libexec/git-core
+  install -m755 "$srcdir2"/*.{dll,exe,config} "${prefix}"/libexec/git-core
   install -d -m755 "${prefix}"/doc/git-credential-manager-core
+  install -m644 "$srcdir2"/Git-Credential-Manager-Core-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager-core
 }
