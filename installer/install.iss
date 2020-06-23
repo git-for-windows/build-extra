@@ -352,10 +352,14 @@ const
     GP_GitPullRebase  = 2;
     GP_GitPullFFOnly  = 3;
 
+    // Git Credential Manager settings.
+    GCM_None          = 1;
+    GCM_Classic       = 2;
+    GCM_Core          = 3;
+
     // Extra options
     GP_FSCache        = 1;
-    GP_GCM            = 2;
-    GP_Symlinks       = 3;
+    GP_Symlinks       = 2;
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
 #define HAVE_EXPERIMENTAL_OPTIONS 1
@@ -446,6 +450,10 @@ var
     // Wizard page and variables for the `git pull` options.
     GitPullBehaviorPage:TWizardPage;
     RdbGitPullBehavior:array[GP_GitPullMerge..GP_GitPullFFOnly] of TRadioButton;
+
+    // Wizard page and variables for the credential manager options.
+    GitCredentialManagerPage:TWizardPage;
+    RdbGitCredentialManager:array[GCM_None..GCM_Core] of TRadioButton;
 
     // Wizard page and variables for the extra options.
     ExtraOptionsPage:TWizardPage;
@@ -796,6 +804,7 @@ begin
                     'credential.helper':
                         case Value of
                             'manager': RecordInferredDefault('Use Credential Manager','Enabled');
+                            'manager-core': RecordInferredDefault('Use Credential Manager','Core');
                         else RecordInferredDefault('Use Credential Manager','Disabled');
                         end;
                     'core.symlinks':
@@ -2060,6 +2069,38 @@ begin
     end;
 
     (*
+     * Create a custom page for the choice of Git Credential Manager.
+     *)
+
+    GitCredentialManagerPage:=CreatePage(PrevPageID,'Choose a credential helper','Which credential helper should be configured?',TabOrder,Top,Left);
+
+    // 1st choice
+    RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.',TabOrder,Top,Left);
+
+    // 2nd choice
+    RdbGitCredentialManager[GCM_Classic]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager','The <A HREF=https://github.com/Microsoft/Git-Credential-Manager-for-Windows>Git Credential Manager for Windows</A> handles credentials e.g. for Azure'+#13+'DevOps and GitHub (requires .NET framework v4.5.1 or later).',TabOrder,Top,Left);
+
+    // 3rd choice
+    RdbGitCredentialManager[GCM_Core]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager Core','<RED>(NEW!)</RED> Use the new, <A HREF=https://github.com/microsoft/Git-Credential-Manager-Core>cross-platform version of the Git Credential Manager</A>.'+#13+'See more information about the future of Git Credential Manager <A HREF=https://github.com/microsoft/Git-Credential-Manager-Core/blob/master/docs/faq.md#about-the-project>here</A>.',TabOrder,Top,Left);
+
+    // Restore the settings chosen during a previous install, if .NET 4.5.1
+    // or later is available.
+    if DetectNetFxVersion()<378675 then begin
+        RdbGitCredentialManager[GCM_Classic].Checked:=False;
+        RdbGitCredentialManager[GCM_Classic].Enabled:=False;
+        RdbGitCredentialManager[GCM_Core].Checked:=False;
+        RdbGitCredentialManager[GCM_Core].Enabled:=False;
+    end else begin
+        case ReplayChoice('Use Credential Manager','Enabled') of
+            'Disabled': RdbGitCredentialManager[GCM_None].Checked:=True;
+            'Enabled': RdbGitCredentialManager[GCM_Classic].Checked:=True;
+            'Core': RdbGitCredentialManager[GCM_Core].Checked:=True;
+        else
+            RdbGitCredentialManager[GCM_Classic].Checked:=True;
+        end;
+    end;
+
+    (*
      * Create a custom page for extra options.
      *)
 
@@ -2072,18 +2113,6 @@ begin
     RdbExtraOptions[GP_FSCache].Checked:=ReplayChoice('Performance Tweaks FSCache','Enabled')<>'Disabled';
 
     // 2nd option
-    RdbExtraOptions[GP_GCM]:=CreateCheckBox(ExtraOptionsPage,'Enable Git Credential Manager','The <A HREF=https://github.com/Microsoft/Git-Credential-Manager-for-Windows>Git Credential Manager for Windows</A> provides secure Git credential storage'+#13+'for Windows, most notably multi-factor authentication support for Visual Studio'+#13+'Team Services and GitHub. (requires .NET framework v4.5.1 or later).',TabOrder,Top,Left);
-
-    // Restore the settings chosen during a previous install, if .NET 4.5.1
-    // or later is available.
-    if DetectNetFxVersion()<378675 then begin
-        RdbExtraOptions[GP_GCM].Checked:=False;
-        RdbExtraOptions[GP_GCM].Enabled:=False;
-    end else begin
-        RdbExtraOptions[GP_GCM].Checked:=ReplayChoice('Use Credential Manager','Enabled')<>'Disabled';
-    end;
-
-    // 3rd option
     RdbExtraOptions[GP_Symlinks]:=CreateCheckBox(ExtraOptionsPage,'Enable symbolic links','Enable <A HREF=https://github.com/git-for-windows/git/wiki/Symbolic-Links>symbolic links</A> (requires the SeCreateSymbolicLink permission).'+#13+'Please note that existing repositories are unaffected by this setting.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install, or auto-detect
@@ -2789,14 +2818,26 @@ begin
     end;
 
     {
+        Configure credential helper
+    }
+
+    if RdbGitCredentialManager[GCM_None].checked then begin
+        GitSystemConfigSet('credential.helper',#0);
+        GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath',#0);
+    end else if RdbGitCredentialManager[GCM_Classic].checked then begin
+        GitSystemConfigSet('credential.helper','manager');
+        GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath',#0);
+    end else if RdbGitCredentialManager[GCM_Core].checked then begin
+        GitSystemConfigSet('credential.helper','manager-core');
+        GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath','true');
+    end;
+
+    {
         Configure extra options
     }
 
     if RdbExtraOptions[GP_FSCache].checked then
         GitSystemConfigSet('core.fscache','true');
-
-    if RdbExtraOptions[GP_GCM].checked then
-        GitSystemConfigSet('credential.helper','manager');
 
     if RdbExtraOptions[GP_Symlinks].checked then
         Cmd:='true'
@@ -3144,17 +3185,21 @@ begin
     end;
     RecordChoice(PreviousDataKey,'Git Pull Behavior Option',Data);
 
+    // Credential helper.
+    Data:='Disabled';
+    if RdbGitCredentialManager[GCM_Classic].Checked then begin
+        Data:='Enabled';
+    end else if RdbGitCredentialManager[GCM_Core].Checked then begin;
+        Data:='Core';
+    end;
+    RecordChoice(PreviousDataKey,'Use Credential Manager',Data);
+
     // Extra options.
     Data:='Disabled';
     if RdbExtraOptions[GP_FSCache].Checked then begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Performance Tweaks FSCache',Data);
-    Data:='Disabled';
-    if RdbExtraOptions[GP_GCM].Checked then begin
-        Data:='Enabled';
-    end;
-    RecordChoice(PreviousDataKey,'Use Credential Manager',Data);
     Data:='Disabled';
     if RdbExtraOptions[GP_Symlinks].Checked then begin
         Data:='Enabled';
