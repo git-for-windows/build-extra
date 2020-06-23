@@ -2417,7 +2417,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			sed -n 's/^    "tag_name": "\(.*\)",\?$/\1/p' | head -n 1)"
 		zip_name="$(echo "$release" | sed -n \
 			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p' | head -n 1)"
-		version=${tag_name#v}
+		version=${zip_name#gcmcore-win-x86-}
+		version=${version%.zip}
 		zip_prefix=${zip_name%$version.zip}
 		if test "$zip_prefix" = "$zip_name"
 		then
@@ -2426,10 +2427,8 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		else
 			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]*/\1'$zip_prefix'${_realver}.zip/'
 		fi
-		src_zip_prefix=${tag_name%$version}
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" -e "$zip_replace" \
-		 -e 's/^\(src_zip_url=.*\/\).*\(\$.*\)/\1'$src_zip_prefix'\2/' \
 		 -e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 updpkgsums &&
 		 srcdir2="$(unzip -l $zip_prefix$version.zip | sed -n \
