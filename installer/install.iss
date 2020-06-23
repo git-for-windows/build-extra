@@ -1136,13 +1136,6 @@ begin
   ShellExec('','https://stackoverflow.blog/2017/05/23/stack-overflow-helping-one-million-developers-exit-vim/','','',SW_SHOW,ewNoWait,ExitStatus);
 end;
 
-procedure OpenGCMHomepage(Sender:TObject);
-var
-  ExitStatus:Integer;
-begin
-  ShellExec('','https://github.com/Microsoft/Git-Credential-Manager-for-Windows','','',SW_SHOW,ewNoWait,ExitStatus);
-end;
-
 procedure OpenSymlinksWikiPage(Sender:TObject);
 var
   ExitStatus:Integer;
