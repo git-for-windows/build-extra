@@ -4,8 +4,8 @@
 # thicket, update it both to include new changes in the original branch as well
 # as rebasing the result to the new upstream branch.
 #
-# Most prominent example: shears/pu, which reflects Git for Windows' patches as
-# rebased on top of the now-current pu branch.
+# Most prominent example: shears/seen, which reflects Git for Windows' patches as
+# rebased on top of the now-current "seen" branch.
 #
 # There are a couple of scenarios to keep in mind:
 #
@@ -342,9 +342,9 @@ self-test)
 	#
 	# Note that we do *not* want the cousins R and S to be rewritten; they
 	# should stay the exact same. This reflects the situation where we want
-	# to merge a branch from git.git's pu branch thicket into Git for
+	# to merge a branch from git.git's "seen" branch thicket into Git for
 	# Windows' main branch, and then use the ever-green.sh script to rebase
-	# on top of a newer pu branch thicket.
+	# on top of a newer "seen" branch thicket.
 
 	test_commit () { # <mark> <parent(s)> <commit-message> [<file-name> [<contents>]]
 		test -n "$2" || echo "reset refs/heads/main"
