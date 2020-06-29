@@ -256,7 +256,9 @@ sdk () {
 			esac &&
 
 			case "$(git -C "$src_cdup_dir" symbolic-ref refs/remotes/origin/HEAD 2>/dev/null)" in
-			''|refs/heads/master) git -C "$src_cdup_dir" remote set-head -a origin;;
+			''|refs/heads/master)
+				git -C "$src_cdup_dir" fetch origin &&
+				git -C "$src_cdup_dir" remote set-head -a origin;;
 			esac &&
 
 			if { git -C "$src_cdup_dir" diff-files --quiet &&
