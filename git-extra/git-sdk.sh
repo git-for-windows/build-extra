@@ -238,9 +238,15 @@ sdk () {
 			git -C "$src_cdup_dir" pull origin HEAD
 			;;
 		refs/heads/master)
-			git -C "$src_cdup_dir" branch -m main &&
-			sdk "$@"
-			return $?
+			if git -C "$src_cdup_dir" rev-parse --verify HEAD >/dev/null 2>&1
+			then
+				git -C "$src_cdup_dir" branch -m main &&
+				sdk "$@"
+				return $?
+			fi
+			# Not checked out yet
+			git -C "$src_cdup_dir" symbolic-ref HEAD refs/heads/main &&
+			git -C "$src_cdup_dir" pull origin HEAD
 			;;
 		refs/heads/main)
 			case "$(git -C "$src_cdup_dir" rev-parse --symbolic-full-name main@{upstream} 2>/dev/null)" in
