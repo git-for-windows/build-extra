@@ -259,6 +259,9 @@ Type: dirifempty; Name: {app}\{#MINGW_BITNESS}\libexec
 Type: dirifempty; Name: {app}\{#MINGW_BITNESS}
 Type: dirifempty; Name: {app}
 
+; Delete Git Bash options
+Type: files; Name: {app}\etc\git-bash.config
+
 [Code]
 #include "helpers.inc.iss"
 #include "environment.inc.iss"
