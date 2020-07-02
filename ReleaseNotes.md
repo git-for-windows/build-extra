@@ -51,6 +51,7 @@ This package contains software from a number of other projects including Bash, z
 * When reinstalling (or upgrading) Git for Windows, [the "Pseudo Console Support" choice is now remembered correctly](https://github.com/git-for-windows/build-extra/pull/295).
 * Under certain circumstances, the Git Bash window (MinTTY) [would crash frequently](https://github.com/git-for-windows/git/issues/2687), which has been addressed.
 * When pseudo console support is enabled, [the VIM editor sometimes had troubles accepting certain keystrokes](https://github.com/git-for-windows/git/issues/2689), which was fixed.
+* Due to a bug, it was not possible to disable Pseudo Console support by reinstalling with the checkbox turned off, [which has been fixed](https://github.com/git-for-windows/build-extra/pull/299).
 
 ## Changes since Git for Windows v2.26.2 (April 20th 2020)
 
