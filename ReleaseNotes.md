@@ -54,6 +54,7 @@ This package contains software from a number of other projects including Bash, z
 * Due to a bug, it was not possible to disable Pseudo Console support by reinstalling with the checkbox turned off, [which has been fixed](https://github.com/git-for-windows/build-extra/pull/299).
 * A bug with enabled Pseudo Console support, where `git add -i` [would not quit the file selection mode upon an empty input](https://github.com/git-for-windows/git/issues/2729), has been fixed.
 * The cleanup mode called "scissors" in `git commit` [now handles CR/LF line endings correctly](https://github.com/git-for-windows/git/pull/2714).
+* When cloning into an existing directory, under certain circumstances, the `core.worktree` option was set unnecessarily. [This has been fixed](https://github.com/git-for-windows/git/pull/2731).
 
 ## Changes since Git for Windows v2.26.2 (April 20th 2020)
 
