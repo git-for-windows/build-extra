@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v7.71.1](https://curl.haxx.se/changes.html#7_71_1).
 * Comes with [Perl v5.32.0](http://search.cpan.org/dist/perl-5.32.0/pod/perldelta.pod).
 * Comes with [perl-XML-Parser v2.46](https://metacpan.org/source/TODDR/XML-Parser-2.46/Changes).
+* Comes with [perl-HTML-Parser v3.72](https://metacpan.org/source/GAAS/HTML-Parser-3.72/Changes).
 
 ### Bug Fixes
 
