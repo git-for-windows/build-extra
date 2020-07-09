@@ -2708,9 +2708,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			 }')"
 			test -n "$cygwin_url" ||
 			cygwin_url="$(curl -Lis https://cygwin.com/ml/cygwin-announce/current |
-			 sed -ne '/^Location: /{s/^Location: //;x}' \
-			  -e '/<a \(name=[^ ]* \)\?href=[^>]*>cygwin '"$(echo "$version" |
-				sed 's/\./\\&/g')"'/{s/.* href="\([^"]*\).*/\1/;H;x;s/\n//;p;q}')"
+			 sed -ne '/^[Ll]ocation: /{s/^location: //;s/[^\/]*$//;x}' \
+			  -e '/<[Aa] \([Nn][Aa][Mm][Ee]=[^ ]* \)\?[Hh][Rr][Ee][Ff]=[^>]*>[Cc]ygwin '"$(echo "$version" |
+				sed 's/\./\\&/g')"'/{s/.* [Hh][Rr][Ee][Ff]="\([^"]*\).*/\1/;H;x;s/\n//;p;q}')"
 		 fi &&
 
 		 test -n "$cygwin_url" ||
