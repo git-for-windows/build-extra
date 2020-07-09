@@ -724,10 +724,17 @@ pkg_build () {
 		then
 			require mingw-w64-cross-crt-git mingw-w64-cross-gcc
 			test ! -d msys2-runtime ||
-			(cd msys2-runtime && git fetch) ||
+			git -C msys2-runtime fetch ||
 			die "Could not fetch from origin"
 			test ! -d src/msys2-runtime/.git ||
 			(cd src/msys2-runtime &&
+			 case "$(test -x /usr/bin/git && cat .git/objects/info/alternates 2>/dev/null)" in
+			 /*)
+				echo "dissociating worktree, to allow MINGW Git to access the worktree" >&2 &&
+				/usr/bin/git repack -ad &&
+				rm .git/objects/info/alternates
+				;;
+			 esac &&
 			 if test -n "$(git config remote.upstream.url)"
 			 then
 				git fetch upstream
@@ -2210,7 +2217,12 @@ create_bundle_artifact () {
 	return
 	repo_name=$(git rev-parse --show-toplevel) &&
 	repo_name=${repo_name##*/} &&
-	range="$upstream_main_branch..$(git symbolic-ref --short HEAD)" &&
+	if ! main_branch="$(git symbolic-ref --short HEAD)"
+	then
+		main_branch=main &&
+		git switch -C $main_branch
+	fi &&
+	range="$upstream_main_branch..$main_branch" &&
 	if test 0 -lt $(git rev-list --count "$range")
 	then
 		git bundle create "$artifactsdir"/$repo_name.bundle "$range"
@@ -2653,13 +2665,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 die "Invalid version '%s' for '%s'\n" "$version" "$package"
 
 		 # rebase if necessary
+		 git reset --hard &&
+		 git checkout git-for-windows/main &&
 		 if test 0 -lt $(git rev-list --count \
 			git-for-windows/main..$tag)
 		 then
 			{ test -n "$skip_upload" ||
 			  require_push_url git-for-windows; } &&
-			git reset --hard &&
-			git checkout git-for-windows/main &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh \
 				--merging --onto "$tag" merging-rebase &&
@@ -2696,16 +2708,14 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			 }')"
 			test -n "$cygwin_url" ||
 			cygwin_url="$(curl -Lis https://cygwin.com/ml/cygwin-announce/current |
-			 sed -ne '/^Location: /{s/^Location: //;x}' \
-			  -e '/<a \(name=[^ ]* \)\?href=[^>]*>cygwin '"$(echo "$version" |
-				sed 's/\./\\&/g')"'/{s/.* href="\([^"]*\).*/\1/;H;x;s/\n//;p;q}')"
+			 sed -ne '/^[Ll]ocation: /{s/^location: //;s/[^\/]*$//;x}' \
+			  -e '/<[Aa] \([Nn][Aa][Mm][Ee]=[^ ]* \)\?[Hh][Rr][Ee][Ff]=[^>]*>[Cc]ygwin '"$(echo "$version" |
+				sed 's/\./\\&/g')"'/{s/.* [Hh][Rr][Ee][Ff]="\([^"]*\).*/\1/;H;x;s/\n//;p;q}')"
 		 fi &&
 
 		 test -n "$cygwin_url" ||
 		 die "Could not retrieve Cygwin mail about v%s\n" "$version"
 
-		 git reset --hard &&
-		 git checkout git-for-windows/main &&
 		 commit_url=https://github.com/git-for-windows/msys2-runtime &&
 		 commit_url=$commit_url/commit/$(git rev-parse HEAD) &&
 		 cd ../.. &&
