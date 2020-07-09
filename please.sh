@@ -2217,7 +2217,12 @@ create_bundle_artifact () {
 	return
 	repo_name=$(git rev-parse --show-toplevel) &&
 	repo_name=${repo_name##*/} &&
-	range="$upstream_main_branch..$(git symbolic-ref --short HEAD)" &&
+	if ! main_branch="$(git symbolic-ref --short HEAD)"
+	then
+		main_branch=main &&
+		git switch -C $main_branch
+	fi &&
+	range="$upstream_main_branch..$main_branch" &&
 	if test 0 -lt $(git rev-list --count "$range")
 	then
 		git bundle create "$artifactsdir"/$repo_name.bundle "$range"
