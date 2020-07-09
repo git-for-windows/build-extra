@@ -2665,13 +2665,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 die "Invalid version '%s' for '%s'\n" "$version" "$package"
 
 		 # rebase if necessary
+		 git reset --hard &&
+		 git checkout git-for-windows/main &&
 		 if test 0 -lt $(git rev-list --count \
 			git-for-windows/main..$tag)
 		 then
 			{ test -n "$skip_upload" ||
 			  require_push_url git-for-windows; } &&
-			git reset --hard &&
-			git checkout git-for-windows/main &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh \
 				--merging --onto "$tag" merging-rebase &&
@@ -2716,8 +2716,6 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 test -n "$cygwin_url" ||
 		 die "Could not retrieve Cygwin mail about v%s\n" "$version"
 
-		 git reset --hard &&
-		 git checkout git-for-windows/main &&
 		 commit_url=https://github.com/git-for-windows/msys2-runtime &&
 		 commit_url=$commit_url/commit/$(git rev-parse HEAD) &&
 		 cd ../.. &&
