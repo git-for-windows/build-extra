@@ -728,6 +728,13 @@ pkg_build () {
 			die "Could not fetch from origin"
 			test ! -d src/msys2-runtime/.git ||
 			(cd src/msys2-runtime &&
+			 case "$(test -x /usr/bin/git && cat .git/objects/info/alternates 2>/dev/null)" in
+			 /*)
+				echo "dissociating worktree, to allow MINGW Git to access the worktree" >&2 &&
+				/usr/bin/git repack -ad &&
+				rm .git/objects/info/alternates
+				;;
+			 esac &&
 			 if test -n "$(git config remote.upstream.url)"
 			 then
 				git fetch upstream
