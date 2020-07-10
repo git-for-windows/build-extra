@@ -43,6 +43,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v7.71.1](https://curl.haxx.se/changes.html#7_71_1).
 * Comes with [Perl v5.32.0](http://search.cpan.org/dist/perl-5.32.0/pod/perldelta.pod).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.6](https://cygwin.com/pipermail/cygwin-announce/2020-July/009605.html).
+* Comes with [GNU Privacy Guard v2.2.21](https://lists.gnupg.org/pipermail/gnupg-announce/2020q3/000446.html).
 
 ### Bug Fixes
 
