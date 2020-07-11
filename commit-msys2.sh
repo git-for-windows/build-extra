@@ -12,6 +12,9 @@ die () {
 root="$(cd "$(dirname "$0")/../../.." && pwd)" ||
 die "Could not determine root directory"
 
+root_gitdir="$(git -C "$root" rev-parse --absolute-git-dir)" &&
+test -d "$root_gitdir" ||
+die "Could not determine root gitdir"
 
 list_packages () {
 	(cd "${root%/}"/var/lib/pacman/local &&
@@ -73,7 +76,7 @@ init)
 	test -x "$import_tars" ||
 	die "You need to run this script in a Git for Windows SDK"
 
-	if test ! -d "${root%/}"/.git
+	if test ! -d "$root_gitdir"
 	then
 		(cd "$root" && git init) ||
 		die "Could not initialize Git repository"
@@ -140,6 +143,10 @@ ignore)
 		;;
 	esac
 
+	mkdir -p "$root_gitdir"/info &&
+	touch "$root_gitdir"/info/exclude ||
+	die "Could not ensure that .git/info/exclude exists"
+
 	for pkg
 	do
 		# Remove existing entries, if any
@@ -153,9 +160,9 @@ ignore)
 				/./b2
 				b1
 			}
-		}' "${root%/}"/.git/info/exclude &&
+		}' "$root_gitdir"/info/exclude &&
 		generate_package_gitignore "$pkg" \
-			>>"${root%/}"/.git/info/exclude ||
+			>>"$root_gitdir"/info/exclude ||
 		die "Could not ignore $pkg"
 	done
 	;;
