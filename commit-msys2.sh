@@ -69,6 +69,22 @@ generate_package_gitignore () {
 	esac
 }
 
+summarize_commit () {
+	test $# -le 1 ||
+	die "summarize_commit: too many arguments ($*)"
+
+	if test -z "$1"
+	then
+		git diff --cached -M15 --raw -- var/lib/pacman/local/\*/desc
+	else
+		git show "$1" --format=%H \
+			-M15 --raw -- var/lib/pacman/local/\*/desc
+	fi |
+	sed -ne '/.* M\tvar\/lib\/pacman\/local\/git-extra-[1-9].*\/desc$/d' \
+	 -e '/ R[0-9]*\t/{s/-\([0-9]\)/ (\1/;h;s|-\([0-9][^/]*\)/desc$|\t\1)|;s|.*\t| -> |;x;s|/desc\t.*||;s|.*\t[^\t]*/||;G;s|\n||g;p}' \
+	 -e '/ A\t/{s|.*local/\([^/]*\)/desc|\1|;s|-\([0-9].*\)| (new: \1)|p}' \
+	 -e '/ D\t/{s|.*local/\([^/]*\)/desc|\1|;s|-\([0-9].*\)| (removed)|p}'
+}
 
 case "$1" in
 init)
@@ -119,6 +135,10 @@ add)
 	 git commit -q -s -m "Add $*") ||
 	die "Could not commit changes"
 	;;
+summary)
+	shift
+	summarize_commit "$@"
+	;;
 commit)
 	(cd "$root" &&
 	 if test false != "$(git config core.autocrlf)"
@@ -128,7 +148,8 @@ commit)
 	 fi &&
 	 git add -A . &&
 	 git diff-index --exit-code --cached HEAD ||
-	 git commit -q -s -m "Update $(date +%Y%m%d-%H%M%S)") ||
+	 git commit -q -s -m "Update $(date +%Y%m%d-%H%M%S)" \
+		-m "$(summarize_commit)") ||
 	die "Could not commit changes"
 	;;
 ignore)
