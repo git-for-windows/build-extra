@@ -4337,7 +4337,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		return 0
 	}
 
-	git -C "$output_path" config core.repositoryFormatVersion 1 &&
+	git -C "$git_sdk_path" config core.repositoryFormatVersion 1 &&
 	git -C "$git_sdk_path" config extensions.worktreeConfig true &&
 	git -C "$git_sdk_path" worktree add --detach --no-checkout "$output_path" HEAD &&
 	sparse_checkout_file="$(git -C "$output_path" rev-parse --git-path info/sparse-checkout)" &&
