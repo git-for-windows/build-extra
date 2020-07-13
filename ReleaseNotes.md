@@ -38,11 +38,10 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [subversion v1.14.0](https://svn.apache.org/repos/asf/subversion/tags/1.14.0/CHANGES).
-* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.5](https://cygwin.com/pipermail/cygwin-announce/2020-June/009561.html).
 * [Comes with the designated successor](https://github.com/git-for-windows/build-extra/pull/294) of Git Credential Manager for Windows (GCM for Windows), [the cross-platform Git Credential Manager Core](https://github.com/microsoft/git-credential-manager-core). For now, this is opt-in, with the idea of eventually retiring GCM for Windows.
 * Comes with [cURL v7.71.1](https://curl.haxx.se/changes.html#7_71_1).
 * Comes with [Perl v5.32.0](http://search.cpan.org/dist/perl-5.32.0/pod/perldelta.pod).
-* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.6](https://cygwin.com/pipermail/cygwin-announce/2020-July/009605.html).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.6](https://cygwin.com/pipermail/cygwin-announce/2020-July/009605.html) (including the improvements of [Cygwin 3.1.5](https://cygwin.com/pipermail/cygwin-announce/2020-June/009561.html)).
 * Comes with [GNU Privacy Guard v2.2.21](https://lists.gnupg.org/pipermail/gnupg-announce/2020q3/000446.html).
 
 ### Bug Fixes
