@@ -75,7 +75,7 @@ summarize_commit () {
 
 	if test -z "$1"
 	then
-		git diff --cached -M15 --raw -- var/lib/pacman/local/\*/desc
+		git diff --cached -M50 --raw -- var/lib/pacman/local/\*/desc
 	else
 		git show "$1" --format=%H \
 			-M15 --raw -- var/lib/pacman/local/\*/desc
