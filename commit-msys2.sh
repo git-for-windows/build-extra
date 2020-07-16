@@ -147,9 +147,17 @@ commit)
 		die "Could not force core.autocrlf = false"
 	 fi &&
 	 git add -A . &&
-	 git diff-index --exit-code --cached HEAD ||
-	 git commit -q -s -m "Update $(date +%Y%m%d-%H%M%S)" \
-		-m "$(summarize_commit)") ||
+	 if git diff-index --exit-code --cached HEAD -- \
+		':(exclude)var/lib/pacman/sync/' \
+		':(exclude)var/lib/pacman/local/git-extra-*/desc' \
+		':(exclude)etc/rebase.db*'
+	 then
+		# No changes, really, but maybe a new Pacman db
+		git reset --hard
+	 else
+		git commit -q -s -m "Update $(date +%Y%m%d-%H%M%S)" \
+			-m "$(summarize_commit)"
+	 fi) ||
 	die "Could not commit changes"
 	;;
 ignore)
