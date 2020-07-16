@@ -155,8 +155,16 @@ commit)
 		# No changes, really, but maybe a new Pacman db
 		git reset --hard
 	 else
-		git commit -q -s -m "Update $(date +%Y%m%d-%H%M%S)" \
-			-m "$(summarize_commit)"
+		count=$(git diff --cached -M50 --raw -- \
+			var/lib/pacman/local/\*/desc | wc -l) &&
+		test -n "$count" &&
+		if test $count -lt 2
+		then
+			oneline="Update $count package"
+		else
+			oneline="Update $count packages"
+		fi &&
+		git commit -q -s -m "$oneline" -m "$(summarize_commit)"
 	 fi) ||
 	die "Could not commit changes"
 	;;
