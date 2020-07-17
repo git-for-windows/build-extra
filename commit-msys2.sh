@@ -155,17 +155,15 @@ commit)
 		# No changes, really, but maybe a new Pacman db
 		git reset --hard
 	 else
-		count=$(git diff --cached -M50 --raw -- \
-			':(exclude)var/lib/pacman/local/git-extra-*/desc' \
-			var/lib/pacman/local/\*/desc | wc -l) &&
-		test -n "$count" &&
+		summary="$(summarize_commit)"
+		count=$(echo "$summary" | wc-l) &&
 		if test $count -lt 2
 		then
 			oneline="Update $count package"
 		else
 			oneline="Update $count packages"
 		fi &&
-		git commit -q -s -m "$oneline" -m "$(summarize_commit)"
+		git commit -q -s -m "$oneline" -m "$summary"
 	 fi) ||
 	die "Could not commit changes"
 	;;
