@@ -43,7 +43,6 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Perl v5.32.0](http://search.cpan.org/dist/perl-5.32.0/pod/perldelta.pod).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.6](https://cygwin.com/pipermail/cygwin-announce/2020-July/009605.html) (including the improvements of [Cygwin 3.1.5](https://cygwin.com/pipermail/cygwin-announce/2020-June/009561.html)).
 * Comes with [GNU Privacy Guard v2.2.21](https://lists.gnupg.org/pipermail/gnupg-announce/2020q3/000446.html).
-* Comes with [Git Credential Manager Core v2.0.194.40577](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.194-beta).
 
 ### Bug Fixes
 
