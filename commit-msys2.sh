@@ -156,7 +156,7 @@ commit)
 		git reset --hard
 	 else
 		summary="$(summarize_commit)"
-		count=$(echo "$summary" | wc-l) &&
+		count=$(echo "$summary" | wc -l) &&
 		if test $count -lt 2
 		then
 			oneline="Update $count package"
