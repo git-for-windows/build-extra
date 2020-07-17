@@ -334,6 +334,14 @@ remove () { # <package>...
 	done
 }
 
+repo_add () {
+	if test ! -s "$this_script_dir/repo-add"
+	then
+		# Make sure that GPGKEY is used unquoted
+		 sed 's/"\(\${\?GPGKEY}\?\)"/\1/g' </usr/bin/repo-add >"$this_script_dir/repo-add"
+	fi &&
+	"$this_script_dir/repo-add" "$@"
+}
 
 update_local_package_databases () {
 	sign_option=
@@ -341,9 +349,9 @@ update_local_package_databases () {
 	for arch in $architectures
 	do
 		(cd "$(arch_dir $arch)" &&
-		 repo-add $sign_option --new git-for-windows.db.tar.xz \
+		 repo_add $sign_option --new git-for-windows.db.tar.xz \
 			*.pkg.tar.xz &&
-		 repo-add $sign_option --new \
+		 repo_add $sign_option --new \
 		 git-for-windows-$(arch_to_mingw "$arch").db.tar.xz \
 		 mingw-w64-$arch-*.pkg.tar.xz) ||
 		 die "Could not update $arch package database"
@@ -548,12 +556,12 @@ quick_add () { # <file>...
 			done
 		done
 		(cd "$dir/$arch" &&
-		 repo-add $sign_option git-for-windows.db.tar.xz $msys $mingw &&
+		 repo_add $sign_option git-for-windows.db.tar.xz $msys $mingw &&
 		 cp git-for-windows.db.tar.xz git-for-windows.db &&
 		 { test -z "$sign_option" || cp git-for-windows.db.tar.xz.sig git-for-windows.db.sig; } &&
 		 if test -n "$db2"
 		 then
-			repo-add $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
+			repo_add $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
 			cp git-for-windows-$db2.db.tar.xz git-for-windows-$db2.db &&
 			{ test -z "$sign_option" || cp git-for-windows-$db2.db.tar.xz.sig git-for-windows-$db2.db.sig; }
 		 fi) ||
@@ -743,7 +751,7 @@ push_missing_signatures () {
 
 				test "a" = "a${out##*PGPSIG*}" || {
 					count=$(($count+1))
-					repo-add $sign_option $db_name $filename ||
+					repo_add $sign_option $db_name $filename ||
 					die "Could not add $name in $arch/mingw"
 				}
 				;;
@@ -757,7 +765,7 @@ push_missing_signatures () {
 
 			test "a" = "a${out##*PGPSIG*}" || {
 				count=$(($count+1))
-				repo-add $sign_option git-for-windows.db.tar.xz \
+				repo_add $sign_option git-for-windows.db.tar.xz \
 					$filename ||
 				die "Could not add $name in $arch"
 				echo "$name is missing sig in $arch"
