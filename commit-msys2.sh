@@ -156,6 +156,7 @@ commit)
 		git reset --hard
 	 else
 		count=$(git diff --cached -M50 --raw -- \
+			':(exclude)var/lib/pacman/local/git-extra-*/desc' \
 			var/lib/pacman/local/\*/desc | wc -l) &&
 		test -n "$count" &&
 		if test $count -lt 2
