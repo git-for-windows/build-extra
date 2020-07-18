@@ -1,0 +1,482 @@
+msgid ""
+msgstr ""
+"Project-Id-Version: SiteGround Migrator\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2019-09-20 06:23+0000\n"
+"PO-Revision-Date: 2019-09-20 06:44+0000\n"
+"Last-Translator: admin <nobody@exmaple.com>\n"
+"Language-Team: Italian\n"
+"Language: it_IT\n"
+"Plural-Forms: nplurals=2; plural=n != 1;\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: Loco https://localise.biz/\n"
+"X-Loco-Version: 2.3.0; wp-5.3-alpha-20190919.110826"
+
+#: siteground-migrator.php:74
+#, php-format
+msgid ""
+"<div class=\"error\"><p>“%1$s” requires PHP %2$s (or newer) to function "
+"properly. Your site is using PHP %3$s. Please upgrade. The plugin has been "
+"automatically deactivated.</p></div>"
+msgstr ""
+"<div class=\"error\"><p>\"%1$s\" richiede PHP %2$s (o più recente) per "
+"funzionare correttamente. Il tuo sito sta utilizzando PHP %3$s. Per favore, "
+"fai un upgrade. Il plugin è stato disattivato in automatico.</p></div>"
+
+#: siteground-migrator.php:92
+msgid ""
+"<div class=\"error\"><p>This plugin does not support full Multise Network "
+"migrations.</p></div>"
+msgstr ""
+"<div class=\"error\"><p>Questo plugin non supporta migrazioni di network "
+"Multisite.</p></div>"
+
+#. See http://keithdevon.com/using-variables-wordpress-translation-functions
+#: manual-translations.php:5
+msgid "File download completed, starting site migration..."
+msgstr "Download dei file completato, inzio la migrazione del sito..."
+
+#: includes/class-siteground-migrator-transfer-service.php:201
+#: includes/class-siteground-migrator-files-service.php:159
+msgid "Transfer cannot be initiated due to permissions error."
+msgstr "Il trasferimento non può iniziare a causa di un errore nei permessi."
+
+#: includes/class-siteground-migrator-transfer-service.php:203
+#: includes/class-siteground-migrator-files-service.php:160
+msgid ""
+"For the purposes of this transfer we need to create temporary files on your "
+"current hosting account. Please fix your files permissions at your current "
+"host and make sure your wp-content folder is writable. Files should be set "
+"to 644 and folders to 755."
+msgstr ""
+"Per effettuare il trasferimento, dobbiamo creare file temporanei sul tuo "
+"attuale account di hosting. Per favore sistema i permessi dei file sul tuo "
+"attuale provider e assicurati che la tua cartella wp-content sia scrivibile. "
+"I file dovrebbero essere impostati su 644 e le cartelle su 755."
+
+#: includes/class-siteground-migrator-transfer-service.php:235
+msgid ""
+"Please, generate another Migration Token from your SiteGround control panel."
+msgstr ""
+"Per favore, genera un nuovo token di trasferimento dal tuo pannello di "
+"controllo SiteGround"
+
+#: includes/class-siteground-migrator-transfer-service.php:270
+#, php-format
+msgid "Site domain to be changed to %s"
+msgstr "Il dominio del sito deve essere cambiato in %s."
+
+#: includes/class-siteground-migrator-transfer-service.php:277
+msgid ""
+"While generating the transfer token, you have chosen to use a different "
+"domain than the one currently used with your WordPress. To accommodate this "
+"change we will automatically update your database while transferring it to "
+"the SiteGround servers and replace the domain information on the needed "
+"places."
+msgstr ""
+"Durante la generazione del token di trasferimento, hai scelto di utilizzare "
+"un dominio diverso da quello attualmente utilizzato con il tuo WordPress. "
+"Per soddisfare questa richiesta, aggiorneremo automaticamente il tuo "
+"database durante il trasferimento ai server SiteGround e sostituiremo le "
+"informazioni sul dominio ove necessario."
+
+#: includes/class-siteground-migrator-transfer-service.php:303
+msgid "There is no enough free space on your new server."
+msgstr "Non c’è sufficiente spazio sul tuo nuovo server."
+
+#: includes/class-siteground-migrator-transfer-service.php:305
+msgid ""
+"Please either free some space at your receiving SiteGround hosting account, "
+"or upgrade it to a higher plan that will provide you enough space for the "
+"website you want to transfer."
+msgstr ""
+"Ti chiediamo di liberare un po' di spazio sul tuo account di hosting "
+"SiteGround, oppure di fare un upgrade a un piano superiore in modo da "
+"fornire spazio sufficiente al sito che si desidera trasferire."
+
+#: includes/class-siteground-migrator-transfer-service.php:360
+#: includes/class-siteground-migrator-transfer-service.php:379
+#: includes/class-siteground-migrator-cli.php:66
+#: admin/class-siteground-migrator-admin.php:121
+msgid "Transfer started. Creating archives of files..."
+msgstr "Trasferimento iniziato. Creo file di archivio..."
+
+#: includes/class-siteground-migrator-transfer-service.php:397
+msgid "Transfer request has been sent to SiteGround server."
+msgstr "La richiesta di trasferimento è stata inviata al server SiteGround."
+
+#: includes/class-siteground-migrator-transfer-service.php:403
+msgid "Network connection problem"
+msgstr "Problema di connessione alla rete."
+
+#: includes/class-siteground-migrator-transfer-service.php:404
+msgid ""
+"The transfer was interrupted due to connectivity issues. Please restart "
+"transfer."
+msgstr ""
+"Il trasferimento è stato interrotto a causa di un problema di connessione. "
+"Per favore, riavvia il trasferimento."
+
+#: includes/class-siteground-migrator-transfer-service.php:542
+#, php-format
+msgid "Downloaded %d out of %d files..."
+msgstr "Scaricati %d su %d file..."
+
+#: includes/class-siteground-migrator.php:180
+msgid "Critical Environment Error"
+msgstr "Errore dell’ambiente critico"
+
+#: includes/class-siteground-migrator.php:182
+msgid ""
+"We’ve encountered a critical error in your current hosting environment that "
+"prevents our plugin to complete the transfer."
+msgstr ""
+"Abbiamo riscontrato un errore critico nel tuo attuale ambiente di hosting "
+"che non permette al nostro plugin di trasferire il tuo sito."
+
+#: includes/class-siteground-migrator-files-service.php:141
+msgid "Files archived, compressing the database.."
+msgstr "File archiviati. Comprimo il database..."
+
+#: includes/class-siteground-migrator-files-service.php:228
+msgid "Failed to create transfer manifest."
+msgstr "Errore nel creare il transfer manifest."
+
+#: includes/class-siteground-migrator-files-service.php:232
+msgid ""
+"Transfer manifest has been created. Sending request to SiteGround API ..."
+msgstr ""
+"Il manifest di trasferimento è stato creato. Stiamo mandando la richiesta "
+"all’API SiteGround..."
+
+#: includes/class-siteground-migrator-cli.php:45
+#: includes/class-siteground-migrator-cli.php:55
+msgid "Can not initiate the transfer."
+msgstr "Non è possibile iniziare il trasferimento."
+
+#: includes/class-siteground-migrator-email-service.php:71
+msgid "Migration to SiteGround Failed"
+msgstr "Migrazione a SiteGround non riuscita"
+
+#: includes/class-siteground-migrator-email-service.php:76
+msgid "Migration to SiteGround Completed"
+msgstr "Migrazione a SiteGround completata"
+
+#: includes/class-siteground-migrator-email-service.php:81
+msgid "Migration to SiteGround completed, some files could not be transferred"
+msgstr ""
+"Completata migrazione a SiteGround, alcuni file non possono essere trasferiti"
+
+#: includes/class-siteground-migrator-database-service.php:87
+msgid "Database successfully compressed. Creating transfer manifest..."
+msgstr "Database compresso con successo. Creo il transfer manifest..."
+
+#: includes/class-siteground-migrator-database-service.php:106
+msgid "Transfer Failed Due To Database Error!"
+msgstr "Il trasferimento è fallito a causa di un errore del database!"
+
+#: includes/class-siteground-migrator-database-service.php:107
+msgid ""
+"The most common reason for such failure is if you have a large table or "
+"database that cannot be dumped for the purposes of this migration. If that "
+"is the case you may not be able to use the auto-migrator. If you believe the "
+"problem is elsewhere, such as temporary MySQL connectivity issue, you may <a "
+"href=\"#\" class=\"link\">restart the transfer</a>."
+msgstr ""
+"Di solito questo errore avviene se si dispone di una tabella o di un "
+"database di grandi dimensioni di cui non si può fare il DUMP a scopo di "
+"migrazione. In questo caso potresti non essere in grado di utilizzare l’auto-"
+"migrazione. Se ritieni che il problema sia altrove, ad esempio un problema "
+"di connettività MySQL temporaneo, puoi <a href=\"#\" class=\"link\">"
+"riavviare il trasferimento</a>"
+
+#. Name of the plugin
+#: admin/class-siteground-migrator-admin-settings.php:49
+msgid "SiteGround Migrator"
+msgstr "SiteGround Migrator"
+
+#: admin/class-siteground-migrator-admin-settings.php:70
+msgid "Website Migration Settings"
+msgstr "Impostazioni migrazione sito."
+
+#: admin/email-templates/sg_migrator_successful_errors.php:87
+#: admin/email-templates/sg_migrator_successful.php:87
+#: admin/email-templates/sg_migrator_failed.php:87
+msgid "Hello,"
+msgstr "Ciao,"
+
+#: admin/email-templates/sg_migrator_successful_errors.php:95
+#, php-format
+msgid ""
+"A copy of <a href=\"%1$s\" target=\"_blank\" rel=\"noreferrer\" "
+"style=\"color: #22b8d1; outline: none; text-decoration: none;\">%1$s</a> has "
+"been migrated to SiteGround, as you requested. The database and most of the "
+"WordPress files of your website were transferred to the new server.  However,"
+" <b>the files listed below could not be transferred due to restrictions of "
+"the current hosting environment</b>:"
+msgstr ""
+"Una copia di <a href=\"%1$s\" target=\"_blank\" rel=\"noreferrer\" "
+"style=\"color: #22b8d1; outline: none; text-decoration: none;\">%1$s</a> è "
+"stata migrata su SiteGround come richiesto. Il database e la maggior parte "
+"dei file WordPress del tuo sito, sono stati trasferiti sul nuovo server. "
+"Tuttavia, <b>non è stato possibile trasferire i file elencati di seguito a "
+"causa delle restrizioni dell'ambiente di hosting corrente</b>:"
+
+#: admin/email-templates/sg_migrator_successful_errors.php:120
+msgid ""
+"Please preview your migrated website on the link below to see if it looks "
+"and functions as expected:"
+msgstr ""
+"Si prega di visualizzare in anteprima il sito trasferito attraverso il link "
+"sottostante, per vedere se funziona come previsto:"
+
+#: admin/email-templates/sg_migrator_successful_errors.php:134
+#, php-format
+msgid ""
+"If there are any errors, either try to migrate the files from the list above "
+"manually using FTP or sFTP, or contact our SiteGround support team through "
+"your Help Desk under <a href=\"%s\" target=\"_blank\" rel=\"noreferrer\" "
+"style=\"color: #22b8d1; outline: none; text-decoration: none;\">Other "
+"Technical Issues</a> category. "
+msgstr ""
+"In caso di errori, prova a migrare manualmente i file dell'elenco sopra "
+"indicato utilizzando FTP o sFTP, oppure contatta il team di supporto "
+"SiteGround tramite l'Help Desk nella categoria <a href=\"%s\" "
+"target=\"_blank\" rel=\"noreferrer\" style=\"color: #22b8d1; outline: none; "
+"text-decoration: none;\">Riporta altri problemi tecnici</a>."
+
+#: admin/email-templates/sg_migrator_successful_errors.php:138
+msgid "https://ua.siteground.com/login_office.htm"
+msgstr "https://ua.siteground.com/login_office.htm"
+
+#: admin/email-templates/sg_migrator_successful_errors.php:146
+msgid ""
+"If your site looks as expected on the new location and you wish to complete "
+"the transfer, just point your domain name to SiteGround. To do this, please "
+"change your name servers to the following:"
+msgstr ""
+"Se il tuo sito viene visualizzato correttamente nella nuova posizione e "
+"desideri completare il trasferimento, basta puntare il nome del dominio su "
+"SiteGround. Per fare questo, ti chiediamo di cambiare i name server come "
+"segue:"
+
+#: admin/email-templates/sg_migrator_successful_errors.php:175
+#: admin/email-templates/sg_migrator_successful.php:148
+msgid ""
+"<b>Important:</b> It can take up to 48 hours for the nameserver changes to "
+"propagate. It’s very important to make no changes to your website during the "
+"transfer period to avoid data loss or data discrepancy."
+msgstr ""
+"<b>Importante:</b> possono essere necessarie fino a 48 ore perché le "
+"modifiche del name server siano effettive. È molto importante non apportare "
+"modifiche al sito web durante il periodo di trasferimento per evitare "
+"perdite di dati o discrepanze nei dati."
+
+#: admin/email-templates/sg_migrator_successful_errors.php:181
+#: admin/email-templates/sg_migrator_successful.php:154
+#: admin/email-templates/sg_migrator_failed.php:122
+msgid "Best Regards, <br>The SiteGround Team"
+msgstr "Cordialmente, <br>Il Team di SiteGround"
+
+#: admin/email-templates/sg_migrator_successful.php:95
+#, php-format
+msgid ""
+"A copy of <a href=\"%1$s\" target=\"_blank\" rel=\"noreferrer\" "
+"style=\"color: #22b8d1; outline: none; text-decoration: none;\">%1$s</a> has "
+"been successfully migrated to SiteGround, as you requested."
+msgstr ""
+"Una copia di <a href=\"%1$s\" target=\"_blank\" rel=\"noreferrer\" "
+"style=\"color: #22b8d1; outline: none; text-decoration: none;\">%1$s</a> è "
+"stata migrata correttamente su SiteGround come richiesto."
+
+#: admin/email-templates/sg_migrator_successful.php:107
+msgid "You can preview the migrated website here:"
+msgstr "Puoi vedere in anteprima il sito trasferito qui:"
+
+#: admin/email-templates/sg_migrator_successful.php:119
+msgid ""
+"If your site looks as expected on the new location and you wish to complete "
+"the transfer, just point your domain name to SiteGround. To do this, please "
+"change your name servers to the following: "
+msgstr ""
+"Se il tuo sito viene visualizzato correttamente nella nuova posizione e "
+"desideri completare il trasferimento, basta puntare il nome del dominio su "
+"SiteGround. Per fare questo, ti chiediamo di cambiare i name server come "
+"segue:"
+
+#: admin/email-templates/sg_migrator_failed.php:95
+#, php-format
+msgid ""
+"As you requested, we’ve tried to move a copy of <a href=\"%1$s\" "
+"target=\"_blank\" rel=\"noreferrer\" style=\"color: #22b8d1; outline: none; "
+"text-decoration: none;\">%1$s</a> to SiteGround. Unfortunately, the transfer "
+"failed due to restriction in the current hosting environment."
+msgstr ""
+"Come da te richiesto, abbiamo provato a spostare una copia di <a "
+"href=\"%1$s\" target=\"_blank\" rel=\"noreferrer\" style=\"color: #22b8d1; "
+"outline: none; text-decoration: none;\">%1$s</a> su SiteGround. "
+"Sfortunatamente, il trasferimento non è riuscito a causa delle restrizioni "
+"dell'attuale ambiente di hosting."
+
+#: admin/email-templates/sg_migrator_failed.php:109
+#, php-format
+msgid ""
+"Please review <a href=\"%s\" target=\"_blank\" rel=\"noreferrer\" "
+"style=\"color: #22b8d1; outline: none; text-decoration: none;\">our "
+"tutorial</a> for manual transfer or request a professional transfer from our "
+"Support Team by posting a ticket in your Help Desk under <a href=\"%s\" "
+"target=\"_blank\" rel=\"noreferrer\" style=\"color: #22b8d1; outline: none; "
+"text-decoration: none;\">Website Transfer</a> category."
+msgstr ""
+"Si prega guardare <a href=\"%s\" target=\"_blank\" rel=\"noreferrer\" "
+"style=\"color: #22b8d1; outline: none; text-decoration: none;\">il nostro "
+"tutorial</a> sul trasferimento manuale o richiedere un trasferimento "
+"professionale al nostro team di supporto pubblicando un ticket nell'Help "
+"Desk nella sezione <a href=\"%s\" target=\"_blank\" rel=\"noreferrer\" "
+"style=\"color: #22b8d1; outline: none; text-decoration: none;\">"
+"Trasferimento del sito</a>."
+
+#: admin/email-templates/sg_migrator_failed.php:113
+msgid "https://www.siteground.com/tutorials/wordpress/move-copy/"
+msgstr "https://it.siteground.com/tutorial/wordpress/trasferimento/"
+
+#: admin/email-templates/sg_migrator_failed.php:114
+msgid "https://ua.siteground.com/support/website_transfer.htm"
+msgstr "https://ua.siteground.com/support/website_transfer.htm"
+
+#: admin/partials/new-site-setup-info.php:13
+msgid "Check Site"
+msgstr "Controlla il sito."
+
+#: admin/partials/new-site-setup-info.php:17
+msgid ""
+"We’ve provided a temporary URL for you to check your site before pointing "
+"your nameservers to SiteGround. Мake sure everything is working fine before "
+"pointing your domain."
+msgstr ""
+"Abbiamo fornito un URL temporaneo per controllare il tuo sito prima di "
+"puntare il nameserver a SiteGround. Assicurati che tutto funzioni "
+"correttamente prima di puntare il tuo dominio."
+
+#: admin/partials/new-site-setup-info.php:20
+msgid "Go to Site"
+msgstr "Vai al sito"
+
+#: admin/partials/new-site-setup-info.php:30
+msgid "Update Your DNS"
+msgstr "Aggiorna il tuo DNS"
+
+#: admin/partials/new-site-setup-info.php:31
+msgid ""
+"Please change your domain’s NS. Note that those changes require up to 48 "
+"hours of propagation time. Don’t modify your site during that period to "
+"avoid data loss."
+msgstr ""
+"Per favore cambia il nameserver del tuo dominio. Si noti che queste "
+"modifiche richiedono fino a 48 ore di tempo per essere attive. Non "
+"modificare il tuo sito durante questo periodo per evitare la perdita di dati."
+
+#: admin/partials/new-site-setup-info.php:51
+msgid "That went smoothly, right?"
+msgstr "È stato facile vero?"
+
+#: admin/partials/new-site-setup-info.php:53
+msgid "Help us help other people by rating this plugin on WP.org!"
+msgstr "Aiutaci ad aiutare le altre persone, lascia una recensione su WP.org!"
+
+#: admin/partials/transfer-settings.php:16
+msgid "Website Migration in Progress"
+msgstr "Trasferimento del sito in corso."
+
+#: admin/partials/transfer-settings.php:26
+#: admin/partials/cancel-transfer-confirmation.php:21
+#: admin/partials/transfer-success-warnings.php:30
+msgid "Cancel Transfer"
+msgstr "Annulla trasferimento"
+
+#: admin/partials/transfer-settings.php:33
+#, php-format
+msgid ""
+"To initiate the transfer you will need to provide your transfer token. It "
+"can be generated through the <strong>WordPress Migrator</strong> tool in "
+"your SiteGround control panel. You can check out this <a href=\"%s\" "
+"target=\"_blank\">tutorial</a> if you need more detailed instructions."
+msgstr ""
+"Per iniziare il trasferimento devi fornire il tuo token di trasferimento. "
+"Può essere generato tramite lo strumento <strong>WordPress Migrator</strong> "
+"presente nel tuo panello di controllo SiteGround. Se desideri istruzioni più "
+"dettagliate, puoi guardare questo <a href=\"%s\" target=\"_blank\">"
+"tutorial</a>"
+
+#: admin/partials/transfer-settings.php:42
+msgid "Migration Token"
+msgstr "Token di trasferimento."
+
+#: admin/partials/transfer-settings.php:49
+#: admin/partials/transfer-settings.php:69
+msgid "This field is required"
+msgstr "Questo campo è obbligatorio."
+
+#: admin/partials/transfer-settings.php:53
+msgid "Token doesn't match requested format."
+msgstr "Il token non coincide con il formato richiesto."
+
+#: admin/partials/transfer-settings.php:65
+msgid "Send notification email when migration is over to "
+msgstr "Quando la migrazione è completa, invia una notifica email a"
+
+#: admin/partials/transfer-settings.php:73
+msgid "Email doesn't match requested format."
+msgstr "L’email non rispetta il formato richiesto."
+
+#: admin/partials/transfer-settings.php:82
+msgid "Initiate Transfer"
+msgstr "Inizia il trasferimento"
+
+#: admin/partials/cancel-transfer-confirmation.php:12
+msgid "Are you sure you want to cancel the transfer?"
+msgstr "Sei sicuro di voler annullare il trasferimento?"
+
+#: admin/partials/cancel-transfer-confirmation.php:18
+#: admin/partials/transfer-success-warnings.php:36
+msgid "Continue"
+msgstr "Continua"
+
+#: admin/partials/transfer-fail.php:22
+#: admin/partials/transfer-success-warnings.php:93
+#: admin/partials/transfer-success.php:22
+msgid "Initiate New Transfer"
+msgstr "Inizia un nuovo trasferimento"
+
+#: admin/partials/transfer-success.php:13
+msgid "Transfer Completed Successfully!"
+msgstr "Trasferimento completato con successo!"
+
+#: admin/partials/transfer-success.php:16
+msgid ""
+"Your WordPress has been migrated. We’ve created a temporary URL that will be "
+"valid for 48 hours to check your site on the new location. If everything "
+"looks good, you can point your domain to our servers."
+msgstr ""
+"Il tuo WordPress è stato trasferito. Abbiamo creato un URL temporaneo che "
+"sarà valido per 48 ore, in modo da controllare il tuo sito nella nuova "
+"posizione. Se tutto sembra a posto, puoi puntare il tuo dominio ai nostri "
+"server."
+
+#. Description of the plugin
+msgid "This plugin is designed to migrate your WordPress site to SiteGround"
+msgstr "Questo plugin è stato creato per trasferire il tuo sito su SiteGround"
+
+#. URI of the plugin
+msgid "http://siteground.com"
+msgstr "https://it.siteground.com/"
+
+#. Author of the plugin
+msgid "SiteGround"
+msgstr "SiteGround"
+
+#. Author URI of the plugin
+msgid "https://www.siteground.com"
+msgstr "https://it.siteground.com/"
