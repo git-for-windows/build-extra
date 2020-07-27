@@ -205,13 +205,6 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
 	pacman-key --populate git-for-windows
 
-	# TODO: fix this awful hack:
-
-	curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
-	curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig
-	pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz{.sig,}
-	pacman -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
-
 	# .bat files in /mingw{32,64}/bin are non-portable because they
 	# typically contain absolute paths
 	find /mingw*/bin/ -name \*.bat -exec rm {} \;
