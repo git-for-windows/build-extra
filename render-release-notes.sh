@@ -209,6 +209,7 @@ export PATH="$PATH:$(readlink -f "$SCRIPT_PATH")/../../bin"
 # Install markdown
 type markdown ||
 pacman -Sy --noconfirm markdown ||
+pacman -S --noconfirm markdown ||
 die "Could not install markdown"
 
 test -f "$OUTPUTDIR${OUTPUTDIR:+/}Release.html" &&
