@@ -206,16 +206,10 @@ SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 test -x /usr/bin/markdown ||
 export PATH="$PATH:$(readlink -f "$SCRIPT_PATH")/../../bin"
 
-# TODO: fix this awful hack:
-
-curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
-curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig
-pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz{.sig,}
-pacman -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
-
 # Install markdown
 type markdown ||
 pacman -Sy --noconfirm markdown ||
+pacman -U --noconfirm markdown ||
 die "Could not install markdown"
 
 test -f "$OUTPUTDIR${OUTPUTDIR:+/}Release.html" &&
