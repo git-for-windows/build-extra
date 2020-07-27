@@ -262,8 +262,12 @@ sync () { # [--force]
 		die "Could not update packages in %s\n" "$sdk"
 
 		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
-			pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
-			pacman-key --populate git-for-windows' ||
+			(pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
+				pacman-key --populate git-for-windows ) &&
+			( curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz &&
+			  curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig &&
+			  pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz{.sig,} &&
+			  pacman -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz )' ||
 		die "Could not re-populate git-for-windows-keyring\n"
 
 		process_keep_despite_upgrade --keep "$sdk" ||
@@ -285,9 +289,13 @@ sync () { # [--force]
 			die 'Could not copy back files-to-keep\n'
 
 			"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
-				pacman-key --list-keys BB3AA74136C569BB \
+				(pacman-key --list-keys BB3AA74136C569BB \
 					>/dev/null ||
-				pacman-key --populate git-for-windows' ||
+					pacman-key --populate git-for-windows) &&
+				( curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz &&
+				  curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig &&
+				  pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz{.sig,} &&
+				  pacman -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz )' ||
 			die "Could not re-populate git-for-windows-keyring\n"
 			;;
 		esac
