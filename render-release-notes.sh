@@ -210,9 +210,7 @@ export PATH="$PATH:$(readlink -f "$SCRIPT_PATH")/../../bin"
 
 curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
 curl -O http://repo.msys2.org/msys/x86_64/msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz.sig
-
-# REMOVE THIS COMMENT. VERY UNSAFE TO DROP SIG-CHECK
-# pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz{.sig,}
+pacman-key --verify msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz{.sig,}
 pacman -U msys2-keyring-r21.b39fb11-1-any.pkg.tar.xz
 
 # Install markdown
