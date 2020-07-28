@@ -251,7 +251,14 @@ sync () { # [--force]
 		die "Could not remove obsolete packages\n"
 
 		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -lc \
-			"pacman.exe -S$y_opt" ||
+			"for key in 4A6129F4E4B84AE46ED7F635628F528CF3053E04
+			 do
+				pacman-key --list-keys \$key >/dev/null 2>&1 || {
+					pacman-key --recv-keys \$key &&
+					pacman-key --lsign-key \$key;
+				} || exit 1
+			 done
+			 pacman.exe -S$y_opt" ||
 		die "Cannot run pacman in %s\n" "$sdk"
 
 		prepare_keep_despite_upgrade "$sdk" ||
