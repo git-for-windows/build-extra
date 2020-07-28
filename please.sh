@@ -251,7 +251,8 @@ sync () { # [--force]
 		die "Could not remove obsolete packages\n"
 
 		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -lc \
-			"for key in 4A6129F4E4B84AE46ED7F635628F528CF3053E04
+			"for key in 4A6129F4E4B84AE46ED7F635628F528CF3053E04 \
+				5F944B027F7FE2091985AA2EFA11531AA0AA7F57
 			 do
 				pacman-key --list-keys \$key >/dev/null 2>&1 || {
 					pacman-key --recv-keys \$key &&
