@@ -37,6 +37,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.28.0](https://github.com/git/git/blob/v2.28.0/Documentation/RelNotes/2.28.0.txt).
 * Comes with [subversion v1.14.0](https://svn.apache.org/repos/asf/subversion/tags/1.14.0/CHANGES).
 * [Comes with the designated successor](https://github.com/git-for-windows/build-extra/pull/294) of Git Credential Manager for Windows (GCM for Windows), [the cross-platform Git Credential Manager Core](https://github.com/microsoft/git-credential-manager-core). For now, this is opt-in, with the idea of eventually retiring GCM for Windows.
 * Comes with [cURL v7.71.1](https://curl.haxx.se/changes.html#7_71_1).
