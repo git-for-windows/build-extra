@@ -593,7 +593,7 @@ static void create_tooltip(HWND hwnd, LPWSTR tooltip_text) {
 		InitCommonControlsEx(&iccex);
 	}
 
-	tooltip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
+	tooltip = CreateWindowExW(WS_EX_TOPMOST, TOOLTIPS_CLASSW, NULL,
 				 WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
 				 CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 				 hwnd, NULL, instance, NULL);
