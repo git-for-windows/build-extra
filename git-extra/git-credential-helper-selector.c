@@ -662,7 +662,8 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 			}
 		}
 
-		hwnd3 = CreateWindowW(L"Button", L"Always use this from now on",
+		hwnd3 = CreateWindowW(L"Button",
+				      L"&Always use this from now on",
 				      WS_TABSTOP | WS_VISIBLE | WS_CHILD |
 				      BS_CHECKBOX,
 				      2 * offset_x,
