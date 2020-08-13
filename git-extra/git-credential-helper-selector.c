@@ -198,7 +198,7 @@ static int spawn_process(LPWSTR exe, LPWSTR cmdline,
 			    CREATE_NO_WINDOW,
 			    NULL, NULL,
 			    &si, &pi)) {
-		fwprintf(stderr, L"Could not spawn `%s`: %d\n",
+		fwprintf(stderr, L"Could not spawn `%S`: %d\n",
 			 cmdline, (int)GetLastError());
 		res = -1;
 		goto spawn_process_finish;
@@ -237,7 +237,7 @@ static int spawn_process(LPWSTR exe, LPWSTR cmdline,
 		if (!wcs_len && data.len) {
 			WCHAR err[65536];
 			swprintf(err, 65535,
-				 L"Could not convert output of `%s` to Unicode",
+				 L"Could not convert output of `%S` to Unicode",
 				 cmdline);
 			err[65535] = L'\0';
 			MessageBoxW(NULL, err, L"Error", MB_OK);
@@ -271,7 +271,7 @@ static int write_config(void)
 	WCHAR command_line[32768];
 
 	swprintf(command_line, sizeof(command_line) / sizeof(*command_line) - 1,
-		 L"git config --global credential.helperselector.selected \"%s\"", helper_name[selected_helper]);
+		 L"git config --global credential.helperselector.selected \"%S\"", helper_name[selected_helper]);
 	return spawn_process(find_exe(L"git.exe"), command_line, 0, 0, NULL);
 }
 
@@ -404,10 +404,10 @@ static int discover_config_to_persist_to(void)
 				MessageBoxW(NULL, L"Out of memory!", L"Error", MB_OK);
 				exit(1);
 			}
-			swprintf(persist_to_config_option, len, L"-f %s", quoted);
+			swprintf(persist_to_config_option, len, L"-f %S", quoted);
 			free(quoted);
 			swprintf(persist_tooltip, len2,
-				 L"Set credential.helper in '%s'", output + 5);
+				 L"Set credential.helper in '%S'", output + 5);
 			free(output);
 			return 0;
 		}
@@ -457,7 +457,7 @@ static int persist_choice(void)
 		*(q++) = L'\0';
 	}
 
-	swprintf(command_line, 65535, L"git config %s credential.helper %s",
+	swprintf(command_line, 65535, L"git config %S credential.helper %S",
 		 persist_to_config_option, quote(escaped));
 	return spawn_process(find_exe(L"git.exe"), command_line, 0, 0, NULL);
 }
@@ -507,7 +507,7 @@ out_of_memory:
 			size_t len = wcslen(find_data.cFileName), i;
 
 			if (len < pattern_suffix_len - 2 || wcsnicmp(pattern_suffix + 1, find_data.cFileName, pattern_suffix_len - 2)) {
-				fwprintf(stderr, L"Unexpected entry: '%s'\n", find_data.cFileName);
+				fwprintf(stderr, L"Unexpected entry: '%S'\n", find_data.cFileName);
 				fflush(stderr);
 				goto next_file;
 			}
@@ -593,7 +593,7 @@ static void create_tooltip(HWND hwnd, LPWSTR tooltip_text) {
 		InitCommonControlsEx(&iccex);
 	}
 
-	tooltip = CreateWindowEx(WS_EX_TOPMOST, TOOLTIPS_CLASS, NULL,
+	tooltip = CreateWindowExW(WS_EX_TOPMOST, TOOLTIPS_CLASSW, NULL,
 				 WS_POPUP | TTS_NOPREFIX | TTS_ALWAYSTIP,
 				 CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
 				 hwnd, NULL, instance, NULL);
@@ -662,7 +662,8 @@ static LRESULT CALLBACK window_proc(HWND hwnd, UINT message, WPARAM wParam,
 			}
 		}
 
-		hwnd3 = CreateWindowW(L"Button", L"Always use this from now on",
+		hwnd3 = CreateWindowW(L"Button",
+				      L"&Always use this from now on",
 				      WS_TABSTOP | WS_VISIBLE | WS_CHILD |
 				      BS_CHECKBOX,
 				      2 * offset_x,
