@@ -33,6 +33,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.28.0 (July 28th 2020)
+
+### Bug Fixes
+
+* The credential helper selector (used as default credential helper in the Portable Git) [now persists the users choice correctly again](https://github.com/git-for-windows/git/issues/2776).
+
 ## Changes since Git for Windows v2.27.0 (June 1st 2020)
 
 ### New Features
