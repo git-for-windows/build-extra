@@ -36,6 +36,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.28.0 (July 28th 2020)
 
+### New Features
+
+* Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/6b642d79378081ddd3aecc0b19477f6ee00a7916) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.6](https://cygwin.com/pipermail/cygwin-announce/2020-July/009605.html).
+
 ### Bug Fixes
 
 * The credential helper selector (used as default credential helper in the Portable Git) [now persists the users choice correctly again](https://github.com/git-for-windows/git/issues/2776).
