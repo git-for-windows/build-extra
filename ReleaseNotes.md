@@ -36,6 +36,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.28.0 (July 28th 2020)
 
+### New Features
+
+* Comes with [cURL v7.72.0](https://curl.haxx.se/changes.html#7_72_0).
+
 ### Bug Fixes
 
 * The credential helper selector (used as default credential helper in the Portable Git) [now persists the users choice correctly again](https://github.com/git-for-windows/git/issues/2776).
