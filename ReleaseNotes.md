@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [cURL v7.72.0](https://curl.haxx.se/changes.html#7_72_0).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.7](https://cygwin.com/pipermail/cygwin-announce/2020-August/009678.html).
+* Comes with [OpenSSH v8.3p1](https://www.openssh.com/txt/release-8.3).
 
 ### Bug Fixes
 
