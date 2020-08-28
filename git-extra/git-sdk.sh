@@ -281,15 +281,15 @@ sdk () {
 			EOF
 		elif test msys2-runtime = "$2"
 		then
-			remotes="$(git -C "$src_cdup_dir"  remote -v)"
+			remotes="$(git -C "$src_dir"  remote -v)"
 			case "$remotes" in *"cygwin	"*) ;;
-			*) git -C "$src_cdup_dir" remote add -f cygwin \
+			*) git -C "$src_dir" remote add -f cygwin \
 				https://github.com/Cygwin/cygwin;; esac
 			case "$remotes" in *"msys2	"*) ;;
-			*) git -C "$src_cdup_dir" remote add -f msys2 \
+			*) git -C "$src_dir" remote add -f msys2 \
 				https://github.com/Alexpux/Cygwin;; esac
 			case "$remotes" in *"git-for-windows	"*) ;;
-			*) git -C "$src_cdup_dir" remote add -f \
+			*) git -C "$src_dir" remote add -f \
 				git-for-windows \
 				https://github.com/git-for-windows/$2;; esac
 		fi
