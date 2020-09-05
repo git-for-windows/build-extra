@@ -1483,6 +1483,8 @@ var
     InputText,OutputText:AnsiString;
     TmpFile:String;
     Res:Longint;
+    CustomEditorExt:String;
+    Show:Integer;
 begin
     if not PathIsValidExecutable(CustomEditorPath) then begin
         Wizardform.NextButton.Enabled:=False;
@@ -1494,7 +1496,13 @@ begin
     InputText:='Please modify this text, e.g. delete it, then save it and exit the editor.'
     SaveStringToFile(TmpFile,InputText,False);
 
-    if not ShellExec('',CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',SW_HIDE,ewWaitUntilTerminated,Res) then begin
+    CustomEditorExt:=ExtractFileExt(CustomEditorPath);
+    if (CompareText(CustomEditorExt,'.bat')=0) or (CompareText(CustomEditorExt,'.cmd')=0) then
+        Show:=SW_HIDE
+    else
+        Show:=SW_SHOW;
+
+    if not ShellExec('',CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',Show,ewWaitUntilTerminated,Res) then begin
         Wizardform.NextButton.Enabled:=False;
         SuppressibleMsgBox('Could not launch: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
         Exit;
