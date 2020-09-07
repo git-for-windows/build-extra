@@ -1765,7 +1765,7 @@ begin
     // 1st choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use the Nano editor by default');
-    Data:='<RED>(NEW!)</RED> <A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window.';
+    Data:='<A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window.';
     if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode] and not EditorAvailable[GE_VisualStudioCodeInsiders] and not EditorAvailable[GE_SublimeText] and not EditorAvailable[GE_Atom]) and not EditorAvailable[GE_VSCodium] then
         Data:=Data+#13+#13+'This is the recommended option for end users if no GUI editors are installed.';
     CreateItemDescription(EditorPage,Data,Top,Left,LblEditor[GE_Nano],False);
@@ -1780,44 +1780,44 @@ begin
     // 3rd choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Notepad++ as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://notepad-plus-plus.org/>Notepad++</A> is a popular GUI editor that can be used by Git.'+#13+#13+'This editor is popular in part due to the vast number of available plugins;'+#13+'However, when configured via this option, Git will call Notepad++ with'+#13+'plugins disabled (to open the editor as quickly as possible).',Top,Left,LblEditor[GE_NotepadPlusPlus],False);
+    CreateItemDescription(EditorPage,'<A HREF=https://notepad-plus-plus.org/>Notepad++</A> is a popular GUI editor that can be used by Git.'+#13+#13+'This editor is popular in part due to the vast number of available plugins;'+#13+'However, when configured via this option, Git will call Notepad++ with'+#13+'plugins disabled (to open the editor as quickly as possible).',Top,Left,LblEditor[GE_NotepadPlusPlus],False);
 
     // 4th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Visual Studio Code as Git'+#39+'s default editor');
     if (VisualStudioCodeUserInstallation=False) then
-        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False)
+        CreateItemDescription(EditorPage,'<A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False)
     else
-        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False);
+        CreateItemDescription(EditorPage,'<A HREF=https://code.visualstudio.com//>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Visual Studio Code as its default editor.',Top,Left,LblEditor[GE_VisualStudioCode],False);
 
     // 5th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Visual Studio Code Insiders as Git'+#39+'s default editor');
     if (VisualStudioCodeInsidersUserInstallation=False) then
-        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com/insiders/>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code Insiders as its default editor.',Top,Left,LblEditor[GE_VisualStudioCodeInsiders],False)
+        CreateItemDescription(EditorPage,'<A HREF=https://code.visualstudio.com/insiders/>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use Visual Studio Code Insiders as its default editor.',Top,Left,LblEditor[GE_VisualStudioCodeInsiders],False)
     else
-        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://code.visualstudio.com/insiders/>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Visual Studio Code Insiders as its default editor.',Top,Left,LblEditor[GE_VisualStudioCodeInsiders],False);
+        CreateItemDescription(EditorPage,'<A HREF=https://code.visualstudio.com/insiders/>Visual Studio Code</A> is an Open Source, lightweight and powerful editor'+#13+'running as a desktop application. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Visual Studio Code Insiders as its default editor.',Top,Left,LblEditor[GE_VisualStudioCodeInsiders],False);
 
     // 6th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Sublime Text as Git'+#39+'s default editor');
     if (SublimeTextUserInstallation=False) then
-        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://www.sublimetext.com/>Sublime text</A> is a lightweight editor which supports a great number'+#13+'of plugins.'+#13+#13+'Use this option to let Git use Sublime Text as its default editor.',Top,Left,LblEditor[GE_SublimeText],False)
+        CreateItemDescription(EditorPage,'<A HREF=https://www.sublimetext.com/>Sublime text</A> is a lightweight editor which supports a great number'+#13+'of plugins.'+#13+#13+'Use this option to let Git use Sublime Text as its default editor.',Top,Left,LblEditor[GE_SublimeText],False)
     else
-        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://www.sublimetext.com/>Sublime text</A> is a lightweight editor which supports a great number'+#13+'of plugins.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Sublime Text as its default editor.',Top,Left,LblEditor[GE_SublimeText],False);
+        CreateItemDescription(EditorPage,'<A HREF=https://www.sublimetext.com/>Sublime text</A> is a lightweight editor which supports a great number'+#13+'of plugins.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Sublime Text as its default editor.',Top,Left,LblEditor[GE_SublimeText],False);
 
     // 7th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Atom as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://atom.io/>Atom</A> is an open source text editor which comes with builtin support'+#13+'for Git and Github.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Atom as its default editor.',Top,Left,LblEditor[GE_Atom],False);
+    CreateItemDescription(EditorPage,'<A HREF=https://atom.io/>Atom</A> is an open source text editor which comes with builtin support'+#13+'for Git and Github.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Atom as its default editor.',Top,Left,LblEditor[GE_Atom],False);
 
     // 8th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use VSCodium as Git'+#39+'s default editor');
     if (VSCodiumUserInstallation=False) then
-        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://vscodium.com///>VSCodium</A> provides Free/Libre Open Source Software Binaries of VSCode with the same features, but without telemetry/tracking of Microsoft or any non-floss code parts. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use VSCodium as its default editor.',Top,Left,LblEditor[GE_VSCodium],False)
+        CreateItemDescription(EditorPage,'<A HREF=https://vscodium.com///>VSCodium</A> provides Free/Libre Open Source Software Binaries of VSCode with the same features, but without telemetry/tracking of Microsoft or any non-floss code parts. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use VSCodium as its default editor.',Top,Left,LblEditor[GE_VSCodium],False)
     else
-        CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://vscodium.com///>VSCodium</A> provides Free/Libre Open Source Software Binaries of VSCode with the same features, but without telemetry/tracking of Microsoft or any non-floss code parts. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use VSCodium as its default editor.',Top,Left,LblEditor[GE_VSCodium],False);
+        CreateItemDescription(EditorPage,'<A HREF=https://vscodium.com///>VSCodium</A> provides Free/Libre Open Source Software Binaries of VSCode with the same features, but without telemetry/tracking of Microsoft or any non-floss code parts. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use VSCodium as its default editor.',Top,Left,LblEditor[GE_VSCodium],False);
 
     // 9th choice
     Top:=TopOfLabels;
@@ -1834,7 +1834,7 @@ begin
     // Custom choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Select other editor as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Use this option to select the path to Git'+#39+'s default editor.',Top,Left,LblEditor[GE_CustomEditor],False);
+    CreateItemDescription(EditorPage,'Use this option to select the path to Git'+#39+'s default editor.',Top,Left,LblEditor[GE_CustomEditor],False);
 
     EditorPage.add('Location of editor (plus command-line options, if necessary):','Executable files|*.exe|All files|*.*','.exe');
     TestCustomEditorButton:=TButton.Create(EditorPage);
