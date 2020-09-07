@@ -330,7 +330,8 @@ const
     GE_SublimeText = 5;
     GE_Atom = 6;
     GE_VSCodium = 7;
-    GE_CustomEditor = 8;
+    GE_Notepad = 8;
+    GE_CustomEditor = 9;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -1817,6 +1818,12 @@ begin
     else
         CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://vscodium.com///>VSCodium</A> provides Free/Libre Open Source Software Binaries of VSCode with the same features, but without telemetry/tracking of Microsoft or any non-floss code parts. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use VSCodium as its default editor.',Top,Left,LblEditor[GE_VSCodium],False);
 
+    // 9th choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use Notepad as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Notepad is a simple GUI editor that comes with windows.',Top,Left,LblEditor[GE_Notepad],False);
+    EditorAvailable[GE_Notepad]:=True;
+
     // Custom choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Select other editor as Git'+#39+'s default editor');
@@ -1877,6 +1884,7 @@ begin
             else
                 CbbEditor.ItemIndex:=GE_VIM;
         end;
+    'Notepad': CbbEditor.ItemIndex:=GE_Notepad;
     'CustomEditor': begin
             CbbEditor.ItemIndex:=GE_CustomEditor;
             EditorPage.Values[0]:=ReplayChoice('Custom Editor Path','');
@@ -3124,7 +3132,9 @@ begin
             GitSystemConfigSet('core.editor','"'+VSCodiumPath+'" --wait')
         else if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+VSCodiumPath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set VSCodium as core.editor in the gitconfig.')
-    end else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then
+    end else if (CbbEditor.ItemIndex=GE_Notepad) then
+        GitSystemConfigSet('core.editor','notepad')
+    else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then
         GitSystemConfigSet('core.editor','"'+CustomEditorPath+'" '+CustomEditorOptions);
 
     {
@@ -3186,6 +3196,8 @@ begin
         Data:='Atom';
     end else if (CbbEditor.ItemIndex=GE_VSCodium) then begin
         Data:='VSCodium';
+    end else if (CbbEditor.ItemIndex=GE_Notepad) then begin
+        Data:='Notepad';
     end else if (CbbEditor.ItemIndex=GE_CustomEditor) then begin
         Data:='CustomEditor'
         CustomEditorData:=EditorPage.Values[0];
