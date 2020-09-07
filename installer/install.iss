@@ -1836,7 +1836,7 @@ begin
     CbbEditor.Items.Add('Select other editor as Git'+#39+'s default editor');
     CreateItemDescription(EditorPage,'Use this option to select the path to Git'+#39+'s default editor.',Top,Left,LblEditor[GE_CustomEditor],False);
 
-    EditorPage.add('Location of editor (plus command-line options, if necessary):','Executable files|*.exe|All files|*.*','.exe');
+    EditorPage.add('Location of editor (plus command-line options, if necessary):','Executable files|*.exe;*.cmd;*.bat|All files|*.*','.exe');
     TestCustomEditorButton:=TButton.Create(EditorPage);
     with TestCustomEditorButton do begin
         Parent:=EditorPage.Surface;
