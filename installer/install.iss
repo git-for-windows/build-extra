@@ -331,7 +331,8 @@ const
     GE_Atom = 6;
     GE_VSCodium = 7;
     GE_Notepad = 8;
-    GE_CustomEditor = 9;
+    GE_Wordpad = 9;
+    GE_CustomEditor = 10;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -1824,6 +1825,12 @@ begin
     CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Notepad is a simple GUI editor that comes with windows.',Top,Left,LblEditor[GE_Notepad],False);
     EditorAvailable[GE_Notepad]:=True;
 
+    // 10th choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use Wordpad as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Wordpad is a basic word processor that comes with windows.'+#13+'It can also be used as a text editor.',Top,Left,LblEditor[GE_Wordpad],False);
+    EditorAvailable[GE_Wordpad]:=True;
+
     // Custom choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Select other editor as Git'+#39+'s default editor');
@@ -1885,6 +1892,7 @@ begin
                 CbbEditor.ItemIndex:=GE_VIM;
         end;
     'Notepad': CbbEditor.ItemIndex:=GE_Notepad;
+    'Wordpad': CbbEditor.ItemIndex:=GE_Wordpad;
     'CustomEditor': begin
             CbbEditor.ItemIndex:=GE_CustomEditor;
             EditorPage.Values[0]:=ReplayChoice('Custom Editor Path','');
@@ -3134,6 +3142,8 @@ begin
             LogError('Could not set VSCodium as core.editor in the gitconfig.')
     end else if (CbbEditor.ItemIndex=GE_Notepad) then
         GitSystemConfigSet('core.editor','notepad')
+    else if (CbbEditor.ItemIndex=GE_Wordpad) then
+        GitSystemConfigSet('core.editor','wordpad')
     else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then
         GitSystemConfigSet('core.editor','"'+CustomEditorPath+'" '+CustomEditorOptions);
 
@@ -3198,6 +3208,8 @@ begin
         Data:='VSCodium';
     end else if (CbbEditor.ItemIndex=GE_Notepad) then begin
         Data:='Notepad';
+    end else if (CbbEditor.ItemIndex=GE_Wordpad) then begin
+        Data:='Wordpad';
     end else if (CbbEditor.ItemIndex=GE_CustomEditor) then begin
         Data:='CustomEditor'
         CustomEditorData:=EditorPage.Values[0];
