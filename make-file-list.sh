@@ -210,7 +210,7 @@ else
 		-e '^/usr/bin/\(ssh-copy-id\|updatedb\|vi\|wordpad\)$' \
 		-e '^/usr/bin/\(\[\|arch\|base32\|base64\|bash\|chcon\)\.exe$' \
 		-e '^/usr/bin/\(chgrp\|chmod\|chown\|chroot\|cksum\)\.exe$' \
-		-e '^/usr/bin/\(csplit\|cygcheck\|cygpath\|cygwin-.*\)\.exe$' \
+		-e '^/usr/bin/\(csplit\|cygcheck\|cygpath\)\.exe$' \
 		-e '^/usr/bin/\(dd\|df\|dir\|dircolors\|du\|expand\)\.exe$' \
 		-e '^/usr/bin/\(factor\|fmt\|fold\|gawk.*\|getconf\)\.exe$' \
 		-e '^/usr/bin/\(getfacl\.exe\|gkill\|groups\|host.*\)\.exe$' \
