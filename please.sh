@@ -4378,8 +4378,13 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		/var/lib/pacman/local/
 
 		# Some other utilities required by `make-file-list.sh`
+		/usr/bin/cat.exe
+		/usr/bin/dirname.exe
 		/usr/bin/grep.exe
+		/usr/bin/ls.exe
 		/usr/bin/sed.exe
+		/usr/bin/sort.exe
+		/usr/bin/uniq.exe
 		/usr/bin/msys-iconv-*.dll
 		/usr/bin/msys-intl-*.dll
 		/usr/bin/msys-pcre*.dll
