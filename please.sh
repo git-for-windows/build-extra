@@ -2709,6 +2709,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 if test 2.11.2 = "$version"
 		 then
 			cygwin_url=https://cygwin.com/ml/cygwin-announce/2018-11/msg00007.html
+		 elif test 3.1.7 = "$version"
+		 then
+			cygwin_url=https://cygwin.com/pipermail/cygwin-announce/2020-August/009678.html
 		 else
 		 	cygwin_url="$(curl -s https://cygwin.com/ |
 			 sed -n '/The most recent version of the Cygwin DLL is/{
