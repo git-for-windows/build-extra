@@ -42,6 +42,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.7](https://cygwin.com/pipermail/cygwin-announce/2020-August/009678.html).
 * Comes with [Git LFS v2.12.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.12.0).
 * Comes with [GNU Privacy Guard v2.2.23](https://lists.gnupg.org/pipermail/gnupg-announce/2020q3/000448.html).
+* Comes with [OpenSSL v1.1.1h](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
 ### Bug Fixes
 
