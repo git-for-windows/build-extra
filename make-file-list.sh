@@ -71,6 +71,19 @@ pacman_list () {
 			-e 's/mingw-w64-/&\\(i686\\|x86_64\\)-/g')\\)\$" |
 		sort |
 		uniq) &&
+
+	case "$package_list" in
+	*mingw-w64-$ARCH-curl*mingw-w64-$ARCH-zstd*) ;; # okay
+	*mingw-w64-$ARCH-curl*)
+		# mingw-w64-zstd is a dependency of mingw-w64-curl, but
+		# v7.72 of the latter is not listing that dependency
+		# (by mistake). Let's make sure that we don't forget
+		# about that dependency.
+		package_list="$package_list
+mingw-w64-$ARCH-zstd"
+		;;
+	esac &&
+
 	if test -n "$PACKAGE_VERSIONS_FILE"
 	then
 		pacman -Q $package_list >"$PACKAGE_VERSIONS_FILE"
@@ -117,11 +130,13 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/bin/svn' \
 	-e '^/usr/bin/xml.*exe$' \
 	-e '^/usr/bin/xslt.*$' \
+	-e '^/mingw../bin/.*zstd\.exe$' \
 	-e '^/mingw../share/doc/openssl/' \
 	-e '^/mingw../share/doc/gettext/' \
 	-e '^/mingw../share/doc/lib' \
 	-e '^/mingw../share/doc/pcre2\?/' \
 	-e '^/mingw../share/doc/git-doc/.*\.txt$' \
+	-e '^/mingw../share/doc/zstd/' \
 	-e '^/mingw../lib/gettext/' -e '^/mingw../share/gettext/' \
 	-e '^/usr/include/' -e '^/mingw../include/' \
 	-e '^/usr/share/doc/' \
