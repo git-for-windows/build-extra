@@ -127,6 +127,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/share/doc/' \
 	-e '^/usr/share/info/' -e '^/mingw../share/info/' \
 	-e '^/mingw../share/git-doc/technical/' \
+	-e '^/mingw../lib/cmake/' \
 	-e '^/mingw../itcl/' \
 	-e '^/mingw../t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
 	-e '^/mingw../bin/\(autopoint\|[a-z]*-config\)$' \
