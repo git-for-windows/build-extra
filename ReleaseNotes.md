@@ -43,9 +43,9 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git LFS v2.12.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.12.0).
 * Comes with [GNU Privacy Guard v2.2.23](https://lists.gnupg.org/pipermail/gnupg-announce/2020q3/000448.html).
 * Comes with [OpenSSL v1.1.1h](https://www.openssl.org/news/openssl-1.1.1-notes.html).
-* Comes with [Git Credential Manager Core v2.0.246.34937](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.246-beta).
 * Comes with [libcbor v0.8.0](https://github.com/PJK/libcbor/releases/tag/0.8.0).
 * Comes with [libfido2 v1.5.0](https://github.com/Yubico/libfido2/releases/tag/1.5.0).
+* Comes with [Git Credential Manager Core v2.0.249.58501](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.249-beta).
 
 ### Bug Fixes
 
