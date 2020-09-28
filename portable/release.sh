@@ -108,7 +108,7 @@ die "Could not generate file list"
 mkdir -p "$SCRIPT_PATH/root/${etc_gitconfig%/*}" &&
 cp /"$etc_gitconfig" "$SCRIPT_PATH/root/$etc_gitconfig" &&
 git config -f "$SCRIPT_PATH/root/$etc_gitconfig" \
-	credential.helper manager ||
+	credential.helper manager-core ||
 die "Could not configure Git-Credential-Manager as default"
 test 64 != $BITNESS ||
 git config -f "$SCRIPT_PATH/root/$etc_gitconfig" --unset pack.packSizeLimit
