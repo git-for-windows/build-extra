@@ -45,8 +45,8 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSL v1.1.1h](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [libcbor v0.8.0](https://github.com/PJK/libcbor/releases/tag/0.8.0).
 * Comes with [libfido2 v1.5.0](https://github.com/Yubico/libfido2/releases/tag/1.5.0).
-* Comes with [Git Credential Manager Core v2.0.249.58501](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.249-beta).
 * Comes with [OpenSSH v8.4p1](https://www.openssh.com/txt/release-8.4).
+* Comes with [Git Credential Manager Core v2.0.252.766](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.252-beta).
 
 ### Bug Fixes
 
