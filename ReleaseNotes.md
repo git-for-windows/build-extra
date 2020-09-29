@@ -55,6 +55,7 @@ This package contains software from a number of other projects including Bash, z
 * The full command-lines of MSYS2 processes (such as `cp.exe`) spawned from Git's Bash [can now be seen in `sysmon`, `wmic` etc](https://github.com/git-for-windows/git/issues/2756) by default.
 * A [bug](https://github.com/git-for-windows/git/issues/2738) preventing Unicode characters from being used in the window title of Git Bash was fixed.
 * OpenSSH was patched to no longer [warn about an "invalid format"](https://github.com/git-for-windows/git/issues/2743) when private and public keys are stored separately.
+* Non-ASCII output of paged Git commands [is now rendered correctly in Windows Terminal](https://github.com/git-for-windows/git/pull/2834).
 
 ## Changes since Git for Windows v2.27.0 (June 1st 2020)
 
