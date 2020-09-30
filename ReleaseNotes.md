@@ -39,6 +39,8 @@ This package contains software from a number of other projects including Bash, z
 
 This version upgrades existing users of [Git Credential Manager for Windows](https://github.com/microsoft/Git-Credential-Manager-for-Windows/) (which was just deprecated) to [Git Credential Manager Core](https://github.com/microsoft/Git-Credential-Manager-Core) ("GCM Core", which is the designated successor of the former). This is necessary because [GitHub deprecated password-based authentication](https://github.blog/changelog/2019-08-08-password-based-http-basic-authentication-deprecation-and-removal/) and intends to remove support for it soon, and GCM Core is prepared for this change.
 
+Also, the option to override the branch name used by `git init` for the initial branch is now [featured prominently](https://github.com/git-for-windows/build-extra/pull/307) in the installer.
+
 ### New Features
 
 * Comes with [cURL v7.72.0](https://curl.haxx.se/changes.html#7_72_0).
@@ -51,6 +53,7 @@ This version upgrades existing users of [Git Credential Manager for Windows](htt
 * Comes with [OpenSSH v8.4p1](https://www.openssh.com/txt/release-8.4).
 * Comes with [Git Credential Manager Core v2.0.252.766](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.252-beta).
 * Existing Git Credential Manager for Windows users are now [automatically upgraded](https://github.com/git-for-windows/build-extra/pull/305) to [Git Credential Manager Core](https://github.com/microsoft/git-credential-manager-core/).
+* Git for Windows' installer learned to [let users override the default branch used by `git init`](https://github.com/git-for-windows/build-extra/pull/307).
 
 ### Bug Fixes
 
