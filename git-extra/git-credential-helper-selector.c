@@ -491,7 +491,7 @@ out_of_memory:
 	selected_helper = 0;
 
 	if (!previously_selected_helper)
-		previously_selected_helper = L"manager";
+		previously_selected_helper = L"manager-core";
 
 	for (p = env; *p; ) {
 		WCHAR *q = wcschr(p, L';');

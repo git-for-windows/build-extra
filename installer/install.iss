@@ -2038,14 +2038,14 @@ begin
 
     GitCredentialManagerPage:=CreatePage(PrevPageID,'Choose a credential helper','Which credential helper should be configured?',TabOrder,Top,Left);
 
-    // 1st choice
-    RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.',TabOrder,Top,Left);
-
-    // 2nd choice
-    RdbGitCredentialManager[GCM_Classic]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager','The <A HREF=https://github.com/Microsoft/Git-Credential-Manager-for-Windows>Git Credential Manager for Windows</A> handles credentials e.g. for Azure'+#13+'DevOps and GitHub (requires .NET framework v4.5.1 or later).',TabOrder,Top,Left);
-
-    // 3rd choice
+    // Git Credential Manager Core
     RdbGitCredentialManager[GCM_Core]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager Core','<RED>(NEW!)</RED> Use the new, <A HREF=https://github.com/microsoft/Git-Credential-Manager-Core>cross-platform version of the Git Credential Manager</A>.'+#13+'See more information about the future of Git Credential Manager <A HREF=https://github.com/microsoft/Git-Credential-Manager-Core/blob/master/docs/faq.md#about-the-project>here</A>.',TabOrder,Top,Left);
+
+    // Git Credential Manager for Windows
+    RdbGitCredentialManager[GCM_Classic]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager','(DEPRECATED) The <A HREF=https://github.com/Microsoft/Git-Credential-Manager-for-Windows>Git Credential Manager for Windows</A> handles credentials e.g.'+#13+'for Azure DevOps and GitHub (requires .NET framework v4.5.1 or later).',TabOrder,Top,Left);
+
+    // No credential helper
+    RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install, if .NET 4.5.1
     // or later is available.
@@ -2055,12 +2055,17 @@ begin
         RdbGitCredentialManager[GCM_Core].Checked:=False;
         RdbGitCredentialManager[GCM_Core].Enabled:=False;
     end else begin
-        case ReplayChoice('Use Credential Manager','Enabled') of
+        case ReplayChoice('Use Credential Manager','Core') of
             'Disabled': RdbGitCredentialManager[GCM_None].Checked:=True;
             'Enabled': RdbGitCredentialManager[GCM_Classic].Checked:=True;
             'Core': RdbGitCredentialManager[GCM_Core].Checked:=True;
         else
             RdbGitCredentialManager[GCM_Classic].Checked:=True;
+        end;
+        // Auto-upgrade GCM to GCM Core in version v2.29.0
+        if RdbGitCredentialManager[GCM_Classic].Checked and (PreviousGitForWindowsVersion<>'') and IsDowngrade(PreviousGitForWindowsVersion,'2.29.0') then begin
+            RdbGitCredentialManager[GCM_Core].Checked:=True;
+            AddToSet(CustomPagesWithUnseenOptions,GitCredentialManagerPage);
         end;
     end;
 
