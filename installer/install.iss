@@ -2042,7 +2042,7 @@ begin
     RdbGitCredentialManager[GCM_Core]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager Core','<RED>(NEW!)</RED> Use the new, <A HREF=https://github.com/microsoft/Git-Credential-Manager-Core>cross-platform version of the Git Credential Manager</A>.'+#13+'See more information about the future of Git Credential Manager <A HREF=https://github.com/microsoft/Git-Credential-Manager-Core/blob/master/docs/faq.md#about-the-project>here</A>.',TabOrder,Top,Left);
 
     // Git Credential Manager for Windows
-    RdbGitCredentialManager[GCM_Classic]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager','(DEPRECATED) The <A HREF=https://github.com/Microsoft/Git-Credential-Manager-for-Windows>Git Credential Manager for Windows</A> handles credentials e.g. for Azure'+#13+'DevOps and GitHub (requires .NET framework v4.5.1 or later).',TabOrder,Top,Left);
+    RdbGitCredentialManager[GCM_Classic]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager','(DEPRECATED) The <A HREF=https://github.com/Microsoft/Git-Credential-Manager-for-Windows>Git Credential Manager for Windows</A> handles credentials e.g.'+#13+'for Azure DevOps and GitHub (requires .NET framework v4.5.1 or later).',TabOrder,Top,Left);
 
     // No credential helper
     RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.',TabOrder,Top,Left);
