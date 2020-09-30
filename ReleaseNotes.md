@@ -37,6 +37,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.28.0 (July 28th 2020)
 
+This version upgrades existing users of [Git Credential Manager for Windows](https://github.com/microsoft/Git-Credential-Manager-for-Windows/) (which was just deprecated) to [Git Credential Manager Core](https://github.com/microsoft/Git-Credential-Manager-Core) ("GCM Core", which is the designated successor of the former). This is necessary because [GitHub deprecated password-based authentication](https://github.blog/changelog/2019-08-08-password-based-http-basic-authentication-deprecation-and-removal/) and intends to remove support for it soon, and GCM Core is prepared for this change.
+
 ### New Features
 
 * Comes with [cURL v7.72.0](https://curl.haxx.se/changes.html#7_72_0).
