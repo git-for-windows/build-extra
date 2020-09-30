@@ -676,14 +676,14 @@ begin
             // exit code 5 means it was already unset, so that's okay
             Result:=True
         else begin
-            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(i)+#10+#13+ReadFileAsString(OutPath)+#10+#13+'stderr:'+#10+#13+ReadFileAsString(ErrPath));
+            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(i)+#13+#10+ReadFileAsString(OutPath)+#13+#10+'stderr:'+#13+#10+ReadFileAsString(ErrPath));
             Result:=False
         end
     end else if Exec(ExpandConstant('{cmd}'),'/C .\{#MINGW_BITNESS}\bin\git.exe config --system '+ShellQuote(Key)+' '+ShellQuote(Value)+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) And (i=0) then
         Result:=True
     else begin
-        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(i)+#10+#13+ReadFileAsString(OutPath)+#10+#13+'stderr:'+#10+#13+ReadFileAsString(ErrPath));
+        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(i)+#13+#10+ReadFileAsString(OutPath)+#13+#10+'stderr:'+#13+#10+ReadFileAsString(ErrPath));
         Result:=False;
     end;
 end;
@@ -1013,7 +1013,7 @@ end;
 
 procedure RecordChoice(PreviousDataKey:Integer;Key,Data:String);
 begin
-    ChosenOptions:=ChosenOptions+Key+': '+Data+#13#10;
+    ChosenOptions:=ChosenOptions+Key+': '+Data+#13+#10;
     SetPreviousData(PreviousDataKey,Key,Data);
     if ShouldSaveInf then begin
         // .inf files do not like keys with spaces.
