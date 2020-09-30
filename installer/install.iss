@@ -333,6 +333,10 @@ const
     GP_Cmd            = 2;
     GP_CmdTools       = 3;
 
+    // Default Branch options.
+    DB_Unspecified    = 1;
+    DB_Manual         = 2;
+
     // Git SSH options.
     GS_OpenSSH        = 1;
     GS_Plink          = 2;
@@ -427,6 +431,11 @@ var
     VSCodiumPath:String;
     CustomEditorPath:String;
     CustomEditorOptions:String;
+
+    // Wizard page and variables for the Default Branch options.
+    DefaultBranchPage:TWizardPage;
+    RdbDefaultBranch:array[DB_Unspecified..DB_Manual] of TRadioButton;
+    EdtDefaultBranch:TEdit;
 
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
@@ -676,14 +685,14 @@ begin
             // exit code 5 means it was already unset, so that's okay
             Result:=True
         else begin
-            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(i)+#10+#13+ReadFileAsString(OutPath)+#10+#13+'stderr:'+#10+#13+ReadFileAsString(ErrPath));
+            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(i)+#13+#10+ReadFileAsString(OutPath)+#13+#10+'stderr:'+#13+#10+ReadFileAsString(ErrPath));
             Result:=False
         end
     end else if Exec(ExpandConstant('{cmd}'),'/C .\{#MINGW_BITNESS}\bin\git.exe config --system '+ShellQuote(Key)+' '+ShellQuote(Value)+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) And (i=0) then
         Result:=True
     else begin
-        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(i)+#10+#13+ReadFileAsString(OutPath)+#10+#13+'stderr:'+#10+#13+ReadFileAsString(ErrPath));
+        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(i)+#13+#10+ReadFileAsString(OutPath)+#13+#10+'stderr:'+#13+#10+ReadFileAsString(ErrPath));
         Result:=False;
     end;
 end;
@@ -1013,7 +1022,7 @@ end;
 
 procedure RecordChoice(PreviousDataKey:Integer;Key,Data:String);
 begin
-    ChosenOptions:=ChosenOptions+Key+': '+Data+#13#10;
+    ChosenOptions:=ChosenOptions+Key+': '+Data+#13+#10;
     SetPreviousData(PreviousDataKey,Key,Data);
     if ShouldSaveInf then begin
         // .inf files do not like keys with spaces.
@@ -1259,7 +1268,10 @@ begin
             end;
             '<RED>': begin
                 Untagged:=Untagged+SubString(Description,1,i-1);
-                RowPrefix:=RowPrefix+SubString(Description,1,i-1);
+                if (Description[1]=#10) then
+                    RowPrefix:=RowPrefix+SubString(Description,2,i-2)
+                else
+                    RowPrefix:=RowPrefix+SubString(Description,1,i-1);
                 Description:=SubString(Description,i+5,-1);
                 i:=Pos('</RED>',Description);
                 if (i=0) then LogError('Could not find </RED> in '+Description);
@@ -1300,7 +1312,10 @@ begin
             end;
             '<A HREF=': begin
                 Untagged:=Untagged+SubString(Description,1,i-1);
-                RowPrefix:=RowPrefix+SubString(Description,1,i-1);
+                if Description[1]=#10 then
+                    RowPrefix:=RowPrefix+SubString(Description,2,i-2)
+                else
+                    RowPrefix:=RowPrefix+SubString(Description,1,i-1);
                 Description:=SubString(Description,i+8,-1);
                 i:=Pos('>',Description);
                 if (i=0) then LogError('Could not find > in '+Description);
@@ -1604,6 +1619,14 @@ begin
     end;
 end;
 
+procedure DefaultBranchOptionChanged(Sender: TObject);
+begin
+    EdtDefaultBranch.Enabled:=RdbDefaultBranch[DB_Manual].Checked;
+    if EdtDefaultBranch.Enabled and (WizardForm.CurPageID=DefaultBranchPage.ID) then
+        // If the manual option was just checked, move the focus to the text box
+        WizardForm.ActiveControl:=EdtDefaultBranch;
+end;
+
 procedure QueryUninstallValues; forward;
 
 procedure InitializeWizard;
@@ -1612,6 +1635,7 @@ var
     PuTTYSessions,EnvSSH:TArrayOfString;
     BtnPlink:TButton;
     Data:String;
+    LblInfo:TLabel;
 begin
     InferredDefaultKeys:=TStringList.Create;
     InferredDefaultValues:=TStringList.Create;
@@ -1833,6 +1857,50 @@ begin
         CbbEditor.ItemIndex:=GE_VIM;
     end;
     EditorSelectionChanged(NIL);
+
+    (*
+     * Create a custom page for modifying the default branch.
+     *)
+
+    DefaultBranchPage:=CreatePage(PrevPageID,'Adjusting the name of the initial branch in new repositories','What would you like Git to name the initial branch after "git init"?',TabOrder,Top,Left);
+
+    // 1st choice
+    RdbDefaultBranch[DB_Unspecified]:=CreateRadioButton(DefaultBranchPage,'Let Git decide','Let Git use its default branch name (currently: "master") for the initial branch'+#13+'in newly created repositories. The Git project <A HREF=https://sfconservancy.org/news/2020/jun/23/gitbranchname/>intends</A> to change this default to'+#13+'a more inclusive name in the near future.',TabOrder,Top,Left);
+    RdbDefaultBranch[DB_Unspecified].OnClick:=@DefaultBranchOptionChanged;
+
+    // 2nd choice
+    RdbDefaultBranch[DB_Manual]:=CreateRadioButton(DefaultBranchPage,'Override the default branch name for new repositories','<RED>NEW!</RED> Many teams already renamed their default branches; common choices are'+#13+'"main", "trunk" and "development". Specify the name "git init" should use for the'+#13+'initial branch:',TabOrder,Top,Left);
+    RdbDefaultBranch[DB_Manual].OnClick:=@DefaultBranchOptionChanged;
+
+    // Text field for the overridden branch name
+    Top:=Top-13;
+    EdtDefaultBranch:=TEdit.Create(DefaultBranchPage);
+    EdtDefaultBranch.Parent:=DefaultBranchPage.Surface;
+    EdtDefaultBranch.Left:=ScaleX(Left+24);
+    EdtDefaultBranch.Top:=ScaleY(Top);
+    EdtDefaultBranch.Width:=ScaleX(158);
+    EdtDefaultBranch.Height:=ScaleY(13);
+    EdtDefaultBranch.TabOrder:=TabOrder;
+    TabOrder:=TabOrder+1;
+    EdtDefaultBranch.Text:='main';
+    EdtDefaultBranch.Enabled:=False;
+    Top:=Top+13+24;
+
+    LblInfo:=TLabel.Create(DefaultBranchPage);
+    LblInfo.Parent:=DefaultBranchPage.Surface;
+    LblInfo.Caption:='This setting does not affect existing repositories.';
+    LblInfo.Left:=ScaleX(Left);
+    LblInfo.Top:=ScaleY(Top);
+
+    // Restore the setting chosen during a previous install.
+    Data:=ReplayChoice('Default Branch Option','');
+    case Data of
+        '': RdbDefaultBranch[DB_Unspecified].Checked:=True;
+    else begin
+        RdbDefaultBranch[DB_Manual].Checked:=True;
+        EdtDefaultBranch.Text:=Data;
+        EdtDefaultBranch.Enabled:=True;
+    end end;
 
     (*
      * Create a custom page for modifying the environment.
@@ -2867,6 +2935,11 @@ begin
         end;
     end;
 
+    if RdbDefaultBranch[DB_Manual].Checked then
+        GitSystemConfigSet('init.defaultBranch',EdtDefaultBranch.Text)
+    else
+        GitSystemConfigSet('init.defaultBranch',#0);
+
     // Get the current user's directories in PATH.
     EnvPath:=GetEnvStrings('PATH',IsAdminLoggedOn);
 
@@ -3083,6 +3156,12 @@ begin
     end;
     RecordChoice(PreviousDataKey,'Editor Option',Data);
     RecordChoice(PreviousDataKey,'Custom Editor Path',CustomEditorData);
+
+    // Default Branch options.
+    Data:='';
+    if RdbDefaultBranch[DB_Manual].Checked then
+        Data:=EdtDefaultBranch.Text;
+    RecordChoice(PreviousDataKey,'Default Branch Option',Data);
 
     // Git Path options.
     Data:='';
