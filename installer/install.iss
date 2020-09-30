@@ -1259,7 +1259,10 @@ begin
             end;
             '<RED>': begin
                 Untagged:=Untagged+SubString(Description,1,i-1);
-                RowPrefix:=RowPrefix+SubString(Description,1,i-1);
+                if (Description[1]=#10) then
+                    RowPrefix:=RowPrefix+SubString(Description,2,i-2)
+                else
+                    RowPrefix:=RowPrefix+SubString(Description,1,i-1);
                 Description:=SubString(Description,i+5,-1);
                 i:=Pos('</RED>',Description);
                 if (i=0) then LogError('Could not find </RED> in '+Description);
@@ -1300,7 +1303,10 @@ begin
             end;
             '<A HREF=': begin
                 Untagged:=Untagged+SubString(Description,1,i-1);
-                RowPrefix:=RowPrefix+SubString(Description,1,i-1);
+                if Description[1]=#10 then
+                    RowPrefix:=RowPrefix+SubString(Description,2,i-2)
+                else
+                    RowPrefix:=RowPrefix+SubString(Description,1,i-1);
                 Description:=SubString(Description,i+8,-1);
                 i:=Pos('>',Description);
                 if (i=0) then LogError('Could not find > in '+Description);
