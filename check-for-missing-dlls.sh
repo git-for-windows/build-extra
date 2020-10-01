@@ -51,7 +51,13 @@ do
 	do
 		case "$a,$b" in
 		*.exe:,*|*.dll:,*) current="${a%:}";;
-		dll,name:)
+		*.dll,"=>") # `ldd` output
+			case "$dlls" in
+			*"/$a$LF"*) ;; # okay, it's included
+			*) echo "$current is missing $a" >&2;;
+			esac
+			;;
+		dll,name:) # `objdump -p` output
 			case "$dlls" in
 			*"/$c$LF"*) ;; # okay, it's included
 			*) echo "$current is missing $c" >&2;;
