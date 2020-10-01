@@ -148,6 +148,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../bin/\(autopoint\|[a-z]*-config\)$' \
 	-e '^/mingw../bin/lib\(asprintf\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|quadmath\|stdc++\)[^/]*\.dll$' \
 	-e '^/mingw../bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\)[^/]*\.exe$' \
+	-e '^/mingw../bin/recode-sr-latin.exe$' \
 	-e '^/mingw../bin/\(cert\|p11\|psk\|srp\)tool.exe$' \
 	-e '^/usr/bin/msys-\(ncurses++w6\|asprintf-[0-9]*\|\)\.dll$' \
 	-e '^/mingw../.*/git-\(remote-testsvn\|shell\)\.exe$' \
