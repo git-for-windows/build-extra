@@ -165,6 +165,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
 	-e '^/usr/bin/msys-\(gmpxx\|gnutlsxx\|xml2\|xslt\|exslt\)-.*\.dll$' \
+	-e '^/usr/bin/msys-svn_swig_\(py\|ruby\)-.*\.dll$' \
 	-e '^/usr/bin/dumper\.exe$' \
 	-e '^/usr/share.*/magic$' \
 	-e '^/usr/share/perl5/core_perl/Unicode/' \
