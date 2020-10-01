@@ -197,10 +197,12 @@ else
 		-e '^/git-\(bash\|cmd\)\.exe$' \
 		-e '^/mingw../bin/\(certtool\.exe\|create-shortcut\.exe\)$' \
 		-e '^/mingw../bin/\(curl\.exe\|envsubst\.exe\|gettext\.exe\)$' \
+		-e '^/mingw../bin/.*-\(inflate\|deflate\)hd\.exe$' \
 		-e '^/mingw../bin/\(gettext\.sh\|gettextize\)$' \
 		-e '^/mingw../bin/\(gitk\|git-upload-archive\.exe\)$' \
 		-e '^/mingw../bin/lib\(atomic\|charset\)-.*\.dll$' \
 		-e '^/mingw../bin/libgcc_s_seh-.*\.dll$' \
+		-e '^/mingw../bin/libjemalloc\.dll$' \
 		-e '^/mingw../bin/lib\(gomp\|jansson\|minizip\)-.*\.dll$' \
 		-e '^/mingw../bin/libvtv.*\.dll$' \
 		-e '^/mingw../bin/libpcreposix.*\.dll$' \
