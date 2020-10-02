@@ -63,6 +63,7 @@ Also, the option to override the branch name used by `git init` for the initial 
 * OpenSSH was patched to no longer [warn about an "invalid format"](https://github.com/git-for-windows/git/issues/2743) when private and public keys are stored separately.
 * Non-ASCII output of paged Git commands [is now rendered correctly in Windows Terminal](https://github.com/git-for-windows/git/pull/2834).
 * It is [now possible](https://github.com/git-for-windows/build-extra/pull/303) to use `wordpad.exe` as Git's editor of choice.
+* When using Git via the "Run As..." function, [it now uses the correct home directory](https://github.com/git-for-windows/git/pull/2725).
 
 ## Changes since Git for Windows v2.27.0 (June 1st 2020)
 
