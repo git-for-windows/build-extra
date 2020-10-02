@@ -146,8 +146,11 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../itcl/' \
 	-e '^/mingw../t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
 	-e '^/mingw../bin/\(autopoint\|[a-z]*-config\)$' \
-	-e '^/mingw../bin/lib\(asprintf\|gettext\|gnutlsxx\|pcre[013-9a-oq-z]\|quadmath\|stdc++\)[^/]*\.dll$' \
+	-e '^/mingw../bin/lib\(asprintf\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|quadmath\|stdc++\)[^/]*\.dll$' \
 	-e '^/mingw../bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\)[^/]*\.exe$' \
+	-e '^/mingw../bin/recode-sr-latin.exe$' \
+	-e '^/mingw../bin/\(cert\|p11\|psk\|srp\)tool.exe$' \
+	-e '^/usr/bin/msys-\(ncurses++w6\|asprintf-[0-9]*\|\)\.dll$' \
 	-e '^/mingw../.*/git-\(remote-testsvn\|shell\)\.exe$' \
 	-e '^/mingw../.*/git-cvsserver.*$' \
 	-e '^/mingw../.*/gitweb/' \
@@ -161,7 +164,10 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
 	-e '^/mingw../share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
-	-e '^/usr/bin/dumper\.exe$' \
+	-e '^/usr/bin/msys-\(gmpxx\|gnutlsxx\|xml2\|xslt\|exslt\)-.*\.dll$' \
+	-e '^/usr/bin/msys-svn_swig_\(py\|ruby\)-.*\.dll$' \
+	-e '^/usr/bin/\(dumper\|sasl.*\)\.exe$' \
+	-e '^/usr/lib/gio/' -e '^/usr/lib/sasl2/msys-sasldb-.*\.dll$' \
 	-e '^/usr/share.*/magic$' \
 	-e '^/usr/share/perl5/core_perl/Unicode/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
@@ -191,10 +197,12 @@ else
 		-e '^/git-\(bash\|cmd\)\.exe$' \
 		-e '^/mingw../bin/\(certtool\.exe\|create-shortcut\.exe\)$' \
 		-e '^/mingw../bin/\(curl\.exe\|envsubst\.exe\|gettext\.exe\)$' \
+		-e '^/mingw../bin/.*-\(inflate\|deflate\)hd\.exe$' \
 		-e '^/mingw../bin/\(gettext\.sh\|gettextize\)$' \
 		-e '^/mingw../bin/\(gitk\|git-upload-archive\.exe\)$' \
 		-e '^/mingw../bin/lib\(atomic\|charset\)-.*\.dll$' \
-		-e '^/mingw../bin/lib\(gcc_s_seh\|gmpxx\)-.*\.dll$' \
+		-e '^/mingw../bin/libgcc_s_seh-.*\.dll$' \
+		-e '^/mingw../bin/libjemalloc\.dll$' \
 		-e '^/mingw../bin/lib\(gomp\|jansson\|minizip\)-.*\.dll$' \
 		-e '^/mingw../bin/libvtv.*\.dll$' \
 		-e '^/mingw../bin/libpcreposix.*\.dll$' \
@@ -247,14 +255,14 @@ else
 		-e '^/usr/bin/msys-\(atomic\|charset\|cilkrts\)-.*\.dll$' \
 		-e '^/usr/bin/msys-\(hdb\|kadm5\|kafs\|kdc\|otp\|sl\).*\.dll$' \
 		-e '^/usr/bin/msys-sqlite3[a-z].*\.dll$' \
-		-e '^/usr/bin/msys-\(gmpxx\|gomp.*\|vtv.*\)-.*\.dll$' \
+		-e '^/usr/bin/msys-\(gomp.*\|vtv.*\)-.*\.dll$' \
 		-e '^/usr/lib/\(awk\|coreutils\|gawk\|openssl\|ssh\)/' \
 		-e '^/usr/libexec/\(bigram\|code\|frcode\)\.exe$' \
 		-e '^/usr/share/\(cygwin\|git\)/' \
 		-e '^/usr/ssl/misc/' \
 		-e '^/usr/bin/\(captoinfo\|clear\|infocmp\|infotocap\)\.exe$' \
 		-e '^/usr/bin/\(reset\|tabs\|tic\|toe\|tput\|tset\)\.exe$' \
-		-e '^/usr/bin/msys-\(formw6\|menuw6\|ncurses++w6\)\.dll$' \
+		-e '^/usr/bin/msys-\(formw6\|menuw6\)\.dll$' \
 		-e '^/usr/bin/msys-\(panelw6\|ticw6\)\.dll$' \
 		-e '^/usr/\(lib\|share\)/terminfo/' -e '^/usr/share/tabset/' \
 		-e "^\\($(echo $EXTRA_FILE_EXCLUDES |
