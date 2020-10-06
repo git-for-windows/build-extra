@@ -906,11 +906,12 @@ begin
             Result:=Result+1;
 end;
 
-function IsDowngrade(CurrentVersion,PreviousVersion:String):Boolean;
+function IsDowngrade(CurrentVersion:String):Boolean;
 var
-    Path:String;
+    Path,PreviousVersion:String;
     i,j,CurrentLength,PreviousLength:Integer;
 begin
+    PreviousVersion:=PreviousGitForWindowsVersion;
     Result:=(VersionCompare(CurrentVersion,PreviousVersion)<0);
 #ifdef GIT_VERSION
     if Result or (CountDots(CurrentVersion)>3) or (CountDots(PreviousVersion)>3) then begin
@@ -926,13 +927,16 @@ begin
 #endif
 end;
 
-function IsUpgrade(CurrentVersion,PreviousVersion:String):Boolean;
+function IsUpgrade(CurrentVersion:String):Boolean;
+var
+    PreviousVersion:String;
 begin
+    PreviousVersion:=PreviousGitForWindowsVersion;
     // It is not an upgrade:
     // - if there was no previous version
     // - or if the previous version is identical to the current one (re-install)
     // - or if it is actually a downgrade
-    Result:=(PreviousVersion<>'') and (CurrentVersion<>PreviousVersion) and not IsDowngrade(CurrentVersion,PreviousVersion)
+    Result:=(PreviousVersion<>'') and (CurrentVersion<>PreviousVersion) and not IsDowngrade(CurrentVersion)
 end;
 
 { Represent a set as a string of comma-separated values }
@@ -1004,7 +1008,7 @@ begin
 #if APP_VERSION!='0-test'
     if Result and not ParamIsSet('ALLOWDOWNGRADE') then begin
         CurrentVersion:=ExpandConstant('{#APP_VERSION}');
-        if IsDowngrade(CurrentVersion,PreviousGitForWindowsVersion) then begin
+        if IsDowngrade(CurrentVersion) then begin
             if WizardSilent() and (ParamIsSet('SKIPDOWNGRADE') or ParamIsSet('VSNOTICE')) then begin
                 Msg:='Skipping downgrade from '+PreviousGitForWindowsVersion+' to '+CurrentVersion;
                 if ParamIsSet('SKIPDOWNGRADE') or (ExpandConstant('{log}')='') then
@@ -1658,7 +1662,7 @@ begin
         Caption:='&Only show new options';
         Width:=GetTextWidth(Caption,Font)+20; // 20 is the estimated width of the checkbox itself
         Left:=WizardForm.BackButton.Left-Width-(WizardForm.CancelButton.Left-WizardForm.NextButton.Left-WizardForm.NextButton.Width);
-        Checked:=IsUpgrade(ExpandConstant('{#APP_VERSION}'),PreviousGitForWindowsVersion);
+        Checked:=IsUpgrade(ExpandConstant('{#APP_VERSION}'));
         OnClick:=@AdjustNextButtonLabel;
         Height:=WizardForm.CancelButton.Height;
         Top:=WizardForm.CancelButton.Top;
@@ -2131,7 +2135,7 @@ begin
             RdbGitCredentialManager[GCM_Core].Checked:=True;
         end;
         // Auto-upgrade GCM to GCM Core in version v2.29.0
-        if RdbGitCredentialManager[GCM_Classic].Checked and ((PreviousGitForWindowsVersion='') or IsDowngrade(PreviousGitForWindowsVersion,'2.29.0')) then begin
+        if RdbGitCredentialManager[GCM_Classic].Checked and ((PreviousGitForWindowsVersion='') or IsUpgrade('2.29.0')) then begin
             RdbGitCredentialManager[GCM_Core].Checked:=True;
             AddToSet(CustomPagesWithUnseenOptions,GitCredentialManagerPage);
         end;
