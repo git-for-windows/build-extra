@@ -54,6 +54,7 @@ Also, the option to override the branch name used by `git init` for the initial 
 * Comes with [Git Credential Manager Core v2.0.252.766](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.252-beta).
 * Existing Git Credential Manager for Windows users are now [automatically upgraded](https://github.com/git-for-windows/build-extra/pull/305) to [Git Credential Manager Core](https://github.com/microsoft/git-credential-manager-core/).
 * Git for Windows' installer learned to [let users override the default branch used by `git init`](https://github.com/git-for-windows/build-extra/pull/307).
+* [The installer size was reduced](https://github.com/git-for-windows/build-extra/pull/309) by dropping a couple unneeded `.dll` files.
 
 ### Bug Fixes
 
