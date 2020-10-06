@@ -30,6 +30,9 @@ else
 	next_line='\n'
 fi
 
+used_dlls_file=/tmp/used-dlls.$$.txt
+trap "rm \"$used_dlls_file\"" EXIT
+
 all_files="$(export ARCH BITNESS && "$thisdir"/make-file-list.sh | tr A-Z a-z)" &&
 usr_bin_dlls="$(echo "$all_files" | grep '^usr/bin/[^/]*\.dll$')" &&
 mingw_bin_dlls="$(echo "$all_files" | grep '^mingw'$BITNESS'/bin/[^/]*\.dll$')" &&
@@ -52,12 +55,14 @@ do
 		case "$a,$b" in
 		*.exe:,*|*.dll:,*) current="${a%:}";;
 		*.dll,"=>") # `ldd` output
+			echo "$a" >>"$used_dlls_file"
 			case "$dlls" in
 			*"/$a$LF"*) ;; # okay, it's included
 			*) echo "$current is missing $a" >&2;;
 			esac
 			;;
 		dll,name:) # `objdump -p` output
+			echo "$c" >>"$used_dlls_file"
 			case "$dlls" in
 			*"/$c$LF"*) ;; # okay, it's included
 			*) echo "$current is missing $c" >&2;;
@@ -67,3 +72,19 @@ do
 	done
 done
 printf "$next_line" >&2
+
+used_dlls_regex="/\\($(sort <"$used_dlls_file" |
+	uniq |
+	sed -e 's/+x/\\+/g' -e 's/\.dll$/\\|/' -e '$s/\\|//' |
+	tr -d '\n')\\)\\.dll\$"
+echo "$all_files" |
+	grep '\.dll$' |
+	grep -v \
+		-e "$used_dlls_regex" \
+		-e '^usr/lib/perl5/' \
+		-e '^usr/lib/gawk/' \
+		-e '^usr/lib/openssl/engines' \
+		-e '^usr/lib/sasl2/' \
+		-e '^mingw../libexec/git-core/\(atlassian\|azuredevops\|bitbucket\|github\|microsoft\|newtonsoft\)\.' \
+		-e '^mingw../lib/\(engines\|reg\|thread\)' |
+	sed 's/^/unused dll: /' >&2
