@@ -2137,7 +2137,7 @@ begin
         // Auto-upgrade GCM to GCM Core in version v2.29.0
         if RdbGitCredentialManager[GCM_Classic].Checked and ((PreviousGitForWindowsVersion='') or IsUpgrade('2.29.0')) then begin
             RdbGitCredentialManager[GCM_Core].Checked:=True;
-            AddToSet(CustomPagesWithUnseenOptions,GitCredentialManagerPage);
+            AddToSet(CustomPagesWithUnseenOptions,GitCredentialManagerPage.ID);
         end;
     end;
 
