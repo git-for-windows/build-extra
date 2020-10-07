@@ -4415,6 +4415,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			/mingw32/bin/libxml2-[0-9]*.dll
 			/mingw32/bin/libgmodule-[0-9]*.dll
 			/mingw32/bin/libzstd*.dll
+			/mingw32/bin/libffi-[0-9]*.dll
 			EOF
 			;;
 		*)
