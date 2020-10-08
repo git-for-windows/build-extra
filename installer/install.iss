@@ -680,7 +680,7 @@ begin
     OutPath:=ExpandConstant('{tmp}\config-set.out');
     ErrPath:=ExpandConstant('{tmp}\config-set.err');
     if (Value=#0) then begin
-        if Exec(ExpandConstant('{cmd}'),'/C .\{#MINGW_BITNESS}\bin\git.exe config --system --unset '+Key+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
+        if Exec(ExpandConstant('{cmd}'),'/D /C .\{#MINGW_BITNESS}\bin\git.exe config --system --unset '+Key+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) And ((i=0) Or (i=5)) then
             // exit code 5 means it was already unset, so that's okay
             Result:=True
@@ -688,7 +688,7 @@ begin
             LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(i)+#13+#10+ReadFileAsString(OutPath)+#13+#10+'stderr:'+#13+#10+ReadFileAsString(ErrPath));
             Result:=False
         end
-    end else if Exec(ExpandConstant('{cmd}'),'/C .\{#MINGW_BITNESS}\bin\git.exe config --system '+ShellQuote(Key)+' '+ShellQuote(Value)+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
+    end else if Exec(ExpandConstant('{cmd}'),'/D /C .\{#MINGW_BITNESS}\bin\git.exe config --system '+ShellQuote(Key)+' '+ShellQuote(Value)+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) And (i=0) then
         Result:=True
     else begin
@@ -729,7 +729,7 @@ begin
     end;
 
     TmpFile:=ExpandConstant('{tmp}\git-config-get.txt');
-    if not Exec(ExpandConstant('{cmd}'),'/C .\{#MINGW_BITNESS}\bin\git.exe config -l -z '+ExtraOptions+' >'+#34+TmpFile+#34,
+    if not Exec(ExpandConstant('{cmd}'),'/D /C .\{#MINGW_BITNESS}\bin\git.exe config -l -z '+ExtraOptions+' >'+#34+TmpFile+#34,
                 AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
         LogError('Unable to get system config');
 
@@ -917,7 +917,7 @@ begin
     if Result or (CountDots(CurrentVersion)>3) or (CountDots(PreviousVersion)>3) then begin
         // maybe the previous version was a prerelease (prereleases have five numbers: v2.24.0-rc1.windows.1 reduces to '2.24.0.1.1')?
         if (RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','InstallPath',Path))
-                and (Exec(ExpandConstant('{cmd}'),'/c ""'+Path+'\cmd\git.exe" version >"'+ExpandConstant('{tmp}')+'\previous.version""','',SW_HIDE,ewWaitUntilTerminated,i))
+                and (Exec(ExpandConstant('{cmd}'),'/d /c ""'+Path+'\cmd\git.exe" version >"'+ExpandConstant('{tmp}')+'\previous.version""','',SW_HIDE,ewWaitUntilTerminated,i))
                 and (i=0) then begin
             CurrentVersion:='{#GIT_VERSION}';
             PreviousVersion:=ReadFileAsString(ExpandConstant('{tmp}\previous.version'));
@@ -1123,7 +1123,7 @@ function IsOriginalUserAdmin():Boolean;
 var
     ResultCode:Integer;
 begin
-    if not ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c net session >"{tmp}\net-session.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode) then
+    if not ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/d /c net session >"{tmp}\net-session.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode) then
         ResultCode:=-1;
     Result:=(ResultCode=0);
 end;
@@ -1153,7 +1153,7 @@ begin
     end else begin
         // maybe rights assigned through group policy without enabling developer mode?
         // let's test by creating a symbolic link
-        ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
+        ExecAsOriginalUser(ExpandConstant('{cmd}'),ExpandConstant('/d /c mklink /d "{tmp}\symbolic link" "{tmp}" >"{tmp}\symlink test.txt"'),'',SW_HIDE,ewWaitUntilTerminated,ResultCode);
         Result:=DirExists(ExpandConstant('{tmp}\symbolic link'));
     end;
 end;
@@ -2275,7 +2275,7 @@ begin
                 if not FileExists(ExpandConstant('{tmp}\blocked-file-util.exe')) then
                     ExtractTemporaryFile('blocked-file-util.exe');
                 LogPath:=ExpandConstant('{tmp}\blocking-pids.log');
-                Cmd:='/C ""'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'" 2>"'+LogPath+'""';
+                Cmd:='/D /C ""'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'" 2>"'+LogPath+'""';
                 if not Exec(ExpandConstant('{sys}\cmd.exe'),Cmd,'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then begin
                     Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+ReadFileAsString(LogPath);
                     if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
@@ -2595,7 +2595,7 @@ begin
         '</Task>',False);
     LogPath:=ExpandConstant('{tmp}\remove-autoupdate.log');
     ErrPath:=ExpandConstant('{tmp}\remove-autoupdate.err');
-    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Create /F /TN "Git for Windows Updater" /XML "'+XMLPath+'" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
+    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/D /C schtasks /Create /F /TN "Git for Windows Updater" /XML "'+XMLPath+'" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
         LogError(ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater (output: '+ReadFileAsString(LogPath)+', errors: '+ReadFileAsString(ErrPath)+').'));
 end;
 
@@ -2606,7 +2606,7 @@ var
 begin
     LogPath:=ExpandConstant('{tmp}\remove-autoupdate.log');
     ErrPath:=ExpandConstant('{tmp}\remove-autoupdate.err');
-    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/C schtasks /Delete /F /TN "Git for Windows Updater" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
+    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/D /C schtasks /Delete /F /TN "Git for Windows Updater" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
         LogError(ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater (output: '+ReadFileAsString(LogPath)+', errors: '+ReadFileAsString(ErrPath)+').'));
 end;
 
