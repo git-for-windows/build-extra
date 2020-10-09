@@ -66,6 +66,7 @@ Also, the option to override the branch name used by `git init` for the initial 
 * It is [now possible](https://github.com/git-for-windows/build-extra/pull/303) to use `wordpad.exe` as Git's editor of choice.
 * When using Git via the "Run As..." function, [it now uses the correct home directory](https://github.com/git-for-windows/git/pull/2725).
 * The Git Bash prompt [now works even after calling `set -u`](https://github.com/git-for-windows/git/pull/2800).
+* Git for Windows [can now be installed](https://github.com/git-for-windows/build-extra/pull/312) even with stale `AutoRun` registry entries (e.g. left-overs from a Miniconda installation).
 
 ## Changes since Git for Windows v2.27.0 (June 1st 2020)
 
