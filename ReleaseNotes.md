@@ -43,7 +43,6 @@ Also, the option to override the branch name used by `git init` for the initial 
 
 ### New Features
 
-* Comes with [cURL v7.72.0](https://curl.haxx.se/changes.html#7_72_0).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.7](https://cygwin.com/pipermail/cygwin-announce/2020-August/009678.html).
 * Comes with [Git LFS v2.12.0](https://github.com/git-lfs/git-lfs/releases/tag/v2.12.0).
 * Comes with [GNU Privacy Guard v2.2.23](https://lists.gnupg.org/pipermail/gnupg-announce/2020q3/000448.html).
@@ -55,6 +54,7 @@ Also, the option to override the branch name used by `git init` for the initial 
 * Existing Git Credential Manager for Windows users are now [automatically upgraded](https://github.com/git-for-windows/build-extra/pull/305) to [Git Credential Manager Core](https://github.com/microsoft/git-credential-manager-core/).
 * Git for Windows' installer learned to [let users override the default branch used by `git init`](https://github.com/git-for-windows/build-extra/pull/307).
 * [The installer size was reduced](https://github.com/git-for-windows/build-extra/pull/309) by dropping a couple unneeded `.dll` files.
+* Comes with [cURL v7.73.0](https://curl.haxx.se/changes.html#7_73_0).
 
 ### Bug Fixes
 
