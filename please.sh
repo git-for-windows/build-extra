@@ -2276,6 +2276,14 @@ maybe_force_pkgrel () {
 			sed -i "s/^\\(pkgrel=\\).*/\\1"$((1+${blame##*=}))/ PKGBUILD
 		fi
 	fi
+
+	# make sure that we did not downgrade
+	if test 0 -ge $(($(git diff HEAD -- PKGBUILD |
+		sed -n 's/^\([-+]\)pkgrel=\([0-9]*\)$/\1\2/p' | tr -d '\n')))
+	then
+		die 'pkgrel must not be downgraded:\n\n%s\n' \
+			"$(git diff HEAD -- PKGBUILD)"
+	fi
 }
 
 # --force overwrites existing an Git tag, or existing package files
