@@ -49,7 +49,7 @@ do
 
 	/usr/bin/objdump -p $(echo "$all_files" | sed -ne 's,[][],\\&,g' -e "s,^$dir[^/]*\.\(dll\|exe\)$,/&,p") |
 	tr A-Z\\r a-z\  |
-	grep -e '^.dll name:' -e '^[^ ]*\.\(dll\|exe\):' |
+	grep -e '^.dll name:' -e '^[^ ]*\.\(dll\|exe\):' -e '\.dll =>' |
 	while read a b c d
 	do
 		case "$a,$b" in
