@@ -2228,7 +2228,7 @@ ensure_gpg_key () {
 }
 
 create_bundle_artifact () {
-	test -n "$artifactsdir" || return
+	test -n "$artifactsdir" || return 0
 	upstream_main_branch="$(git rev-parse --verify -q git-for-windows/main)" ||
 	upstream_main_branch="$(git rev-parse --verify -q origin/main)" ||
 	return
