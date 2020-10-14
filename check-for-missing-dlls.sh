@@ -31,7 +31,8 @@ else
 fi
 
 used_dlls_file=/tmp/used-dlls.$$.txt
-trap "rm \"$used_dlls_file\"" EXIT
+tmp_file=/tmp/tmp.$$.txt
+trap "rm \"$used_dlls_file\" \"$tmp_file\"" EXIT
 
 all_files="$(export ARCH BITNESS && "$thisdir"/make-file-list.sh | tr A-Z a-z)" &&
 usr_bin_dlls="$(echo "$all_files" | grep '^usr/bin/[^/]*\.dll$')" &&
@@ -42,14 +43,21 @@ do
 	printf "dir: $dir$next_line\\r" >&2
 
 	case "$dir" in
-	usr/*) dlls="$dlls$LF$usr_bin_dlls$LF";;
-	mingw$BITNESS/*) dlls="$dlls$LF$mingw_bin_dlls$LF";;
+	usr/*) dlls="$sys_dlls$LF$usr_bin_dlls$LF";;
+	mingw$BITNESS/*) dlls="$sys_dlls$LF$mingw_bin_dlls$LF";;
 	*) dlls="$sys_dlls$LF";;
 	esac
 
-	/usr/bin/objdump -p $(echo "$all_files" | sed -ne 's,[][],\\&,g' -e "s,^$dir[^/]*\.\(dll\|exe\)$,/&,p") |
+	paths=$(echo "$all_files" |
+		sed -ne 's,[][],\\&,g' -e "s,^$dir[^/]*\.\(dll\|exe\)$,/&,p")
+	out="$(/usr/bin/objdump -p $paths 2>"$tmp_file")"
+	paths="$(sed -n 's|^/usr/bin/objdump: \([^ :]*\): file format not recognized|\1|p' <"$tmp_file")"
+	test -z "$paths" ||
+	out="$out$LF$(ldd $paths)"
+
+	echo "$out" |
 	tr A-Z\\r a-z\  |
-	grep -e '^.dll name:' -e '^[^ ]*\.\(dll\|exe\):' |
+	grep -e '^.dll name:' -e '^[^ ]*\.\(dll\|exe\):' -e '\.dll =>' |
 	while read a b c d
 	do
 		case "$a,$b" in
