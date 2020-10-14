@@ -55,6 +55,7 @@ Also, the option to override the branch name used by `git init` for the initial 
 * Git for Windows' installer learned to [let users override the default branch used by `git init`](https://github.com/git-for-windows/build-extra/pull/307).
 * [The installer size was reduced](https://github.com/git-for-windows/build-extra/pull/309) by dropping a couple unneeded `.dll` files.
 * Comes with [cURL v7.73.0](https://curl.haxx.se/changes.html#7_73_0).
+* Comes with [GNU TLS v3.6.15](https://lists.gnupg.org/pipermail/gnutls-help/2020-September/004669.html).
 
 ### Bug Fixes
 
