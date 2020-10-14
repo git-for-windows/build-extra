@@ -494,6 +494,15 @@ set_package () {
 		extra_packages="mingw-w64-openssl-pdb"
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
+	gnutls)
+		type=MSYS
+		extra_packages="libgnutls gnutls-devel"
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
+	mingw-w64-gnutls)
+		type=MINGW
+		pkgpath=/usr/src/MINGW-packages/$package
+		;;
 	curl)
 		type=MSYS
 		extra_packages="libcurl libcurl-devel"
@@ -2219,7 +2228,7 @@ ensure_gpg_key () {
 }
 
 create_bundle_artifact () {
-	test -n "$artifactsdir" || return
+	test -n "$artifactsdir" || return 0
 	upstream_main_branch="$(git rev-parse --verify -q git-for-windows/main)" ||
 	upstream_main_branch="$(git rev-parse --verify -q origin/main)" ||
 	return
@@ -2265,7 +2274,33 @@ maybe_force_pkgrel () {
 		   test 0 -lt $(git rev-list --count ${blame:+${blame%% *}..} ${blame_ver:+$blame_ver..} -- PKGBUILD)
 		then
 			sed -i "s/^\\(pkgrel=\\).*/\\1"$((1+${blame##*=}))/ PKGBUILD
+		else
+			case "${PWD##*/MSYS2-packages/}" in
+			perl-*)
+				# Handle perl dependencees: if perl changed, increment pkgrel
+				blame_perl="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgver=/,+1' -- ../perl/PKGBUILD)" &&
+				blame_perl="$(echo "$blame_perl" | sed -e 's/ .*//' -e 's/^0*$//')" &&
+				blame_perl_pkgrel="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgrel=/,+1' "$blame_perl.." -- ../perl/PKGBUILD)" &&
+				if test -n "$blame_perl_pkgrel"
+				then
+					blame_perl="$(echo "$blame_perl_pkgrel" | sed -e 's/ .*//' -e 's/^0*$//')"
+				fi &&
+				if test -n "$blame_perl" &&
+				   test 0 = $(git rev-list --count $blame_perl.. -- ./PKGBUILD)
+				then
+					sed -i "s/^\\(pkgrel=\\).*/\\1"$((1+${blame##*=}))/ PKGBUILD
+				fi
+				;;
+			esac
 		fi
+	fi
+
+	# make sure that we did not downgrade
+	if test 0 -ge $(($(git diff HEAD -- PKGBUILD |
+		sed -n 's/^\([-+]\)pkgrel=\([0-9]*\)$/\1\2/p' | tr -d '\n')))
+	then
+		die 'pkgrel must not be downgraded:\n\n%s\n' \
+			"$(git diff HEAD -- PKGBUILD)"
 	fi
 }
 
@@ -2344,14 +2379,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	test -z "$only_mingw" ||
 	test curl = "$package" ||
 	test openssl = "$package" ||
+	test gnutls = "$package" ||
 	test MINGW = "$type" ||
-	die "The --only-mingw option is supported only for curl\n"
+	die "The --only-mingw option is supported only for openssl/gnutls/curl\n"
 
 	test -z "$skip_mingw" ||
 	test openssl = "$package" ||
+	test gnutls = "$package" ||
 	test curl = "$package" ||
 	test MSYS = "$type" ||
-	die "The --skip-mingw option is supported only for openssl/curl\n"
+	die "The --skip-mingw option is supported only for openssl/gnutls/curl\n"
 
 	test -z "$only_mingw" || test -z "$skip_mingw" ||
 	die "--only-mingw and --skip-mingw are mutually exclusive\n"
@@ -2899,6 +2936,61 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		v="$(echo "$version" | tr -dc 0-9.)" &&
 		url=https://www.openssl.org/news/openssl-$v-notes.html &&
 		release_notes_feature='Comes with [OpenSSL v'$version']('"$url"').'
+		;;
+	gnutls)
+		feed="$(curl -s https://gnutls.org/news.atom)" &&
+		version="$(echo "$feed" |
+			sed -n '/<title>G[Nn][Uu] \?TLS [1-9]/{s/.*TLS \([1-9][0-9.]*\).*/\1/p;q}')" &&
+		test -n "$version" ||
+		die "Could not determine newest GNU TLS version\n"
+
+		test -n "$only_mingw" ||
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(_base_ver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) &&
+		test 0 = $? ||
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
+
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main &&
+
+		(if test -n "$skip_mingw"
+		 then
+			 exit 0
+		 fi &&
+		 set_package mingw-w64-$1 &&
+		 maybe_init_repository "$sdk64$pkgpath" &&
+		 cd "$sdk64$pkgpath" &&
+		 { test -n "$skip_upload" ||
+		   require_push_url origin; } &&
+		 sdk="$sdk64" ff_main_branch || exit
+
+		 sed -i -e 's/^\(_pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "${package#mingw-w64-}: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact &&
+
+		 if test -z "$skip_build"
+		 then
+			build $force $cleanbuild "$package" &&
+			sdk="$sdk64" pkg_copy_artifacts &&
+			install "$package" &&
+			if test -z "$skip_upload"
+			then
+				upload "$package"
+			fi
+		 fi) &&
+		test 0 = $? &&
+
+		v="$(echo "$version" | tr -dc 0-9.)" &&
+		url="$(echo "$feed" |
+			sed -n '/<a href=[^>]*>G[Nn][Uu] \?TLS [1-9]/{s/.*<a href="\?\([^>"]*\).*/\1/p;q}')" &&
+		release_notes_feature='Comes with [GNU TLS v'$version']('"$url"').'
 		;;
 	mingw-w64-wintoast|mingw-w64-cv2pdb)
 		(cd "$sdk64$pkgpath" &&
