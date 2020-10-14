@@ -496,7 +496,7 @@ set_package () {
 		;;
 	gnutls)
 		type=MSYS
-		extra_packages="libgnutls gnutls-devel"
+		extra_packages="libgnutls libgnutls-devel"
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
 	mingw-w64-gnutls)
