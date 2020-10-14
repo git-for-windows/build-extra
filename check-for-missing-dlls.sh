@@ -47,7 +47,10 @@ do
 	*) dlls="$sys_dlls$LF";;
 	esac
 
-	/usr/bin/objdump -p $(echo "$all_files" | sed -ne 's,[][],\\&,g' -e "s,^$dir[^/]*\.\(dll\|exe\)$,/&,p") |
+	paths=$(echo "$all_files" |
+		sed -ne 's,[][],\\&,g' -e "s,^$dir[^/]*\.\(dll\|exe\)$,/&,p")
+	out="$(/usr/bin/objdump -p $paths)"
+	echo "$out" |
 	tr A-Z\\r a-z\  |
 	grep -e '^.dll name:' -e '^[^ ]*\.\(dll\|exe\):' -e '\.dll =>' |
 	while read a b c d
