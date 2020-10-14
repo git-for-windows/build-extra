@@ -42,8 +42,8 @@ do
 	printf "dir: $dir$next_line\\r" >&2
 
 	case "$dir" in
-	usr/*) dlls="$dlls$LF$usr_bin_dlls$LF";;
-	mingw$BITNESS/*) dlls="$dlls$LF$mingw_bin_dlls$LF";;
+	usr/*) dlls="$sys_dlls$LF$usr_bin_dlls$LF";;
+	mingw$BITNESS/*) dlls="$sys_dlls$LF$mingw_bin_dlls$LF";;
 	*) dlls="$sys_dlls$LF";;
 	esac
 
