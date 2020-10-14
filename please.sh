@@ -2274,6 +2274,24 @@ maybe_force_pkgrel () {
 		   test 0 -lt $(git rev-list --count ${blame:+${blame%% *}..} ${blame_ver:+$blame_ver..} -- PKGBUILD)
 		then
 			sed -i "s/^\\(pkgrel=\\).*/\\1"$((1+${blame##*=}))/ PKGBUILD
+		else
+			case "${PWD##*/MSYS2-packages/}" in
+			perl-*)
+				# Handle perl dependencees: if perl changed, increment pkgrel
+				blame_perl="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgver=/,+1' -- ../perl/PKGBUILD)" &&
+				blame_perl="$(echo "$blame_perl" | sed -e 's/ .*//' -e 's/^0*$//')" &&
+				blame_perl_pkgrel="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgrel=/,+1' "$blame_perl.." -- ../perl/PKGBUILD)" &&
+				if test -n "$blame_perl_pkgrel"
+				then
+					blame_perl="$(echo "$blame_perl_pkgrel" | sed -e 's/ .*//' -e 's/^0*$//')"
+				fi &&
+				if test -n "$blame_perl" &&
+				   test 0 = $(git rev-list --count $blame_perl.. -- ./PKGBUILD)
+				then
+					sed -i "s/^\\(pkgrel=\\).*/\\1"$((1+${blame##*=}))/ PKGBUILD
+				fi
+				;;
+			esac
 		fi
 	fi
 
