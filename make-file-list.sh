@@ -164,7 +164,12 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
 	-e '^/mingw../share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
-	-e '^/usr/bin/msys-\(fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|lzma\|xml2\|xslt\|exslt\)-.*\.dll$' \
+	-e '^/usr/bin/msys-\('$(if test i686 = "$ARCH"
+	    then
+		echo 'uuid\|'
+	    else
+		echo 'lzma\|'
+	    fi)'fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(hdb\|history8\|kadm5\|kdc\|otp\|sl\).*\.dll$' \
 	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|pcre2-8\|ssh2\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(ncurses++w6\|asprintf-[0-9]*\|\)\.dll$' \
