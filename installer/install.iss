@@ -1631,6 +1631,28 @@ begin
         WizardForm.ActiveControl:=EdtDefaultBranch;
 end;
 
+procedure DefaultBranchNameChanged(Sender: TObject);
+var
+    IsValidBranchName:Boolean;
+begin
+    if EdtDefaultBranch.Enabled then begin
+        // Disallow illegal ref names
+        with EdtDefaultBranch do
+            IsValidBranchName:=(Text<>'') and (Text<>'@') and
+                    (Pos('..',Text)=0) and (Pos('@{',Text)=0) and (Pos('//',Text)=0) and
+                    (Pos(#8,Text)=0) and (Pos(' ',Text)=0) and (Pos(':',Text)=0) and
+                    (Pos('?',Text)=0) and (Pos('[',Text)=0) and (Pos('\',Text)=0) and
+                    (Pos('^',Text)=0) and (Pos('~',Text)=0) and (Pos(#127,Text)=0) and
+                    (Pos('/.','/'+Text)=0) and (Pos('./',Text+'/')=0) and (Pos('.lock/',Text+'/')=0);
+        if (WizardForm.CurPageID=DefaultBranchPage.ID) then
+            Wizardform.NextButton.Enabled:=IsValidBranchName;
+        if IsValidBranchName then
+            EdtDefaultBranch.Color:=clWhite
+        else
+            EdtDefaultBranch.Color:=clRed;
+    end;
+end;
+
 procedure QueryUninstallValues; forward;
 
 procedure InitializeWizard;
@@ -1888,6 +1910,7 @@ begin
     TabOrder:=TabOrder+1;
     EdtDefaultBranch.Text:='main';
     EdtDefaultBranch.Enabled:=False;
+    EdtDefaultBranch.OnChange:=@DefaultBranchNameChanged;
     Top:=Top+13+24;
 
     LblInfo:=TLabel.Create(DefaultBranchPage);
@@ -1899,11 +1922,13 @@ begin
     // Restore the setting chosen during a previous install.
     Data:=ReplayChoice('Default Branch Option','');
     case Data of
-        '': RdbDefaultBranch[DB_Unspecified].Checked:=True;
+        '':  RdbDefaultBranch[DB_Unspecified].Checked:=True;
+        ' ': RdbDefaultBranch[DB_Unspecified].Checked:=True;
     else begin
         RdbDefaultBranch[DB_Manual].Checked:=True;
         EdtDefaultBranch.Text:=Data;
         EdtDefaultBranch.Enabled:=True;
+        DefaultBranchNameChanged(NIL);
     end end;
 
     (*
@@ -3162,7 +3187,7 @@ begin
     RecordChoice(PreviousDataKey,'Custom Editor Path',CustomEditorData);
 
     // Default Branch options.
-    Data:='';
+    Data:=' ';
     if RdbDefaultBranch[DB_Manual].Checked then
         Data:=EdtDefaultBranch.Text;
     RecordChoice(PreviousDataKey,'Default Branch Option',Data);
