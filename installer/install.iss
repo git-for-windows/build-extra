@@ -1899,7 +1899,8 @@ begin
     // Restore the setting chosen during a previous install.
     Data:=ReplayChoice('Default Branch Option','');
     case Data of
-        '': RdbDefaultBranch[DB_Unspecified].Checked:=True;
+        '':  RdbDefaultBranch[DB_Unspecified].Checked:=True;
+        ' ': RdbDefaultBranch[DB_Unspecified].Checked:=True;
     else begin
         RdbDefaultBranch[DB_Manual].Checked:=True;
         EdtDefaultBranch.Text:=Data;
@@ -3162,7 +3163,7 @@ begin
     RecordChoice(PreviousDataKey,'Custom Editor Path',CustomEditorData);
 
     // Default Branch options.
-    Data:='';
+    Data:=' ';
     if RdbDefaultBranch[DB_Manual].Checked then
         Data:=EdtDefaultBranch.Text;
     RecordChoice(PreviousDataKey,'Default Branch Option',Data);
