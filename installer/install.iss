@@ -2068,7 +2068,7 @@ begin
     CRLFPage:=CreatePage(PrevPageID,'Configuring the line ending conversions','How should Git treat line endings in text files?',TabOrder,Top,Left);
 
     // 1st choice
-    RdbCRLF[GC_CRLFAlways]:=CreateRadioButton(CRLFPage,'Checkout Windows-style, commit Unix-style line endings','Git will convert LF to CRLF when checking out text files. When committing'+#13+'text files, CRLF will be converted to LF. For cross-platform projects,'+#13+'this is the recommended setting on Windows ("core.autocrlf" is set to "true").',TabOrder,Top,Left);
+    RdbCRLF[GC_CRLFAlways]:=CreateRadioButton(CRLFPage,'Checkout Windows-style, commit Unix-style line endings','Git will convert LF to CRLF when checking out text files. When committing'+#13+'text files, CRLF will be converted to LF. For cross-platform projects,'+#13+'this is the recommended setting on Windows ("core.autocrlf" is set to "true").'+#13+#13+'Also consider including a ".gitattributes" file'+#13+'containing "* text=auto" in all cross-platform repositories.',TabOrder,Top,Left);
 
     // 2nd choice
     RdbCRLF[GC_LFOnly]:=CreateRadioButton(CRLFPage,'Checkout as-is, commit Unix-style line endings','Git will not perform any conversion when checking out text files. When'+#13+'committing text files, CRLF will be converted to LF. For cross-platform projects,'+#13+'this is the recommended setting on Unix ("core.autocrlf" is set to "input").',TabOrder,Top,Left);
