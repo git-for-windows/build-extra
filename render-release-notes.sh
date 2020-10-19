@@ -110,7 +110,7 @@ render_release_notes () {
 					$v = "snapshot"
 				}
 
-				s/^<h2>Changes since (?:Git(?: for Windows|-))(.*)/<h2>Changes in $v <small>since \1<\/small>/;
+				s/^<h2>Changes since (?:Git(?: for Windows|-))(.*)/<h2>Changes in $v<br \/><small>since \1<\/small>/;
 
 				if (!$latest) {
 					s/>[^<]*/><a name="latest"$&<\/a>/;
