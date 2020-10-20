@@ -224,7 +224,7 @@ do
 			sf3_url="$azure_blobs_source_url/$filename"
 			;;
 		*)
-			if test crypt != $name &&
+			if test crypt != $name && test perl-Clone != $name &&
 				test ! -d /usr/src/MSYS2-packages/$name
 			then
 				name2="$(cd /usr/src/MSYS2-packages/ &&
