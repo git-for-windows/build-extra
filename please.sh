@@ -737,8 +737,10 @@ pkg_build () {
 		;;
 	MSYS)
 		require msys2-devel binutils
+		opt_j=-j5
 		if test msys2-runtime = "$package"
 		then
+			opt_j=-j1
 			require mingw-w64-cross-crt-git mingw-w64-cross-gcc
 			test ! -d msys2-runtime ||
 			git -C msys2-runtime fetch ||
@@ -775,7 +777,7 @@ pkg_build () {
 			 export PATH=/usr/bin:/opt/bin:$PATH &&
 			 unset ORIGINAL_PATH &&
 			 . /etc/profile &&
-			 MAKEFLAGS=-j5 makepkg -s --noconfirm \
+			 MAKEFLAGS='"$opt_j"' makepkg -s --noconfirm \
 				'"$extra_makepkg_opts"' &&
 			 makepkg --allsource '"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk$pkgpath"
