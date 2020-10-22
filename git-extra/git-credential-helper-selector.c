@@ -291,7 +291,8 @@ static LPWSTR quote(LPWSTR string)
 			while (end[1] == L'\\')
 				end++;
 			len += end - p;
-			if (end[1] == L'"')
+			if (end[1] == L'"' ||
+			    (needs_quotes && end[1] == L'\0'))
 				len += end - p + 1;
 			p = end;
 		}
@@ -313,7 +314,7 @@ static LPWSTR quote(LPWSTR string)
 				memcpy(q, p, (end - p) * sizeof(WCHAR));
 				q += end - p;
 			}
-			if (end[1] == L'"') {
+			if (end[1] == L'"' || end[1] == L'\0') {
 				memcpy(q, p, (end - p + 1) * sizeof(WCHAR));
 				q += end - p + 1;
 			}
