@@ -35,6 +35,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.29.0 (October 19th 2020)
+
+### New Features
+
+* Comes with [patch level 4](https://github.com/git-for-windows/msys2-runtime/commit/38ef7ed98df01ae6cd86c7fafc72d45887daf0c0) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.7](https://cygwin.com/pipermail/cygwin-announce/2020-August/009678.html).
+
 ## Changes since Git for Windows v2.28.0 (July 28th 2020)
 
 This version upgrades existing users of [Git Credential Manager for Windows](https://github.com/microsoft/Git-Credential-Manager-for-Windows/) (which was just deprecated) to [Git Credential Manager Core](https://github.com/microsoft/Git-Credential-Manager-Core) ("GCM Core", which is the designated successor of the former). This is necessary because [GitHub deprecated password-based authentication](https://github.blog/changelog/2019-08-08-password-based-http-basic-authentication-deprecation-and-removal/) and intends to remove support for it soon, and GCM Core is prepared for this change.
