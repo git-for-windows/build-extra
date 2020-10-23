@@ -2743,7 +2743,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			 msys2_runtime_mtime=$(git log -1 --format=%ct \
 				git-for-windows/main --) &&
 			 msys2_package_mtime=$(git -C ../.. log -1 \
-				--format=%ct -- .) &&
+				--format=%ct -G'pkg(rel|ver)' -- PKGBUILD) &&
 			 test $msys2_runtime_mtime -gt $msys2_package_mtime
 			 ;;
 		 esac ||
