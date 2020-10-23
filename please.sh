@@ -2694,6 +2694,15 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 cd src/msys2-runtime ||
 		 die "Invalid worktree for '%s'\n" "$package"
 
+		 case "$(test -x /usr/bin/git && cat .git/objects/info/alternates 2>/dev/null)" in
+		 /*)
+			echo "dissociating worktree, to allow MINGW Git to access the worktree" >&2 &&
+			/usr/bin/git repack -ad &&
+			rm .git/objects/info/alternates ||
+			die "Could not dissociate src/msys2-runtime\n"
+			;;
+		 esac
+
 		 require_remote cygwin \
 			git://sourceware.org/git/newlib-cygwin.git &&
 		 git fetch --tags cygwin &&
