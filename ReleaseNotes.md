@@ -43,6 +43,7 @@ Also, as of v2.29.0, the option to override the branch name used by `git init` f
 
 ### New Features
 
+* Comes with [Git v2.29.1](https://github.com/git/git/blob/v2.29.1/Documentation/RelNotes/2.29.1.txt).
 * The MSYS2 runtime [now optionally supports creating Cygwin-style symbolic links](https://github.com/msys2/msys2-runtime/pull/16) (via setting the environment variable `MSYS=winsymlinks:sysfile`).
 
 ## Changes since Git for Windows v2.28.0 (July 28th 2020)
