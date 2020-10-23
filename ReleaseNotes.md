@@ -1,5 +1,5 @@
-# Git for Windows v2.29.0 Release Notes
-Latest update: October 19th 2020
+# Git for Windows v2.29.1 Release Notes
+Latest update: October 23rd 2020
 
 ## Introduction
 
