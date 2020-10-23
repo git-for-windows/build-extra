@@ -39,7 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* The MSYS2 runtime [now optionally supports creating Cygwin-style symbolic links](https://github.com/msys2/msys2-runtime/pull/16) (via setting the environment variable [`MSYS=winsymlinks:sysfile`].
+* The MSYS2 runtime [now optionally supports creating Cygwin-style symbolic links](https://github.com/msys2/msys2-runtime/pull/16) (via setting the environment variable `MSYS=winsymlinks:sysfile`).
 
 ## Changes since Git for Windows v2.28.0 (July 28th 2020)
 
