@@ -2298,7 +2298,7 @@ maybe_force_pkgrel () {
 	fi
 
 	# make sure that we did not downgrade
-	if test 0 -ge $(($(git diff HEAD -- PKGBUILD |
+	if test 0 -gt $(($(git diff HEAD -- PKGBUILD |
 		sed -n 's/^\([-+]\)pkgrel=\([0-9]*\)$/\1\2/p' | tr -d '\n')))
 	then
 		die 'pkgrel must not be downgraded:\n\n%s\n' \
