@@ -49,7 +49,15 @@ commit_package () {
 }
 
 generate_package_gitignore () {
-	dir="$(cd "${root%/}"/var/lib/pacman/local/ && echo "$1"-[0-9]*)" &&
+	dir="$(cd "${root%/}"/var/lib/pacman/local/ &&
+		case "$1" in
+		mingw-w64-x86_64-libusb-compat-git)
+			echo "$1"-r[0-9]*
+			;;
+		*)
+			echo "$1"-[0-9]*
+			;;
+		esac)" &&
 	case "$dir" in
 	*' '*)
 		die "Multiple packages: $dir"
@@ -172,9 +180,9 @@ ignore)
 
 	case "$*" in
 	-a|--all)
-		set -- $( git -C "${root%/}"/ ls-files --exclude-standard  \
+		set -- $(git -C "${root%/}"/ ls-files --exclude-standard  \
 				--other var/lib/pacman/local/ |
-			sed -n 's|^var/lib/pacman/local/\([^/]*\)-[0-9][-0-9a-z_.]*-[1-9][0-9]*/.*|\1|p' |
+			sed -n 's|^var/lib/pacman/local/\([^/]*\)-r\?[0-9][-0-9a-z_.]*-[1-9][0-9]*/.*|\1|p' |
 			uniq)
 		;;
 	esac
