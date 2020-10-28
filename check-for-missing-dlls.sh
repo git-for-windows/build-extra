@@ -81,7 +81,8 @@ do
 done
 printf "$next_line" >&2
 
-used_dlls_regex="/\\($(sort <"$used_dlls_file" |
+used_dlls_regex="/\\($(test -n "$MINIMAL_GIT" || printf 'p11-kit-trust\\|';
+	sort <"$used_dlls_file" |
 	uniq |
 	sed -e 's/+x/\\+/g' -e 's/\.dll$/\\|/' -e '$s/\\|//' |
 	tr -d '\n')\\)\\.dll\$"

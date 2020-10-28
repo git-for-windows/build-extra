@@ -177,7 +177,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/bin/msys-svn_swig_\(py\|ruby\)-.*\.dll$' \
 	-e '^/usr/bin/\(dumper\|sasl.*\)\.exe$' \
 	-e '^/usr/lib/gio/' -e '^/usr/lib/sasl2/msys-sasldb-.*\.dll$' \
-	-e '^/usr/lib/\(itcl\|tdbc\|pkcs11\|thread\)' \
+	-e '^/usr/lib/\(itcl\|tdbc\|pkcs11/p11-kit-client\|thread\)' \
 	-e '^/usr/share.*/magic$' \
 	-e '^/usr/share/perl5/core_perl/Unicode/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
@@ -264,7 +264,7 @@ else
 		-e '^/usr/bin/msys-\(cilkrts\|kafs\|ssl\)-.*\.dll$' \
 		-e '^/usr/bin/msys-sqlite3[a-z].*\.dll$' \
 		-e '^/usr/bin/msys-\(gomp.*\|vtv.*\)-.*\.dll$' \
-		-e '^/usr/lib/\(awk\|coreutils\|gawk\|openssl\|ssh\)/' \
+		-e '^/usr/lib/\(awk\|coreutils\|gawk\|openssl\|pkcs11\|ssh\)/' \
 		-e '^/usr/libexec/\(bigram\|code\|frcode\)\.exe$' \
 		-e '^/usr/share/\(cygwin\|git\)/' \
 		-e '^/usr/ssl/misc/' \
