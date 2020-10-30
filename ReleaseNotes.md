@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The recent regression where OpenSSH's `copy-ssh-id` [failed to work correctly](https://github.com/git-for-windows/git/issues/2873), was [fixed](https://github.com/git-for-windows/MSYS2-packages/pull/40).
+* A [regression preventing `/usr/bin/update-ca-trust` from working](https://github.com/git-for-windows/git/issues/2874) was fixed.
 
 ## Changes since Git for Windows v2.29.0 (October 19th 2020)
 
