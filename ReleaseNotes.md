@@ -37,6 +37,11 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.29.1 (October 23rd 2020)
 
+### New Features
+
+* Comes with [Git v2.29.2](https://github.com/git/git/blob/v2.29.2/Documentation/RelNotes/2.29.2.txt).
+
+
 ### Bug Fixes
 
 * The recent regression where OpenSSH's `copy-ssh-id` [failed to work correctly](https://github.com/git-for-windows/git/issues/2873), was [fixed](https://github.com/git-for-windows/MSYS2-packages/pull/40).
