@@ -970,6 +970,9 @@ procedure AdjustNextButtonLabel(Sender:TObject);
 begin
     if (CurrentCustomPageID=ProcessesPage.ID) then
         WizardForm.NextButton.Caption:=SetupMessage(msgButtonInstall)
+    else if (CurrentCustomPageID=wpFinished) then
+        // Always let the final page's button read "Finish"
+        WizardForm.NextButton.Caption:=SetupMessage(msgButtonFinish)
     else if IsLastPageBeforeInstall(CurrentCustomPageID) then begin
         RefreshProcessList(NIL);
         if GetArrayLength(Processes)=0 then
@@ -2317,7 +2320,7 @@ begin
         if (IsInSet(AllCustomPages,PageID)) then
             Result:=not IsInSet(CustomPagesWithUnseenOptions,PageID)
         else
-            Result:=(PageID<>wpInfoBefore);
+            Result:=(PageID<>wpInfoBefore) and (PageID<>wpFinished);
     end else
         Result:=False;
 #ifdef DEBUG_WIZARD_PAGE
