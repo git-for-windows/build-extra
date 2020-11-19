@@ -41,6 +41,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [GNU Privacy Guard v2.2.24](https://lists.gnupg.org/pipermail/gnupg-announce/2020q4/000449.html).
 
+### Bug Fixes
+
+* Beyond Compare 4 [can be configured as difftool `bc4` again](https://github.com/git-for-windows/git/issues/2893).
+
 ## Changes since Git for Windows v2.29.2 (October 30th 2020)
 
 This version includes a new Git LFS version to fix [CVE-2020-27955](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-4g4p-42wc-9f3m).
