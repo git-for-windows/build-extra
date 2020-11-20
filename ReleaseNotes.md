@@ -37,9 +37,12 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.29.2(2) (November 4th 2020)
 
+This version updates Git Credential Manager Core to address [CVE-2020-26233](https://github.com/microsoft/Git-Credential-Manager-Core/security/advisories/GHSA-2gq7-ww4j-3m76).
+
 ### New Features
 
 * Comes with [GNU Privacy Guard v2.2.24](https://lists.gnupg.org/pipermail/gnupg-announce/2020q4/000449.html).
+* Comes with [Git Credential Manager Core v2.0.289.48418](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.289-beta).
 
 ### Bug Fixes
 
