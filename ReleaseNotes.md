@@ -39,7 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [GNU Privacy Guard v2.2.24](https://lists.gnupg.org/pipermail/gnupg-announce/2020q4/000449.html).
+* Comes with [GNU Privacy Guard v2.2.25](https://lists.gnupg.org/pipermail/gnupg-announce/2020q4/000450.html).
 
 ### Bug Fixes
 
