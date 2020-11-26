@@ -8,6 +8,7 @@ pkgrel=1
 _realver=$pkgver
 _realtag=v${pkgver%.*}-beta
 pkgdesc="Credential Manager for Git"
+install=git-credential-manager-core.install
 arch=('any')
 project_url="https://github.com/microsoft/Git-Credential-Manager-Core"
 zip_url="${project_url}/releases/download/${_realtag}/gcmcore-win-x86-${_realver}.zip"

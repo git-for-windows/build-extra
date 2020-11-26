@@ -41,7 +41,7 @@ This version updates Git Credential Manager Core to address [CVE-2020-26233](htt
 
 ### New Features
 
-* Comes with [GNU Privacy Guard v2.2.24](https://lists.gnupg.org/pipermail/gnupg-announce/2020q4/000449.html).
+* Comes with [GNU Privacy Guard v2.2.25](https://lists.gnupg.org/pipermail/gnupg-announce/2020q4/000450.html).
 * Comes with [Git Credential Manager Core v2.0.289.48418](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.289-beta).
 
 ### Bug Fixes

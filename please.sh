@@ -1883,6 +1883,20 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 			"$coverity_bin_dir"
 	 fi &&
 	 PATH="$coverity_bin_dir:$PATH" &&
+	 # Coverity has a long-standing bug where it fails to parse two-digit
+	 # major versions of GCC incorrectly Since Synopsys seems to
+	 # be hardly in a rush to fix this (there's no response at
+	 # https://community.synopsys.com/s/question/0D52H000058Z6KvSAK/
+	 # since May 2020), we meddle with Coverity's config files
+	 gcc10_workaround="$(test -d cov-int || gcc -v 2>&1 |
+		sed -n 's/^gcc version \([1-9]\)\([0-9]\)\.\([0-9][0-9]*\)\.\([0-9][0-9]*\).*/s|\\<\\(\1\\)\\?\\(\2\\.\3\\.\4\\)\\>|\1\\2|g/p')" &&
+	 if test -n "$gcc10_workaround"
+	 then
+		rm -f version.o &&
+		cov-build --dir cov-int make DEVELOPER=1 version.o &&
+		find cov-int/emit/* -name \*.xml -exec sed -i "$gcc10_workaround" {} \; &&
+		rm -f version.o
+	 fi &&
 	 cov-build --dir cov-int \
 		make -j15 DEVELOPER=1 CPPFLAGS=-DFLEX_ARRAY=65536 &&
 	 tar caf git-for-windows.lzma cov-int &&
@@ -4565,7 +4579,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	then
 		if test minimal-sdk = $mode
 		then
-			printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:$PATH\n' >"$output_path/etc/profile"
+			printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' >"$output_path/etc/profile"
 		elif test makepkg-git = $mode
 		then
 			cat >"$output_path/etc/profile" <<-\EOF

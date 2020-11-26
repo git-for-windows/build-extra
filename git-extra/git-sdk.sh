@@ -273,6 +273,7 @@ sdk () {
 		then
 			cat >"$src_dir/config.mak" <<-\EOF
 			DEVELOPER=1
+			SKIP_DASHED_BUILT_INS=YesPlease
 			ifndef NDEBUG
 			CFLAGS := $(filter-out -O2,$(CFLAGS))
 			ASLR_OPTION := -Wl,--dynamicbase
