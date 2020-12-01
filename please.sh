@@ -4565,7 +4565,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	then
 		if test minimal-sdk = $mode
 		then
-			printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:$PATH\n' >"$output_path/etc/profile"
+			printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' >"$output_path/etc/profile"
 		elif test makepkg-git = $mode
 		then
 			cat >"$output_path/etc/profile" <<-\EOF
