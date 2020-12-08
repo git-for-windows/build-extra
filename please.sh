@@ -2279,7 +2279,7 @@ maybe_force_pkgrel () {
 		die "Invalid pkgrel: '%s'\n" "$1"
 
 		sed -i "s/^\\(pkgrel=\\).*/\\1$1/" PKGBUILD
-	elif git diff --exit-code -G'(_realver|pkgver)' -- PKGBUILD # version was not changed
+	elif git diff --exit-code -G'^(_ver|_realver|pkgver)=' -- PKGBUILD # version was not changed
 	then
 		# Maybe there have been changes since the latest release?
 		blame_ver="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgver=/,+1' -- ./PKGBUILD)" &&
@@ -2309,6 +2309,15 @@ maybe_force_pkgrel () {
 				;;
 			esac
 		fi
+	else
+		# version changed; verify that pkgrel is 0 or 1
+		case "$(sed -n 's/^pkgrel=\([0-9][0-9]*\)$/\1/p' PKGBUILD)" in
+		0|1) return 0;; # okay
+		*)
+			die 'pkgrel needs to be reset to 1 when changing the version:\n\n%s\n' \
+				"$(git diff HEAD -- PKGBUILD)"
+			;;
+		esac
 	fi
 
 	# make sure that we did not downgrade
