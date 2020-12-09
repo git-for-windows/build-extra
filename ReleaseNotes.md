@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [OpenSSL v1.1.1i](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [cURL v7.74.0](https://curl.haxx.se/changes.html#7_74_0).
 
 ## Changes since Git for Windows v2.29.2(2) (November 4th 2020)
 
