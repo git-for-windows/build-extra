@@ -791,7 +791,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			aborted = 1;
 		else {
 			size_t command_len = wcslen(lpCmdLine), helper_len, interpreter_len = 0, alloc;
-			LPWSTR helper, exe, cmdline, interpreter, p;
+			LPWSTR helper, exe, cmdline, p;
+			LPWSTR interpreter = NULL, interpreter_unquoted;
 
 			if (persist)
 				persist_choice();
@@ -801,12 +802,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			if (!selected_helper)
 				return 1; /* no helper */
 
-			exe = helper = helper_path[selected_helper];
+			exe = helper_path[selected_helper];
+			helper = quote(exe);
 			helper_len = wcslen(helper);
 			alloc = helper_len + command_len + 2;
 
-			interpreter = parse_script_interpreter(helper);
-			if (interpreter) {
+			interpreter_unquoted = parse_script_interpreter(helper);
+			if (interpreter_unquoted) {
+				interpreter = quote(interpreter);
 				interpreter_len = wcslen(interpreter);
 				alloc += interpreter_len + 1;
 				exe = find_exe(interpreter);
@@ -834,6 +837,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			aborted = spawn_process(exe, cmdline, 0, 1, NULL);
 			if (aborted < 0)
 				aborted = 1;
+			if (helper != exe)
+				free(helper);
+			if (interpreter != interpreter_unquoted)
+				free(interpreter);
 			free(cmdline);
 		}
 	}
