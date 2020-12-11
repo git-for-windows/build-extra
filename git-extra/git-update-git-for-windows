@@ -290,7 +290,7 @@ update_git_for_windows () {
 		echo "Downloading $filename" >&2
 	fi
 	curl -# -L -o $installer $download || return
-	start "" "$installer" /SILENT /VERYSILENT /NORESTART
+	start "" "$installer" //SILENT //NORESTART
 
 	# Kill all Bash processes (which will let MinTTY quit, too)"
 	#
