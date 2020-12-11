@@ -198,7 +198,7 @@ static int spawn_process(LPWSTR exe, LPWSTR cmdline,
 			    CREATE_NO_WINDOW,
 			    NULL, NULL,
 			    &si, &pi)) {
-		fwprintf(stderr, L"Could not spawn `%S`: %d\n",
+		fwprintf(stderr, L"Could not spawn `%ls`: %d\n",
 			 cmdline, (int)GetLastError());
 		res = -1;
 		goto spawn_process_finish;
@@ -237,7 +237,7 @@ static int spawn_process(LPWSTR exe, LPWSTR cmdline,
 		if (!wcs_len && data.len) {
 			WCHAR err[65536];
 			swprintf(err, 65535,
-				 L"Could not convert output of `%S` to Unicode",
+				 L"Could not convert output of `%ls` to Unicode",
 				 cmdline);
 			err[65535] = L'\0';
 			MessageBoxW(NULL, err, L"Error", MB_OK);
@@ -271,7 +271,7 @@ static int write_config(void)
 	WCHAR command_line[32768];
 
 	swprintf(command_line, sizeof(command_line) / sizeof(*command_line) - 1,
-		 L"git config --global credential.helperselector.selected \"%S\"", helper_name[selected_helper]);
+		 L"git config --global credential.helperselector.selected \"%ls\"", helper_name[selected_helper]);
 	return spawn_process(find_exe(L"git.exe"), command_line, 0, 0, NULL);
 }
 
@@ -405,10 +405,10 @@ static int discover_config_to_persist_to(void)
 				MessageBoxW(NULL, L"Out of memory!", L"Error", MB_OK);
 				exit(1);
 			}
-			swprintf(persist_to_config_option, len, L"-f %S", quoted);
+			swprintf(persist_to_config_option, len, L"-f %ls", quoted);
 			free(quoted);
 			swprintf(persist_tooltip, len2,
-				 L"Set credential.helper in '%S'", output + 5);
+				 L"Set credential.helper in '%ls'", output + 5);
 			free(output);
 			return 0;
 		}
@@ -458,7 +458,7 @@ static int persist_choice(void)
 		*(q++) = L'\0';
 	}
 
-	swprintf(command_line, 65535, L"git config %S credential.helper %S",
+	swprintf(command_line, 65535, L"git config %ls credential.helper %ls",
 		 persist_to_config_option, quote(escaped));
 	return spawn_process(find_exe(L"git.exe"), command_line, 0, 0, NULL);
 }
@@ -508,7 +508,7 @@ out_of_memory:
 			size_t len = wcslen(find_data.cFileName), i;
 
 			if (len < pattern_suffix_len - 2 || wcsnicmp(pattern_suffix + 1, find_data.cFileName, pattern_suffix_len - 2)) {
-				fwprintf(stderr, L"Unexpected entry: '%S'\n", find_data.cFileName);
+				fwprintf(stderr, L"Unexpected entry: '%ls'\n", find_data.cFileName);
 				fflush(stderr);
 				goto next_file;
 			}
@@ -791,7 +791,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			aborted = 1;
 		else {
 			size_t command_len = wcslen(lpCmdLine), helper_len, interpreter_len = 0, alloc;
-			LPWSTR helper, exe, cmdline, interpreter, p;
+			LPWSTR helper, exe, cmdline, p;
+			LPWSTR interpreter = NULL, interpreter_unquoted;
 
 			if (persist)
 				persist_choice();
@@ -801,12 +802,14 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			if (!selected_helper)
 				return 1; /* no helper */
 
-			exe = helper = helper_path[selected_helper];
+			exe = helper_path[selected_helper];
+			helper = quote(exe);
 			helper_len = wcslen(helper);
 			alloc = helper_len + command_len + 2;
 
-			interpreter = parse_script_interpreter(helper);
-			if (interpreter) {
+			interpreter_unquoted = parse_script_interpreter(helper);
+			if (interpreter_unquoted) {
+				interpreter = quote(interpreter);
 				interpreter_len = wcslen(interpreter);
 				alloc += interpreter_len + 1;
 				exe = find_exe(interpreter);
@@ -834,6 +837,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			aborted = spawn_process(exe, cmdline, 0, 1, NULL);
 			if (aborted < 0)
 				aborted = 1;
+			if (helper != exe)
+				free(helper);
+			if (interpreter != interpreter_unquoted)
+				free(interpreter);
 			free(cmdline);
 		}
 	}
