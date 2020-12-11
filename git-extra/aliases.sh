@@ -5,8 +5,8 @@
 alias ls='ls -F --color=auto --show-control-chars'
 alias ll='ls -l'
 
-case "$TERM" in
-xterm*)
+case "$TERM_PROGRAM" in
+mintty*)
 	# The following programs are known to require a Win32 Console
 	# for interactive usage, therefore let's launch them through winpty
 	# when run inside `mintty`.
