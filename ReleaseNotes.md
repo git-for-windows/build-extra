@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The auto-updater [now shows the progress while installing](https://github.com/git-for-windows/build-extra/pull/318).
+* The credential-helper selector (which is the default credential helper in the Portable version of Git for Windows) [now handles paths with spaces correctly](https://github.com/git-for-windows/build-extra/pull/319).
 
 ## Changes since Git for Windows v2.29.2(2) (November 4th 2020)
 
