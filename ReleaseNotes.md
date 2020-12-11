@@ -42,6 +42,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSL v1.1.1i](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [cURL v7.74.0](https://curl.haxx.se/changes.html#7_74_0).
 
+### Bug Fixes
+
+* The auto-updater [now shows the progress while installing](https://github.com/git-for-windows/build-extra/pull/318).
+
 ## Changes since Git for Windows v2.29.2(2) (November 4th 2020)
 
 This version updates Git Credential Manager Core to address [CVE-2020-26233](https://github.com/microsoft/Git-Credential-Manager-Core/security/advisories/GHSA-2gq7-ww4j-3m76).
