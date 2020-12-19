@@ -134,8 +134,10 @@ else
 fi
 
 cmd_git="$(echo "$LIST" | grep '^cmd/git\.exe$')"
-test -z "$cmd_git" ||
-inno_defines="$inno_defines$LF#define GIT_VERSION '$("/$cmd_git" version)'" ||
+test -z "$cmd_git" || {
+	git_version="$("/$cmd_git" version)" &&
+	inno_defines="$inno_defines$LF#define GIT_VERSION '$git_version'"
+} ||
 die "Could not execute 'git version'"
 
 printf '; List of files\n%s\n%s\n%s\n%s\n%s\n%s\n' \
@@ -215,6 +217,25 @@ test -z "$GITCONFIG_PATH" || {
 
 	LIST="$(echo "$LIST" | grep -v "^$GITCONFIG_PATH\$")"
 }
+
+if test -n "$cmd_git"
+then
+	if test ! -f init.defaultBranch ||
+		test "$git_version" != "$(cat init.defaultBranch.gitVersion 2>/dev/null)"
+	then
+		echo "$git_version" >init.defaultBranch.gitVersion &&
+		d=init.defaultBranch.$$ &&
+		rm -f $d &&
+		GIT_CONFIG_NOSYSTEM=true HOME=$d XDG_CONFIG_HOME=$d GIT_TEST_DEFAULT_INITIAL_BRANCH_NAME= git init --bare $d &&
+		default_branch_name="$(git -C $d symbolic-ref --short HEAD)" &&
+		rm -rf $d &&
+		test -n "$default_branch_name" &&
+		echo "$default_branch_name" >init.defaultBranch ||
+		die "Could not determine default branch name"
+	fi
+
+	inno_defines="$inno_defines$LF#define DEFAULT_BRANCH_NAME '$(cat init.defaultBranch)'"
+fi
 
 test -z "$LIST" ||
 echo "$LIST" |
