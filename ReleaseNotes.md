@@ -1,5 +1,5 @@
-# Git for Windows v2.29.2(3) Release Notes
-Latest update: December 8th 2020
+# Git for Windows v2.30.0 Release Notes
+Latest update: December 28th 2020
 
 ## Introduction
 
