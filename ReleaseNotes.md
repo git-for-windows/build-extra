@@ -39,6 +39,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.30.0](https://github.com/git/git/blob/v2.30.0/Documentation/RelNotes/2.30.0.txt).
 * Comes with [OpenSSL v1.1.1i](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [cURL v7.74.0](https://curl.haxx.se/changes.html#7_74_0).
 * Comes with [Git LFS v2.13.1](https://github.com/git-lfs/git-lfs/releases/tag/v2.13.1).
