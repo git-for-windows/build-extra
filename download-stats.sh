@@ -7,9 +7,10 @@ test "--update" != "$1" || {
 	curl -s \
 	 https://api.github.com/repos/git-for-windows/git/releases |
 	tac |
-	sed -n '/^    "\(tag_name\|id\)":/{
-    N;N;
-    y/\n/ /;
+	sed -n '/^  }/{
+    :1;N;/\n  {/b2;b1
+    :2;
+    y/\n/\r/
     s/.*"tag_name": "\([^"]*\)".*"id": \([0-9]*\).*/# \1\n#id=${1:-\2}/p
 }' | sed '$s/^#//' >"${0%.sh}".ids &&
 	echo "$ids" |
