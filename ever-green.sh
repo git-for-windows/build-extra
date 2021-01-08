@@ -217,7 +217,13 @@ nested-rebase)
 	cat "$todo.save" >>"$todo" &&
 	if test -n "$merging"
 	then
-		echo "exec git replace --delete 'HEAD^{/^Start the merging-rebase}'" >>"$todo" ||
+		sed -e '/^exec.*fixup.*squash/{
+			i\
+exec git replace --delete "HEAD^{/^Start the merging-rebase}"
+:1;N;b1
+		}' -e '$a\
+exec git replace --delete "HEAD^{/^Start the merging-rebase}"' "$todo" >"$todo.new" &&
+		mv -f "$todo.new" "$todo" ||
 		die "Could not append exec line to reset the replace ref"
 	fi &&
 	echo "$help" >>"$todo" ||
