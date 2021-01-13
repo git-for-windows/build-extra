@@ -40,6 +40,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Git Credential Manager Core v2.0.318.44100](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.318-beta).
+* Comes with [Git LFS v2.13.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.13.2).
 
 ## Changes since Git for Windows v2.29.2(3) (December 8th 2020)
 
