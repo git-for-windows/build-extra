@@ -37,6 +37,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.30.0 (December 28th 2020)
 
+This version includes [Git LFS v2.13.2](https://github.com/git-lfs/git-lfs/releases/tag/v2.13.2), addressing CVE-2021-21237.
+
 ### New Features
 
 * Comes with [Git Credential Manager Core v2.0.318.44100](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.318-beta).
