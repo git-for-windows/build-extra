@@ -3092,11 +3092,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		release_notes_feature='Comes with [Heimdal v'$ver']('"$url"').'
 		;;
 	perl)
-		releases="$(curl https://dev.perl.org/perl5/)" ||
-		die "Could not download release notes for Perl\n"
-
-		ver="$(echo "$releases" | sed -n \
-			's/.*Perl <[^>]*>\(5\..*\)<.* stable version.*/\1/p')"
+		tags="$(curl https://api.github.com/repos/Perl/perl5/tags)" ||
+		die "Could not download Perl tags\n"
+		ver="$(echo "$tags" | sed -n \
+			'/^    "name": "v5\.[0-9]*[02468]\.[1-9][0-9]*"/{s/.*"v\(.*\)".*/\1/p;q}')"
 		test -n "$ver" ||
 		die "Could not determine latest Perl version\n"
 
