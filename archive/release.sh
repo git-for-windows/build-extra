@@ -23,6 +23,9 @@ do
 	--output=*)
 		output_directory="${1#*=}"
 		;;
+	--include-arm64-artifacts=*)
+		arm64_artifacts_directory="${1#*=}"
+		;;
 	-*)
 		die "Unknown option: $1"
 		;;
@@ -105,13 +108,22 @@ hardlink_all_dlls () {
 
 hardlink_all_dlls
 
-
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/root/etc/package-versions.txt \
 	sh "$SCRIPT_PATH"/../make-file-list.sh "$@")" ||
 die "Could not generate file list"
 
+# ARM64 Windows handling
+ARM64_FOLDER=
+if test -n "$arm64_artifacts_directory"
+then
+	echo "Including ARM64 artifacts from $arm64_artifacts_directory";
+	TARGET="$(cygpath -au "$output_directory")"/Git-"$VERSION"-arm64.tar.bz2
+	mkdir -p "$SCRIPT_PATH/root/arm64"
+	cp -ar $arm64_artifacts_directory/* "$SCRIPT_PATH/root/arm64"
+	ARM64_FOLDER="arm64"
+fi
 
 # Create the archive
 
@@ -120,8 +132,8 @@ pacman -Sy --noconfirm tar ||
 die "Could not install tar"
 
 echo "Creating .tar.bz2 archive" &&
-if ! tar -c -j -f "$TARGET" --directory=/ --exclude=etc/post-install/* $LIST --directory=$SCRIPT_PATH/root bin dev etc tmp mingw$BITNESS && test $? = 1
+if ! tar -c -j -f "$TARGET" --directory=/ --exclude=etc/post-install/* $LIST --directory=$SCRIPT_PATH/root bin dev etc tmp mingw$BITNESS $ARM64_FOLDER && test $? = 1
 then
-	tar -c -j -f "$TARGET" --directory=/ --exclude=etc/post-install/* $LIST --directory=$SCRIPT_PATH/root bin dev etc tmp mingw$BITNESS
+	tar -c -j -f "$TARGET" --directory=/ --exclude=etc/post-install/* $LIST --directory=$SCRIPT_PATH/root bin dev etc tmp mingw$BITNESS $ARM64_FOLDER
 fi &&
 echo "Success! You will find the new archive at \"$TARGET\"."
