@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Perl v5.32.1](http://search.cpan.org/dist/perl-5.32.1/pod/perldelta.pod).
+* Comes with [cURL v7.75.0](https://curl.haxx.se/changes.html#7_75_0).
 
 ## Changes since Git for Windows v2.30.0 (December 28th 2020)
 
