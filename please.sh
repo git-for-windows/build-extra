@@ -2544,7 +2544,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 fi)
 		;;
 	curl)
-		version="$(curl -s https://curl.haxx.se/download.html |
+		version="$(curl -Ls https://curl.haxx.se/download.html |
 		sed -n 's/.*<a href="\/download\/curl-\([1-9]*[^"]*\)\.tar\.bz2".*/\1/p')"
 		test -n "$version" ||
 		die "Could not determine newest cURL version\n"
