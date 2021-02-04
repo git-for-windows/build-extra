@@ -25,7 +25,7 @@ int main(int argc, char **argv)
 	const char *progname = argv[0];
 	const char *work_dir = NULL, *arguments = NULL, *icon_file = NULL;
 	const char *description = NULL;
-	int show_cmd = 1, desktop_shortcut = 0;
+	int show_cmd = 1, desktop_shortcut = 0, dry_run = 0;
 
 	static WCHAR wsz[1024];
 	HRESULT hres;
@@ -50,6 +50,11 @@ int main(int argc, char **argv)
 			argc--;
 			argv++;
 			continue;
+		} else if (!strcmp(argv[1], "-n") || !strcmp(argv[1], "--dry-run")) {
+			dry_run = 1;
+			argc--;
+			argv++;
+			continue;
 		} else {
 			fprintf(stderr, "Unknown option: %s\n", argv[1]);
 			return 1;
@@ -68,6 +73,40 @@ int main(int argc, char **argv)
 		fprintf(stderr, "Usage: %s [options] <source> <destination>\n",
 			progname);
 		return 1;
+	}
+
+	if (dry_run) {
+		printf("source: %s\n", argv[1]);
+
+		if (work_dir)
+			printf("work_dir: %s\n", work_dir);
+
+		if (show_cmd)
+			printf("show_cmd: %d\n", show_cmd);
+
+		if (icon_file)
+			printf("icon_file: %s\n", icon_file);
+
+		if (arguments)
+			printf("arguments: %s\n", arguments);
+
+		if (description)
+			printf("description: %s\n", description);
+
+		if (desktop_shortcut) {
+			PWSTR p;
+
+			hres = SHGetKnownFolderPath(&FOLDERID_Desktop,
+						    KF_FLAG_DONT_UNEXPAND, NULL, &p);
+			check_hres(hres, "could not get desktop path");
+
+			printf("destination: %ls\\%s\n", p, argv[2]);
+
+			CoTaskMemFree(p);
+		} else
+			printf("destination: %s\n", argv[2]);
+
+		return 0;
 	}
 
 	hres = CoInitialize(NULL);
