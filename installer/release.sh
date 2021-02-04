@@ -58,6 +58,13 @@ do
 	--include-pdbs)
 		include_pdbs=t
 		;;
+	--include-arm64-artifacts=*)
+		case "${1#*=}" in
+		/*) ;; # absolute path, okay
+		*) die "Need an absolute path: $1";;
+		esac
+		arm64_artifacts_directory="${1#*=}"
+		;;
 	*)
 		break
 	esac
@@ -255,6 +262,17 @@ test -z "$include_pdbs" || {
 		>> file-list.iss
 } ||
 die "Could not include .pdb files"
+
+test -z "$arm64_artifacts_directory" || {
+	echo "Including ARM64 artifacts from $arm64_artifacts_directory" &&
+	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX 'arm64'" &&
+	mixed="$(cygpath -m "$arm64_artifacts_directory")" &&
+	find "$arm64_artifacts_directory" -type f |
+	sed -e "s|^$arm64_artifacts_directory\\(/.*\)\?/\([^/]*\)$|Source: \"$mixed\\1/\\2\"; DestDir: {app}/arm64\\1; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore|" \
+		-e 's|/|\\|g' \
+		>> file-list.iss
+} ||
+die "Could not include ARM64 artifacts"
 
 etc_gitconfig_dir="${etc_gitconfig%/gitconfig}"
 printf "%s\n%s\n%s\n%s\n%s%s" \

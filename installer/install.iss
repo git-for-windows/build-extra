@@ -34,7 +34,11 @@ LZMAUseSeparateProcess=yes
 OutputBaseFilename={#FILENAME_VERSION}
 OutputDir={#GetEnv('TEMP')}
 #else
+#ifdef INSTALLER_FILENAME_SUFFIX
+OutputBaseFilename={#APP_NAME+'-'+FILENAME_VERSION+'-'+INSTALLER_FILENAME_SUFFIX}
+#else
 OutputBaseFilename={#APP_NAME+'-'+FILENAME_VERSION}-{#BITNESS}-bit
+#endif
 #ifdef OUTPUT_DIRECTORY
 OutputDir={#OUTPUT_DIRECTORY}
 #else
