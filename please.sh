@@ -4770,12 +4770,13 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 }
 
 # This function does not "clean up" after installing the packages
-make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--version=<version>] [--installer] [--portable] [--mingit] [--mingit-busybox] [--nuget] [--nuget-mingit] [--archive]
+make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--version=<version>] [--installer] [--portable] [--mingit] [--mingit-busybox] [--nuget] [--nuget-mingit] [--archive] [--include-arm64-artifacts=<path>]
 	modes=
 	install_package=
 	output=
 	output_path=
 	version=0-test
+	include_arm64_artifacts=
 	while case "$1" in
 	--pkg=*)
 		install_package="${install_package:+$install_package }$(echo "${1#*=}" | tr , ' ')"
@@ -4820,6 +4821,9 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--ve
 		output_path="$(cygpath -am "${1#-?}")"
 		output="--output=$output_path" || exit
 		;;
+	--include-arm64-artifacts=*)
+		include_arm64_artifacts="$1"
+		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
@@ -4855,7 +4859,7 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--ve
 		test installer != $mode ||
 		extra="${extra:+$extra }--window-title-version=$version"
 
-		sh -x "${this_script_path%/*}/$mode/release.sh" $output $extra $version
+		sh -x "${this_script_path%/*}/$mode/release.sh" $output $extra $include_arm64_artifacts $version
 	done
 }
 

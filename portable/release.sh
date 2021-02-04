@@ -22,6 +22,9 @@ do
 	--include-pdbs)
 		include_pdbs=t
 		;;
+	--include-arm64-artifacts=*)
+		arm64_artifacts_directory="${1#*=}"
+		;;
 	-*)
 		die "Unknown option: $1"
 		;;
@@ -134,6 +137,18 @@ test -z "$include_pdbs" || {
 } ||
 die "Could not unpack .pdb files"
 
+TITLE="$BITNESS-bit"
+
+# ARM64 Windows handling
+if test -n "$arm64_artifacts_directory"
+then
+	echo "Including ARM64 artifacts from $arm64_artifacts_directory";
+	TARGET="$output_directory"/PortableGit-"$VERSION"-arm64.7z.exe
+	TITLE="ARM64"
+	mkdir -p "$SCRIPT_PATH/root/arm64"
+	cp -ar $arm64_artifacts_directory/* "$SCRIPT_PATH/root/arm64"
+fi
+
 # 7-Zip will strip absolute paths completely... therefore, we can add another
 # root directory like this:
 
@@ -150,8 +165,8 @@ echo "Creating archive" &&
 (cd / && 7za a $OPTS7 $TMPPACK $LIST) &&
 (cat "$SCRIPT_PATH/../7-Zip/7zSD.sfx" &&
  echo ';!@Install@!UTF-8!' &&
- echo 'Title="Portable Git for Windows '$BITNESS'-bit"' &&
- echo 'BeginPrompt="This archive extracts a complete Git for Windows '$BITNESS'-bit"' &&
+ echo 'Title="Portable Git for Windows '$TITLE'"' &&
+ echo 'BeginPrompt="This archive extracts a complete Git for Windows '$TITLE'"' &&
  echo 'CancelPrompt="Do you want to cancel the portable Git installation?"' &&
  echo 'ExtractDialogText="Please, wait..."' &&
  echo 'ExtractPathText="Where do you want to install portable Git?"' &&
