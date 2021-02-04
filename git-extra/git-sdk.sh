@@ -65,14 +65,14 @@ sdk () {
 		'') break;;
 		-*) sdk die "Unknown option: %s\n" "$1"; return 1;;
 		esac; do shift; done &&
-
 		case "$(uname -m)" in
 		i686) bitness=" 32-bit";;
 		x86_64) bitness=" 64-bit";;
 		*) bitness=;;
 		esac &&
-		desktop_icon_path="$(reg query 'HKCU\Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders' //v Desktop |
-			sed -ne 'y/\\/\//' -e 's/.*REG_SZ *//p')/Git SDK$bitness.lnk" &&
+		desktop_icon_path="Git SDK$bitness.lnk" &&
+		desktop_icon_path="$(create-shortcut.exe -n --desktop-shortcut /git-bash.exe "$desktop_icon_path" |
+			sed -n 's/^destination: //p')" &&
 		if test -n "$force" || test ! -f "$desktop_icon_path"
 		then
 			create-shortcut.exe --icon-file /msys2.ico --work-dir \
