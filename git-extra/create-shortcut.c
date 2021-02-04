@@ -26,6 +26,7 @@ int main(int argc, char **argv)
 	const char *work_dir = NULL, *arguments = NULL, *icon_file = NULL;
 	const char *description = NULL;
 	int show_cmd = 1, desktop_shortcut = 0, dry_run = 0;
+	size_t len;
 
 	static WCHAR wsz[1024];
 	HRESULT hres;
@@ -72,6 +73,11 @@ int main(int argc, char **argv)
 	if (argc != 3) {
 		fprintf(stderr, "Usage: %s [options] <source> <destination>\n",
 			progname);
+		return 1;
+	}
+
+	if ((len = strlen(argv[2])) < 5 || strcasecmp(argv[2] + len - 4, ".lnk")) {
+		fprintf(stderr, "Can only create .lnk files ('%s' was specified)\n", argv[2]);
 		return 1;
 	}
 
