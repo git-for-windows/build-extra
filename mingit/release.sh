@@ -25,6 +25,9 @@ while case "$1" in
 --include-pdbs)
 	include_pdbs=t
 	;;
+--include-arm64-artifacts=*)
+	arm64_artifacts_directory="${1#*=}"
+	;;
 -*) die "Unknown option: %s\n" "$1";;
 *) break;;
 esac; do shift; done
@@ -102,6 +105,15 @@ $(cat "/$original_etc_gitconfig")
 	path = C:/Program Files/Git/etc/gitconfig
 EOF
 die "Could not generate system config"
+
+# ARM64 Windows handling
+if test -n "$arm64_artifacts_directory"
+then
+	echo "Including ARM64 artifacts from $arm64_artifacts_directory";
+	TARGET="$output_directory"/MinGit-"$VERSION"-arm64.zip
+	mkdir -p "$SCRIPT_PATH/root/arm64"
+	cp -ar $arm64_artifacts_directory/* "$SCRIPT_PATH/root/arm64"
+fi
 
 # Make the archive
 
