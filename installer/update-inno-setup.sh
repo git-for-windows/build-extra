@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Download the most recent Inno Setup version.
-installer="is-unicode.exe"
+installer="is.exe"
 url="http://www.jrsoftware.org/download.php/$installer"
 
 die () {

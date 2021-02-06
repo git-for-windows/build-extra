@@ -91,7 +91,7 @@ WizardImageBackColor=clWhite
 WizardImageStretch=no
 WizardImageFile={#SourcePath}\git.bmp
 WizardSmallImageFile={#SourcePath}\gitsmall.bmp
-MinVersion=0,5.01sp3
+MinVersion=6.0
 
 [Types]
 ; Define a custom type to avoid getting the three default types.
@@ -3370,7 +3370,6 @@ begin
         Form.Caption:='Git Uninstall: Removing in-use files';
         Form.ClientWidth:=ScaleX(500);
         Form.ClientHeight:=ScaleY(256);
-        Form.Center;
 
         Info:=TLabel.Create(Form);
         with Info do begin
