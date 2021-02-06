@@ -50,9 +50,7 @@ SolidCompression=yes
 #define SOURCE_DIR SourcePath+'\..\..\..\..'
 #endif
 SourceDir={#SOURCE_DIR}
-#if BITNESS=='64'
-ArchitecturesInstallIn64BitMode=x64
-#endif
+ArchitecturesInstallIn64BitMode=x64 arm64
 #ifdef SIGNTOOL
 SignTool=signtool
 #endif
