@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.30.1](https://github.com/git/git/blob/v2.30.1/Documentation/RelNotes/2.30.1.txt).
 * Comes with [Perl v5.32.1](http://search.cpan.org/dist/perl-5.32.1/pod/perldelta.pod).
 * Comes with [cURL v7.75.0](https://curl.haxx.se/changes.html#7_75_0).
 
