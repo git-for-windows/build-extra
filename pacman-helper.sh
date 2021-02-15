@@ -614,8 +614,14 @@ quick_add () { # <file>...
 				echo "Downloading current $arch/$file..." >&2
 				curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$file" || return 1
 				dbs="$dbs $arch/$file $arch/${file%.tar.xz}"
-				test -z "$sign_option" ||
-				dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
+				if test -n "$sign_option"
+				then
+					curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$file.sig" ||
+					return 1
+					gpg --verify "$dir/$arch/$file.sig" ||
+					die "Could not verify GPG signature: $dir/$arch/$file"
+					dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
+				fi
 			done
 		done
 		(cd "$dir/$arch" &&
