@@ -166,5 +166,6 @@
     ],
     "cSpell.ignoreRegExpList": [
         "3rdparty"
-    ]
+    ],
+    "git.ignoreLimitWarning": true
 }
