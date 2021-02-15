@@ -527,7 +527,15 @@ sanitize_db () { # <file>...
 				}
 			}
 		}
-	' "$@"
+	' "$@" &&
+	if test -n "$GPGKEY"
+	then
+		for path in "$@"
+		do
+			call_gpg --detach-sign --no-armor -u $GPGKEY "$path" ||
+			die "Could not sign $path"
+		done
+	fi
 }
 
 quick_add () { # <file>...
