@@ -35,6 +35,7 @@
         "binutils",
         "bitness",
         "bsau",
+        "bsdtar",
         "bugfix",
         "busybox",
         "cacert",
@@ -165,6 +166,8 @@
         "xpdf"
     ],
     "cSpell.ignoreRegExpList": [
-        "3rdparty"
-    ]
+        "3rdparty",
+	"d[-r][-w][-x][-r][-w][-x][-r][-w][-x]"
+    ],
+    "git.ignoreLimitWarning": true
 }

@@ -38,7 +38,7 @@ export CURL_CA_BUNDLE
 
 mode=
 case "$1" in
-fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists|lock|unlock|quick_add)
+fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists|lock|unlock|quick_add|sanitize_db)
 	mode="$1"
 	shift
 	;;
@@ -475,6 +475,69 @@ push () {
 	push_next_db_version
 }
 
+sanitize_db () { # <file>...
+	perl -e '
+		foreach my $path (@ARGV) {
+			my @to_delete = ();
+			my %base_to_date = ();
+			my %base_to_full_name = ();
+
+			open($fh, "-|", "tar", "tvf", $path) or die;
+			while (<$fh>) {
+				# parse lines like this:
+				# drwxr-xr-x root/root         0 2019-02-17 21:45 bash -4.4.023-1 /
+				if (/(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+?)(-\d.*?)\/$/) {
+					my $date = $4 . " " . $5;
+					my $prefix = $6;
+					my $full_name = $6 . $7;
+					if ($prefix =~ / /) {
+						push @to_delete, $full_name;
+					} elsif (exists($base_to_date{$prefix})) {
+						print $prefix . ": " . $base_to_date{$prefix} . " vs " . $date . "\n";
+						if (($base_to_date{$prefix} cmp $date) < 0) {
+							print $base_to_date{$prefix} . " older than " . $date . ": delete " . $base_to_date{$prefix} . "\n";
+							push @to_delete, $base_to_full_name{$prefix};
+							# replace
+							$base_to_full_name{$prefix} = $full_name;
+							$base_to_date{$prefix} = $date;
+						} else {
+							print $base_to_date{$prefix} . " younger than " . $date . ": delete " . $date . "\n";
+							push @to_delete, $full_name;
+						}
+					} else {
+						$base_to_date{$prefix} = $date;
+						$base_to_full_name{$prefix} = $full_name;
+					}
+				}
+			}
+			close($fh);
+
+			if ($#to_delete > 0) {
+				@bsdtar = ("bsdtar", "-cJf", $path . ".bup");
+				foreach my $item (@to_delete) {
+					push @bsdtar, "--exclude";
+					push @bsdtar, $item . "*";
+				}
+				push @bsdtar, "@" . $path;
+				print "Sanitizing: " . join(" ", @bsdtar) . "\n";
+				if (system(@bsdtar) == 0) {
+					rename $path . ".bup", $path or die "Could not rename $path.bup to $path";
+				} else {
+					die "Could not run " . join(" ", @bsdtar);
+				}
+			}
+		}
+	' "$@" &&
+	if test -n "$GPGKEY"
+	then
+		for path in "$@"
+		do
+			call_gpg --detach-sign --no-armor -u $GPGKEY "$path" ||
+			die "Could not sign $path"
+		done
+	fi
+}
+
 quick_add () { # <file>...
 	test $# -gt 0 ||
 	die "Need at least one file"
@@ -551,8 +614,17 @@ quick_add () { # <file>...
 				echo "Downloading current $arch/$file..." >&2
 				curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$file" || return 1
 				dbs="$dbs $arch/$file $arch/${file%.tar.xz}"
-				test -z "$sign_option" ||
-				dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
+				if test -n "$sign_option"
+				then
+					curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$file.sig" ||
+					return 1
+					gpg --verify "$dir/$arch/$file.sig" ||
+					die "Could not verify GPG signature: $dir/$arch/$file"
+					dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
+				fi
+				sanitize_db "$dir/$arch/$file" || return 1
+				test ! -f "$dir/$arch/${file%.tar.xz}" ||
+				sanitize_db "$dir/$arch/${file%.tar.xz}" || return 1
 			done
 		done
 		(cd "$dir/$arch" &&
