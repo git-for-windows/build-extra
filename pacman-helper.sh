@@ -622,6 +622,9 @@ quick_add () { # <file>...
 					die "Could not verify GPG signature: $dir/$arch/$file"
 					dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
 				fi
+				sanitize_db "$dir/$arch/$file" || return 1
+				test ! -f "$dir/$arch/${file%.tar.xz}" ||
+				sanitize_db "$dir/$arch/${file%.tar.xz}" || return 1
 			done
 		done
 		(cd "$dir/$arch" &&
