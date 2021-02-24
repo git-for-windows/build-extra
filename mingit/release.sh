@@ -109,10 +109,11 @@ die "Could not generate system config"
 # ARM64 Windows handling
 if test -n "$arm64_artifacts_directory"
 then
-	echo "Including ARM64 artifacts from $arm64_artifacts_directory";
-	TARGET="$output_directory"/MinGit-"$VERSION"-arm64.zip
-	rm -rf "$SCRIPT_PATH/root/arm64"
-	cp -ar "$arm64_artifacts_directory" "$SCRIPT_PATH/root/arm64"
+	echo "Including ARM64 artifacts from $arm64_artifacts_directory" &&
+	TARGET="$output_directory"/MinGit-"$VERSION"-arm64.zip &&
+	rm -rf "$SCRIPT_PATH/root/arm64" &&
+	cp -ar "$arm64_artifacts_directory" "$SCRIPT_PATH/root/arm64" ||
+	die "Could not copy ARM64 artifacts from $arm64_artifacts_directory"
 fi
 
 # Make the archive
