@@ -89,7 +89,7 @@ die "Could not generate file list"
 original_etc_gitconfig="$etc_gitconfig"
 case "$etc_gitconfig" in
 mingw$BITNESS/etc/gitconfig)
-	mkdir -p "$SCRIPT_PATH"/root/"${etc_gitconfig#/*}" &&
+	mkdir -p "$SCRIPT_PATH"/root/"${etc_gitconfig%/*}" &&
 	test -f /"$etc_gitconfig" ||
 	test ! -f /etc/gitconfig ||
 	original_etc_gitconfig=/etc/gitconfig
