@@ -299,11 +299,4 @@ then
 	exit
 fi
 
-echo "Tagging Git for Windows installer release ..."
-if git rev-parse Git-$version >/dev/null 2>&1; then
-	echo "-> installer release 'Git-$version' was already tagged."
-else
-	git tag -a -m "Git for Windows $version" Git-$version
-fi
-
 echo "Installer is available as $(tail -n 1 install.log)"
