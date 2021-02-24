@@ -145,8 +145,8 @@ then
 	echo "Including ARM64 artifacts from $arm64_artifacts_directory";
 	TARGET="$output_directory"/PortableGit-"$VERSION"-arm64.7z.exe
 	TITLE="ARM64"
-	mkdir -p "$SCRIPT_PATH/root/arm64"
-	cp -ar $arm64_artifacts_directory/* "$SCRIPT_PATH/root/arm64"
+	rm -rf "$SCRIPT_PATH/root/arm64"
+	cp -ar "$arm64_artifacts_directory" "$SCRIPT_PATH/root/arm64"
 fi
 
 # 7-Zip will strip absolute paths completely... therefore, we can add another

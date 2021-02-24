@@ -120,8 +120,8 @@ if test -n "$arm64_artifacts_directory"
 then
 	echo "Including ARM64 artifacts from $arm64_artifacts_directory";
 	TARGET="$(cygpath -au "$output_directory")"/Git-"$VERSION"-arm64.tar.bz2
-	mkdir -p "$SCRIPT_PATH/root/arm64"
-	cp -ar $arm64_artifacts_directory/* "$SCRIPT_PATH/root/arm64"
+	rm -rf "$SCRIPT_PATH/root/arm64"
+	cp -ar "$arm64_artifacts_directory" "$SCRIPT_PATH/root/arm64"
 	ARM64_FOLDER="arm64"
 fi
 
