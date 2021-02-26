@@ -1898,7 +1898,7 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 		rm -f version.o
 	 fi &&
 	 cov-build --dir cov-int \
-		make -j15 DEVELOPER=1 CPPFLAGS=-DFLEX_ARRAY=65536 &&
+		make -j15 DEVELOPER=1 CPPFLAGS="-DFLEX_ARRAY=65536 -DSUPPRESS_ANNOTATED_LEAKS" &&
 	 tar caf git-for-windows.lzma cov-int &&
 	 curl --form token="$coverity_token" \
 		--form email="$coverity_username" \
