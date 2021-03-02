@@ -14,7 +14,7 @@ edit-git-bash.exe
 /installer/ReleaseNotes.html
 /installer/config.iss
 /installer/install.log
-/installer/is-unicode.exe
+/installer/is.exe
 /installer/file-list.iss
 /installer/package-versions.txt
 /installer/root/

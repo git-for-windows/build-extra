@@ -91,7 +91,7 @@ WizardImageBackColor=clWhite
 WizardImageStretch=no
 WizardImageFile={#SourcePath}\git.bmp
 WizardSmallImageFile={#SourcePath}\gitsmall.bmp
-MinVersion=0,5.01sp3
+MinVersion=6.0
 
 [Types]
 ; Define a custom type to avoid getting the three default types.
@@ -996,16 +996,8 @@ end;
 function InitializeSetup:Boolean;
 var
     CurrentVersion,Msg:String;
-    Version:TWindowsVersion;
     ErrorCode:Integer;
 begin
-    GetWindowsVersionEx(Version);
-    if (Version.Major<6) then begin
-        if SuppressibleMsgBox('Git for Windows requires Windows Vista or later.'+#13+'Click "Yes" for more details.',mbError,MB_YESNO,IDNO)=IDYES then
-            ShellExec('open','https://gitforwindows.org/requirements.html','','',SW_SHOW,ewNoWait,ErrorCode);
-        Result:=False;
-        Exit;
-    end;
     UpdateInfFilenames;
 #if BITNESS=='32'
     Result:=True;
@@ -3370,7 +3362,6 @@ begin
         Form.Caption:='Git Uninstall: Removing in-use files';
         Form.ClientWidth:=ScaleX(500);
         Form.ClientHeight:=ScaleY(256);
-        Form.Center;
 
         Info:=TLabel.Create(Form);
         with Info do begin
