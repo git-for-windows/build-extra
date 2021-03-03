@@ -42,6 +42,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.30.1 (February 9th 2021)
 
+This version addresses CVE-2021-21300 (a bug that allows code injection during a clone from an untrusted source).
+
 ### New Features
 
 * Comes with [PCRE2 v10.36](https://pcre.org/news.txt).
