@@ -47,6 +47,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [PCRE2 v10.36](https://pcre.org/news.txt).
 * Comes with [tig v2.5.2](https://github.com/jonas/tig/releases/tag/tig-2.5.2).
 * Comes with [OpenSSL v1.1.1j](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [OpenSSH v8.5p1](https://www.openssh.com/txt/release-8.5).
 
 ## Changes since Git for Windows v2.30.0(2) (January 14th 2021)
 
