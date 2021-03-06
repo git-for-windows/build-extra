@@ -46,6 +46,7 @@ This version addresses CVE-2021-21300 (a bug that allows code injection during a
 
 ### New Features
 
+* Comes with [Git v2.30.2](https://github.com/git/git/blob/v2.30.2/Documentation/RelNotes/2.30.2.txt).
 * Comes with [PCRE2 v10.36](https://pcre.org/news.txt).
 * Comes with [tig v2.5.2](https://github.com/jonas/tig/releases/tag/tig-2.5.2).
 * Comes with [OpenSSL v1.1.1j](https://www.openssl.org/news/openssl-1.1.1-notes.html).
