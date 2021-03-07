@@ -271,6 +271,13 @@ test -z "$arm64_artifacts_directory" || {
 	sed -e "s|^$arm64_artifacts_directory\\(/.*\)\?/\([^/]*\)$|Source: \"$mixed\\1/\\2\"; DestDir: {app}/arm64\\1; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore|" \
 		-e 's|/|\\|g' \
 		>> file-list.iss
+
+	mkdir -p root/mingw32/bin &&
+	printf '%s\n' '#!/bin/sh' 'exec /mingw32/libexec/git-core/git-credential-manager-core.exe "$@"' > root/mingw32/bin/git-credential-manager-core &&
+	chmod +x root/mingw32/bin/git-credential-manager-core &&
+	printf '%s\n' \
+	"Source: \"{#SourcePath}\\root\\mingw32\\bin\\git-credential-manager-core\"; DestDir: {app}\\mingw32\\bin; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
+	>> file-list.iss || die "Could not add git-credential-manager-core wrapper for ARM64"
 } ||
 die "Could not include ARM64 artifacts"
 

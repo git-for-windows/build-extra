@@ -148,6 +148,11 @@ then
 	rm -rf "$SCRIPT_PATH/root/arm64" &&
 	cp -ar "$arm64_artifacts_directory" "$SCRIPT_PATH/root/arm64" ||
 	die "Could not copy ARM64 artifacts from $arm64_artifacts_directory"
+
+	mkdir -p "$SCRIPT_PATH/root/mingw32/bin" &&
+	printf '%s\n' '#!/bin/sh' 'exec /mingw32/libexec/git-core/git-credential-manager-core.exe "$@"' > "$SCRIPT_PATH/root/mingw32/bin/git-credential-manager-core" &&
+	chmod +x "$SCRIPT_PATH/root/mingw32/bin/git-credential-manager-core" ||
+	die "Could not add git-credential-manager-core wrapper for ARM64"
 fi
 
 # 7-Zip will strip absolute paths completely... therefore, we can add another
