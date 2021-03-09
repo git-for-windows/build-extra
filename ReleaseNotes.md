@@ -1,5 +1,5 @@
-# Git for Windows v2.30.1 Release Notes
-Latest update: February 9th 2021
+# Git for Windows v2.30.2 Release Notes
+Latest update: March 9th 2021
 
 ## Introduction
 
@@ -42,8 +42,11 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.30.1 (February 9th 2021)
 
+This version addresses CVE-2021-21300 (a bug that allows code injection during a clone from an untrusted source).
+
 ### New Features
 
+* Comes with [Git v2.30.2](https://github.com/git/git/blob/v2.30.2/Documentation/RelNotes/2.30.2.txt).
 * Comes with [PCRE2 v10.36](https://pcre.org/news.txt).
 * Comes with [tig v2.5.2](https://github.com/jonas/tig/releases/tag/tig-2.5.2).
 * Comes with [OpenSSL v1.1.1j](https://www.openssl.org/news/openssl-1.1.1-notes.html).
