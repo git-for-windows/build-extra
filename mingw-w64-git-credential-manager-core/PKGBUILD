@@ -3,7 +3,7 @@
 _realname="git-credential-manager-core"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=2.0.374.5910
+pkgver=2.0.394.50751
 pkgrel=1
 _realver=$pkgver
 _realtag=v${pkgver%.*}-beta
@@ -18,8 +18,8 @@ groups=('VCS')
 
 source=("${zip_url}" "$src_zip_url")
 
-sha256sums=('acc1bb9053b52a91141e629d570b775f154405cf619e16bf11ee0542e0813f2e'
-            '8eff2f39fc8312eb3fdc8fbd20c95f1daf1b3fe7ec6c1e60c67d3e91493ab7e4')
+sha256sums=('ccb50168835b3a19f708b3f013ef4f7b32cf5c5b22a4d583eb176254e80a8b3c'
+            'cc78b4e8ddda6f3f63e05dca47040f9f02a674f65f50577f91e32a51c4537ae6')
 
 package() {
   prefix="$pkgdir/${MINGW_PREFIX}"
