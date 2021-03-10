@@ -44,6 +44,8 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [OpenSSH v8.5p1](https://www.openssh.com/txt/release-8.5).
+* Comes with [Git Credential Manager Core v2.0.374.5910](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.374-beta).
 * Comes with [tig v2.5.3](https://github.com/jonas/tig/releases/tag/tig-2.5.3).
 * Git for Windows now ships with [an experimental built-in file-system monitor](https://github.com/git-for-windows/git/pull/3082), without the need to install Watchman and setting `core.fsmonitor`. It can be turned on by setting both `feature.manyFiles=true` _and_ `feature.experimental=true` (or directly, via `core.useBuiltinFSMonitor=true`).
 
@@ -57,8 +59,6 @@ This version addresses CVE-2021-21300 (a bug that allows code injection during a
 * Comes with [PCRE2 v10.36](https://pcre.org/news.txt).
 * Comes with [tig v2.5.2](https://github.com/jonas/tig/releases/tag/tig-2.5.2).
 * Comes with [OpenSSL v1.1.1j](https://www.openssl.org/news/openssl-1.1.1-notes.html).
-* Comes with [OpenSSH v8.5p1](https://www.openssh.com/txt/release-8.5).
-* Comes with [Git Credential Manager Core v2.0.374.5910](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.374-beta).
 
 ## Changes since Git for Windows v2.30.0(2) (January 14th 2021)
 
