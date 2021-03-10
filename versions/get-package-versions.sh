@@ -10,6 +10,31 @@ while case "$1" in
 --mingit-only|--only-mingit)
 	mingit_only=t
 	;;
+--missing)
+	versions="$(git ls-remote https://github.com/git-for-windows/git refs/tags/v2\*windows\*)" &&
+	for version in $(echo "$versions" | sed -n \
+		-e 's|.*\trefs/tags/v\([0-9.]*\)\.windows\.1$|\1|p' \
+		-e 's|.*\trefs/tags/v\([0-9.]*\)\.windows\(\.[0-9]*\)$|\1\2|p')
+	do
+		case "$version" in
+		2.[0-4].*)
+			# There was no official Git for Windows version prior to v2.5.0
+			continue
+			;;
+		2.9.3.3)
+			# This tag only had a preview of v2.10.0 called `Git-2.9.3-rebase-i-64-bit.exe`
+			continue
+			;;
+		esac
+
+		test -f package-versions-$version.txt ||
+		test -f package-versions-$version-MinGit.txt ||
+		sh "$0" $version ||
+		sh "$0" --mingit-only $version ||
+		die "Could not get version $version"
+	done
+	exit $?
+	;;
 -*) die "Unknown option: %s\n" "$1";;
 *) break;;
 esac; do shift; done
