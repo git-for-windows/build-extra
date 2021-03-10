@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [tig v2.5.3](https://github.com/jonas/tig/releases/tag/tig-2.5.3).
+* Git for Windows now ships with [an experimental built-in file-system monitor](https://github.com/git-for-windows/git/pull/3082), without the need to install Watchman and setting `core.fsmonitor`. It can be turned on by setting both `feature.manyFiles=true` _and_ `feature.experimental=true` (or directly, via `core.useBuiltinFSMonitor=true`).
 
 ## Changes since Git for Windows v2.30.1 (February 9th 2021)
 
