@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.31.0](https://github.com/git/git/blob/v2.31.0/Documentation/RelNotes/2.31.0.txt).
 * Comes with [OpenSSH v8.5p1](https://www.openssh.com/txt/release-8.5).
 * Comes with [tig v2.5.3](https://github.com/jonas/tig/releases/tag/tig-2.5.3).
 * Git for Windows now ships with [an experimental built-in file-system monitor](https://github.com/git-for-windows/git/pull/3082), without the need to install Watchman and setting `core.fsmonitor`. It can be turned on by setting both `feature.manyFiles=true` _and_ `feature.experimental=true` (or directly, via `core.useBuiltinFSMonitor=true`).
