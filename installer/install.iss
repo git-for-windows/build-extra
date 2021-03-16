@@ -2371,7 +2371,7 @@ end;
 
 function NextButtonClick(CurPageID:Integer):Boolean;
 var
-    i:Integer;
+    i,j:Integer;
     Version:TWindowsVersion;
     Msg:String;
 begin
@@ -2431,12 +2431,14 @@ begin
                         Log(Msg);
                     ExitEarlyWithSuccess();
                 end;
-                SuppressibleMsgBox(
-                    'Setup cannot continue until you close at least those applications in the list that are marked as "closing is required".'
-                ,   mbCriticalError
-                ,   MB_OK
-                ,   IDOK
-                );
+                if WizardSilent() then begin
+                    Msg:='Silent setup failed because the following process(es) use Git for Windows:'+#13+#10;
+                    for j:=i to GetArrayLength(Processes)-1 do
+                        if not Processes[j].Restartable then
+                            Msg:=Msg+#13+#10+Processes[j].Name+' (PID '+IntToStr(Processes[j].ID)+')';
+                end else
+                    Msg:='Setup cannot continue until you close at least those applications in the list that are marked as "closing is required".';
+                SuppressibleMsgBox(Msg, mbCriticalError, MB_OK, IDOK);
                 Result:=False;
                 Exit;
             end;
