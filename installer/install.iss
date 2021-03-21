@@ -26,6 +26,10 @@
 #define DEFAULT_BRANCH_NAME 'master'
 #endif
 
+#ifndef INSTALLER_FILENAME_SUFFIX
+#define INSTALLER_FILENAME_SUFFIX ''
+#endif
+
 [Setup]
 ; Compiler-related
 Compression=lzma2/ultra64
@@ -34,7 +38,7 @@ LZMAUseSeparateProcess=yes
 OutputBaseFilename={#FILENAME_VERSION}
 OutputDir={#GetEnv('TEMP')}
 #else
-#ifdef INSTALLER_FILENAME_SUFFIX
+#if INSTALLER_FILENAME_SUFFIX!=''
 OutputBaseFilename={#APP_NAME+'-'+FILENAME_VERSION+'-'+INSTALLER_FILENAME_SUFFIX}
 #else
 OutputBaseFilename={#APP_NAME+'-'+FILENAME_VERSION}-{#BITNESS}-bit
@@ -50,8 +54,8 @@ SolidCompression=yes
 #define SOURCE_DIR SourcePath+'\..\..\..\..'
 #endif
 SourceDir={#SOURCE_DIR}
-#if BITNESS=='64'
-ArchitecturesInstallIn64BitMode=x64
+#if BITNESS=='64' || INSTALLER_FILENAME_SUFFIX=='arm64'
+ArchitecturesInstallIn64BitMode=x64 arm64
 #endif
 #ifdef SIGNTOOL
 SignTool=signtool
@@ -1078,9 +1082,17 @@ function DetectNetFxVersion:Cardinal;
 begin
     // We are only interested in version v4.5.1 or later, therefore it
     // is enough to only use the 4.5 method described in
-    // https://msdn.microsoft.com/en-us/library/hh925568
-    if not RegQueryDWordValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full','Release',Result) then
-        Result:=0;
+    // https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed
+    if IsWin64 then begin
+        if (
+            not RegQueryDWordValue(HKLM64,'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full','Release',Result)
+            and not RegQueryDWordValue(HKLM32,'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full','Release',Result)
+        ) then
+            Result:=0;
+    end else begin
+        if not RegQueryDWordValue(HKLM32,'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full','Release',Result) then
+            Result:=0;
+    end;
 end;
 
 procedure OpenHyperlink(Sender:TObject);
