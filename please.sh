@@ -2519,6 +2519,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		url=https://github.com/$repo/releases/tag/$tag_name &&
 		release_notes_feature='Comes with [Git Credential Manager Core v'$version']('"$url"').'
 		;;
+	git-for-windows-keyring)
+		(cd "$sdk64$pkgpath" &&
+		 updpkgsums &&
+		 git update-index -q --refresh &&
+		 if ! git diff-files --quiet -- PKGBUILD
+		 then
+			git commit -s -m "$package: adjust checksums" PKGBUILD &&
+			create_bundle_artifact
+		 fi)
+		;;
 	git-extra)
 		(cd "$sdk64$pkgpath" &&
 		 updpkgsums &&
