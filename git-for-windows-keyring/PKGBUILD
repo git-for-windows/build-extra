@@ -18,6 +18,7 @@ sha256sums=('d78a08ef89374593cb6908492372fb8dc9367bd2836051e31c0227ef8fb1efc8'
 
 pkgver() {
   cd "$startdir"
+  test ! -f "$(git rev-parse --git-path shallow)" || git -c http.sslbackend fetch --unshallow
   if test git-for-windows-keyring/PKGBUILD = \
     "$(git diff --name-only HEAD^.. -- .)"
   then
