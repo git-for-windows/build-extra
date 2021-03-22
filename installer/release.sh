@@ -13,6 +13,7 @@ force=
 inno_defines=
 skip_files=
 test_installer=
+test_installer_options=
 include_pdbs=
 LF='
 '
@@ -45,6 +46,14 @@ do
 		;;
 	--test)
 		test_installer=t
+		inno_defines="$inno_defines$LF#define OUTPUT_TO_TEMP ''"
+		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
+		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;$LF"
+		;;
+	--silent-test)
+		test_installer=t
+		test_installer_options="//SILENT //NORESTART"
+		skip_files=t
 		inno_defines="$inno_defines$LF#define OUTPUT_TO_TEMP ''"
 		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
 		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;$LF"
@@ -295,7 +304,7 @@ die "Could not make installer"
 if test -n "$test_installer"
 then
 	echo "Launching $TEMP/$version.exe"
-	exec "$TEMP/$version.exe"
+	exec "$TEMP/$version.exe" $test_installer_options
 	exit
 fi
 
