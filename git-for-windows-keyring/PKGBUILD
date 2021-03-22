@@ -19,14 +19,9 @@ sha256sums=('d78a08ef89374593cb6908492372fb8dc9367bd2836051e31c0227ef8fb1efc8'
 pkgver() {
   cd "$startdir"
   test ! -f "$(git rev-parse --git-path shallow)" || git -c http.sslbackend fetch --unshallow
-  if test git-for-windows-keyring/PKGBUILD = \
-    "$(git diff --name-only HEAD^.. -- .)"
-  then
-    tip_commit=HEAD^
-  else
-    tip_commit=HEAD
-  fi
-  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $tip_commit -- .)" \
+  tip_commit="$(git rev-list -1 HEAD -- . ':(exclude)./PKGBUILD' ':(exclude)./.gitignore')"
+  printf "%s.%s.%s" "${_ver_base}" \
+    "$(git rev-list --count $tip_commit -- . ':(exclude)./PKGBUILD' ':(exclude)./.gitignore')" \
     "$(git rev-parse --short $tip_commit)"
 }
 
