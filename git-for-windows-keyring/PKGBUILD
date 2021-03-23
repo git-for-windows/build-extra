@@ -12,9 +12,9 @@ install="${pkgname}.install"
 source=("git-for-windows.gpg"
 	"git-for-windows-revoked"
 	"git-for-windows-trusted")
-sha256sums=('0efe9648f5830f8ea3d11c4e93b5cc332011e01b16e70bab17ff8fea394ee7b1'
-            'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855'
-            'f58a54ff351ef51bc7fbf70a6f1c1e29060501a5a08f723dc113e34b98c13b83')
+sha256sums=('2bb2bcae385602035a62bb336b87bff1fc80f71e8e6fe8f341f770daacf6621f'
+            '485ee0b66b442f5be2154965994f52f3c8530ea1fe1763807df1062010f5aa71'
+            '211060bd1ba262f5928c91db5218b415b7d115763fc3217f80c6fc26b31e6065')
 
 pkgver() {
   cd "$startdir"
