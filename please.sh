@@ -2527,6 +2527,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 then
 			git commit -s -m "$package: adjust checksums" PKGBUILD &&
 			create_bundle_artifact
+		 fi &&
+		"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
+			'makepkg --nobuild -s --noconfirm' &&
+		 if ! git diff-files --quiet -- PKGBUILD
+		 then
+			git commit -s -m "$package: update pkgver" PKGBUILD &&
+			create_bundle_artifact
 		 fi)
 		;;
 	git-extra)
