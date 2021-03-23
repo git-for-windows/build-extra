@@ -2,7 +2,7 @@
 
 pkgname=git-for-windows-keyring
 _ver_base=1.1
-pkgver=1.1.1.4474718
+pkgver=1.1.2.92cd5db42
 pkgrel=1
 pkgdesc='Git for Windows PGP keyring'
 arch=('i686' 'x86_64')
