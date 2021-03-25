@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [GNU Privacy Guard v2.2.27](https://lists.gnupg.org/pipermail/gnupg-announce/2021q1/000452.html).
+* Comes with [OpenSSL v1.1.1k](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
 ## Changes since Git for Windows v2.30.2 (March 9th 2021)
 
