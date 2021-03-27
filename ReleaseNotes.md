@@ -48,6 +48,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSL v1.1.1k](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [Git LFS v2.13.3](https://github.com/git-lfs/git-lfs/releases/tag/v2.13.3).
 
+### Bug Fixes
+
+* It [is now possible](https://github.com/git-for-windows/git/issues/2675) to execute the Windows Store version of `python3.exe` from Git Bash.
+
 ## Changes since Git for Windows v2.30.2 (March 9th 2021)
 
 ### New Features
