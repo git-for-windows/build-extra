@@ -46,6 +46,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [cURL v7.76.0](https://curl.haxx.se/changes.html#7_76_0).
 
+### Bug Fixes
+
+* When testing a custom editor in the installer, [we now spawn it in non-elevated mode](https://github.com/git-for-windows/git/issues/3155), fixing e.g. Atom when an instance is already running.
+
 ## Changes since Git for Windows v2.31.0 (March 15th 2021)
 
 ### New Features
