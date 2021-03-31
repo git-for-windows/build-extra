@@ -1526,7 +1526,7 @@ begin
     else
         Show:=SW_SHOW;
 
-    if not ShellExec('',CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',Show,ewWaitUntilTerminated,Res) then begin
+    if not ShellExecAsOriginalUser('',CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',Show,ewWaitUntilTerminated,Res) then begin
         Wizardform.NextButton.Enabled:=False;
         SuppressibleMsgBox('Could not launch: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
         Exit;
