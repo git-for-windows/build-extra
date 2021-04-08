@@ -740,8 +740,13 @@ begin
 
     TmpFile:=ExpandConstant('{tmp}\git-config-get.txt');
     if not Exec(ExpandConstant('{cmd}'),'/D /C .\{#MINGW_BITNESS}\bin\git.exe config -l -z '+ExtraOptions+' >'+#34+TmpFile+#34,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then
-        LogError('Unable to get system config');
+                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then begin
+        if FileExists(AppDir+ExpandConstant('\{#MINGW_BITNESS}\bin\git.exe')) then
+            LogError('Unable to get system config')
+        else
+            // The previous directory went poof
+            SaveStringToFile(TmpFile,'',False)
+    end;
 
     if not LoadStringFromFile(TmpFile,FileContents) then begin
         LogError('Could not read '+#34+TmpFile+#34);
