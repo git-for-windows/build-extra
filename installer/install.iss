@@ -107,7 +107,7 @@ Name: ext\guihere; Description: Git GUI Here; Types: default
 Name: gitlfs; Description: Git LFS (Large File Support); Types: default; Flags: disablenouninstallwarning
 Name: assoc; Description: Associate .git* configuration files with the default text editor; Types: default
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
-Name: consolefont; Description: Use a TrueType font in all console windows
+Name: consolefont; Description: Use a TrueType font in all console windows; OnlyBelowVersion: 10.0
 Name: autoupdate; Description: Check daily for Git for Windows updates
 
 [Run]
