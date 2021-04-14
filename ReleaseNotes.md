@@ -44,7 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [cURL v7.76.0](https://curl.haxx.se/changes.html#7_76_0).
+* Comes with [cURL v7.76.1](https://curl.haxx.se/changes.html#7_76_1).
 
 ### Bug Fixes
 
