@@ -174,7 +174,26 @@ update_git_for_windows () {
 		;;
 	esac
 
-	latest_tag_url=https://gitforwindows.org/latest-tag.txt
+	test -f "$0.config" &&
+	fork="$(git config -f "$0.config" update.fromFork)" &&
+	test -n "$fork" ||
+	fork=
+
+	if test -n "$fork"
+	then
+		git_label="$(git config -f "$0.config" update.gitLabel)"
+		test -n "$git_label" || git_label=Git
+
+		releases_url=https://api.github.com/repos/$fork/releases
+		latest_tag_url=$releases_url/latest
+		latest_eval='latest=${latest_tag#*\"tag_name\": \"}; latest=${latest%%\"*}'
+	else
+		git_label="Git for Windows"
+		releases_url=https://api.github.com/repos/git-for-windows/git/releases
+		latest_tag_url=https://gitforwindows.org/latest-tag.txt
+		latest_eval='latest=${latest_tag#v}'
+	fi
+
 	latest_tag=$(http_get $latest_tag_url) ||
 	case $?,"$proxy" in
 	7,)
@@ -190,13 +209,13 @@ update_git_for_windows () {
 		;;
 	esac
 
-	latest=${latest_tag#v}
+	eval "$latest_eval"
 	# Did we ask about this version already?
 	recently_seen="$(get_recently_seen)"
 	test -n "$quiet" && test "x$recently_seen" = "x$latest" && return
 
 	version=$(git --version | sed "s/git version //")
-	echo "Git for Windows $version (${bit}bit)" >&2
+	echo "$git_label $version (${bit}bit)" >&2
 	if test -z "$testing" && test "$latest" = "$version"
 	then
 		echo "Up to date" >&2
@@ -215,7 +234,6 @@ update_git_for_windows () {
 	esac
 
 	echo "Update $latest is available" >&2
-	releases_url=https://api.github.com/repos/git-for-windows/git/releases
 	releases=$(http_get $releases_url/latest) || return
 	download=$(echo "$releases" |
 		grep '"browser_download_url": "' |
@@ -238,7 +256,7 @@ update_git_for_windows () {
 		fi
 		if test -n "$try_toast"
 		then
-			wintoast.exe --appname "Git for Windows" \
+			wintoast.exe --appname "$git_label" \
 				--appid GitForWindows.Updater \
 				--image /mingw$bit/share/git/git-for-windows.ico \
 				--text "Download and install $name$warn?" \
