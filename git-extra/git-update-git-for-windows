@@ -215,7 +215,14 @@ update_git_for_windows () {
 	test -n "$quiet" && test "x$recently_seen" = "x$latest" && return
 
 	version=$(git --version | sed "s/git version //")
-	echo "$git_label $version (${bit}bit)" >&2
+	if test -d /arm64/bin
+	then
+		arch_bit=ARM64
+	else
+		arch_bit=${bit}-bit
+	fi
+
+	echo "$git_label $version ($arch_bit)" >&2
 	if test -z "$testing" && test "$latest" = "$version"
 	then
 		echo "Up to date" >&2
@@ -237,7 +244,7 @@ update_git_for_windows () {
 	releases=$(http_get $releases_url/latest) || return
 	download=$(echo "$releases" |
 		grep '"browser_download_url": "' |
-		grep "$bit\-bit\.exe" |
+		grep "$arch_bit\.exe" |
 		sed -E 's/.*": "([^"]*).*/\1/')
 	filename=$(echo "$download" | sed -E 's/.*\/([^\/]*)$/\1/')
 	name="$(echo "$releases" | sed -n 's/^  "name": "\(.*\)",$/\1/p')"
