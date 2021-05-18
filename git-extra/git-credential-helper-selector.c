@@ -254,7 +254,7 @@ spawn_process_finish:
 
 static int read_config(int exit_code_may_be_nonzero)
 {
-	LPWSTR output;
+	LPWSTR output = NULL;
 	int res;
 
 	res = spawn_process(find_exe(L"git.exe"),
