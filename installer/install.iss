@@ -113,6 +113,7 @@ Name: assoc; Description: Associate .git* configuration files with the default t
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows; OnlyBelowVersion: 10.0
 Name: autoupdate; Description: Check daily for Git for Windows updates
+Name: windowsterminal; Description: Add a Git Bash Profile to Windows Terminal; MinVersion: 10.0.18362
 
 [Run]
 Filename: {app}\git-bash.exe; Parameters: --cd-to-home; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked
@@ -133,6 +134,8 @@ Name: "{app}\dev"
 Name: "{app}\dev\mqueue"
 Name: "{app}\dev\shm"
 Name: "{app}\tmp"
+Name: "{commonappdata}\Microsoft\Windows Terminal\Fragments\Git"; Components: windowsterminal; Check: IsAdminLoggedOn
+Name: "{localappdata}\Microsoft\Windows Terminal\Fragments\Git"; Components: windowsterminal; Check: not IsAdminLoggedOn
 
 [Icons]
 Name: {group}\Git GUI; Filename: {app}\cmd\git-gui.exe; Parameters: ""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
@@ -273,6 +276,10 @@ Type: dirifempty; Name: {app}
 
 ; Delete Git Bash options
 Type: files; Name: {app}\etc\git-bash.config
+
+; Delete Windows Terminal profile fragments
+Type: files; Name: {commonappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json
+Type: files; Name: {localappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json
 
 [Code]
 #include "helpers.inc.iss"
@@ -2692,6 +2699,32 @@ begin
         LogError(ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater (output: '+ReadFileAsString(LogPath)+', errors: '+ReadFileAsString(ErrPath)+').'));
 end;
 
+procedure InstallWindowsTerminalFragment;
+var
+    Res:Longint;
+    AppPath,JSONPath:String;
+begin
+    if IsAdminInstallMode() then
+        JSONPath:=ExpandConstant('{commonappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json')
+    else
+        JSONPath:=ExpandConstant('{localappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json');
+    AppPath:=ExpandConstant('{app}');
+    StringChangeEx(AppPath, '\', '/', True)
+    if not SaveStringToFile(JSONPath,
+        '{'+
+        '    "profiles": ['+
+        '      {'+
+        '        "name": "Git Bash",'+
+        '        "commandline": "'+AppPath+'/usr/bin/bash.exe -i -l",'+
+        '        "icon": "'+AppPath+'/{#MINGW_BITNESS}/share/git/git-for-windows.ico",'+
+        '        "startingDirectory": "%USERPROFILE%"'+
+        '      }'+
+        '    ]'+
+        '  }',False) then begin
+        LogError('Line {#__LINE__}: Unable to install Windows Terminal Fragment to '+JSONPath)
+    end;
+end;
+
 {
     Create Cygwin's idea of a symbolic link:
     - a system file
@@ -3142,6 +3175,13 @@ begin
         if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') then
             LogError('Line {#__LINE__}: Unable to delete "git-lfs.exe".');
     end;
+
+    {
+        Create the Windows Terminal integration
+    }
+
+    if IsComponentSelected('windowsterminal') then
+        InstallWindowsTerminalFragment();
 
     {
         Set the default Git editor
