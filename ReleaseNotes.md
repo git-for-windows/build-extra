@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [cURL v7.76.1](https://curl.haxx.se/changes.html#7_76_1).
 * Comes with [Git Credential Manager Core v2.0.452.3248](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.452).
+* The installer now offers to install [a Windows Terminal profile](https://github.com/git-for-windows/build-extra/pull/339).
 
 ### Bug Fixes
 
