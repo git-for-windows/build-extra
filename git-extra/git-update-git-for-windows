@@ -231,7 +231,7 @@ update_git_for_windows () {
 	fi
 	test -n "$testing" ||
 	case "$version" in
-	*.rc[1-9]*)
+	*.rc[0-9]*)
 		# Do not downgrade from -rc versions to the latest stable one
 		if test 0 -lt "$(version_compare "$version" "$latest")"
 		then
