@@ -2715,7 +2715,7 @@ begin
         '    "profiles": ['+
         '      {'+
         '        "name": "Git Bash",'+
-        '        "commandline": "'+AppPath+'/usr/bin/bash.exe -i -l",'+
+        '        "commandline": "'+AppPath+'/bin/bash.exe -i -l",'+
         '        "icon": "'+AppPath+'/{#MINGW_BITNESS}/share/git/git-for-windows.ico",'+
         '        "startingDirectory": "%USERPROFILE%"'+
         '      }'+
