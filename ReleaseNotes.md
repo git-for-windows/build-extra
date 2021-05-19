@@ -51,6 +51,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * When testing a custom editor in the installer, [we now spawn it in non-elevated mode](https://github.com/git-for-windows/git/issues/3155), fixing e.g. Atom when an instance is already running.
+* The meta credential-helper used by the Portable Git edition of Git for Windows [sometimes crashed](https://github.com/git-for-windows/git/issues/3196), which has been fixed.
 
 ## Changes since Git for Windows v2.31.0 (March 15th 2021)
 
