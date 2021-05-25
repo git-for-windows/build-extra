@@ -31,15 +31,24 @@ do
 		;;
 	-d=*|--debug-wizard-page=*|-d)
 		case "$1" in *=*) page="${1#*=}";; *) shift; page="$1";; esac
-		case "$page" in *Page);; *)page=${page}Page;; esac
+		case "$page" in
+		*Page)
+			page_id="$page.ID"
+			;;
+		*)
+			page=${page}Page
+			page_id="$page.ID"
+			;;
+		 esac
 		test_installer=t
-		if ! grep "^ *$page:TWizardPage;$" install.iss >/dev/null && ! grep "^ *$page:TInputFileWizardPage;$" install.iss >/dev/null
+		if ! grep "^ *$page:TWizardPage;$" install.iss >/dev/null &&
+		   ! grep "^ *$page:TInputFileWizardPage;$" install.iss >/dev/null
 		then
 			echo "Unknown page '$page'. Known pages:" >&2
 			sed -n -e 's/:TWizardPage;$//p' -e 's/:TInputFileWizardPage;$//p' <install.iss >&2
 			exit 1
 		fi
-		inno_defines="$inno_defines$LF#define DEBUG_WIZARD_PAGE '$page'$LF#define OUTPUT_TO_TEMP ''"
+		inno_defines="$inno_defines$LF#define DEBUG_WIZARD_PAGE '$page_id'$LF#define OUTPUT_TO_TEMP ''"
 		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
 		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;${LF}${LF}"
 		skip_files=t

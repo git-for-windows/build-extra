@@ -2324,7 +2324,7 @@ begin
     ContinueButton:=NIL;
 
 #ifdef DEBUG_WIZARD_PAGE
-    DebugWizardPage:={#DEBUG_WIZARD_PAGE}.ID;
+    DebugWizardPage:={#DEBUG_WIZARD_PAGE};
 #endif
     // Initially hide the Refresh button, show it when the process page becomes current.
     ProcessesRefresh.Hide;
