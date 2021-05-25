@@ -32,6 +32,10 @@ do
 	-d=*|--debug-wizard-page=*|-d)
 		case "$1" in *=*) page="${1#*=}";; *) shift; page="$1";; esac
 		case "$page" in
+		components|wpSelectComponents)
+			page=wpSelectComponents
+			page_id=$page
+			;;
 		*Page)
 			page_id="$page.ID"
 			;;
@@ -41,7 +45,8 @@ do
 			;;
 		 esac
 		test_installer=t
-		if ! grep "^ *$page:TWizardPage;$" install.iss >/dev/null &&
+		if test x"${page#wp}" = x"$page" &&
+		   ! grep "^ *$page:TWizardPage;$" install.iss >/dev/null &&
 		   ! grep "^ *$page:TInputFileWizardPage;$" install.iss >/dev/null
 		then
 			echo "Unknown page '$page'. Known pages:" >&2
