@@ -114,6 +114,10 @@ Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: def
 Name: consolefont; Description: Use a TrueType font in all console windows; OnlyBelowVersion: 10.0
 Name: autoupdate; Description: Check daily for Git for Windows updates
 Name: windowsterminal; Description: "(NEW!) Add a Git Bash Profile to Windows Terminal"; MinVersion: 10.0.18362
+#ifdef WITH_SCALAR
+Name: scalar; Description: "(NEW!) Scalar (Git add-on to manage large-scale repositories)"; Types: default
+#endif
+
 
 [Run]
 Filename: {app}\git-bash.exe; Parameters: --cd-to-home; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked
@@ -3231,6 +3235,22 @@ begin
         if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') then
             LogError('Line {#__LINE__}: Unable to delete "git-lfs.exe".');
     end;
+
+    {
+        Handle Scalar
+    }
+
+#ifdef WITH_SCALAR
+    if not IsComponentSelected('scalar') then begin
+        // Remove scalar.exe from Git for Windows' files
+        if not DeleteFile(AppDir+'\cmd\scalar.exe') or
+           not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\scalar.exe') or
+           not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\scalar.exe') or
+           not DeleteFile(AppDir+'\{#MINGW_BITNESS}\share\doc\git-doc\scalar.html') then begin
+            LogError('Line {#__LINE__}: Unable to delete "scalar.exe".');
+        end;
+    end;
+#endif
 
     {
         Create the Windows Terminal integration
