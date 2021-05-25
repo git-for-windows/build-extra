@@ -2252,7 +2252,6 @@ begin
     ExperimentalOptionsPage:=CreatePage(PrevPageID,'Configuring experimental options','Which bleeding-edge features would you like to enable?',TabOrder,Top,Left);
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
-    // 1st option
     RdbExperimentalOptions[GP_BuiltinDifftool]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, builtin difftool','Use the experimental builtin difftool (fast, but only lightly tested).',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
@@ -2260,7 +2259,6 @@ begin
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_REBASE
-    // 2nd option
     RdbExperimentalOptions[GP_BuiltinRebase]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in rebase','<RED>(NEW!)</RED> Use the experimental built-in rebase (about 70% faster, but only'+#13+'lightly tested).',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
@@ -2268,7 +2266,6 @@ begin
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_STASH
-    // 3rd option
     RdbExperimentalOptions[GP_BuiltinStash]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in stash','<RED>(NEW!)</RED> Use the experimental built-in stash (about 90% faster, but only'+#13+'lightly tested).',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
@@ -2276,7 +2273,6 @@ begin
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_ADD_I
-    // 4th option
     RdbExperimentalOptions[GP_BuiltinAddI]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in add -i/-p','<RED>(NEW!)</RED> Use the experimental built-in interactive add ("git add -i" or "git add -p").'+#13+'This makes it faster (especially the startup!), but it is not yet considered robust.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
