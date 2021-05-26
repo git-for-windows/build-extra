@@ -113,7 +113,7 @@ Name: assoc; Description: Associate .git* configuration files with the default t
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows; OnlyBelowVersion: 10.0
 Name: autoupdate; Description: Check daily for Git for Windows updates
-Name: windowsterminal; Description: Add a Git Bash Profile to Windows Terminal; MinVersion: 10.0.18362
+Name: windowsterminal; Description: "(NEW!) Add a Git Bash Profile to Windows Terminal"; MinVersion: 10.0.18362
 
 [Run]
 Filename: {app}\git-bash.exe; Parameters: --cd-to-home; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked
@@ -428,6 +428,7 @@ var
     // Accumulated set of custom pages that have options, and those that have 'new' parameters on them
     CurrentCustomPageID,FirstCustomPageID:Integer;
     AllCustomPages,CustomPagesWithUnseenOptions:String;
+    HasUnseenComponents:Boolean;
 
     // Previous Git for Windows version (if upgrading)
     PreviousGitForWindowsVersion:String;
@@ -984,7 +985,9 @@ begin
     if (OnlyShowNewOptions.Checked) then begin
         // The "Select Program Group" page is suppressed when
         // re-installing/upgrading/downgrading, but not the Components page.
-        if (PageID<=wpSelectProgramGroup) then
+        if (PageID<wpSelectComponents) and HasUnseenComponents then
+            PageID:=wpSelectComponents
+        else if (PageID<=wpSelectProgramGroup) then
             PageID:=FirstCustomPageID;
         while (PageID<PageIDBeforeInstall) and not IsInSet(CustomPagesWithUnseenOptions,PageID) do
             PageID:=PageID+1;
@@ -1026,6 +1029,10 @@ begin
     end;
 #endif
     RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousGitForWindowsVersion);
+    // The Windows Terminal profile is new in v2.32.0
+    HasUnseenComponents:=IsUpgrade('2.32.0');
+    if HasUnseenComponents then
+        AddToSet(CustomPagesWithUnseenOptions,wpSelectComponents);
 #if APP_VERSION!='0-test'
     if Result and not ParamIsSet('ALLOWDOWNGRADE') then begin
         CurrentVersion:=ExpandConstant('{#APP_VERSION}');
@@ -2324,7 +2331,7 @@ begin
     ContinueButton:=NIL;
 
 #ifdef DEBUG_WIZARD_PAGE
-    DebugWizardPage:={#DEBUG_WIZARD_PAGE}.ID;
+    DebugWizardPage:={#DEBUG_WIZARD_PAGE};
 #endif
     // Initially hide the Refresh button, show it when the process page becomes current.
     ProcessesRefresh.Hide;
@@ -2359,6 +2366,8 @@ begin
     end else if OnlyShowNewOptions.Checked then begin
         if (IsInSet(AllCustomPages,PageID)) then
             Result:=not IsInSet(CustomPagesWithUnseenOptions,PageID)
+        else if (PageID=wpSelectComponents) and HasUnseenComponents then
+            Result:=False
         else
             Result:=(PageID<>wpInfoBefore) and (PageID<>wpFinished);
     end else
