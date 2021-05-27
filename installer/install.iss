@@ -2280,7 +2280,6 @@ begin
 #endif
 
 #ifdef WITH_EXPERIMENTAL_PCON
-    // 5th option
     RdbExperimentalOptions[GP_EnablePCon]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental support for pseudo consoles.','<RED>(NEW!)</RED> This allows running native console programs like Node or Python in a'+#13+'Git Bash window without using winpty, but it still has known bugs.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
