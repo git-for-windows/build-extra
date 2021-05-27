@@ -2636,8 +2636,7 @@ end;
 
 procedure InstallAutoUpdater;
 var
-    Res:Longint;
-    LogPath,ErrPath,AppPath,XMLPath,Start:String;
+    AppPath,XMLPath,Start:String;
 begin
     Start:=GetDateTimeString('yyyy-mm-dd','-',':')+'T'+GetDateTimeString('hh:nn:ss','-',':');
     XMLPath:=ExpandConstant('{tmp}\auto-updater.xml');
@@ -2670,21 +2669,12 @@ begin
         '    </Exec>'+
         '  </Actions>'+
         '</Task>',False);
-    LogPath:=ExpandConstant('{tmp}\remove-autoupdate.log');
-    ErrPath:=ExpandConstant('{tmp}\remove-autoupdate.err');
-    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/D /C schtasks /Create /F /TN "Git for Windows Updater" /XML "'+XMLPath+'" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
-        LogError(ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater (output: '+ReadFileAsString(LogPath)+', errors: '+ReadFileAsString(ErrPath)+').'));
+    ExecSilently('schtasks /Create /F /TN "Git for Windows Updater" /XML "'+XMLPath+'"','install-autoupdate',ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater'));
 end;
 
 procedure UninstallAutoUpdater;
-var
-    Res:Longint;
-    LogPath,ErrPath:String;
 begin
-    LogPath:=ExpandConstant('{tmp}\remove-autoupdate.log');
-    ErrPath:=ExpandConstant('{tmp}\remove-autoupdate.err');
-    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/D /C schtasks /Delete /F /TN "Git for Windows Updater" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
-        LogError(ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater (output: '+ReadFileAsString(LogPath)+', errors: '+ReadFileAsString(ErrPath)+').'));
+    ExecSilently('schtasks /Delete /F /TN "Git for Windows Updater"','remove-autoupdate',ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater'));
 end;
 
 procedure InstallWindowsTerminalFragment;
