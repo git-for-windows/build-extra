@@ -3292,8 +3292,10 @@ begin
            not DeleteFile(AppDir+'\{#MINGW_BITNESS}\share\doc\git-doc\scalar.html') then begin
             LogError('Line {#__LINE__}: Unable to delete "scalar.exe".');
         end;
-    end else
+    end else begin
         UpgradeFromDotNetBasedScalar();
+        ExecSilentlyAsOriginalUser('"'+AppDir+'\cmd\scalar.exe" reconfigure --all','scalar-reconfigure','Line {#__LINE__}: Could not reconfigure Scalar enlistments');
+    end;
 #endif
 
     {
