@@ -573,7 +573,7 @@ begin
 end;
 
 var
-    BuiltinFSMonitorStopOption:String;
+    BuiltinFSMonitorStopOption,AlreadyHandledFSMonitorPaths:String;
 
 // Returns true if at least one FSMonitor daemon was shut down successfully
 function ShutdownFSMonitorDaemons():Boolean;
@@ -588,8 +588,14 @@ begin
         Exit;
     if not FindFirst('\\.\pipe\*',FindRec) then
         Exit;
+    if (AlreadyHandledFSMonitorPaths='') then
+        AlreadyHandledFSMonitorPaths:=#0;
     repeat
         if WildcardMatch(FindRec.Name,'*\fsmonitor--daemon.ipc') or WildcardMatch(FindRec.Name,'*\.git\fsmonitor') then begin
+            if (Pos(#0+FindRec.Name+#0,AlreadyHandledFSMonitorPaths)>0) then
+                Continue;
+            AlreadyHandledFSMonitorPaths:=AlreadyHandledFSMonitorPaths+FindRec.Name+#0;
+
             // An earlier `fsmonitor--daemon` iteration called it `--stop`, not `stop`;
             // Find out which form to use.
             if (BuiltinFSMonitorStopOption='') then begin
