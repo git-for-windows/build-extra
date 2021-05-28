@@ -598,8 +598,6 @@ begin
     AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tk85.dll');
     AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tcl86.dll');
     AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tk86.dll');
-    AppendToArray(Modules,AppDir+'\git-cheetah\git_shell_ext.dll');
-    AppendToArray(Modules,AppDir+'\git-cheetah\git_shell_ext64.dll');
     AppendToArray(Modules,AppDir+'\git-cmd.exe');
     AppendToArray(Modules,AppDir+'\git-bash.exe');
     AppendToArray(Modules,AppDir+'\bin\bash.exe');
