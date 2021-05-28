@@ -572,6 +572,36 @@ begin
     end;
 end;
 
+// Returns true if at least one FSMonitor daemon was shut down successfully
+function ShutdownFSMonitorDaemons():Boolean;
+var
+    FindRec:TFindRec;
+    Path:String;
+    Len:Integer;
+begin
+    Result:=False;
+#ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
+    if not FindFirst('\\.\pipe\*',FindRec) then
+        Exit;
+    repeat
+        if WildcardMatch(FindRec.Name,'*\fsmonitor--daemon.ipc') or WildcardMatch(FindRec.Name,'*\.git\fsmonitor') then begin
+            // The colon was replaced with an underscore by the FSMonitor daemon
+            Len:=Length(FindRec.Name);
+            if WildcardMatch(FindRec.Name,'*\fsmonitor--daemon.ipc') then
+                Len:=Len-22
+            else
+                Len:=Len-10;
+            Path:=Copy(FindRec.Name,1,Len);
+            if (Length(Path)>2) and (Path[2]='_') then
+                Path[2]:=':';
+
+            if ExecSilently('"'+AppDir+'\cmd\git.exe" -C "'+Path+'" fsmonitor--daemon stop','fsmonitor-stop','Could not stop FSMonitor daemon in '+Path) then
+                Result:=True;
+        end;
+    until not FindNext(FindRec);
+#endif
+end;
+
 procedure RefreshProcessList(Sender:TObject);
 var
     Version:TWindowsVersion;
@@ -595,6 +625,12 @@ begin
     AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\zlib1.dll');
     AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\libexec\git-core\zlib1.dll');
     SessionHandle:=FindProcessesUsingModules(Modules,Processes);
+
+    if (GetArrayLength(Processes)>0) and ShutdownFSMonitorDaemons() then begin
+        // We potentially shut down at least one process, refresh again
+        RmEndSession(SessionHandle);
+        SessionHandle:=FindProcessesUsingModules(Modules,Processes);
+    end;
 
     ManualClosingRequired:=False;
 
