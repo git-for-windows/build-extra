@@ -598,17 +598,8 @@ begin
     AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tk85.dll');
     AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tcl86.dll');
     AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tk86.dll');
-    AppendToArray(Modules,AppDir+'\git-cmd.exe');
-    AppendToArray(Modules,AppDir+'\git-bash.exe');
-    AppendToArray(Modules,AppDir+'\bin\bash.exe');
-    AppendToArray(Modules,AppDir+'\bin\git.exe');
-    AppendToArray(Modules,AppDir+'\bin\sh.exe');
-    AppendToArray(Modules,AppDir+'\cmd\git.exe');
-    AppendToArray(Modules,AppDir+'\cmd\gitk.exe');
-    AppendToArray(Modules,AppDir+'\cmd\git-gui.exe');
-    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\git.exe');
-    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git.exe');
-    AppendToArray(Modules,AppDir+'\usr\bin\bash.exe');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\zlib1.dll');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\libexec\git-core\zlib1.dll');
     SessionHandle:=FindProcessesUsingModules(Modules,Processes);
 
     ManualClosingRequired:=False;
