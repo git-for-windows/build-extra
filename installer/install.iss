@@ -287,12 +287,6 @@ Type: files; Name: {localappdata}\Microsoft\Windows Terminal\Fragments\Git\git-b
 #include "putty.inc.iss"
 #include "modules.inc.iss"
 
-procedure LogError(Msg:String);
-begin
-    SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-    Log(Msg);
-end;
-
 function ParamIsSet(Key:String):Boolean;
 begin
     Result:=CompareStr('0',ExpandConstant('{param:'+Key+'|0}'))<>0;
@@ -672,20 +666,6 @@ begin
     StringChangeEx(Value,#92,#92+#92,True);
     StringChangeEx(Value,#34,#92+#34,True);
     Result:=#34+Value+#34;
-end;
-
-function ReadFileAsString(Path:String):String;
-var
-    Contents:AnsiString;
-begin
-    if not LoadStringFromFile(Path,Contents) then
-        Result:='(no output)'
-    else
-        Result:=Contents;
-    if (Length(Result)>0) and (Result[Length(Result)]=#10) then
-        SetLength(Result,Length(Result)-1);
-    if (Length(Result)>0) and (Result[Length(Result)]=#13) then
-        SetLength(Result,Length(Result)-1);
 end;
 
 function GitSystemConfigSet(Key,Value:String):Boolean;

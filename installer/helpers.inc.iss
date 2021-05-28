@@ -1,5 +1,25 @@
 [Code]
 
+procedure LogError(Msg:String);
+begin
+    SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
+    Log(Msg);
+end;
+
+function ReadFileAsString(Path:String):String;
+var
+    Contents:AnsiString;
+begin
+    if not LoadStringFromFile(Path,Contents) then
+        Result:='(no output)'
+    else
+        Result:=Contents;
+    if (Length(Result)>0) and (Result[Length(Result)]=#10) then
+        SetLength(Result,Length(Result)-1);
+    if (Length(Result)>0) and (Result[Length(Result)]=#13) then
+        SetLength(Result,Length(Result)-1);
+end;
+
 // Copies a NULL-terminated array of characters to a string.
 function ArrayToString(Chars:array of Char):String;
 var
