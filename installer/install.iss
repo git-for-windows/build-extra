@@ -409,6 +409,10 @@ const
 #define HAVE_EXPERIMENTAL_OPTIONS 1
 #endif
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
+#define HAVE_EXPERIMENTAL_OPTIONS 1
+#endif
+
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Experimental options
     GP_BuiltinDifftool = 1;
@@ -416,6 +420,7 @@ const
     GP_BuiltinStash    = 3;
     GP_BuiltinAddI     = 4;
     GP_EnablePCon      = 5;
+    GP_EnableFSMonitor = 6;
 #endif
 
 var
@@ -496,7 +501,7 @@ var
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Wizard page and variables for the experimental options.
     ExperimentalOptionsPage:TWizardPage;
-    RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_EnablePCon] of TCheckBox;
+    RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_EnableFSMonitor] of TCheckBox;
 #endif
 
     // Mapping controls to hyperlinks
@@ -2286,6 +2291,13 @@ begin
     RdbExperimentalOptions[GP_EnablePCon].Checked:=ReplayChoice('Enable Pseudo Console Support','Auto')='Enabled';
 #endif
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
+    RdbExperimentalOptions[GP_EnableFSMonitor]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental built-in file system monitor','<RED>(NEW!)</RED> Automatically run a built-in file system watcher, to speed up common'+#13+'operations such as `git status`, `git add`, `git commit`, etc in worktrees'+#13+'containing many files.',TabOrder,Top,Left);
+
+    // Restore the settings chosen during a previous install
+    RdbExperimentalOptions[GP_EnableFSMonitor].Checked:=ReplayChoice('Enable FSMonitor','Auto')='Enabled';
+#endif
+
 #endif
 
     PageIDBeforeInstall:=CurrentCustomPageID;
@@ -3032,6 +3044,13 @@ begin
         LogError('Could not write to '+ExpandConstant('{app}\etc\git-bash.config'));
 #endif
 
+#ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
+    if RdbExperimentalOptions[GP_EnableFSMonitor].checked then
+        GitSystemConfigSet('core.useBuiltinFSMonitor','true')
+    else
+        GitSystemConfigSet('core.useBuiltinFSMonitor',#0);
+#endif
+
     {
         Modify the environment
 
@@ -3420,6 +3439,14 @@ begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Enable Pseudo Console Support',Data);
+#endif
+
+#ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
+    Data:='Disabled';
+    if RdbExperimentalOptions[GP_EnableFSMonitor].Checked then begin
+        Data:='Enabled';
+    end;
+    RecordChoice(PreviousDataKey,'Enable FSMonitor',Data);
 #endif
 
     Path:=ExpandConstant('{app}\etc\install-options.txt');
