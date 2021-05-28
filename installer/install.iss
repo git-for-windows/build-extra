@@ -993,11 +993,14 @@ begin
         if (PageID<wpSelectComponents) and HasUnseenComponents then
             PageID:=wpSelectComponents
         else if (PageID<=wpSelectProgramGroup) then
-            PageID:=FirstCustomPageID;
-        while (PageID<PageIDBeforeInstall) and not IsInSet(CustomPagesWithUnseenOptions,PageID) do
+            PageID:=FirstCustomPageID
+        else
             PageID:=PageID+1;
-    end;
-    Result:=(PageID=PageIDBeforeInstall);
+        while (PageID<=PageIDBeforeInstall) and not IsInSet(CustomPagesWithUnseenOptions,PageID) do
+            PageID:=PageID+1;
+        Result:=(PageID>PageIDBeforeInstall);
+    end else
+        Result:=(PageID=PageIDBeforeInstall);
 end;
 
 procedure AdjustNextButtonLabel(Sender:TObject);
