@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * The installer now offers to install [a Windows Terminal profile](https://github.com/git-for-windows/build-extra/pull/339).
 * Comes with [cURL v7.77.0](https://curl.haxx.se/changes.html#7_77_0).
 * Comes with [PCRE2 v10.37](https://pcre.org/news.txt).
+* The experimental, built-in file system monitor [is now featured as an experimental option in the installer](https://github.com/git-for-windows/build-extra/pull/351).
 
 ### Bug Fixes
 
