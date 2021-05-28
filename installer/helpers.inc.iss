@@ -34,6 +34,13 @@ begin
     Result[i]:=#0;
 end;
 
+function AppendToArray(var AnArray:TArrayOfString;Str:String):Integer;
+begin
+    Result:=GetArrayLength(AnArray)+1;
+    SetArrayLength(AnArray,Result);
+    AnArray[Result-1]:=Str;
+end;
+
 // Deletes the currently processed file as part of Check, BeforeInstall or AfterInstall
 // from the user's virtual store to ensure the installed file is used.
 procedure DeleteFromVirtualStore;

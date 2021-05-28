@@ -593,24 +593,23 @@ begin
     end;
 
     // Use the Restart Manager API when installing the shell extension.
-    SetArrayLength(Modules,17);
-    Modules[0]:=AppDir+'\usr\bin\msys-2.0.dll';
-    Modules[1]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl85.dll';
-    Modules[2]:=AppDir+'\{#MINGW_BITNESS}\bin\tk85.dll';
-    Modules[3]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl86.dll';
-    Modules[4]:=AppDir+'\{#MINGW_BITNESS}\bin\tk86.dll';
-    Modules[5]:=AppDir+'\git-cheetah\git_shell_ext.dll';
-    Modules[6]:=AppDir+'\git-cheetah\git_shell_ext64.dll';
-    Modules[7]:=AppDir+'\git-cmd.exe';
-    Modules[8]:=AppDir+'\git-bash.exe';
-    Modules[9]:=AppDir+'\bin\bash.exe';
-    Modules[10]:=AppDir+'\bin\git.exe';
-    Modules[11]:=AppDir+'\bin\sh.exe';
-    Modules[12]:=AppDir+'\cmd\git.exe';
-    Modules[13]:=AppDir+'\cmd\gitk.exe';
-    Modules[14]:=AppDir+'\cmd\git-gui.exe';
-    Modules[15]:=AppDir+'\{#MINGW_BITNESS}\bin\git.exe';
-    Modules[16]:=AppDir+'\usr\bin\bash.exe';
+    AppendToArray(Modules,AppDir+'\usr\bin\msys-2.0.dll');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tcl85.dll');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tk85.dll');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tcl86.dll');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tk86.dll');
+    AppendToArray(Modules,AppDir+'\git-cheetah\git_shell_ext.dll');
+    AppendToArray(Modules,AppDir+'\git-cheetah\git_shell_ext64.dll');
+    AppendToArray(Modules,AppDir+'\git-cmd.exe');
+    AppendToArray(Modules,AppDir+'\git-bash.exe');
+    AppendToArray(Modules,AppDir+'\bin\bash.exe');
+    AppendToArray(Modules,AppDir+'\bin\git.exe');
+    AppendToArray(Modules,AppDir+'\bin\sh.exe');
+    AppendToArray(Modules,AppDir+'\cmd\git.exe');
+    AppendToArray(Modules,AppDir+'\cmd\gitk.exe');
+    AppendToArray(Modules,AppDir+'\cmd\git-gui.exe');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\git.exe');
+    AppendToArray(Modules,AppDir+'\usr\bin\bash.exe');
     SessionHandle:=FindProcessesUsingModules(Modules,Processes);
 
     ManualClosingRequired:=False;
