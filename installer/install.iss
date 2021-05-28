@@ -2249,7 +2249,7 @@ begin
      * Create a custom page for experimental options.
      *)
 
-    ExperimentalOptionsPage:=CreatePage(PrevPageID,'Configuring experimental options','Which bleeding-edge features would you like to enable?',TabOrder,Top,Left);
+    ExperimentalOptionsPage:=CreatePage(PrevPageID,'Configuring experimental options','These features are developed actively. Would you like to try them?',TabOrder,Top,Left);
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     RdbExperimentalOptions[GP_BuiltinDifftool]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, builtin difftool','Use the experimental builtin difftool (fast, but only lightly tested).',TabOrder,Top,Left);
