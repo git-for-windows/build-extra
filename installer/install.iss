@@ -572,19 +572,48 @@ begin
     end;
 end;
 
+var
+    BuiltinFSMonitorStopOption:String;
+
 // Returns true if at least one FSMonitor daemon was shut down successfully
 function ShutdownFSMonitorDaemons():Boolean;
 var
     FindRec:TFindRec;
-    Path:String;
-    Len:Integer;
+    Path,Str:String;
+    Len,i:Integer;
 begin
     Result:=False;
 #ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
+    if (BuiltinFSMonitorStopOption='(huh?)') then
+        Exit;
     if not FindFirst('\\.\pipe\*',FindRec) then
         Exit;
     repeat
         if WildcardMatch(FindRec.Name,'*\fsmonitor--daemon.ipc') or WildcardMatch(FindRec.Name,'*\.git\fsmonitor') then begin
+            // An earlier `fsmonitor--daemon` iteration called it `--stop`, not `stop`;
+            // Find out which form to use.
+            if (BuiltinFSMonitorStopOption='') then begin
+                BuiltinFSMonitorStopOption:='(huh?)';
+                Path:=ExpandConstant('{tmp}\fsmonitor--help.err');
+                if not Exec(ExpandConstant('{sys}\cmd.exe'),'/D /C ""'+AppDir+'\cmd\git.exe" fsmonitor--daemon -h 2>"'+Path+'""','',SW_HIDE,ewWaitUntilTerminated,i) or (i<>129) then begin
+                    if (i<>1) and (i<>127) then // Suppress message if `git.exe` was not found, or if it does not know about the built-in FSMonitor
+                        LogError('Could not get FSMonitor help:'+#13+ReadFileAsString(Path)+IntToStr(i));
+                    Exit;
+                end else begin
+                    Str:=ReadFileAsString(Path);
+                    i:=Pos('stop'+#10,Str);
+                    if (i=0) then begin
+                        LogError('Could not determine stop option from:'+#13+Str);
+                        Exit;
+                    end;
+                    if (i>2) and (Str[i-1]='-') and (Str[i-2]='-') then
+                        BuiltinFSMonitorStopOption:='--stop'
+                    else
+                        BuiltinFSMonitorStopOption:='stop';
+                end;
+                Str:='';
+            end;
+
             // The colon was replaced with an underscore by the FSMonitor daemon
             Len:=Length(FindRec.Name);
             if WildcardMatch(FindRec.Name,'*\fsmonitor--daemon.ipc') then
@@ -595,7 +624,7 @@ begin
             if (Length(Path)>2) and (Path[2]='_') then
                 Path[2]:=':';
 
-            if ExecSilently('"'+AppDir+'\cmd\git.exe" -C "'+Path+'" fsmonitor--daemon stop','fsmonitor-stop','Could not stop FSMonitor daemon in '+Path) then
+            if ExecSilently('"'+AppDir+'\cmd\git.exe" -C "'+Path+'" fsmonitor--daemon '+BuiltinFSMonitorStopOption,'fsmonitor-stop','Could not stop FSMonitor daemon in '+Path) then
                 Result:=True;
         end;
     until not FindNext(FindRec);
