@@ -607,6 +607,7 @@ begin
     AppendToArray(Modules,AppDir+'\cmd\gitk.exe');
     AppendToArray(Modules,AppDir+'\cmd\git-gui.exe');
     AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\git.exe');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git.exe');
     AppendToArray(Modules,AppDir+'\usr\bin\bash.exe');
     SessionHandle:=FindProcessesUsingModules(Modules,Processes);
 
