@@ -61,7 +61,7 @@ external 'SetEnvironmentVariableA@Kernel32.dll stdcall delayload';
 // "DirStrings" is empty, "VarName" is deleted instead of set if it exists.
 function SetEnvStrings(VarName:string;DirStrings:TArrayOfString;Expandable,AllUsers,DeleteIfEmpty:Boolean):Boolean;
 var
-    Path,KeyName:string;
+    Path,KeyName,SysRoot:string;
     i:Longint;
 begin
     // Merge all non-empty directory strings into a PATH variable.
@@ -101,6 +101,13 @@ begin
                 Result:=RegWriteStringValue(HKEY_CURRENT_USER,KeyName,VarName,Path);
             end;
         end;
+    end;
+
+    // Avoid setting a `PATH` with unexpanded `%SystemRoot%` in it!
+    if (VarName='PATH') and (Pos('%',Path)>0) then begin
+        SysRoot:=GetEnv('SystemRoot');
+        StringChangeEx(Path,'%SYSTEMROOT%',SysRoot,True);
+        StringChangeEx(Path,'%SystemRoot%',SysRoot,True);
     end;
 
     // Also update the environment of the current process.
