@@ -287,12 +287,6 @@ Type: files; Name: {localappdata}\Microsoft\Windows Terminal\Fragments\Git\git-b
 #include "putty.inc.iss"
 #include "modules.inc.iss"
 
-procedure LogError(Msg:String);
-begin
-    SuppressibleMsgBox(Msg,mbError,MB_OK,IDOK);
-    Log(Msg);
-end;
-
 function ParamIsSet(Key:String):Boolean;
 begin
     Result:=CompareStr('0',ExpandConstant('{param:'+Key+'|0}'))<>0;
@@ -578,6 +572,71 @@ begin
     end;
 end;
 
+var
+    BuiltinFSMonitorStopOption,AlreadyHandledFSMonitorPaths:String;
+
+// Returns true if at least one FSMonitor daemon was shut down successfully
+function ShutdownFSMonitorDaemons():Boolean;
+var
+    FindRec:TFindRec;
+    Path,Str:String;
+    Len,i:Integer;
+begin
+    Result:=False;
+#ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
+    if (BuiltinFSMonitorStopOption='(huh?)') then
+        Exit;
+    if not FindFirst('\\.\pipe\*',FindRec) then
+        Exit;
+    if (AlreadyHandledFSMonitorPaths='') then
+        AlreadyHandledFSMonitorPaths:=#0;
+    repeat
+        if WildcardMatch(FindRec.Name,'*\fsmonitor--daemon.ipc') or WildcardMatch(FindRec.Name,'*\.git\fsmonitor') then begin
+            if (Pos(#0+FindRec.Name+#0,AlreadyHandledFSMonitorPaths)>0) then
+                Continue;
+            AlreadyHandledFSMonitorPaths:=AlreadyHandledFSMonitorPaths+FindRec.Name+#0;
+
+            // An earlier `fsmonitor--daemon` iteration called it `--stop`, not `stop`;
+            // Find out which form to use.
+            if (BuiltinFSMonitorStopOption='') then begin
+                BuiltinFSMonitorStopOption:='(huh?)';
+                Path:=ExpandConstant('{tmp}\fsmonitor--help.err');
+                if not Exec(ExpandConstant('{sys}\cmd.exe'),'/D /C ""'+AppDir+'\cmd\git.exe" fsmonitor--daemon -h 2>"'+Path+'""','',SW_HIDE,ewWaitUntilTerminated,i) or (i<>129) then begin
+                    if (i<>1) and (i<>127) then // Suppress message if `git.exe` was not found, or if it does not know about the built-in FSMonitor
+                        LogError('Could not get FSMonitor help:'+#13+ReadFileAsString(Path)+IntToStr(i));
+                    Exit;
+                end else begin
+                    Str:=ReadFileAsString(Path);
+                    i:=Pos('stop'+#10,Str);
+                    if (i=0) then begin
+                        LogError('Could not determine stop option from:'+#13+Str);
+                        Exit;
+                    end;
+                    if (i>2) and (Str[i-1]='-') and (Str[i-2]='-') then
+                        BuiltinFSMonitorStopOption:='--stop'
+                    else
+                        BuiltinFSMonitorStopOption:='stop';
+                end;
+                Str:='';
+            end;
+
+            // The colon was replaced with an underscore by the FSMonitor daemon
+            Len:=Length(FindRec.Name);
+            if WildcardMatch(FindRec.Name,'*\fsmonitor--daemon.ipc') then
+                Len:=Len-22
+            else
+                Len:=Len-10;
+            Path:=Copy(FindRec.Name,1,Len);
+            if (Length(Path)>2) and (Path[2]='_') then
+                Path[2]:=':';
+
+            if ExecSilently('"'+AppDir+'\cmd\git.exe" -C "'+Path+'" fsmonitor--daemon '+BuiltinFSMonitorStopOption,'fsmonitor-stop','Could not stop FSMonitor daemon in '+Path) then
+                Result:=True;
+        end;
+    until not FindNext(FindRec);
+#endif
+end;
+
 procedure RefreshProcessList(Sender:TObject);
 var
     Version:TWindowsVersion;
@@ -593,25 +652,20 @@ begin
     end;
 
     // Use the Restart Manager API when installing the shell extension.
-    SetArrayLength(Modules,17);
-    Modules[0]:=AppDir+'\usr\bin\msys-2.0.dll';
-    Modules[1]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl85.dll';
-    Modules[2]:=AppDir+'\{#MINGW_BITNESS}\bin\tk85.dll';
-    Modules[3]:=AppDir+'\{#MINGW_BITNESS}\bin\tcl86.dll';
-    Modules[4]:=AppDir+'\{#MINGW_BITNESS}\bin\tk86.dll';
-    Modules[5]:=AppDir+'\git-cheetah\git_shell_ext.dll';
-    Modules[6]:=AppDir+'\git-cheetah\git_shell_ext64.dll';
-    Modules[7]:=AppDir+'\git-cmd.exe';
-    Modules[8]:=AppDir+'\git-bash.exe';
-    Modules[9]:=AppDir+'\bin\bash.exe';
-    Modules[10]:=AppDir+'\bin\git.exe';
-    Modules[11]:=AppDir+'\bin\sh.exe';
-    Modules[12]:=AppDir+'\cmd\git.exe';
-    Modules[13]:=AppDir+'\cmd\gitk.exe';
-    Modules[14]:=AppDir+'\cmd\git-gui.exe';
-    Modules[15]:=AppDir+'\{#MINGW_BITNESS}\bin\git.exe';
-    Modules[16]:=AppDir+'\usr\bin\bash.exe';
+    AppendToArray(Modules,AppDir+'\usr\bin\msys-2.0.dll');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tcl85.dll');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tk85.dll');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tcl86.dll');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\tk86.dll');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\bin\zlib1.dll');
+    AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\libexec\git-core\zlib1.dll');
     SessionHandle:=FindProcessesUsingModules(Modules,Processes);
+
+    if (GetArrayLength(Processes)>0) and ShutdownFSMonitorDaemons() then begin
+        // We potentially shut down at least one process, refresh again
+        RmEndSession(SessionHandle);
+        SessionHandle:=FindProcessesUsingModules(Modules,Processes);
+    end;
 
     ManualClosingRequired:=False;
 
@@ -683,20 +737,6 @@ begin
     StringChangeEx(Value,#92,#92+#92,True);
     StringChangeEx(Value,#34,#92+#34,True);
     Result:=#34+Value+#34;
-end;
-
-function ReadFileAsString(Path:String):String;
-var
-    Contents:AnsiString;
-begin
-    if not LoadStringFromFile(Path,Contents) then
-        Result:='(no output)'
-    else
-        Result:=Contents;
-    if (Length(Result)>0) and (Result[Length(Result)]=#10) then
-        SetLength(Result,Length(Result)-1);
-    if (Length(Result)>0) and (Result[Length(Result)]=#13) then
-        SetLength(Result,Length(Result)-1);
 end;
 
 function GitSystemConfigSet(Key,Value:String):Boolean;
@@ -2667,8 +2707,7 @@ end;
 
 procedure InstallAutoUpdater;
 var
-    Res:Longint;
-    LogPath,ErrPath,AppPath,XMLPath,Start:String;
+    AppPath,XMLPath,Start:String;
 begin
     Start:=GetDateTimeString('yyyy-mm-dd','-',':')+'T'+GetDateTimeString('hh:nn:ss','-',':');
     XMLPath:=ExpandConstant('{tmp}\auto-updater.xml');
@@ -2701,21 +2740,12 @@ begin
         '    </Exec>'+
         '  </Actions>'+
         '</Task>',False);
-    LogPath:=ExpandConstant('{tmp}\remove-autoupdate.log');
-    ErrPath:=ExpandConstant('{tmp}\remove-autoupdate.err');
-    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/D /C schtasks /Create /F /TN "Git for Windows Updater" /XML "'+XMLPath+'" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
-        LogError(ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater (output: '+ReadFileAsString(LogPath)+', errors: '+ReadFileAsString(ErrPath)+').'));
+    ExecSilently('schtasks /Create /F /TN "Git for Windows Updater" /XML "'+XMLPath+'"','install-autoupdate',ExpandConstant('Line {#__LINE__}: Unable to schedule the Git for Windows updater'));
 end;
 
 procedure UninstallAutoUpdater;
-var
-    Res:Longint;
-    LogPath,ErrPath:String;
 begin
-    LogPath:=ExpandConstant('{tmp}\remove-autoupdate.log');
-    ErrPath:=ExpandConstant('{tmp}\remove-autoupdate.err');
-    if not Exec(ExpandConstant('{sys}\cmd.exe'),ExpandConstant('/D /C schtasks /Delete /F /TN "Git for Windows Updater" >"'+LogPath+'" 2>"'+ErrPath+'"'),'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then
-        LogError(ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater (output: '+ReadFileAsString(LogPath)+', errors: '+ReadFileAsString(ErrPath)+').'));
+    ExecSilently('schtasks /Delete /F /TN "Git for Windows Updater"','remove-autoupdate',ExpandConstant('Line {#__LINE__}: Unable to remove the Git for Windows updater'));
 end;
 
 procedure InstallWindowsTerminalFragment;
