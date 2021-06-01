@@ -200,3 +200,18 @@ begin
         Result:=False;
     end;
 end;
+
+function ExecSilentlyAsOriginalUser(Cmd,LogKey,ErrorMessage:String):Boolean;
+var
+    OutPath,ErrPath:String;
+    Res:Longint;
+begin
+    OutPath:=ExpandConstant('{tmp}\')+LogKey+'.out';
+    ErrPath:=ExpandConstant('{tmp}\')+LogKey+'.err';
+    if ExecAsOriginalUser(ExpandConstant('{sys}\cmd.exe'),'/D /C "'+Cmd+' >"'+OutPath+'" 2>"'+ErrPath+'""','',SW_HIDE,ewWaitUntilTerminated,Res) and (Res=0) then
+        Result:=True
+    else begin
+        LogError(ErrorMessage+' (output: '+ReadFileAsString(OutPath)+', errors: '+ReadFileAsString(ErrPath)+').');
+        Result:=False;
+    end;
+end;

@@ -114,6 +114,10 @@ Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: def
 Name: consolefont; Description: Use a TrueType font in all console windows; OnlyBelowVersion: 10.0
 Name: autoupdate; Description: Check daily for Git for Windows updates
 Name: windowsterminal; Description: "(NEW!) Add a Git Bash Profile to Windows Terminal"; MinVersion: 10.0.18362
+#ifdef WITH_SCALAR
+Name: scalar; Description: "(NEW!) Scalar (Git add-on to manage large-scale repositories)"; Types: default
+#endif
+
 
 [Run]
 Filename: {app}\git-bash.exe; Parameters: --cd-to-home; Description: Launch Git Bash; Flags: nowait postinstall skipifsilent runasoriginaluser unchecked
@@ -2846,6 +2850,49 @@ begin
     end;
 end;
 
+function UpgradeFromDotNetBasedScalar:Boolean;
+var
+    RegKey,UninstallScalar,ScalarExe,Cmd:String;
+    Res:Longint;
+    Enlistments:TArrayOfString;
+    i:Integer;
+begin
+    Result:=True;
+
+    RegKey:='SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall\{82F731CB-1CFC-406D-8D84-8467BF6040C7}_is1';
+    if not RegQueryStringValue(HKEY_LOCAL_MACHINE,RegKey,'UninstallString',UninstallScalar) then
+        // No existing Scalar found; ignore this silently
+        Exit;
+
+    // Check twice that .NET-based Scalar is there
+    ScalarExe:=UninstallScalar;
+    StringChangeEx(ScalarExe,'"','',True); // strip the surrounding double-quote characters
+    StringChangeEx(ScalarExe,'\unins000.exe','\scalar.exe',True);
+    if not FileExists(ScalarExe) then
+        Exit;
+
+    WizardForm.StatusLabel.Caption:='Upgrading from .NET-based Scalar';
+
+    // First, get .NET-based Scalar's idea of the registered enlistments
+    if not ExecSilently('"'+ScalarExe+'" list','scalar-list',ExpandConstant('Line {#__LINE__}: Unable to run `scalar list`')) then
+        Result:=False;
+    LoadStringsFromFile(ExpandConstant('{tmp}\scalar-list.out'),Enlistments);
+
+    // Now, register them with the C-based Scalar
+    for i:=0 to Length(Enlistments)-1 do begin
+        WizardForm.StatusLabel.Caption:='Registering '+Enlistments[i]+' with Scalar';
+        ExecSilentlyAsOriginalUser('"'+AppDir+'\cmd\scalar.exe" register "'+Enlistments[i]+'"','scalar-register-'+IntToStr(i),ExpandConstant('Line {#__LINE__}: Could not register "'+Enlistments[i]+'" with Scalar'));
+    end;
+
+    // Now uninstall the .NET-based Scalar
+    // (leaving C:\ProgramData\Scalar in place, in case
+    // the user needs to downgrade again to get unblocked)
+    WizardForm.StatusLabel.Caption:='Uninstalling .NET-based Scalar';
+    Cmd:='"'+UninstallScalar+'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES /LOG"';
+    if (not Exec(ExpandConstant('{sys}\cmd.exe'),'/D /C '+Cmd,'',SW_HIDE,ewWaitUntilTerminated,Res)) or (Res<>0) then
+        LogError('Could not uninstall Scalar. Trying to continue anyway.');
+end;
+
 procedure CurStepChanged(CurStep:TSetupStep);
 var
     DllPath,FileName,Cmd,Msg,Ico:String;
@@ -3231,6 +3278,25 @@ begin
         if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') then
             LogError('Line {#__LINE__}: Unable to delete "git-lfs.exe".');
     end;
+
+    {
+        Handle Scalar
+    }
+
+#ifdef WITH_SCALAR
+    if not IsComponentSelected('scalar') then begin
+        // Remove scalar.exe from Git for Windows' files
+        if not DeleteFile(AppDir+'\cmd\scalar.exe') or
+           not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\scalar.exe') or
+           not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\scalar.exe') or
+           not DeleteFile(AppDir+'\{#MINGW_BITNESS}\share\doc\git-doc\scalar.html') then begin
+            LogError('Line {#__LINE__}: Unable to delete "scalar.exe".');
+        end;
+    end else begin
+        UpgradeFromDotNetBasedScalar();
+        ExecSilentlyAsOriginalUser('"'+AppDir+'\cmd\scalar.exe" reconfigure --all','scalar-reconfigure','Line {#__LINE__}: Could not reconfigure Scalar enlistments');
+    end;
+#endif
 
     {
         Create the Windows Terminal integration
