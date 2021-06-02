@@ -44,11 +44,11 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [Git Credential Manager Core v2.0.452.3248](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.452).
 * The installer now offers to install [a Windows Terminal profile](https://github.com/git-for-windows/build-extra/pull/339).
 * Comes with [cURL v7.77.0](https://curl.haxx.se/changes.html#7_77_0).
 * Comes with [PCRE2 v10.37](https://pcre.org/news.txt).
 * The experimental, built-in file system monitor [is now featured as an experimental option in the installer](https://github.com/git-for-windows/build-extra/pull/351).
+* Comes with [Git Credential Manager Core v2.0.472.49963](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.472).
 
 ### Bug Fixes
 
