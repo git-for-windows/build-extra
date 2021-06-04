@@ -2339,7 +2339,7 @@ begin
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
-    RdbExperimentalOptions[GP_EnableFSMonitor]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental built-in file system monitor','<RED>(NEW!)</RED> Automatically run a built-in file system watcher, to speed up common'+#13+'operations such as `git status`, `git add`, `git commit`, etc in worktrees'+#13+'containing many files.',TabOrder,Top,Left);
+    RdbExperimentalOptions[GP_EnableFSMonitor]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental built-in file system monitor','<RED>(NEW!)</RED> Automatically run a <A HREF=https://github.com/git-for-windows/git/discussions/3251>built-in file system watcher</A>, to speed up common'+#13+'operations such as `git status`, `git add`, `git commit`, etc in worktrees'+#13+'containing many files.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
     RdbExperimentalOptions[GP_EnableFSMonitor].Checked:=ReplayChoice('Enable FSMonitor','Auto')='Enabled';
