@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [PCRE2 v10.37](https://pcre.org/news.txt).
 * The experimental, built-in file system monitor [is now featured as an experimental option in the installer](https://github.com/git-for-windows/build-extra/pull/351).
 * Comes with [Git Credential Manager Core v2.0.474.41365](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.474).
+* Sublime Text 4 [now gets detected by the installer](https://github.com/git-for-windows/build-extra/pull/355).
 
 ### Bug Fixes
 

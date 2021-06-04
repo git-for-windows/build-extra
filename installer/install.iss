@@ -1810,11 +1810,15 @@ begin
         EditorAvailable[GE_VisualStudioCodeInsiders]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\Code - Insiders.exe\shell\open\command','',VisualStudioCodeInsidersPath);
         VisualStudioCodeInsidersUserInstallation:=True;
     end;
-    SublimeTextPath:=ExpandConstant('{pf}\Sublime Text 3\subl.exe');
+    SublimeTextPath:=ExpandConstant('{pf}\Sublime Text\subl.exe');
     EditorAvailable[GE_SublimeText]:=PathIsValidExecutable(SublimeTextPath);
     if (not EditorAvailable[GE_SublimeText]) then begin
-        EditorAvailable[GE_SublimeText]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\sublime_text.exe\shell\open\command','',SublimeTextPath);
-        SublimeTextUserInstallation:=True;
+        SublimeTextPath:=ExpandConstant('{pf}\Sublime Text 3\subl.exe');
+        EditorAvailable[GE_SublimeText]:=PathIsValidExecutable(SublimeTextPath);
+        if (not EditorAvailable[GE_SublimeText]) then begin
+            EditorAvailable[GE_SublimeText]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\sublime_text.exe\shell\open\command','',SublimeTextPath);
+            SublimeTextUserInstallation:=True;
+        end;
     end;
     EditorAvailable[GE_Atom]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\atom.exe\shell\open\command','',AtomPath);
     EditorAvailable[GE_CustomEditor]:=True;
