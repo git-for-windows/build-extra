@@ -50,6 +50,7 @@ This package contains software from a number of other projects including Bash, z
 * The experimental, built-in [file system monitor](https://github.com/git-for-windows/git/discussions/3251) is now [featured as an experimental option in the installer](https://github.com/git-for-windows/build-extra/pull/351).
 * Comes with [Git Credential Manager Core v2.0.474.41365](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.474).
 * Sublime Text 4 [now gets detected by the installer](https://github.com/git-for-windows/build-extra/pull/355).
+* Comes with [tig v2.5.4](https://github.com/jonas/tig/releases/tag/tig-2.5.4).
 
 ### Bug Fixes
 
