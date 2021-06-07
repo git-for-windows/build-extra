@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.32.0](https://github.com/git/git/blob/v2.32.0/Documentation/RelNotes/2.32.0.txt).
 * The installer now offers to install [a Windows Terminal profile](https://github.com/git-for-windows/build-extra/pull/339).
 * Comes with [cURL v7.77.0](https://curl.haxx.se/changes.html#7_77_0).
 * Comes with [PCRE2 v10.37](https://pcre.org/news.txt).
