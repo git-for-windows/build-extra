@@ -2771,6 +2771,7 @@ begin
         '{'+
         '    "profiles": ['+
         '      {'+
+        '        "guid": "{2ece5bfe-50ed-5f3a-ab87-5cd4baafed2b}",'+
         '        "name": "Git Bash",'+
         '        "commandline": "'+AppPath+'/bin/bash.exe -i -l",'+
         '        "icon": "'+AppPath+'/{#MINGW_BITNESS}/share/git/git-for-windows.ico",'+
