@@ -42,6 +42,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.32.0 (June 7th 2021)
 
+### New Features
+
+* The Windows Terminal profile is now identified [by a GUID](https://github.com/git-for-windows/build-extra/pull/356), for more robust customization.
+
 ### Bug Fixes
 
 * The built-in file system watcher could hang in some scenarios. [This was fixed](https://github.com/git-for-windows/git/pull/3263).
