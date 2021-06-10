@@ -1112,6 +1112,11 @@ begin
                 Result:=False;
         end;
     end;
+
+    // Warn about switching away from VFS-enabled Git
+    if Result and (Pos('.vfs.','{#GIT_VERSION}')=0) and (Pos('.vfs.',GetPreviousGitVersion())>0) then
+        if SuppressibleMsgBox('The VFS for Git-aware flavor of Git for Windows is currently installed.'+#13+'Switching away from that flavor might break your Scalar/VFS for Git enlistments.'+#13+'Do you still want to switch?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO then
+            Result:=False;
 #endif
 end;
 
