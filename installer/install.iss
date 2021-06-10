@@ -982,23 +982,34 @@ begin
             Result:=Result+1;
 end;
 
-function IsDowngrade(CurrentVersion:String):Boolean;
 var
-    Path,PreviousVersion:String;
-    i,j,CurrentLength,PreviousLength:Integer;
+    PreviousGitVersion:String;
+    PreviousGitVersionInitialized:Boolean;
+
+function GetPreviousGitVersion():String;
+var
+    Path:String;
+    i:Integer;
 begin
-    PreviousVersion:=PreviousGitForWindowsVersion;
-    Result:=(VersionCompare(CurrentVersion,PreviousVersion)<0);
-#ifdef GIT_VERSION
-    if Result or (CountDots(CurrentVersion)>3) or (CountDots(PreviousVersion)>3) then begin
-        // maybe the previous version was a prerelease (prereleases have five numbers: v2.24.0-rc1.windows.1 reduces to '2.24.0.1.1')?
+    if not PreviousGitVersionInitialized then begin
+        PreviousGitVersionInitialized:=True;
         if (RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','InstallPath',Path))
                 and (Exec(ExpandConstant('{cmd}'),'/d /c ""'+Path+'\cmd\git.exe" version >"'+ExpandConstant('{tmp}')+'\previous.version""','',SW_HIDE,ewWaitUntilTerminated,i))
                 and (i=0) then begin
-            CurrentVersion:='{#GIT_VERSION}';
-            PreviousVersion:=ReadFileAsString(ExpandConstant('{tmp}\previous.version'));
-            Result:=(VersionCompare(CurrentVersion,PreviousVersion)<0);
+            PreviousGitVersion:=ReadFileAsString(ExpandConstant('{tmp}\previous.version'));
         end;
+    end;
+    Result:=PreviousGitVersion;
+end;
+
+function IsDowngrade(CurrentVersion:String):Boolean;
+begin
+    Result:=(VersionCompare(CurrentVersion,PreviousGitForWindowsVersion)<0);
+#ifdef GIT_VERSION
+    if Result or (CountDots(CurrentVersion)>3) or (CountDots(PreviousGitForWindowsVersion)>3) then begin
+        // maybe the previous version was a prerelease (prereleases have five numbers: v2.24.0-rc1.windows.1 reduces to '2.24.0.1.1')?
+        CurrentVersion:='{#GIT_VERSION}';
+        Result:=(VersionCompare(CurrentVersion,GetPreviousGitVersion())<0);
     end;
 #endif
 end;
@@ -1101,6 +1112,11 @@ begin
                 Result:=False;
         end;
     end;
+
+    // Warn about switching away from VFS-enabled Git
+    if Result and (Pos('.vfs.','{#GIT_VERSION}')=0) and (Pos('.vfs.',GetPreviousGitVersion())>0) then
+        if SuppressibleMsgBox('The VFS for Git-aware flavor of Git for Windows is currently installed.'+#13+'Switching away from that flavor might break your Scalar/VFS for Git enlistments.'+#13+'Do you still want to switch?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO then
+            Result:=False;
 #endif
 end;
 
