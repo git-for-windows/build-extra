@@ -577,6 +577,10 @@ set_package () {
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
+	libgcrypt)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	gnupg)
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
@@ -3357,6 +3361,53 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not determine newest $package version\n"
 		url=https://svn.apache.org/repos/asf/serf/trunk/CHANGES
 		release_notes_feature='Comes with ['$package' v'$version']('"$url"').'
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) ||
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
+
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
+		die "Could not update $sdk32$pkgpath"
+		;;
+	libgcrypt)
+		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=libgcrypt.git;a=tags'
+		tags="$(curl -s "$url")" ||
+		test $? = 56 ||
+		die 'Could not obtain download page from %s\n' "$url"
+		version="$(echo "$tags" |
+			sed -n '/ href=[^>]*>libgcrypt-[1-9][.0-9]*</{s/.*>libgcrypt-\([.0-9]*\).*/\1/p}' |
+			sort -rnt. -k1,1 -k2,2 -k3,3 |
+			head -n 1)"
+		test -n "$version" ||
+		die "Could not determine newest $package version\n"
+		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
+
+		announce_url=
+		url2=https://lists.gnupg.org/pipermail/gnupg-announce/
+		mails="$(curl -s "$url2")" ||
+		die 'Could not obtain download page from %s\n' "$url2"
+		for d in $(echo "$mails" | sed -n 's/.*<A href="\(2[^/]*\/date.html\).*/\1/p' | sed -n 1,3p)
+		do
+			m="$(curl -s "$url2/$d")" ||
+			die "Could not download %s\n" "$url2$d"
+			m="$(echo "$m" |
+				sed -n '/<A HREF.*>.*Libgcrypt '"$(echo "$version" |
+					sed 's/\./\\./g'
+				)"'/{s/.* HREF="\([^"]*\).*/\1/p;q}')"
+			test -n "$m" || continue
+			announce_url="$url2${d%/*}/$m"
+			break
+		done
+		# Seems https://lists.gnupg.org/pipermail/gnupg-announce/ is not reliable:
+		# libgcrypt v1.9.3, for example, was not announced there
+		test -n "$announce_url" ||
+		announce_url=https://github.com/gpg/libgcrypt/blob/libgcrypt-$version/NEWS
+		release_notes_feature='Comes with [GNU Privacy Guard '"$v"']('"$announce_url"').'
 
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
