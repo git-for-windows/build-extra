@@ -577,6 +577,10 @@ set_package () {
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
+	libgpg-error)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	libgcrypt)
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
@@ -3361,6 +3365,31 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not determine newest $package version\n"
 		url=https://svn.apache.org/repos/asf/serf/trunk/CHANGES
 		release_notes_feature='Comes with ['$package' v'$version']('"$url"').'
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) ||
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
+
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
+		die "Could not update $sdk32$pkgpath"
+		;;
+	libgpg-error)
+		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=libgpg-error.git;a=tags'
+		tags="$(curl -s "$url")" ||
+		test $? = 56 ||
+		die 'Could not obtain download page from %s\n' "$url"
+		version="$(echo "$tags" |
+			sed -n '/ href=[^>]*>libgpg-error-[1-9][.0-9]*</{s/.*>libgpg-error-\([.0-9]*\).*/\1/p}' |
+			sort -rnt. -k1,1 -k2,2 -k3,3 |
+			head -n 1)"
+		test -n "$version" ||
+		die "Could not determine newest $package version\n"
+		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
 
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
