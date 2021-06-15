@@ -577,6 +577,10 @@ set_package () {
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
+	pkgconf)
+		type=MSYS
+		pkgpath=/usr/src/MSYS2-packages/$package
+		;;
 	libgpg-error)
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
@@ -3365,6 +3369,29 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not determine newest $package version\n"
 		url=https://svn.apache.org/repos/asf/serf/trunk/CHANGES
 		release_notes_feature='Comes with ['$package' v'$version']('"$url"').'
+
+		(cd "$sdk64$pkgpath" &&
+		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 updpkgsums &&
+		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
+		 create_bundle_artifact) ||
+		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
+
+		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
+		die "Could not update $sdk32$pkgpath"
+		;;
+	pkgconf)
+		repo=pkgconf/pkgconf
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -s $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		version="$(echo "$release" |
+			sed -n 's/^  "tag_name": "pkgconf-\(.*\)",\?$/\1/p')"
+		test -n "$version" ||
+		die "Could not determine version of %s\n" "$package"
 
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
