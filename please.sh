@@ -3383,13 +3383,14 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update $sdk32$pkgpath"
 		;;
 	pkgconf)
-		repo=pkgconf/pkgconf
-		url=https://api.github.com/repos/$repo/releases/latest
-		release="$(curl --netrc -s $url)"
-		test -n "$release" ||
-		die "Could not determine the latest version of %s\n" "$package"
-		version="$(echo "$release" |
-			sed -n 's/^  "tag_name": "pkgconf-\(.*\)",\?$/\1/p')"
+		url=https://api.github.com/repos/pkgconf/pkgconf/tags
+		tags="$(curl --netrc -s $url)"
+		test -n "$tags" ||
+		die "Could not get tags of %s\n" "$package"
+		version="$(echo "$tags" |
+			sed -n 's/^    "name": "pkgconf-\(.*\)",\?$/\1/p' |
+			sort -rnt. -k1,1 -k2,2 -k3,3 |
+			head -n 1)"
 		test -n "$version" ||
 		die "Could not determine version of %s\n" "$package"
 
