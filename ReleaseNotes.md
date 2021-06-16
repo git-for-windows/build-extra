@@ -45,7 +45,6 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * The Windows Terminal profile is now identified [by a GUID](https://github.com/git-for-windows/build-extra/pull/356), for more robust customization.
-* Comes with [libgcrypt v1.9.3 (2)](https://github.com/gpg/libgcrypt/blob/libgcrypt-1.9.3/NEWS).
 
 ### Bug Fixes
 

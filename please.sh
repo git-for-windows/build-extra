@@ -3446,28 +3446,6 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not determine newest $package version\n"
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
 
-		announce_url=
-		url2=https://lists.gnupg.org/pipermail/gnupg-announce/
-		mails="$(curl -s "$url2")" ||
-		die 'Could not obtain download page from %s\n' "$url2"
-		for d in $(echo "$mails" | sed -n 's/.*<A href="\(2[^/]*\/date.html\).*/\1/p' | sed -n 1,3p)
-		do
-			m="$(curl -s "$url2/$d")" ||
-			die "Could not download %s\n" "$url2$d"
-			m="$(echo "$m" |
-				sed -n '/<A HREF.*>.*Libgcrypt '"$(echo "$version" |
-					sed 's/\./\\./g'
-				)"'/{s/.* HREF="\([^"]*\).*/\1/p;q}')"
-			test -n "$m" || continue
-			announce_url="$url2${d%/*}/$m"
-			break
-		done
-		# Seems https://lists.gnupg.org/pipermail/gnupg-announce/ is not reliable:
-		# libgcrypt v1.9.3, for example, was not announced there
-		test -n "$announce_url" ||
-		announce_url=https://github.com/gpg/libgcrypt/blob/libgcrypt-$version/NEWS
-		release_notes_feature='Comes with [libgcrypt '"$v"']('"$announce_url"').'
-
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
 			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
