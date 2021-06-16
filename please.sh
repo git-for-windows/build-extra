@@ -583,10 +583,12 @@ set_package () {
 		;;
 	libgpg-error)
 		type=MSYS
+		extra_packages="libgpg-error-devel"
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
 	libgcrypt)
 		type=MSYS
+		extra_packages="libgcrypt-devel"
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
 	gnupg)
