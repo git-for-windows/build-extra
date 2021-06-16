@@ -3464,7 +3464,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		# libgcrypt v1.9.3, for example, was not announced there
 		test -n "$announce_url" ||
 		announce_url=https://github.com/gpg/libgcrypt/blob/libgcrypt-$version/NEWS
-		release_notes_feature='Comes with [GNU Privacy Guard '"$v"']('"$announce_url"').'
+		release_notes_feature='Comes with [libgcrypt '"$v"']('"$announce_url"').'
 
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
