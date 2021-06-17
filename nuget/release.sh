@@ -102,9 +102,6 @@ sed -e "s/@@VERSION@@/$VERSION_IN_SPEC/g" -e "s/@@AUTHOR@@/$AUTHOR/g" \
 	-e "s/@@VERSIONTAG@@/$VERSIONTAG/g" \
 	-e "s/@@ID@@/$ID/g" -e '/@@FILELIST@@/,$d' <"$SPECIN" >"$SPEC"
 
-mkdir -p "$BUILDEXTRA/emptydir" ||
-die "Could not generate empty directory."
-
 # Make a list of files to include
 LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
 	PACKAGE_VERSIONS_FILE="$BUILDEXTRA"/nuget/package-versions.txt \
@@ -130,6 +127,9 @@ test -z "$MINIMAL_GIT" || {
 die "Could not move the core Git .exe files out of libexec/git-core"
 
 sed '1,/@@FILELIST@@/d' <"$SPECIN" >>"$SPEC"
+
+mkdir -p "$BUILDEXTRA/emptydir" ||
+die "Could not generate empty directory."
 
 nuget pack -BasePath / -Properties buildextra="$(cygpath -aw "$BUILDEXTRA")" \
 	-OutputDirectory "$output_directory" -Verbosity detailed "$SPEC"
