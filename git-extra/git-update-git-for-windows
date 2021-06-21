@@ -31,21 +31,15 @@ version_compare () {
 		test $a1 -le $b1 || { echo 1; return; }
 		test $b1 -le $a1 || { echo -1; return; }
 
-		# Get the next character
-		a1="$(expr "$a" : '^\(.\)')"; a="${a#$a1}"
-		b1="$(expr "$b" : '^\(.\)')"; b="${b#$b1}"
+		# Skip non-numeric prefixes
+		a1="$(expr "$a" : '^\([^0-9]\+\)')"; a="${a#$a1}"
+		b1="$(expr "$b" : '^\([^0-9]\+\)')"; b="${b#$b1}"
 
-		test "x$a1" = "x$b1" || {
-			if test . = "$b1"
-			then
-				echo -1
-			else
-				echo 1
-			fi
-			return
-		}
-
-		test . = "$a1" || { echo 0; return; }
+		case "$a1,$b1" in
+		-rc,-rc) ;; # both are -rc versions
+		-rc,*) echo -1; return;;
+		*,-rc) echo 1; return;;
+		esac
 	done
 }
 
