@@ -31,22 +31,41 @@ version_compare () {
 		test $a1 -le $b1 || { echo 1; return; }
 		test $b1 -le $a1 || { echo -1; return; }
 
-		# Get the next character
-		a1="$(expr "$a" : '^\(.\)')"; a="${a#$a1}"
-		b1="$(expr "$b" : '^\(.\)')"; b="${b#$b1}"
+		# Skip non-numeric prefixes
+		a1="$(expr "$a" : '^\([^0-9]\+\)')"; a="${a#$a1}"
+		b1="$(expr "$b" : '^\([^0-9]\+\)')"; b="${b#$b1}"
 
-		test "x$a1" = "x$b1" || {
-			if test . = "$b1"
-			then
-				echo -1
-			else
-				echo 1
-			fi
-			return
+		case "$a1,$b1" in
+		-rc,-rc) ;; # both are -rc versions
+		-rc,*) echo -1; return;;
+		*,-rc) echo 1; return;;
+		esac
+	done
+}
+
+test "--test-version-compare" != "$*" || {
+	test_version_compare () {
+		result="$(version_compare "$1" "$2")"
+		test "$3" = "$result" || {
+			echo "version_compare $1 $2 returned $result instead of $3" >&2
+			exit 1
 		}
 
-		test . = "$a1" || { echo 0; return; }
-	done
+		result2="$(version_compare "$2" "$1")"
+		test "$result2" = "$((-$3))" || {
+			echo "version_compare $2 $1 returned $result2 instead of $((-$3))" >&2
+			exit 1
+		}
+	}
+
+	test_version_compare 2.32.0.windows.1 2.32.1.windows.1 -1
+	test_version_compare 2.32.1.windows.1 2.32.0.windows.1 1
+	test_version_compare 2.32.1.vfs.0.0 2.32.0.windows.1 1
+	test_version_compare 2.32.1.vfs.0.0 2.32.0.vfs.0.0 1
+	test_version_compare 2.32.0.vfs.0.1 2.32.0.vfs.0.2 -1
+	test_version_compare 2.32.0-rc0.windows.1 2.31.1.windows.1 1
+	test_version_compare 2.32.0-rc2.windows.1 2.32.0.windows.1 -1
+	exit 0
 }
 
 # Counts how many Bash instances are running, apart from the current one (if
@@ -229,16 +248,16 @@ update_git_for_windows () {
 		set_recently_seen "$latest"
 		return
 	fi
-	test -n "$testing" ||
-	case "$version" in
-	*.rc[0-9]*)
-		# Do not downgrade from -rc versions to the latest stable one
+	if ! test -n "$testing"
+	then
+		# We are not testing and we don't have exact equality,
+		# so do a careful comparison and look to see if the
+		# latest release is strictly newer than ours.
 		if test 0 -lt "$(version_compare "$version" "$latest")"
 		then
 			return
 		fi
-		;;
-	esac
+	fi
 
 	echo "Update $latest is available" >&2
 	releases=$(http_get $releases_url/latest) || return
