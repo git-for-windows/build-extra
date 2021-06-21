@@ -56,6 +56,12 @@ test "--test-version-compare" != "$*" || {
 			echo "version_compare $1 $2 returned $result instead of $3" >&2
 			exit 1
 		}
+
+		result2="$(version_compare "$2" "$1")"
+		test "$result2" = "$((-$3))" || {
+			echo "version_compare $2 $1 returned $result2 instead of $((-$3))" >&2
+			exit 1
+		}
 	}
 
 	test_version_compare 2.32.0.windows.1 2.32.1.windows.1 -1
