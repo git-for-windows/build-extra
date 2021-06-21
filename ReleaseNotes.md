@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 
 * The Windows Terminal profile is now identified [by a GUID](https://github.com/git-for-windows/build-extra/pull/356), for more robust customization.
 * Comes with [GNU Privacy Guard v2.2.28](https://lists.gnupg.org/pipermail/gnupg-announce/2021q2/000460.html).
+* Comes with [Git Credential Manager Core v2.0.475.64295](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.475).
 
 ### Bug Fixes
 
