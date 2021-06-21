@@ -248,16 +248,16 @@ update_git_for_windows () {
 		set_recently_seen "$latest"
 		return
 	fi
-	test -n "$testing" ||
-	case "$version" in
-	*.rc[0-9]*)
-		# Do not downgrade from -rc versions to the latest stable one
+	if ! test -n "$testing"
+	then
+		# We are not testing and we don't have exact equality,
+		# so do a careful comparison and look to see if the
+		# latest release is strictly newer than ours.
 		if test 0 -lt "$(version_compare "$version" "$latest")"
 		then
 			return
 		fi
-		;;
-	esac
+	fi
 
 	echo "Update $latest is available" >&2
 	releases=$(http_get $releases_url/latest) || return
