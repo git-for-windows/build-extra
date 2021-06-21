@@ -49,6 +49,25 @@ version_compare () {
 	done
 }
 
+test "--test-version-compare" != "$*" || {
+	test_version_compare () {
+		result="$(version_compare "$1" "$2")"
+		test "$3" = "$result" || {
+			echo "version_compare $1 $2 returned $result instead of $3" >&2
+			exit 1
+		}
+	}
+
+	test_version_compare 2.32.0.windows.1 2.32.1.windows.1 -1
+	test_version_compare 2.32.1.windows.1 2.32.0.windows.1 1
+	test_version_compare 2.32.1.vfs.0.0 2.32.0.windows.1 1
+	test_version_compare 2.32.1.vfs.0.0 2.32.0.vfs.0.0 1
+	test_version_compare 2.32.0.vfs.0.1 2.32.0.vfs.0.2 -1
+	test_version_compare 2.32.0-rc0.windows.1 2.31.1.windows.1 1
+	test_version_compare 2.32.0-rc2.windows.1 2.32.0.windows.1 -1
+	exit 0
+}
+
 # Counts how many Bash instances are running, apart from the current one (if
 # any: `git update-git-for-windows` might have been called from a CMD window,
 # in which case no Git Bash might be running at all).
