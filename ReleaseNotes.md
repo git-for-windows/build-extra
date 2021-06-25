@@ -53,6 +53,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The built-in file system watcher could hang in some scenarios. [This was fixed](https://github.com/git-for-windows/git/pull/3263).
+* Remote HTTPS repositories [could not be accessed from within portable Git installed into a network share](https://github.com/git-for-windows/git/issues/3266). This [has been fixed](https://github.com/git-for-windows/MINGW-packages/pull/51).
 
 ## Changes since Git for Windows v2.31.1 (March 27th 2021)
 
