@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [GNU Privacy Guard v2.2.28](https://lists.gnupg.org/pipermail/gnupg-announce/2021q2/000460.html).
 * Comes with [Git Credential Manager Core v2.0.475.64295](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.475).
 * Access to remote HTTPS repositories that requires client certificates [can be enabled](https://github.com/git-for-windows/git/issues/3292). This is now necessary because [cURL no longer sends client certificates by default](https://github.com/curl/curl/commit/54e747501626b81149b1b44949119d365db82004).
+* Comes with [cURL v7.77.0](https://curl.haxx.se/changes.html#7_77_0).
 
 ### Bug Fixes
 
