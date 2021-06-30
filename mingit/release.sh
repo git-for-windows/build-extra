@@ -144,6 +144,18 @@ sort >"$SCRIPT_PATH"/exclude-list &&
 LIST="$(comm -23 "$SCRIPT_PATH"/sorted-all "$SCRIPT_PATH"/exclude-list)" ||
 die "Could not copy libexec/git-core/*.exe"
 
+# Use git-wrapper.exe as git-remote-http.exe if supported
+if cmp "$SCRIPT_PATH/root/$BIN_DIR"/git-remote-http{,s}.exe
+then
+	# verify that the Git wrapper works
+	cp "/mingw$BITNESS/share/git/git-wrapper.exe" "$SCRIPT_PATH/root/$BIN_DIR"/git-remote-http.exe
+	usage="$($SCRIPT_PATH/root/$BIN_DIR/git-remote-http.exe 2>&1)"
+	case "$?,$usage" in
+	1,*remote-curl*) ;; # okay, let's use the Git wrapper
+	*) cp "$SCRIPT_PATH/root/$BIN_DIR"/git-remote-https.exe "$SCRIPT_PATH/root/$BIN_DIR"/git-remote-http.exe;;
+	esac
+fi
+
 test ! -f "$TARGET" || rm "$TARGET" || die "Could not remove $TARGET"
 
 echo "Creating .zip archive" &&
