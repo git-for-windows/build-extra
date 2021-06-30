@@ -2017,7 +2017,7 @@ begin
     RdbDefaultBranch[DB_Unspecified].OnClick:=@DefaultBranchOptionChanged;
 
     // 2nd choice
-    RdbDefaultBranch[DB_Manual]:=CreateRadioButton(DefaultBranchPage,'Override the default branch name for new repositories','<RED>NEW!</RED> Many teams already renamed their default branches; common choices are'+#13+'"main", "trunk" and "development". Specify the name "git init" should use for the'+#13+'initial branch:',TabOrder,Top,Left);
+    RdbDefaultBranch[DB_Manual]:=CreateRadioButton(DefaultBranchPage,'Override the default branch name for new repositories','<RED>NEW!</RED> Many teams already renamed their default branches; common choices are '+#13#10+' "main", "trunk" and "development". Specify the name "git init" should use for the '+#13#10+' initial branch:',TabOrder,Top,Left);
     RdbDefaultBranch[DB_Manual].OnClick:=@DefaultBranchOptionChanged;
 
     // Text field for the overridden branch name
