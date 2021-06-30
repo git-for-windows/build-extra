@@ -18,7 +18,7 @@ if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
 then
 	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES bash coreutils mingw-w64-busybox
 		libiconv libintl libreadline ncurses openssl
-		mingw-w64-libmetalink mingw-w64-spdylay"
+		mingw-w64-libmetalink mingw-w64-spdylay diffutils"
 
 	EXTRA_FILE_EXCLUDES="/etc/post-install/.* /usr/bin/getfacl.exe
 		/usr/bin/msys-\(gmp\|ssl\)-.*.dll
