@@ -162,6 +162,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../libexec/git-core/git-cvsexport' \
 	-e '^/mingw../share/doc/git-doc/git-cvsimport' \
 	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
+	-e '^/mingw../share/gtk-doc/' \
 	-e '^/mingw../share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
 	-e '^/usr/bin/msys-\('$(if test i686 = "$ARCH"
@@ -187,6 +188,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/share/perl5/core_perl/CPAN/' \
 	-e '^/usr/share/perl5/core_perl/TAP/' \
 	-e '^/usr/share/vim/vim74/lang/' \
+	-e '^/usr/share/\(bash-completion\|makepkg\|nano\)/' \
 	-e '^/update-via-pacman.bat$' \
 	-e '^/etc/profile.d/git-sdk.sh$' |
 if test -n "$WITH_L10N" && test -z "$MINIMAL_GIT"
