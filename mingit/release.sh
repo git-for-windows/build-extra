@@ -156,6 +156,18 @@ then
 	esac
 fi
 
+# Use git-wrapper.exe as ash.exe if supported
+if test -f "$SCRIPT_PATH/root/$BIN_DIR"/busybox.exe
+then
+	# verify that the Git wrapper works
+	cp "/mingw$BITNESS/share/git/git-wrapper.exe" "$SCRIPT_PATH/root/$BIN_DIR"/ash.exe
+	uname="$($SCRIPT_PATH/root/$BIN_DIR/ash.exe -c uname 2>&1)"
+	case "$?,$uname" in
+	0,*BusyBox*) ;; # okay, let's use the Git wrapper
+	*) rm "$SCRIPT_PATH/root/$BIN_DIR"/ash.exe;;
+	esac
+fi
+
 test ! -f "$TARGET" || rm "$TARGET" || die "Could not remove $TARGET"
 
 echo "Creating .zip archive" &&
