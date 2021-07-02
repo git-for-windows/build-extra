@@ -2901,8 +2901,10 @@ begin
 
     // Now, register them with the C-based Scalar
     for i:=0 to Length(Enlistments)-1 do begin
-        WizardForm.StatusLabel.Caption:='Registering '+Enlistments[i]+' with Scalar';
-        ExecSilentlyAsOriginalUser('"'+AppDir+'\cmd\scalar.exe" register "'+Enlistments[i]+'"','scalar-register-'+IntToStr(i),ExpandConstant('Line {#__LINE__}: Could not register "'+Enlistments[i]+'" with Scalar'));
+        if DirExists(Enlistments[i]) then begin
+            WizardForm.StatusLabel.Caption:='Registering '+Enlistments[i]+' with Scalar';
+            ExecSilentlyAsOriginalUser('"'+AppDir+'\cmd\scalar.exe" register "'+Enlistments[i]+'"','scalar-register-'+IntToStr(i),ExpandConstant('Line {#__LINE__}: Could not register "'+Enlistments[i]+'" with Scalar'));
+        end;
     end;
 
     // Now uninstall the .NET-based Scalar
