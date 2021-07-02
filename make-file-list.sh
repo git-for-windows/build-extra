@@ -10,7 +10,7 @@ test -n "$BITNESS" ||
 die "Need ARCH and BITNESS to be set"
 
 SH_FOR_REBASE=dash
-PACKAGE_EXCLUDES="db info heimdal git util-linux curl git-for-windows-keyring
+PACKAGE_EXCLUDES="db info heimdal tcl git util-linux curl git-for-windows-keyring
 	mingw-w64-p11-kit"
 EXTRA_FILE_EXCLUDES=
 UTIL_PACKAGES="sed awk grep findutils coreutils"
@@ -18,7 +18,7 @@ if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
 then
 	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES bash coreutils mingw-w64-busybox
 		libiconv libintl libreadline ncurses openssl
-		mingw-w64-libmetalink mingw-w64-spdylay"
+		mingw-w64-libmetalink mingw-w64-spdylay diffutils"
 
 	EXTRA_FILE_EXCLUDES="/etc/post-install/.* /usr/bin/getfacl.exe
 		/usr/bin/msys-\(gmp\|ssl\)-.*.dll
@@ -162,6 +162,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../libexec/git-core/git-cvsexport' \
 	-e '^/mingw../share/doc/git-doc/git-cvsimport' \
 	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
+	-e '^/mingw../share/gtk-doc/' \
 	-e '^/mingw../share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
 	-e '^/usr/bin/msys-\('$(if test i686 = "$ARCH"
@@ -187,6 +188,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/share/perl5/core_perl/CPAN/' \
 	-e '^/usr/share/perl5/core_perl/TAP/' \
 	-e '^/usr/share/vim/vim74/lang/' \
+	-e '^/usr/share/\(bash-completion\|makepkg\|nano\)/' \
 	-e '^/update-via-pacman.bat$' \
 	-e '^/etc/profile.d/git-sdk.sh$' |
 if test -n "$WITH_L10N" && test -z "$MINIMAL_GIT"
