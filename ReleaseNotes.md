@@ -55,6 +55,7 @@ This package contains software from a number of other projects including Bash, z
 * Remote HTTPS repositories [could not be accessed from within portable Git installed into a network share](https://github.com/git-for-windows/git/issues/3266). This [has been fixed](https://github.com/git-for-windows/MINGW-packages/pull/51).
 * When scrolling in the pager (e.g. in the output of `git log`), [lines were duplicated by mistake](https://github.com/git-for-windows/git/issues/3235). This was fixed.
 * The `git subtree` command was [completely broken in the previous release](https://github.com/git-for-windows/git/issues/3260), and was fixed.
+* A bug was fixed where remote operations [appeared to hang](https://github.com/git-for-windows/git/issues/3268) (but were waiting for user feedback on a hidden Console).
 
 ## Changes since Git for Windows v2.31.1 (March 27th 2021)
 
