@@ -74,7 +74,7 @@ do
 	json="$(curl -i --netrc -XPOST -H "Content-Type: $contenttype" \
 		--data-binary @"$path" "$url/$id/assets?name=$basename")" &&
 	case "$json" in
-	HTTP/1.?\ [12]*) ;; # okay
+	HTTP/1.?\ [12]*|HTTP/2\ [12]*) ;; # okay
 	*) false;; # error!
 	esac ||
 	die "Could not upload $path (response: $json)"
