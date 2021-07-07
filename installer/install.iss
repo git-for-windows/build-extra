@@ -2962,12 +2962,14 @@ begin
         (See https://github.com/git-for-windows/git/issues/145)
     }
 
+    WizardForm.StatusLabel.Caption:='Hard-linking .dll files';
     MaybeHardlinkDLLFiles();
 
     {
         Create the symlinks in `/dev/`
     }
 
+    WizardForm.StatusLabel.Caption:='Creating some Cygwin symlinks';
     CreateCygwinSymlink(AppDir+'\dev\fd','/proc/self/fd');
     CreateCygwinSymlink(AppDir+'\dev\stdin','/proc/self/fd/0');
     CreateCygwinSymlink(AppDir+'\dev\stdout','/proc/self/fd/1');
@@ -2977,6 +2979,7 @@ begin
         Create the built-ins
     }
 
+    WizardForm.StatusLabel.Caption:='Hard-linking Git'+#39+'s built-ins';
     // Load the built-ins from a text file.
     FileName:=AppDir+'\{#MINGW_BITNESS}\{#APP_BUILTINS}';
     if not FileExists(FileName) then
@@ -3035,6 +3038,7 @@ begin
         Configure some defaults in the system config
     }
 
+    WizardForm.StatusLabel.Caption:='Initializing the system config';
     if not SetSystemConfigDefaults() then
         LogError('Unable to set system config defaults');
 
@@ -3042,6 +3046,7 @@ begin
         Configure http.sslBackend according to the user's choice.
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring the SSL/TLS backend';
     if RdbCurlVariant[GC_WinSSL].Checked then
         GitSystemConfigSet('http.sslBackend','schannel')
     else
@@ -3058,6 +3063,7 @@ begin
         Adapt core.autocrlf
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring core.autoCRLF';
     if RdbCRLF[GC_LFOnly].checked then begin
         Cmd:='input';
     end else if RdbCRLF[GC_CRLFAlways].checked then begin
@@ -3072,6 +3078,7 @@ begin
     }
 
     if RdbBashTerminal[GB_ConHost].checked then begin
+        WizardForm.StatusLabel.Caption:='Setting up Git Bash to run in a ConHost window';
         OverrideGitBashCommandLine(AppDir+'\git-bash.exe','SHOW_CONSOLE=1 APPEND_QUOTE=1 @@COMSPEC@@ /S /C ""@@EXEPATH@@\usr\bin\bash.exe" --login -i');
     end;
 
@@ -3079,6 +3086,7 @@ begin
         Configure the default `git pull` behavior
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring default `git pull` behavior';
     if RdbGitPullBehavior[GP_GitPullMerge].Checked then begin
         GitSystemConfigSet('pull.rebase','false')
     end else if RdbGitPullBehavior[GP_GitPullRebase].Checked then begin
@@ -3091,6 +3099,7 @@ begin
         Configure credential helper
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring the credential helper';
     if RdbGitCredentialManager[GCM_None].checked then begin
         GitSystemConfigSet('credential.helper',#0);
         GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath',#0);
@@ -3106,6 +3115,7 @@ begin
         Configure extra options
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring extra options';
     if RdbExtraOptions[GP_FSCache].checked then
         GitSystemConfigSet('core.fscache','true');
 
@@ -3119,6 +3129,7 @@ begin
         Configure experimental options
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring experimental options';
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     if RdbExperimentalOptions[GP_BuiltinDifftool].checked then
         GitSystemConfigSet('difftool.useBuiltin','true')
@@ -3167,6 +3178,7 @@ begin
         "ChangesEnvironment=yes" not happend before the change!
     }
 
+    WizardForm.StatusLabel.Caption:='Modifying the environment';
     // Delete GIT_SSH and SVN_SSH if a previous installation set them (this is required for the GS_OpenSSH case).
     DeleteMarkedEnvString('GIT_SSH');
     DeleteMarkedEnvString('SVN_SSH');
@@ -3225,6 +3237,7 @@ begin
         Create shortcuts that need to be created regardless of the "Don't create a Start Menu folder" toggle
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring some shortcuts';
     Cmd:=AppDir+'\git-bash.exe';
     FileName:=AppDir+'\{#MINGW_BITNESS}\share\git\git-for-windows.ico';
 
@@ -3258,6 +3271,7 @@ begin
         Create the Windows Explorer integrations
     }
 
+    WizardForm.StatusLabel.Caption:='Initializing Explorer integration';
     if IsAdminLoggedOn then begin
         RootKey:=HKEY_LOCAL_MACHINE;
     end else begin
@@ -3304,6 +3318,7 @@ begin
     }
 
     if not IsComponentSelected('gitlfs') then begin
+        WizardForm.StatusLabel.Caption:='Removing bundled Git LFS';
         if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') then
             LogError('Line {#__LINE__}: Unable to delete "git-lfs.exe".');
     end;
@@ -3314,6 +3329,7 @@ begin
 
 #ifdef WITH_SCALAR
     if not IsComponentSelected('scalar') then begin
+        WizardForm.StatusLabel.Caption:='Removing bundled Scalar';
         // Remove scalar.exe from Git for Windows' files
         if not DeleteFile(AppDir+'\cmd\scalar.exe') or
            not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\scalar.exe') or
@@ -3331,13 +3347,16 @@ begin
         Create the Windows Terminal integration
     }
 
-    if IsComponentSelected('windowsterminal') then
+    if IsComponentSelected('windowsterminal') then begin
+        WizardForm.StatusLabel.Caption:='Writing Windows Terminal Profile';
         InstallWindowsTerminalFragment();
+    end;
 
     {
         Set the default Git editor
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring default editor';
     if (CbbEditor.ItemIndex=GE_Nano) then
         GitSystemConfigSet('core.editor','nano.exe')
     else if ((CbbEditor.ItemIndex=GE_NotepadPlusPlus)) and (NotepadPlusPlusPath<>'') then
@@ -3376,13 +3395,16 @@ begin
         Install a scheduled task to try to auto-update Git for Windows
     }
 
-    if IsComponentInstalled('autoupdate') then
+    if IsComponentInstalled('autoupdate') then begin
+        WizardForm.StatusLabel.Caption:='Set up daily up to date check';
         InstallAutoUpdater();
+    end;
 
     {
         Run post-install scripts to set up system environment
     }
 
+    WizardForm.StatusLabel.Caption:='Running post-install script';
     Cmd:=AppDir+'\post-install.bat';
     Log('Line {#__LINE__}: Executing '+Cmd);
     if (not Exec(Cmd,ExpandConstant('>"{tmp}\post-install.log"'),AppDir,SW_HIDE,ewWaitUntilTerminated,i) or (i<>0)) and FileExists(Cmd) then begin
@@ -3402,6 +3424,7 @@ begin
     }
 
     if SessionHandle>0 then try
+        WizardForm.StatusLabel.Caption:='Restarting processes';
         RmRestart(SessionHandle,0,0);
         RmEndSession(SessionHandle);
     except
