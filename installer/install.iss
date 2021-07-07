@@ -2775,12 +2775,18 @@ end;
 procedure InstallWindowsTerminalFragment;
 var
     Res:Longint;
-    AppPath,JSONPath:String;
+    AppPath,JSONDirectory,JSONPath:String;
 begin
     if IsAdminInstallMode() then
-        JSONPath:=ExpandConstant('{commonappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json')
+        JSONDirectory:=ExpandConstant('{commonappdata}\Microsoft\Windows Terminal\Fragments\Git')
     else
-        JSONPath:=ExpandConstant('{localappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json');
+        JSONDirectory:=ExpandConstant('{localappdata}\Microsoft\Windows Terminal\Fragments\Git');
+    if not ForceDirectories(JSONDirectory) then begin
+        LogError('Line {#__LINE__}: Unable to install Windows Terminal Fragment to '+JSONDirectory);
+        Exit;
+    end;
+
+    JSONPath:=JSONDirectory+'\git-bash.json';
     AppPath:=ExpandConstant('{app}');
     StringChangeEx(AppPath, '\', '/', True)
     if not SaveStringToFile(JSONPath,
