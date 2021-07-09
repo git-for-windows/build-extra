@@ -290,6 +290,7 @@ Type: files; Name: {localappdata}\Microsoft\Windows Terminal\Fragments\Git\git-b
 #include "environment.inc.iss"
 #include "putty.inc.iss"
 #include "modules.inc.iss"
+#include "exec-with-capture.inc.iss"
 
 function ParamIsSet(Key:String):Boolean;
 begin

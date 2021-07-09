@@ -13,7 +13,6 @@ external 'CreatePipe@kernel32.dll stdcall';
 
 const 
     HANDLE_FLAG_INHERIT=$00000001;
-    INVALID_HANDLE_VALUE=-1;
 
 function SetHandleInformation(hObject:HANDLE;dwMask,dwFlags:DWORD):integer;
 external 'SetHandleInformation@kernel32.dll stdcall';
@@ -56,18 +55,11 @@ const
 function CreateProcess(lpApplicationName:LongInt;lpCommandLine:AnsiString;lpProcessAttributes,lpThreadAttributes:LongInt;bInheritHandles:LongInt;dwCreationFlags:DWORD;lpEnvironment,lpCurrentDirectory:LongInt;var lpStartupInfo:STARTUPINFO;var lpProcessInformation:PROCESS_INFORMATION):BOOL;
 external 'CreateProcessA@kernel32.dll stdcall';
 
-function CloseHandle(h:HANDLE):BOOL;
-external 'CloseHandle@kernel32.dll stdcall';
-
 function ReadFile(hFile:HANDLE;lpBuffer:AnsiString;nNumberOfBytesToRead:DWORD;var lpNumberOfBytesRead:DWORD;lpOverlapped:LongInt):BOOL;
 external 'ReadFile@kernel32.dll stdcall';
 
 const
     WAIT_OBJECT_0=$00000000;
-    WAIT_TIMEOUT=$00000102;
-
-function WaitForSingleObject(hHandle:HANDLE;dwMilliseconds:DWORD):DWORD;
-external 'WaitForSingleObject@kernel32.dll stdcall';
 
 type
     TMsg = record
