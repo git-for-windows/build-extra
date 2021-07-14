@@ -2630,7 +2630,8 @@ end;
 
 procedure CleanupWhenUpgrading;
 var
-    ErrorCode:Integer;
+    StdOut,StdErr:String;
+    ErrorCode:DWORD;
 begin
     if UninstallAppPath<>'' then begin
         // Save a copy of the system config so that we can copy it back later
@@ -2644,9 +2645,9 @@ begin
     end;
 
     if UninstallString<>'' then begin
-        // Using ShellExec() here, in case privilege elevation is required
-        if not ShellExec('',UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
-            LogError('Could not uninstall previous version. Trying to continue anyway.');
+        WizardForm.StatusLabel.Caption:='Removing previous Git version ('+PreviousGitForWindowsVersion+')';
+        if not ExecWithCapture(UninstallString+' /VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES',StdOut,StdErr,ErrorCode) then
+            LogError('Could not uninstall previous version (stderr: '+StdErr+'). Trying to continue anyway.');
     end;
 end;
 
