@@ -84,6 +84,7 @@ PrivilegesRequired=lowest
 #else
 PrivilegesRequired=none
 #endif
+UninstallDisplayName={#APP_NAME}
 UninstallDisplayIcon={app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 #ifndef COMPILE_FROM_IDE
 VersionInfoVersion={#FILE_VERSION}
