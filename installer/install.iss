@@ -290,6 +290,7 @@ Type: files; Name: {localappdata}\Microsoft\Windows Terminal\Fragments\Git\git-b
 #include "environment.inc.iss"
 #include "putty.inc.iss"
 #include "modules.inc.iss"
+#include "exec-with-capture.inc.iss"
 
 function ParamIsSet(Key:String):Boolean;
 begin
@@ -583,6 +584,7 @@ var
 function ShutdownFSMonitorDaemons():Boolean;
 var
     FindRec:TFindRec;
+    ExitCode:DWORD;
     Path,Str:String;
     Len,i:Integer;
 begin
@@ -604,13 +606,11 @@ begin
             // Find out which form to use.
             if (BuiltinFSMonitorStopOption='') then begin
                 BuiltinFSMonitorStopOption:='(huh?)';
-                Path:=ExpandConstant('{tmp}\fsmonitor--help.err');
-                if not Exec(ExpandConstant('{sys}\cmd.exe'),'/D /C ""'+AppDir+'\cmd\git.exe" fsmonitor--daemon -h 2>"'+Path+'""','',SW_HIDE,ewWaitUntilTerminated,i) or (i<>129) then begin
+                if not ExecWithCapture('"'+AppDir+'\cmd\git.exe" fsmonitor--daemon -h',Str,Str,ExitCode) or (ExitCode<>129) then begin
                     if (i<>1) and (i<>127) then // Suppress message if `git.exe` was not found, or if it does not know about the built-in FSMonitor
-                        LogError('Could not get FSMonitor help:'+#13+ReadFileAsString(Path)+IntToStr(i));
+                        LogError('Could not get FSMonitor help (exit code'++IntToStr(ExitCode)+'):'+#13+Str);
                     Exit;
                 end else begin
-                    Str:=ReadFileAsString(Path);
                     i:=Pos('stop'+#10,Str);
                     if (i=0) then begin
                         LogError('Could not determine stop option from:'+#13+Str);
@@ -745,25 +745,21 @@ end;
 
 function GitSystemConfigSet(Key,Value:String):Boolean;
 var
-    i:Integer;
-    OutPath,ErrPath:String;
+    ExitCode:DWORD;
+    StdOut,StdErr:String;
 begin
-    OutPath:=ExpandConstant('{tmp}\config-set.out');
-    ErrPath:=ExpandConstant('{tmp}\config-set.err');
     if (Value=#0) then begin
-        if Exec(ExpandConstant('{cmd}'),'/D /C .\{#MINGW_BITNESS}\bin\git.exe config --system --unset '+Key+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) And ((i=0) Or (i=5)) then
+        if ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config --system --unset '+Key,StdOut,StdErr,ExitCode) And ((ExitCode=0) Or (ExitCode=5)) then
             // exit code 5 means it was already unset, so that's okay
             Result:=True
         else begin
-            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(i)+#13+#10+ReadFileAsString(OutPath)+#13+#10+'stderr:'+#13+#10+ReadFileAsString(ErrPath));
+            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(ExitCode)+#13+#10+StdOut+#13+#10+'stderr:'+#13+#10+StdErr);
             Result:=False
         end
-    end else if Exec(ExpandConstant('{cmd}'),'/D /C .\{#MINGW_BITNESS}\bin\git.exe config --system '+ShellQuote(Key)+' '+ShellQuote(Value)+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) And (i=0) then
+    end else if ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config --system '+ShellQuote(Key)+' '+ShellQuote(Value),StdOut,StdErr,ExitCode) And (ExitCode=0) then
         Result:=True
     else begin
-        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(i)+#13+#10+ReadFileAsString(OutPath)+#13+#10+'stderr:'+#13+#10+ReadFileAsString(ErrPath));
+        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(ExitCode)+#13+#10+StdOut+#13+#10+'stderr:'+#13+#10+StdErr);
         Result:=False;
     end;
 end;
@@ -783,8 +779,8 @@ end;
 
 function GetDefaultsFromGitConfig(WhichOne:String):Boolean;
 var
-    ExtraOptions,TmpFile,Key,Value:String;
-    FileContents:AnsiString;
+    ExtraOptions,StdOut,StdErr,Key,Value:String;
+    ExitCode:DWORD;
     Values:TArrayOfString;
     c,i,j,k:Integer;
 begin
@@ -799,39 +795,22 @@ begin
         end
     end;
 
-    TmpFile:=ExpandConstant('{tmp}\git-config-get.txt');
-    if not Exec(ExpandConstant('{cmd}'),'/D /C .\{#MINGW_BITNESS}\bin\git.exe config -l -z '+ExtraOptions+' >'+#34+TmpFile+#34,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then begin
-        if FileExists(AppDir+ExpandConstant('\{#MINGW_BITNESS}\bin\git.exe')) then
-            LogError('Unable to get system config')
-        else
-            // The previous directory went poof
-            SaveStringToFile(TmpFile,'',False)
-    end;
-
-    if not LoadStringFromFile(TmpFile,FileContents) then begin
-        LogError('Could not read '+#34+TmpFile+#34);
-        Result:=False;
-        Exit;
-    end;
-
-    if not DeleteFile(TmpFile) then begin
-        LogError('Could not read '+#34+TmpFile+#34);
-        Result:=False;
-        Exit;
+    if not ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config -l -z '+ExtraOptions,StdOut,StdErr,ExitCode) then begin
+        if FileExists(AppDir+'\{#MINGW_BITNESS}\bin\git.exe') then
+            LogError('Unable to get system config (exit code '+IntToStr(ExitCode)+'):'+#13+#10+StdErr);
     end;
 
     // Split NUL-delimited key/value pairs, extract LF that denotes end of key
-    Value:=FileContents;
+    Value:=StdOut;
     i:=1; j:=i; k:=i;
-    while (j<=Length(FileContents)) do begin
-        c:=Ord(FileContents[j]);
+    while (j<=Length(StdOut)) do begin
+        c:=Ord(StdOut[j]);
         if (c=10) then
             k:=j
         else if (c=0) then begin
             if (i<>k) then begin // Ignore keys without values
-                Key:=Copy(FileContents,i,k-i);
-                Value:=Copy(FileContents,k+1,j-k-1);
+                Key:=Copy(StdOut,i,k-i);
+                Value:=Copy(StdOut,k+1,j-k-1);
                 case Key of
                     'http.sslbackend':
                         case Value of
@@ -988,15 +967,15 @@ var
 
 function GetPreviousGitVersion():String;
 var
-    Path:String;
-    i:Integer;
+    Path,StdOut,StdErr:String;
+    ExitCode:DWORD;
 begin
     if not PreviousGitVersionInitialized then begin
         PreviousGitVersionInitialized:=True;
         if (RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','InstallPath',Path))
-                and (Exec(ExpandConstant('{cmd}'),'/d /c ""'+Path+'\cmd\git.exe" version >"'+ExpandConstant('{tmp}')+'\previous.version""','',SW_HIDE,ewWaitUntilTerminated,i))
-                and (i=0) then begin
-            PreviousGitVersion:=ReadFileAsString(ExpandConstant('{tmp}\previous.version'));
+                and (ExecWithCapture('"'+Path+'\cmd\git.exe" version',StdOut,StdErr,ExitCode))
+                and (ExitCode=0) then begin
+            PreviousGitVersion:=Trim(StdOut);
         end;
     end;
     Result:=PreviousGitVersion;
@@ -2413,8 +2392,8 @@ end;
 
 function ShouldSkipPage(PageID:Integer):Boolean;
 var
-    Msg,Cmd,LogPath:String;
-    Res:Longint;
+    Msg,Cmd,StdOut,StdErr:String;
+    Res:DWORD;
 begin
     if (ProcessesPage<>NIL) and (PageID=ProcessesPage.ID) then begin
         // This page is only reached forward (by pressing "Next", never by pressing "Back").
@@ -2423,10 +2402,9 @@ begin
             if DirExists(AppDir) then begin
                 if not FileExists(ExpandConstant('{tmp}\blocked-file-util.exe')) then
                     ExtractTemporaryFile('blocked-file-util.exe');
-                LogPath:=ExpandConstant('{tmp}\blocking-pids.log');
-                Cmd:='/D /C ""'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'" 2>"'+LogPath+'""';
-                if not Exec(ExpandConstant('{sys}\cmd.exe'),Cmd,'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then begin
-                    Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+ReadFileAsString(LogPath);
+                Cmd:='"'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'"';
+                if not ExecWithCapture(Cmd,StdOut,StdErr,Res) or (Res<>0) then begin
+                    Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+StdErr;
                     if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
                         LogError(Msg)
                     else
@@ -2652,7 +2630,8 @@ end;
 
 procedure CleanupWhenUpgrading;
 var
-    ErrorCode:Integer;
+    StdOut,StdErr:String;
+    ErrorCode:DWORD;
 begin
     if UninstallAppPath<>'' then begin
         // Save a copy of the system config so that we can copy it back later
@@ -2666,9 +2645,9 @@ begin
     end;
 
     if UninstallString<>'' then begin
-        // Using ShellExec() here, in case privilege elevation is required
-        if not ShellExec('',UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
-            LogError('Could not uninstall previous version. Trying to continue anyway.');
+        WizardForm.StatusLabel.Caption:='Removing previous Git version ('+PreviousGitForWindowsVersion+')';
+        if not ExecWithCapture(UninstallString+' /VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES',StdOut,StdErr,ErrorCode) then
+            LogError('Could not uninstall previous version (stderr: '+StdErr+'). Trying to continue anyway.');
     end;
 end;
 
@@ -2775,12 +2754,18 @@ end;
 procedure InstallWindowsTerminalFragment;
 var
     Res:Longint;
-    AppPath,JSONPath:String;
+    AppPath,JSONDirectory,JSONPath:String;
 begin
     if IsAdminInstallMode() then
-        JSONPath:=ExpandConstant('{commonappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json')
+        JSONDirectory:=ExpandConstant('{commonappdata}\Microsoft\Windows Terminal\Fragments\Git')
     else
-        JSONPath:=ExpandConstant('{localappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json');
+        JSONDirectory:=ExpandConstant('{localappdata}\Microsoft\Windows Terminal\Fragments\Git');
+    if not ForceDirectories(JSONDirectory) then begin
+        LogError('Line {#__LINE__}: Unable to install Windows Terminal Fragment to '+JSONDirectory);
+        Exit;
+    end;
+
+    JSONPath:=JSONDirectory+'\git-bash.json';
     AppPath:=ExpandConstant('{app}');
     StringChangeEx(AppPath, '\', '/', True)
     if not SaveStringToFile(JSONPath,
@@ -2873,8 +2858,8 @@ end;
 
 function UpgradeFromDotNetBasedScalar:Boolean;
 var
-    RegKey,UninstallScalar,ScalarExe,Cmd:String;
-    Res:Longint;
+    RegKey,UninstallScalar,ScalarExe,Cmd,StdOut,StdErr:String;
+    Res:DWORD;
     Enlistments:TArrayOfString;
     i:Integer;
 begin
@@ -2911,9 +2896,9 @@ begin
     // (leaving C:\ProgramData\Scalar in place, in case
     // the user needs to downgrade again to get unblocked)
     WizardForm.StatusLabel.Caption:='Uninstalling .NET-based Scalar';
-    Cmd:='"'+UninstallScalar+'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES /LOG"';
-    if (not Exec(ExpandConstant('{sys}\cmd.exe'),'/D /C '+Cmd,'',SW_HIDE,ewWaitUntilTerminated,Res)) or (Res<>0) then
-        LogError('Could not uninstall Scalar. Trying to continue anyway.');
+    Cmd:=UninstallScalar+'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES /LOG';
+    if (not ExecWithCapture(Cmd,StdOut,StdErr,Res)) or (Res<>0) then
+        LogError('Could not uninstall Scalar (stderr: '+StdErr+'). Trying to continue anyway.');
 end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
@@ -2956,12 +2941,14 @@ begin
         (See https://github.com/git-for-windows/git/issues/145)
     }
 
+    WizardForm.StatusLabel.Caption:='Hard-linking .dll files';
     MaybeHardlinkDLLFiles();
 
     {
         Create the symlinks in `/dev/`
     }
 
+    WizardForm.StatusLabel.Caption:='Creating some Cygwin symlinks';
     CreateCygwinSymlink(AppDir+'\dev\fd','/proc/self/fd');
     CreateCygwinSymlink(AppDir+'\dev\stdin','/proc/self/fd/0');
     CreateCygwinSymlink(AppDir+'\dev\stdout','/proc/self/fd/1');
@@ -2971,6 +2958,7 @@ begin
         Create the built-ins
     }
 
+    WizardForm.StatusLabel.Caption:='Hard-linking Git'+#39+'s built-ins';
     // Load the built-ins from a text file.
     FileName:=AppDir+'\{#MINGW_BITNESS}\{#APP_BUILTINS}';
     if not FileExists(FileName) then
@@ -3029,6 +3017,7 @@ begin
         Configure some defaults in the system config
     }
 
+    WizardForm.StatusLabel.Caption:='Initializing the system config';
     if not SetSystemConfigDefaults() then
         LogError('Unable to set system config defaults');
 
@@ -3036,6 +3025,7 @@ begin
         Configure http.sslBackend according to the user's choice.
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring the SSL/TLS backend';
     if RdbCurlVariant[GC_WinSSL].Checked then
         GitSystemConfigSet('http.sslBackend','schannel')
     else
@@ -3052,6 +3042,7 @@ begin
         Adapt core.autocrlf
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring core.autoCRLF';
     if RdbCRLF[GC_LFOnly].checked then begin
         Cmd:='input';
     end else if RdbCRLF[GC_CRLFAlways].checked then begin
@@ -3066,6 +3057,7 @@ begin
     }
 
     if RdbBashTerminal[GB_ConHost].checked then begin
+        WizardForm.StatusLabel.Caption:='Setting up Git Bash to run in a ConHost window';
         OverrideGitBashCommandLine(AppDir+'\git-bash.exe','SHOW_CONSOLE=1 APPEND_QUOTE=1 @@COMSPEC@@ /S /C ""@@EXEPATH@@\usr\bin\bash.exe" --login -i');
     end;
 
@@ -3073,6 +3065,7 @@ begin
         Configure the default `git pull` behavior
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring default `git pull` behavior';
     if RdbGitPullBehavior[GP_GitPullMerge].Checked then begin
         GitSystemConfigSet('pull.rebase','false')
     end else if RdbGitPullBehavior[GP_GitPullRebase].Checked then begin
@@ -3085,6 +3078,7 @@ begin
         Configure credential helper
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring the credential helper';
     if RdbGitCredentialManager[GCM_None].checked then begin
         GitSystemConfigSet('credential.helper',#0);
         GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath',#0);
@@ -3100,6 +3094,7 @@ begin
         Configure extra options
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring extra options';
     if RdbExtraOptions[GP_FSCache].checked then
         GitSystemConfigSet('core.fscache','true');
 
@@ -3113,6 +3108,7 @@ begin
         Configure experimental options
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring experimental options';
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     if RdbExperimentalOptions[GP_BuiltinDifftool].checked then
         GitSystemConfigSet('difftool.useBuiltin','true')
@@ -3161,6 +3157,7 @@ begin
         "ChangesEnvironment=yes" not happend before the change!
     }
 
+    WizardForm.StatusLabel.Caption:='Modifying the environment';
     // Delete GIT_SSH and SVN_SSH if a previous installation set them (this is required for the GS_OpenSSH case).
     DeleteMarkedEnvString('GIT_SSH');
     DeleteMarkedEnvString('SVN_SSH');
@@ -3219,6 +3216,7 @@ begin
         Create shortcuts that need to be created regardless of the "Don't create a Start Menu folder" toggle
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring some shortcuts';
     Cmd:=AppDir+'\git-bash.exe';
     FileName:=AppDir+'\{#MINGW_BITNESS}\share\git\git-for-windows.ico';
 
@@ -3252,6 +3250,7 @@ begin
         Create the Windows Explorer integrations
     }
 
+    WizardForm.StatusLabel.Caption:='Initializing Explorer integration';
     if IsAdminLoggedOn then begin
         RootKey:=HKEY_LOCAL_MACHINE;
     end else begin
@@ -3298,6 +3297,7 @@ begin
     }
 
     if not IsComponentSelected('gitlfs') then begin
+        WizardForm.StatusLabel.Caption:='Removing bundled Git LFS';
         if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') then
             LogError('Line {#__LINE__}: Unable to delete "git-lfs.exe".');
     end;
@@ -3308,6 +3308,7 @@ begin
 
 #ifdef WITH_SCALAR
     if not IsComponentSelected('scalar') then begin
+        WizardForm.StatusLabel.Caption:='Removing bundled Scalar';
         // Remove scalar.exe from Git for Windows' files
         if not DeleteFile(AppDir+'\cmd\scalar.exe') or
            not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\scalar.exe') or
@@ -3325,13 +3326,16 @@ begin
         Create the Windows Terminal integration
     }
 
-    if IsComponentSelected('windowsterminal') then
+    if IsComponentSelected('windowsterminal') then begin
+        WizardForm.StatusLabel.Caption:='Writing Windows Terminal Profile';
         InstallWindowsTerminalFragment();
+    end;
 
     {
         Set the default Git editor
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring default editor';
     if (CbbEditor.ItemIndex=GE_Nano) then
         GitSystemConfigSet('core.editor','nano.exe')
     else if ((CbbEditor.ItemIndex=GE_NotepadPlusPlus)) and (NotepadPlusPlusPath<>'') then
@@ -3370,13 +3374,16 @@ begin
         Install a scheduled task to try to auto-update Git for Windows
     }
 
-    if IsComponentInstalled('autoupdate') then
+    if IsComponentInstalled('autoupdate') then begin
+        WizardForm.StatusLabel.Caption:='Set up daily up to date check';
         InstallAutoUpdater();
+    end;
 
     {
         Run post-install scripts to set up system environment
     }
 
+    WizardForm.StatusLabel.Caption:='Running post-install script';
     Cmd:=AppDir+'\post-install.bat';
     Log('Line {#__LINE__}: Executing '+Cmd);
     if (not Exec(Cmd,ExpandConstant('>"{tmp}\post-install.log"'),AppDir,SW_HIDE,ewWaitUntilTerminated,i) or (i<>0)) and FileExists(Cmd) then begin
@@ -3396,6 +3403,7 @@ begin
     }
 
     if SessionHandle>0 then try
+        WizardForm.StatusLabel.Caption:='Restarting processes';
         RmRestart(SessionHandle,0,0);
         RmEndSession(SessionHandle);
     except
