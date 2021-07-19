@@ -33,7 +33,7 @@
     <Application Id="GitBash" Executable="Git\git-bash.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="Git Bash"
-        Description=""
+        Description="Git Bash"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png">
@@ -65,7 +65,7 @@
     <Application Id="GitGui" Executable="Git\cmd\git-gui.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="Git GUI"
-        Description=""
+        Description="Git GUI"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png">
@@ -93,7 +93,7 @@
     <Application Id="Git" Executable="Git\cmd\git.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="Git"
-        Description=""
+        Description="Git"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png"
@@ -122,7 +122,7 @@
     <Application Id="Gitk" Executable="Git\cmd\gitk.exe" EntryPoint="Windows.FullTrustApplication">
       <uap:VisualElements
         DisplayName="Gitk"
-        Description=""
+        Description="Gitk"
         BackgroundColor="transparent"
         Square150x150Logo="Images\Square150x150Logo.png"
         Square44x44Logo="Images\Square44x44Logo.png"
