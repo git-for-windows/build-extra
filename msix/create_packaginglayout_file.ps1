@@ -17,13 +17,13 @@ $packageLayout = [xml]@"
         <File DestinationPath="Public\Fragments\*" SourcePath="..\build-extra\msix\Fragments\*" />
       </Files>
     </Package>
-    <Package ID="Git-arm64-$($version)" ProcessorArchitecture="arm64">
+    <!-- <Package ID="Git-arm64-$($version)" ProcessorArchitecture="arm64">
       <Files>
         <File DestinationPath="Git\**" SourcePath="arm64\**" />
         <File DestinationPath="Images\*.png" SourcePath="..\build-extra\msix\Images\*.png" />
         <File DestinationPath="Public\Fragments\*" SourcePath="..\build-extra\msix\Fragments\*" />
       </Files>
-    </Package>
+    </Package> -->
   </PackageFamily>
 </PackagingLayout>
 "@
