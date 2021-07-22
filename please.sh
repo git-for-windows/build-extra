@@ -3152,11 +3152,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		case $metaname in
 		Locale-Gettext) metaname=gettext;;
 		esac
-		meta="$(curl -s https://metacpan.org/release/$metaname)" ||
+		meta="$(curl -Ls https://metacpan.org/dist/$metaname)" ||
 		die "Could not download release notes for $package\n"
 
 		ver="$(echo "$meta" | sed -n \
-			's/.*<option selected value="\/release\/\([^"]*\)-\([0-9.]*\)".*/\1 \2/p')"
+			'/<option/{N;N;N;s/.*<option[^a-z]*selected.*value="\([^"]*\/Net-SSLeay\)-\([0-9.]*\)".*/\1 \2/p}')"
 		test -n "$ver" ||
 		die "Could not determine latest $package version\n"
 
