@@ -3156,7 +3156,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not download release notes for $package\n"
 
 		ver="$(echo "$meta" | sed -n \
-			'/<option/{N;N;N;s/.*<option[^a-z]*selected.*value="\([^"]*\/'"${package#perl-}"'\)-\([0-9.]*\)".*/\1 \2/p}')"
+			'/<option/{N;N;N;s/.*<option[^a-z]*selected.*value="\([^"]*\/'"$metaname"'\)-\([0-9.]*\)".*/\1 \2/p}')"
 		test -n "$ver" ||
 		die "Could not determine latest $package version\n"
 
