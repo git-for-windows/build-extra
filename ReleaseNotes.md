@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [perl-Locale-Gettext v1.07](https://metacpan.org/source/PVANDRY/gettext-1.07/Changes).
 * Comes with [Perl v5.34.0](http://search.cpan.org/dist/perl-5.34.0/pod/perldelta.pod).
 * Comes with [perl-XML-Parser v2.46](https://metacpan.org/source/TODDR/XML-Parser-2.46/Changes).
+* Comes with [perl-YAML-Syck v1.34](https://metacpan.org/source/TODDR/YAML-Syck-1.34/Changes).
 
 ### Bug Fixes
 
