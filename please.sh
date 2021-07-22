@@ -3163,9 +3163,15 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		metapath=${ver% *}
 		ver=${ver##* }
 
+		author_part="$(echo "$meta" | sed -n \
+			's/.*<a itemprop="downloadUrl" href="https:\/\/cpan.metacpan.org\/authors\/id\/\(.*\)\/[^/]*".*/\1/p')"
+		test -n "$author_part" || author_part='&'
+
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$ver/ \
-			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+			-e 's/^pkgrel=.*/pkgrel=1/' \
+			-e 's|\(https://www.cpan.org/authors/id/\)\([A-Z]*/\)\{3\}|\1'"$author_part/|" \
+			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 git commit -s -m "$package: new version ($ver)" PKGBUILD &&
