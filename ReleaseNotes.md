@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Perl v5.34.0](http://search.cpan.org/dist/perl-5.34.0/pod/perldelta.pod).
+* Comes with [perl-TermReadKey v2.38](https://metacpan.org/source/JSTOWE/TermReadKey-2.38/Changes).
 
 ### Bug Fixes
 
