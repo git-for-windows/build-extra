@@ -1,5 +1,5 @@
 function Write-PackageLayoutFile {
-    param ($version, $filename) 
+    param ([string]$version, [string]$filename) 
 
     $packageLayout = [xml]@"
 <PackagingLayout xmlns="http://schemas.microsoft.com/appx/makeappx/2017">
@@ -33,7 +33,7 @@ function Write-PackageLayoutFile {
 }
 
 function Write-AppxManifest {
-    param ($version, $publisher, $filename)
+    param ([string]$version, [string]$publisher, [string]$filename)
 
     $appxmanifest = [xml]@"
 <?xml version="1.0" encoding="utf-8"?>
