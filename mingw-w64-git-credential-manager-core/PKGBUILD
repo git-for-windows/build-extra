@@ -15,6 +15,7 @@ zip_url="${project_url}/releases/download/${_realtag}/gcmcore-win-x86-${_realver
 src_zip_url="${project_url}/archive/${_realtag}.zip"
 license=('MIT')
 groups=('VCS')
+options=('!strip')
 
 source=("${zip_url}" "$src_zip_url")
 
