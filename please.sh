@@ -4888,6 +4888,7 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--ve
 	output_path=
 	version=0-test
 	include_arm64_artifacts=
+	include_pdbs=
 	while case "$1" in
 	--pkg=*)
 		install_package="${install_package:+$install_package }$(echo "${1#*=}" | tr , ' ')"
@@ -4935,6 +4936,9 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--ve
 	--include-arm64-artifacts=*)
 		include_arm64_artifacts="$1"
 		;;
+	--include-pdbs)
+		include_pdbs=--include-pdbs
+		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
@@ -4970,7 +4974,7 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--ve
 		test installer != $mode ||
 		extra="${extra:+$extra }--window-title-version=$version"
 
-		sh -x "${this_script_path%/*}/$mode/release.sh" $output $extra $include_arm64_artifacts $version
+		sh -x "${this_script_path%/*}/$mode/release.sh" $output $include_pdbs $extra $include_arm64_artifacts $version
 	done
 }
 
