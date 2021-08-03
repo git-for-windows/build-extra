@@ -278,6 +278,15 @@ then
 	inno_defines="$inno_defines$LF#define DEFAULT_BRANCH_NAME '$(cat init.defaultBranch)'"
 fi
 
+# 1. Collect all SSH related files from $LIST and pacman, sort each and then return the overlap
+# 2. Convert paths to Windows filesystem compatible ones and construct the function body for the DeleteOpenSSHFiles function; one DeleteFile operation per file found
+# 3. Construct DeleteOpenSSHFiles function signature to be used in install.iss
+# 4. Assemble function body and compile flag to be used as guard in install.iss
+openssh_deletes="$(comm -12 <(echo "$LIST" | sort) <(pacman -Ql openssh | sed -n 's|^openssh /\(.*[^/]\)$|\1|p' | sort) |
+	sed -e 'y/\//\\/' -e "s|.*|    if not DeleteFile(AppDir+'\\\\&') then\n        Result:=False;|")"
+inno_defines="$inno_defines$LF[Code]${LF}function DeleteOpenSSHFiles():Boolean;${LF}var$LF    AppDir:String;${LF}begin$LF    AppDir:=ExpandConstant('{app}');$LF    Result:=True;"
+inno_defines="$inno_defines$LF$openssh_deletes${LF}end;$LF#define DELETE_OPENSSH_FILES 1"
+
 test -z "$LIST" ||
 echo "$LIST" |
 sed -e 's|/|\\|g' \
