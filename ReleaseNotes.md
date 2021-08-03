@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The installer no longer [shows an error dialog](https://github.com/git-for-windows/git/issues/3312) when upgrading while the Windows Terminal Profile option is checked.
+* Interaction with [the `git repo` tool](https://gerrit.googlesource.com/git-repo/) was [improved](https://github.com/git-for-windows/git/pull/3328).
 
 ## Changes since Git for Windows v2.32.0 (June 7th 2021)
 
