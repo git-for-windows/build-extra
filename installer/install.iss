@@ -2066,15 +2066,10 @@ begin
         PuTTYPage:=CreatePage(PrevPageID,'Choosing the SSH executable','Which Secure Shell client program would you like Git to use?',TabOrder,Top,Left);
 
         // 1st choice
-        RdbSSH[GS_OpenSSH]:=CreateRadioButton(PuTTYPage,'Use OpenSSH','This uses ssh.exe that comes with Git. The GIT_SSH and SVN_SSH'+#13+'environment variables will not be modified.',TabOrder,Top,Left);
+        RdbSSH[GS_OpenSSH]:=CreateRadioButton(PuTTYPage,'Use bundled OpenSSH','This uses ssh.exe that comes with Git.',TabOrder,Top,Left);
 
         // 2nd choice
-        RdbSSH[GS_Plink]:=CreateRadioButton(PuTTYPage,'Use (Tortoise)Plink',
-            'PuTTY sessions were found in your Registry. You may specify the path'+#13+
-            'to an existing copy of (Tortoise)Plink.exe from the TortoiseGit/SVN/CVS'+#13+
-            'or PuTTY applications. "ssh.variant" will be set in the GIT configuration. '+#13+
-            'The GIT_SSH and SVN_SSH environment variables will be adjusted to point '+#13+
-            'to the following executable:',TabOrder,Top,Left);
+        RdbSSH[GS_Plink]:=CreateRadioButton(PuTTYPage,'Use (Tortoise)Plink','To use PuTTY, specify the path to an existing copy of (Tortoise)Plink.exe:',TabOrder,Top,Left);
         EdtPlink:=TEdit.Create(PuTTYPage);
         EdtPlink.Left:=ScaleX(Left+24);
         EdtPlink.Top:=ScaleY(Top);
