@@ -469,7 +469,7 @@ var
     RdbPath:array[GP_BashOnly..GP_CmdTools] of TRadioButton;
 
     // Wizard page and variables for the SSH options.
-    PuTTYPage:TWizardPage;
+    SSHChoicePage:TWizardPage;
     RdbSSH:array[GS_OpenSSH..GS_Plink] of TRadioButton;
     EdtPlink:TEdit;
     TortoisePlink:TCheckBox;
@@ -2063,18 +2063,18 @@ begin
      *)
 
     if RegGetSubkeyNames(HKEY_CURRENT_USER,'Software\SimonTatham\PuTTY\Sessions',PuTTYSessions) and (GetArrayLength(PuTTYSessions)>0) then begin
-        PuTTYPage:=CreatePage(PrevPageID,'Choosing the SSH executable','Which Secure Shell client program would you like Git to use?',TabOrder,Top,Left);
+        SSHChoicePage:=CreatePage(PrevPageID,'Choosing the SSH executable','Which Secure Shell client program would you like Git to use?',TabOrder,Top,Left);
 
         // 1st choice
-        RdbSSH[GS_OpenSSH]:=CreateRadioButton(PuTTYPage,'Use bundled OpenSSH','This uses ssh.exe that comes with Git.',TabOrder,Top,Left);
+        RdbSSH[GS_OpenSSH]:=CreateRadioButton(SSHChoicePage,'Use bundled OpenSSH','This uses ssh.exe that comes with Git.',TabOrder,Top,Left);
 
         // 2nd choice
-        RdbSSH[GS_Plink]:=CreateRadioButton(PuTTYPage,'Use (Tortoise)Plink','To use PuTTY, specify the path to an existing copy of (Tortoise)Plink.exe:',TabOrder,Top,Left);
-        EdtPlink:=TEdit.Create(PuTTYPage);
+        RdbSSH[GS_Plink]:=CreateRadioButton(SSHChoicePage,'Use (Tortoise)Plink','To use PuTTY, specify the path to an existing copy of (Tortoise)Plink.exe:',TabOrder,Top,Left);
+        EdtPlink:=TEdit.Create(SSHChoicePage);
         EdtPlink.Left:=ScaleX(Left+24);
         EdtPlink.Top:=ScaleY(Top);
         with EdtPlink do begin
-            Parent:=PuTTYPage.Surface;
+            Parent:=SSHChoicePage.Surface;
 
             EnvSSH:=GetEnvStrings('GIT_SSH',IsAdminLoggedOn);
             if (GetArrayLength(EnvSSH)=1) and IsPlinkExecutable(EnvSSH[0]) then begin
@@ -2095,11 +2095,11 @@ begin
             TabOrder:=TabOrder;
         end;
         TabOrder:=TabOrder+1;
-        BtnPlink:=TButton.Create(PuTTYPage);
+        BtnPlink:=TButton.Create(SSHChoicePage);
         BtnPlink.Left:=ScaleX(Left+344);
         BtnPlink.Top:=ScaleY(Top);
         with BtnPlink do begin
-            Parent:=PuTTYPage.Surface;
+            Parent:=SSHChoicePage.Surface;
             Caption:='...';
             OnClick:=@BrowseForPuTTYFolder;
             Width:=ScaleX(21);
@@ -2110,12 +2110,12 @@ begin
         Top:=Top+29;
 
         // Add checkbox for tortoise plink
-        TortoisePlink:=TCheckBox.Create(PuTTYPage);
+        TortoisePlink:=TCheckBox.Create(SSHChoicePage);
         TortoisePlink.Left:=ScaleX(Left+24);
         TortoisePlink.Top:=ScaleY(Top);
         with TortoisePlink do begin
             Caption:='Set ssh.variant for Tortoise Plink';
-            Parent:=PuTTYPage.Surface;
+            Parent:=SSHChoicePage.Surface;
             Width:=ScaleX(405);
             Height:=ScaleY(17);
             TabOrder:=TabOrder;
@@ -2135,7 +2135,7 @@ begin
         if (data='true') then
             TortoisePlink.Checked:=True;
     end else begin
-        PuTTYPage:=NIL;
+        SSHChoicePage:=NIL;
     end;
 
     (*
@@ -2486,7 +2486,7 @@ begin
             Wizardform.NextButton.Enabled:=False;
             Exit;
         end;
-    end else if (PuTTYPage<>NIL) and (CurPageID=PuTTYPage.ID) then begin
+    end else if (SSHChoicePage<>NIL) and (CurPageID=SSHChoicePage.ID) then begin
         Result:=RdbSSH[GS_OpenSSH].Checked or
             (RdbSSH[GS_Plink].Checked and FileExists(EdtPlink.Text));
         if not Result then begin
@@ -3158,7 +3158,7 @@ begin
     DeleteMarkedEnvString('GIT_SSH');
     DeleteMarkedEnvString('SVN_SSH');
 
-    if (PuTTYPage<>NIL) then begin
+    if (SSHChoicePage<>NIL) then begin
         GitSystemConfigSet('ssh.variant',#0);
         if RdbSSH[GS_Plink].Checked then begin
             SetAndMarkEnvString('GIT_SSH',EdtPlink.Text,True);
@@ -3460,7 +3460,7 @@ begin
     // Git SSH options.
     Data:='';
     Data2:='false';
-    if (PuTTYPage=NIL) or RdbSSH[GS_OpenSSH].Checked then begin
+    if (SSHChoicePage=NIL) or RdbSSH[GS_OpenSSH].Checked then begin
         Data:='OpenSSH';
     end else if RdbSSH[GS_Plink].Checked then begin
         Data:='Plink';
