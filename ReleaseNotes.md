@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Perl v5.34.0](http://search.cpan.org/dist/perl-5.34.0/pod/perldelta.pod) (and some updated Perl modules).
+* Comes with [subversion v1.14.0](https://svn.apache.org/repos/asf/subversion/tags/1.14.0/CHANGES).
 
 ### Bug Fixes
 
