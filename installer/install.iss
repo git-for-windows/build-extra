@@ -359,8 +359,9 @@ const
     DB_Manual         = 2;
 
     // Git SSH options.
-    GS_OpenSSH        = 1;
-    GS_Plink          = 2;
+    GS_OpenSSH         = 1;
+    GS_Plink           = 2;
+    GS_ExternalOpenSSH = 3;
 
     // Git HTTPS (cURL) options.
     GC_OpenSSL        = 1;
@@ -469,8 +470,8 @@ var
     RdbPath:array[GP_BashOnly..GP_CmdTools] of TRadioButton;
 
     // Wizard page and variables for the SSH options.
-    PuTTYPage:TWizardPage;
-    RdbSSH:array[GS_OpenSSH..GS_Plink] of TRadioButton;
+    SSHChoicePage:TWizardPage;
+    RdbSSH:array[GS_OpenSSH..GS_ExternalOpenSSH] of TRadioButton;
     EdtPlink:TEdit;
     TortoisePlink:TCheckBox;
 
@@ -2058,28 +2059,24 @@ begin
     end;
 
     (*
-     * Create a custom page for using (Tortoise)Plink instead of OpenSSH
-     * if at least one PuTTY session is found in the Registry.
+     * Create a custom page for using (Tortoise)Plink or a self-supplied OpenSSH instead of bundled OpenSSH
+     * if at least one PuTTY session is found in the Registry or an OpenSSH binary is found on the PATH.
      *)
 
-    if RegGetSubkeyNames(HKEY_CURRENT_USER,'Software\SimonTatham\PuTTY\Sessions',PuTTYSessions) and (GetArrayLength(PuTTYSessions)>0) then begin
-        PuTTYPage:=CreatePage(PrevPageID,'Choosing the SSH executable','Which Secure Shell client program would you like Git to use?',TabOrder,Top,Left);
+    if (RegGetSubkeyNames(HKEY_CURRENT_USER,'Software\SimonTatham\PuTTY\Sessions',PuTTYSessions) and (GetArrayLength(PuTTYSessions)>0)) or
+       (FileSearch('ssh.exe', GetEnv('PATH')) <> '') then begin
+        SSHChoicePage:=CreatePage(PrevPageID,'Choosing the SSH executable','Which Secure Shell client program would you like Git to use?',TabOrder,Top,Left);
 
         // 1st choice
-        RdbSSH[GS_OpenSSH]:=CreateRadioButton(PuTTYPage,'Use OpenSSH','This uses ssh.exe that comes with Git. The GIT_SSH and SVN_SSH'+#13+'environment variables will not be modified.',TabOrder,Top,Left);
+        RdbSSH[GS_OpenSSH]:=CreateRadioButton(SSHChoicePage,'Use bundled OpenSSH','This uses ssh.exe that comes with Git.',TabOrder,Top,Left);
 
         // 2nd choice
-        RdbSSH[GS_Plink]:=CreateRadioButton(PuTTYPage,'Use (Tortoise)Plink',
-            'PuTTY sessions were found in your Registry. You may specify the path'+#13+
-            'to an existing copy of (Tortoise)Plink.exe from the TortoiseGit/SVN/CVS'+#13+
-            'or PuTTY applications. "ssh.variant" will be set in the GIT configuration. '+#13+
-            'The GIT_SSH and SVN_SSH environment variables will be adjusted to point '+#13+
-            'to the following executable:',TabOrder,Top,Left);
-        EdtPlink:=TEdit.Create(PuTTYPage);
+        RdbSSH[GS_Plink]:=CreateRadioButton(SSHChoicePage,'Use (Tortoise)Plink','To use PuTTY, specify the path to an existing copy of (Tortoise)Plink.exe:',TabOrder,Top,Left);
+        EdtPlink:=TEdit.Create(SSHChoicePage);
         EdtPlink.Left:=ScaleX(Left+24);
         EdtPlink.Top:=ScaleY(Top);
         with EdtPlink do begin
-            Parent:=PuTTYPage.Surface;
+            Parent:=SSHChoicePage.Surface;
 
             EnvSSH:=GetEnvStrings('GIT_SSH',IsAdminLoggedOn);
             if (GetArrayLength(EnvSSH)=1) and IsPlinkExecutable(EnvSSH[0]) then begin
@@ -2100,11 +2097,11 @@ begin
             TabOrder:=TabOrder;
         end;
         TabOrder:=TabOrder+1;
-        BtnPlink:=TButton.Create(PuTTYPage);
+        BtnPlink:=TButton.Create(SSHChoicePage);
         BtnPlink.Left:=ScaleX(Left+344);
         BtnPlink.Top:=ScaleY(Top);
         with BtnPlink do begin
-            Parent:=PuTTYPage.Surface;
+            Parent:=SSHChoicePage.Surface;
             Caption:='...';
             OnClick:=@BrowseForPuTTYFolder;
             Width:=ScaleX(21);
@@ -2115,12 +2112,12 @@ begin
         Top:=Top+29;
 
         // Add checkbox for tortoise plink
-        TortoisePlink:=TCheckBox.Create(PuTTYPage);
+        TortoisePlink:=TCheckBox.Create(SSHChoicePage);
         TortoisePlink.Left:=ScaleX(Left+24);
         TortoisePlink.Top:=ScaleY(Top);
         with TortoisePlink do begin
             Caption:='Set ssh.variant for Tortoise Plink';
-            Parent:=PuTTYPage.Surface;
+            Parent:=SSHChoicePage.Surface;
             Width:=ScaleX(405);
             Height:=ScaleY(17);
             TabOrder:=TabOrder;
@@ -2128,9 +2125,16 @@ begin
         TabOrder:=TabOrder+1;
         Top:=Top+17;
 
+        // 3rd choice
+        RdbSSH[GS_ExternalOpenSSH]:=CreateRadioButton(SSHChoicePage,'Use external OpenSSH',
+            'This uses an external ssh.exe. Git will not install its own OpenSSH (related)'+#13+
+            'binaries but use them as found on the PATH.',
+            TabOrder,Top,Left);
+
         // Restore the setting chosen during a previous install.
         case ReplayChoice('SSH Option','OpenSSH') of
             'OpenSSH': RdbSSH[GS_OpenSSH].Checked:=True;
+            'ExternalOpenSSH': RdbSSH[GS_ExternalOpenSSH].Checked:=True;
             'Plink': RdbSSH[GS_Plink].Checked:=True;
         else
             RdbSSH[GS_OpenSSH].Checked:=True;
@@ -2140,7 +2144,7 @@ begin
         if (data='true') then
             TortoisePlink.Checked:=True;
     end else begin
-        PuTTYPage:=NIL;
+        SSHChoicePage:=NIL;
     end;
 
     (*
@@ -2491,8 +2495,9 @@ begin
             Wizardform.NextButton.Enabled:=False;
             Exit;
         end;
-    end else if (PuTTYPage<>NIL) and (CurPageID=PuTTYPage.ID) then begin
+    end else if (SSHChoicePage<>NIL) and (CurPageID=SSHChoicePage.ID) then begin
         Result:=RdbSSH[GS_OpenSSH].Checked or
+            (RdbSSH[GS_ExternalOpenSSH].Checked and (FileSearch('ssh.exe', GetEnv('PATH')) <> '')) or
             (RdbSSH[GS_Plink].Checked and FileExists(EdtPlink.Text));
         if not Result then begin
             SuppressibleMsgBox('{#PLINK_PATH_ERROR_MSG}',mbError,MB_OK,IDOK);
@@ -3163,7 +3168,7 @@ begin
     DeleteMarkedEnvString('GIT_SSH');
     DeleteMarkedEnvString('SVN_SSH');
 
-    if (PuTTYPage<>NIL) then begin
+    if (SSHChoicePage<>NIL) then begin
         GitSystemConfigSet('ssh.variant',#0);
         if RdbSSH[GS_Plink].Checked then begin
             SetAndMarkEnvString('GIT_SSH',EdtPlink.Text,True);
@@ -3333,6 +3338,18 @@ begin
     end;
 
     {
+        Optionally "skip" installing bundled SSH binaries conflicting with external OpenSSH:
+    }
+
+#ifdef DELETE_OPENSSH_FILES
+    if RdbSSH[GS_ExternalOpenSSH].Checked then begin
+        WizardForm.StatusLabel.Caption:='Removing bundled Git OpenSSH binaries';
+        if not DeleteOpenSSHFiles() then
+            LogError('Failed to remove OpenSSH file(s)');
+    end;
+#endif
+
+    {
         Set the default Git editor
     }
 
@@ -3465,8 +3482,10 @@ begin
     // Git SSH options.
     Data:='';
     Data2:='false';
-    if (PuTTYPage=NIL) or RdbSSH[GS_OpenSSH].Checked then begin
+    if (SSHChoicePage=NIL) or RdbSSH[GS_OpenSSH].Checked then begin
         Data:='OpenSSH';
+    end else if RdbSSH[GS_ExternalOpenSSH].Checked then begin
+        Data:='ExternalOpenSSH'
     end else if RdbSSH[GS_Plink].Checked then begin
         Data:='Plink';
         RecordChoice(PreviousDataKey,'Plink Path',EdtPlink.Text);
