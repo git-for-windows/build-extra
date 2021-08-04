@@ -55,14 +55,12 @@ do
 		fi
 		inno_defines="$inno_defines$LF#define DEBUG_WIZARD_PAGE '$page_id'$LF#define OUTPUT_TO_TEMP ''"
 		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
-		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;${LF}${LF}"
 		skip_files=t
 		;;
 	--test)
 		test_installer=t
 		inno_defines="$inno_defines$LF#define OUTPUT_TO_TEMP ''"
 		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
-		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;$LF"
 		;;
 	--silent-test)
 		test_installer=t
@@ -70,7 +68,6 @@ do
 		skip_files=t
 		inno_defines="$inno_defines$LF#define OUTPUT_TO_TEMP ''"
 		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
-		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;$LF"
 		;;
 	--output=*)
 		output_directory="$(cygpath -m "${1#*=}")" ||
@@ -253,7 +250,7 @@ test -z "$GITCONFIG_PATH" || {
 	done ||
 	die "Could not split gitconfig"
 
-	gitconfig="$gitconfig${LF}end;$LF"
+	gitconfig="$gitconfig${LF}end;$LF#define HAVE_SET_SYSTEM_CONFIG_DEFAULTS 1$LF"
 	inno_defines="$inno_defines$LF$gitconfig"
 
 	LIST="$(echo "$LIST" | grep -v "^$GITCONFIG_PATH\$")"

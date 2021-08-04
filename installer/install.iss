@@ -3023,9 +3023,11 @@ begin
         Configure some defaults in the system config
     }
 
+#ifdef HAVE_SET_SYSTEM_CONFIG_DEFAULTS
     WizardForm.StatusLabel.Caption:='Initializing the system config';
     if not SetSystemConfigDefaults() then
         LogError('Unable to set system config defaults');
+#endif
 
     {
         Configure http.sslBackend according to the user's choice.
