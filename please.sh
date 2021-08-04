@@ -2306,7 +2306,7 @@ maybe_force_pkgrel () {
 			sed -i "s/^\\(pkgrel=\\).*/\\1"$((1+${blame##*=}))/ PKGBUILD
 		else
 			case "${PWD##*/MSYS2-packages/}" in
-			perl-*)
+			perl-*|subversion)
 				# Handle perl dependencees: if perl changed, increment pkgrel
 				blame_perl="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgver=/,+1' -- ../perl/PKGBUILD)" &&
 				blame_perl="$(echo "$blame_perl" | sed -e 's/ .*//' -e 's/^0*$//')" &&
