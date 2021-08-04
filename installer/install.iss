@@ -2071,59 +2071,63 @@ begin
         RdbSSH[GS_OpenSSH]:=CreateRadioButton(SSHChoicePage,'Use bundled OpenSSH','This uses ssh.exe that comes with Git.',TabOrder,Top,Left);
 
         // 2nd choice
-        RdbSSH[GS_Plink]:=CreateRadioButton(SSHChoicePage,'Use (Tortoise)Plink','To use PuTTY, specify the path to an existing copy of (Tortoise)Plink.exe:',TabOrder,Top,Left);
-        EdtPlink:=TEdit.Create(SSHChoicePage);
-        EdtPlink.Left:=ScaleX(Left+24);
-        EdtPlink.Top:=ScaleY(Top);
-        with EdtPlink do begin
-            Parent:=SSHChoicePage.Surface;
+        if (GetArrayLength(PuTTYSessions)=0) then begin
+            RdbSSH[GS_Plink]:=TRadioButton.Create(SSHChoicePage);
+        end else begin
+            RdbSSH[GS_Plink]:=CreateRadioButton(SSHChoicePage,'Use (Tortoise)Plink','To use PuTTY, specify the path to an existing copy of (Tortoise)Plink.exe:',TabOrder,Top,Left);
+            EdtPlink:=TEdit.Create(SSHChoicePage);
+            EdtPlink.Left:=ScaleX(Left+24);
+            EdtPlink.Top:=ScaleY(Top);
+            with EdtPlink do begin
+                Parent:=SSHChoicePage.Surface;
 
-            EnvSSH:=GetEnvStrings('GIT_SSH',IsAdminLoggedOn);
-            if (GetArrayLength(EnvSSH)=1) and IsPlinkExecutable(EnvSSH[0]) then begin
-                Text:=EnvSSH[0];
-            end;
-            if not FileExists(Text) then begin
-                Text:=GetPreviousData('Plink Path','');
-            end;
-            if not FileExists(Text) then begin
-                Text:=GuessPlinkExecutable;
-            end;
-            if not FileExists(Text) then begin
-                Text:='';
-            end;
+                EnvSSH:=GetEnvStrings('GIT_SSH',IsAdminLoggedOn);
+                if (GetArrayLength(EnvSSH)=1) and IsPlinkExecutable(EnvSSH[0]) then begin
+                    Text:=EnvSSH[0];
+                end;
+                if not FileExists(Text) then begin
+                    Text:=GetPreviousData('Plink Path','');
+                end;
+                if not FileExists(Text) then begin
+                    Text:=GuessPlinkExecutable;
+                end;
+                if not FileExists(Text) then begin
+                    Text:='';
+                end;
 
-            Width:=ScaleX(316);
-            Height:=ScaleY(13);
-            TabOrder:=TabOrder;
-        end;
-        TabOrder:=TabOrder+1;
-        BtnPlink:=TButton.Create(SSHChoicePage);
-        BtnPlink.Left:=ScaleX(Left+344);
-        BtnPlink.Top:=ScaleY(Top);
-        with BtnPlink do begin
-            Parent:=SSHChoicePage.Surface;
-            Caption:='...';
-            OnClick:=@BrowseForPuTTYFolder;
-            Width:=ScaleX(21);
-            Height:=ScaleY(21);
-            TabOrder:=TabOrder;
-        end;
-        TabOrder:=TabOrder+1;
-        Top:=Top+29;
+                Width:=ScaleX(316);
+                Height:=ScaleY(13);
+                TabOrder:=TabOrder;
+            end;
+            TabOrder:=TabOrder+1;
+            BtnPlink:=TButton.Create(SSHChoicePage);
+            BtnPlink.Left:=ScaleX(Left+344);
+            BtnPlink.Top:=ScaleY(Top);
+            with BtnPlink do begin
+                Parent:=SSHChoicePage.Surface;
+                Caption:='...';
+                OnClick:=@BrowseForPuTTYFolder;
+                Width:=ScaleX(21);
+                Height:=ScaleY(21);
+                TabOrder:=TabOrder;
+            end;
+            TabOrder:=TabOrder+1;
+            Top:=Top+29;
 
-        // Add checkbox for tortoise plink
-        TortoisePlink:=TCheckBox.Create(SSHChoicePage);
-        TortoisePlink.Left:=ScaleX(Left+24);
-        TortoisePlink.Top:=ScaleY(Top);
-        with TortoisePlink do begin
-            Caption:='Set ssh.variant for Tortoise Plink';
-            Parent:=SSHChoicePage.Surface;
-            Width:=ScaleX(405);
-            Height:=ScaleY(17);
-            TabOrder:=TabOrder;
+            // Add checkbox for tortoise plink
+            TortoisePlink:=TCheckBox.Create(SSHChoicePage);
+            TortoisePlink.Left:=ScaleX(Left+24);
+            TortoisePlink.Top:=ScaleY(Top);
+            with TortoisePlink do begin
+                Caption:='Set ssh.variant for Tortoise Plink';
+                Parent:=SSHChoicePage.Surface;
+                Width:=ScaleX(405);
+                Height:=ScaleY(17);
+                TabOrder:=TabOrder;
+            end;
+            TabOrder:=TabOrder+1;
+            Top:=Top+17;
         end;
-        TabOrder:=TabOrder+1;
-        Top:=Top+17;
 
         // 3rd choice
         RdbSSH[GS_ExternalOpenSSH]:=CreateRadioButton(SSHChoicePage,'Use external OpenSSH',
