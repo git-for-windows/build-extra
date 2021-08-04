@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Perl v5.34.0](http://search.cpan.org/dist/perl-5.34.0/pod/perldelta.pod) (and some updated Perl modules).
+* It is [now possible](https://github.com/git-for-windows/build-extra/pull/367) to ask Git for Windows to use an SSH found on the `PATH` instead of its bundled OpenSSH executable.
 
 ### Bug Fixes
 
