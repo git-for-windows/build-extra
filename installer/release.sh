@@ -49,7 +49,7 @@ do
 		   ! grep "^ *$page:TWizardPage;$" install.iss >/dev/null &&
 		   ! grep "^ *$page:TInputFileWizardPage;$" install.iss >/dev/null
 		then
-			echo "Unknown page '$page'. Known pages:" >&2
+			printf 'Unknown page "%s". Known pages:\n    %s\n' "$page" wpSelectComponents >&2
 			sed -n -e 's/:TWizardPage;$//p' -e 's/:TInputFileWizardPage;$//p' <install.iss >&2
 			exit 1
 		fi

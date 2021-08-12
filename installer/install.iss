@@ -610,7 +610,7 @@ begin
                 BuiltinFSMonitorStopOption:='(huh?)';
                 if not ExecWithCapture('"'+AppDir+'\cmd\git.exe" fsmonitor--daemon -h',Str,Str,ExitCode) or (ExitCode<>129) then begin
                     if (i<>1) and (i<>127) then // Suppress message if `git.exe` was not found, or if it does not know about the built-in FSMonitor
-                        LogError('Could not get FSMonitor help (exit code'++IntToStr(ExitCode)+'):'+#13+Str);
+                        LogError('Could not get FSMonitor help (exit code '+IntToStr(ExitCode)+'):'+#13+Str);
                     Exit;
                 end else begin
                     i:=Pos('stop'+#10,Str);
@@ -635,6 +635,14 @@ begin
             Path:=Copy(FindRec.Name,1,Len);
             if (Length(Path)>2) and (Path[2]='_') then
                 Path[2]:=':';
+
+            // Now we have the gitdir, but we need to get to the worktree
+            if FileExists(Path+'\gitdir') then begin
+                Path:=ReadFileAsString(Path+'\gitdir');
+                StringChangeEx(Path,'/','\',True);
+            end;
+            if WildcardMatch(Path,'*\.git') then
+                Path:=Copy(Path,1,Length(Path)-5);
 
             if ExecSilently('"'+AppDir+'\cmd\git.exe" -C "'+Path+'" fsmonitor--daemon '+BuiltinFSMonitorStopOption,'fsmonitor-stop','Could not stop FSMonitor daemon in '+Path) then
                 Result:=True;
@@ -989,7 +997,10 @@ begin
 #ifdef GIT_VERSION
     if Result or (CountDots(CurrentVersion)>3) or (CountDots(PreviousGitForWindowsVersion)>3) then begin
         // maybe the previous version was a prerelease (prereleases have five numbers: v2.24.0-rc1.windows.1 reduces to '2.24.0.1.1')?
-        CurrentVersion:='{#GIT_VERSION}';
+        if CurrentVersion=ExpandConstant('{#APP_VERSION}') then
+            CurrentVersion:='{#GIT_VERSION}'
+        else
+            CurrentVersion:='git version '+CurrentVersion+'.windows.1';
         Result:=(VersionCompare(CurrentVersion,GetPreviousGitVersion())<0);
     end;
 #endif
@@ -1094,10 +1105,12 @@ begin
         end;
     end;
 
+#ifdef GIT_VERSION
     // Warn about switching away from VFS-enabled Git
     if Result and (Pos('.vfs.','{#GIT_VERSION}')=0) and (Pos('.vfs.',GetPreviousGitVersion())>0) then
         if SuppressibleMsgBox('The VFS for Git-aware flavor of Git for Windows is currently installed.'+#13+'Switching away from that flavor might break your Scalar/VFS for Git enlistments.'+#13+'Do you still want to switch?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO then
             Result:=False;
+#endif
 #endif
 end;
 
@@ -2131,8 +2144,8 @@ begin
 
         // 3rd choice
         RdbSSH[GS_ExternalOpenSSH]:=CreateRadioButton(SSHChoicePage,'Use external OpenSSH',
-            'This uses an external ssh.exe. Git will not install its own OpenSSH (related)'+#13+
-            'binaries but use them as found on the PATH.',
+            '<RED>NEW!</RED> This uses an external ssh.exe. Git will not install its own OpenSSH'+#13+
+            '(and related) binaries but use them as found on the PATH.',
             TabOrder,Top,Left);
 
         // Restore the setting chosen during a previous install.
@@ -2143,6 +2156,10 @@ begin
         else
             RdbSSH[GS_OpenSSH].Checked:=True;
         end;
+
+        // Even if the user saw the Tortoise options before v2.33.0, the external SSH choice was not seen yet
+        if IsUpgrade('2.33.0') then
+            AddToSet(CustomPagesWithUnseenOptions,SSHChoicePage.ID);
 
         data:=ReplayChoice('Tortoise Option','');
         if (data='true') then
