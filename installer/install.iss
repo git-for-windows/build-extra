@@ -2144,8 +2144,8 @@ begin
 
         // 3rd choice
         RdbSSH[GS_ExternalOpenSSH]:=CreateRadioButton(SSHChoicePage,'Use external OpenSSH',
-            'This uses an external ssh.exe. Git will not install its own OpenSSH (related)'+#13+
-            'binaries but use them as found on the PATH.',
+            '<RED>NEW!</RED> This uses an external ssh.exe. Git will not install its own OpenSSH'+#13+
+            '(and related) binaries but use them as found on the PATH.',
             TabOrder,Top,Left);
 
         // Restore the setting chosen during a previous install.
