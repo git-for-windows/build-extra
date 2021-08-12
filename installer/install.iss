@@ -610,7 +610,7 @@ begin
                 BuiltinFSMonitorStopOption:='(huh?)';
                 if not ExecWithCapture('"'+AppDir+'\cmd\git.exe" fsmonitor--daemon -h',Str,Str,ExitCode) or (ExitCode<>129) then begin
                     if (i<>1) and (i<>127) then // Suppress message if `git.exe` was not found, or if it does not know about the built-in FSMonitor
-                        LogError('Could not get FSMonitor help (exit code'++IntToStr(ExitCode)+'):'+#13+Str);
+                        LogError('Could not get FSMonitor help (exit code '+IntToStr(ExitCode)+'):'+#13+Str);
                     Exit;
                 end else begin
                     i:=Pos('stop'+#10,Str);
