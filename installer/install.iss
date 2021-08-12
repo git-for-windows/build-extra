@@ -997,7 +997,10 @@ begin
 #ifdef GIT_VERSION
     if Result or (CountDots(CurrentVersion)>3) or (CountDots(PreviousGitForWindowsVersion)>3) then begin
         // maybe the previous version was a prerelease (prereleases have five numbers: v2.24.0-rc1.windows.1 reduces to '2.24.0.1.1')?
-        CurrentVersion:='{#GIT_VERSION}';
+        if CurrentVersion=ExpandConstant('{#APP_VERSION}') then
+            CurrentVersion:='{#GIT_VERSION}'
+        else
+            CurrentVersion:='git version '+CurrentVersion+'.windows.1';
         Result:=(VersionCompare(CurrentVersion,GetPreviousGitVersion())<0);
     end;
 #endif
