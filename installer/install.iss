@@ -636,6 +636,14 @@ begin
             if (Length(Path)>2) and (Path[2]='_') then
                 Path[2]:=':';
 
+            // Now we have the gitdir, but we need to get to the worktree
+            if FileExists(Path+'\gitdir') then begin
+                Path:=ReadFileAsString(Path+'\gitdir');
+                StringChangeEx(Path,'/','\',True);
+            end;
+            if WildcardMatch(Path,'*\.git') then
+                Path:=Copy(Path,1,Length(Path)-5);
+
             if ExecSilently('"'+AppDir+'\cmd\git.exe" -C "'+Path+'" fsmonitor--daemon '+BuiltinFSMonitorStopOption,'fsmonitor-stop','Could not stop FSMonitor daemon in '+Path) then
                 Result:=True;
         end;
