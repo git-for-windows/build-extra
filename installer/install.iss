@@ -2157,6 +2157,10 @@ begin
             RdbSSH[GS_OpenSSH].Checked:=True;
         end;
 
+        // Even if the user saw the Tortoise options before v2.33.0, the external SSH choice was not seen yet
+        if IsUpgrade('2.33.0') then
+            AddToSet(CustomPagesWithUnseenOptions,SSHChoicePage.ID);
+
         data:=ReplayChoice('Tortoise Option','');
         if (data='true') then
             TortoisePlink.Checked:=True;
