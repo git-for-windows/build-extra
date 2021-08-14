@@ -12,5 +12,9 @@ test -n "$SSH_ASKPASS" || {
 		export DISPLAY=needs-to-be-defined
 		export SSH_ASKPASS=/mingw32/libexec/git-core/git-gui--askpass
 		;;
+	ARM64)
+		export DISPLAY=needs-to-be-defined
+		export SSH_ASKPASS=/mingw32/libexec/git-core/git-gui--askpass
+		;;
 	esac
 }
