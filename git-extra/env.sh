@@ -6,11 +6,29 @@ test -n "$SSH_ASKPASS" || {
 	case "$MSYSTEM" in
 	MINGW64)
 		export DISPLAY=needs-to-be-defined
-		export SSH_ASKPASS=/mingw64/libexec/git-core/git-gui--askpass
+		if [ -f /mingw64/bin/git-askpass.exe ]; then
+			export SSH_ASKPASS=/mingw64/bin/git-askpass.exe
+		else
+			export SSH_ASKPASS=/mingw64/libexec/git-core/git-gui--askpass
+		fi
 		;;
 	MINGW32)
 		export DISPLAY=needs-to-be-defined
-		export SSH_ASKPASS=/mingw32/libexec/git-core/git-gui--askpass
+		if [ -f /mingw32/bin/git-askpass.exe ]; then
+			export SSH_ASKPASS=/mingw32/bin/git-askpass.exe
+		else
+			export SSH_ASKPASS=/mingw32/libexec/git-core/git-gui--askpass
+		fi
+		;;
+	ARM64)
+		export DISPLAY=needs-to-be-defined
+		if [ -f /arm64/bin/git-askpass.exe ]; then
+			export SSH_ASKPASS=/arm64/bin/git-askpass.exe
+		elif [ -f /mingw32/bin/git-askpass.exe ]; then
+			export SSH_ASKPASS=/mingw32/bin/git-askpass.exe
+		else
+			export SSH_ASKPASS=/mingw32/libexec/git-core/git-gui--askpass
+		fi
 		;;
 	esac
 }

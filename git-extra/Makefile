@@ -7,6 +7,7 @@ CXXFLAGS ?= -Wall
 all: $(BUILDDIR)/create-shortcut.exe $(BUILDDIR)/WhoUses.exe \
 	$(BUILDDIR)/blocked-file-util.exe $(BUILDDIR)/proxy-lookup.exe \
 	$(BUILDDIR)/git-askyesno.exe \
+	$(BUILDDIR)/git-askpass.exe \
 	$(BUILDDIR)/git-credential-helper-selector.exe
 
 $(BUILDDIR)/create-shortcut.exe: $(BUILDDIR)/create-shortcut.o
@@ -44,6 +45,13 @@ $(BUILDDIR)/git-credential-helper-selector.exe: \
 	$(BUILDDIR)/git-credential-helper-selector.o \
 	$(BUILDDIR)/git-credential-helper-selector.res
 	$(CC) -municode $(CFLAGS) -o $@ $^ -lgdi32 -lcomctl32
+
+$(BUILDDIR)/git-askpass.o: CFLAGS += -DUNICODE
+
+$(BUILDDIR)/git-askpass.exe: \
+	$(BUILDDIR)/git-askpass.o \
+	$(BUILDDIR)/git-askpass.res
+	$(CC) -municode $(CFLAGS) -o $@ $^
 clean:
 	$(RM) $(BUILDDIR)/create-shortcut.exe $(BUILDDIR)/create-shortcut.o
 	$(RM) $(BUILDDIR)/WhoUses.exe $(BUILDDIR)/WhoUses.o \
