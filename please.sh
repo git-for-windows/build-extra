@@ -3415,12 +3415,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update $sdk32$pkgpath"
 		;;
 	libgpg-error)
-		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=libgpg-error.git;a=tags'
+		url='https://dev.gnupg.org/source/libgpg-error/tags/'
 		tags="$(curl -s "$url")" ||
 		test $? = 56 ||
 		die 'Could not obtain download page from %s\n' "$url"
 		version="$(echo "$tags" |
-			sed -n '/ href=[^>]*>libgpg-error-[1-9][.0-9]*</{s/.*>libgpg-error-\([.0-9]*\).*/\1/p}' |
+			sed 'y/</\n/' |
+			sed -n '/ href=[^>]*>libgpg-error-[1-9][.0-9]*$/{s/.*>libgpg-error-\([.0-9]*\).*/\1/p}' |
 			sort -rnt. -k1,1 -k2,2 -k3,3 |
 			head -n 1)"
 		test -n "$version" ||
@@ -3440,12 +3441,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update $sdk32$pkgpath"
 		;;
 	libgcrypt)
-		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=libgcrypt.git;a=tags'
+		url='https://dev.gnupg.org/source/libgcrypt/tags/'
 		tags="$(curl -s "$url")" ||
 		test $? = 56 ||
 		die 'Could not obtain download page from %s\n' "$url"
 		version="$(echo "$tags" |
-			sed -n '/ href=[^>]*>libgcrypt-[1-9][.0-9]*</{s/.*>libgcrypt-\([.0-9]*\).*/\1/p}' |
+			sed 'y/</\n/' |
+			sed -n '/ href=[^>]*>libgcrypt-[1-9][.0-9]*$/{s/.*>libgcrypt-\([.0-9]*\).*/\1/p}' |
 			sort -rnt. -k1,1 -k2,2 -k3,3 |
 			head -n 1)"
 		test -n "$version" ||
@@ -3465,12 +3467,12 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update $sdk32$pkgpath"
 		;;
 	gnupg)
-		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=tags'
+		url='https://dev.gnupg.org/source/gnupg/tags/'
 		tags="$(curl -s "$url")" ||
 		test $? = 56 ||
 		die 'Could not obtain download page from %s\n' "$url"
 		version="$(echo "$tags" |
-			sed -n '/ href=[^>]*>gnupg-[1-9][.0-9]*</{s/.*>gnupg-\([.0-9]*\).*/\1/p;q}')"
+			sed -n '/ href=[^>]*>gnupg-[1-9][.0-9]*</{s/>gnupg-\([.0-9]*\).*/>\1/;s/.*>//p;q}')"
 		test -n "$version" ||
 		die "Could not determine newest $package version\n"
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
