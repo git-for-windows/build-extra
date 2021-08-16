@@ -53,6 +53,7 @@ This package contains software from a number of other projects including Bash, z
 
 * The installer no longer [shows an error dialog](https://github.com/git-for-windows/git/issues/3312) when upgrading while the Windows Terminal Profile option is checked.
 * Interaction with [the `git repo` tool](https://gerrit.googlesource.com/git-repo/) was [improved](https://github.com/git-for-windows/git/pull/3328).
+* The version of GNU Privacy Guard (GPG) bundled in Git for Windows [did not work in 64-bit setups](https://github.com/git-for-windows/git/issues/2888), which [was fixed](https://github.com/git-for-windows/MSYS2-packages/pull/46).
 
 ## Changes since Git for Windows v2.32.0 (June 7th 2021)
 
