@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.33.0](https://github.com/git/git/blob/v2.33.0/Documentation/RelNotes/2.33.0.txt).
 * Comes with [Perl v5.34.0](http://search.cpan.org/dist/perl-5.34.0/pod/perldelta.pod) (and some updated Perl modules).
 * It is [now possible](https://github.com/git-for-windows/build-extra/pull/367) to ask Git for Windows to use an SSH found on the `PATH` instead of its bundled OpenSSH executable.
 * Comes with [Git Credential Manager Core v2.0.498.54650](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.498).
