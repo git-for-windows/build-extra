@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * It is [now possible](https://github.com/git-for-windows/build-extra/pull/367) to ask Git for Windows to use an SSH found on the `PATH` instead of its bundled OpenSSH executable.
 * Comes with [Git Credential Manager Core v2.0.498.54650](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.498).
 * The experimental FSMonitor patches were replaced with [a newer version](https://github.com/git-for-windows/git/pull/3350).
+* Comes with [GNU Privacy Guard v2.2.29](https://lists.gnupg.org/pipermail/gnupg-announce/2021q3/000461.html).
 
 ### Bug Fixes
 
