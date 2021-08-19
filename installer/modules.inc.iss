@@ -537,7 +537,7 @@ begin
                 Processes[Have].ID:=AppList[i].Process.dwProcessId;
                 Processes[Have].Name:=ArrayToString(AppList[i].strAppName);
                 Processes[Have].Restartable:=AppList[i].bRestartable;
-                if ('ssh-add'=Processes[Have].Name) or ('ssh-agent'=Processes[Have].Name) or ('ssh-pageant'=Processes[Have].Name) then
+                if ('ssh-add'=Processes[Have].Name) or ('ssh-agent'=Processes[Have].Name) or ('ssh-pageant'=Processes[Have].Name) or ('gpg-agent'=Processes[Have].Name) or ('scdaemon'=Processes[Have].Name) then
                     Processes[Have].ToTerminate:=True;
             end;
             Result:=Handle;
