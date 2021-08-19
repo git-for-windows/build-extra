@@ -538,7 +538,7 @@ begin
                 Processes[Have].Name:=ArrayToString(AppList[i].strAppName);
                 Processes[Have].Restartable:=AppList[i].bRestartable;
                 if (Pos('ssh-add.exe',Processes[Have].Name)>0) or (Pos('ssh-agent.exe',Processes[Have].Name)>0) or (Pos('ssh-pageant.exe',Processes[Have].Name)>0) then
-		    Processes[Have].ToTerminate:=True;
+                    Processes[Have].ToTerminate:=True;
             end;
             Result:=Handle;
         end;
