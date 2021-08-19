@@ -161,7 +161,6 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../share/doc/git-doc/git-cvsexport' \
 	-e '^/mingw../libexec/git-core/git-cvsexport' \
 	-e '^/mingw../share/doc/git-doc/git-cvsimport' \
-	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
 	-e '^/mingw../share/gtk-doc/' \
 	-e '^/mingw../share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
@@ -197,6 +196,7 @@ then
 else
 	grep -v \
 		-e '^/mingw../share/locale/' \
+		-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
 		-e '^/usr/share/locale/'
 fi |
 if test -z "$MINIMAL_GIT"
