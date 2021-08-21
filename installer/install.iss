@@ -3365,7 +3365,7 @@ begin
     }
 
 #ifdef DELETE_OPENSSH_FILES
-    if RdbSSH[GS_ExternalOpenSSH].Checked then begin
+    if (SSHChoicePage<>NIL) and (RdbSSH[GS_ExternalOpenSSH].Checked) then begin
         WizardForm.StatusLabel.Caption:='Removing bundled Git OpenSSH binaries';
         if not DeleteOpenSSHFiles() then
             LogError('Failed to remove OpenSSH file(s)');
