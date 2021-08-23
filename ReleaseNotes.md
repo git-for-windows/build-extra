@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [cURL v7.78.0](https://curl.haxx.se/changes.html#7_78_0).
+* Comes with [OpenSSH v8.7p1](https://www.openssh.com/txt/release-8.7).
 
 ## Changes since Git for Windows v2.32.0(2) (July 6th 2021)
 
