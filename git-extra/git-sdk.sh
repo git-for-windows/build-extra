@@ -45,6 +45,13 @@ sdk () {
 		EOF
 		;;
 	welcome)
+		test -z "$MSYS_NO_PATHCONV" || cat >&2 <<-EOF
+		WARNING: You have the MSYS_NO_PATHCONV env var defined
+		Please consult the documentation, e.g. at
+		https://github.com/git-for-windows/build-extra/blob/HEAD/ReleaseNotes.md#known-issues
+
+		EOF
+
 		test -z "$GIT_SDK_WELCOME_SHOWN" || {
 			echo 'Reloaded the `sdk` function' >&2
 			return 0
