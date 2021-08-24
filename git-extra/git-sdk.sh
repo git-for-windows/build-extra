@@ -45,6 +45,15 @@ sdk () {
 		EOF
 		;;
 	welcome)
+		test -z "$MSYS_NO_PATHCONV" || {
+			cat >&2 <<-EOF
+
+			WARNING: You have the MSYS_NO_PATHCONV env var defined
+			Consult documentation regarding potential consequences and advices
+
+			EOF
+		}
+
 		test -z "$GIT_SDK_WELCOME_SHOWN" || {
 			echo 'Reloaded the `sdk` function' >&2
 			return 0
