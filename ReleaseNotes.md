@@ -47,6 +47,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v7.78.0](https://curl.haxx.se/changes.html#7_78_0).
 * Comes with [OpenSSH v8.7p1](https://www.openssh.com/txt/release-8.7).
 
+### Bug Fixes
+
+* A [bug](https://github.com/git-for-windows/git/issues/3368) affecting older Windows versions that caused the installer to show the error message "Could not call proc" [was fixed](https://github.com/git-for-windows/build-extra/pull/374).
+
 ## Changes since Git for Windows v2.32.0(2) (July 6th 2021)
 
 ### New Features
