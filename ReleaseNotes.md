@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [OpenSSL v1.1.1l](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [subversion v1.14.1](https://svn.apache.org/repos/asf/subversion/tags/1.14.1/CHANGES).
 
 ## Changes since Git for Windows v2.33.0 (August 17th 2021)
 
