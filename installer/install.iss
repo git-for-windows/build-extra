@@ -2579,7 +2579,7 @@ begin
 
         if not Result then begin
             Result:=(SuppressibleMsgBox(
-                'If you continue without closing the listed applications they will be closed and restarted automatically.' + #13 + #13 +
+                'If you continue without closing the listed applications they will be terminated/restarted automatically.' + #13 + #13 +
                 'Are you sure you want to continue?'
             ,   mbConfirmation
             ,   MB_YESNO
