@@ -105,7 +105,6 @@ sdk () {
 			mingw-w64-curl \
 			mingw-w64-cv2pdb \
 			mingw-w64-git \
-			mingw-w64-git-credential-manager \
 			mingw-w64-git-credential-manager-core \
 			mingw-w64-git-lfs \
 			mingw-w64-git-sizer \
@@ -175,7 +174,7 @@ sdk () {
 			return 1
 			;;
 		git-extra|git-for-windows-keyring|mingw-w64-cv2pdb|\
-		mingw-w64-git-credential-manager|mingw-w64-git-lfs|\
+		mingw-w64-git-lfs|\
 		mingw-w64-git-credential-manager-core|\
 		mingw-w64-git-sizer|mingw-w64-wintoast|installer)
 			sdk init-lazy build-extra &&
