@@ -839,7 +839,7 @@ begin
                         end;
                     'credential.helper':
                         case Value of
-                            'manager': RecordInferredDefault('Use Credential Manager','Enabled');
+                            'manager': RecordInferredDefault('Use Credential Manager','Core');
                             'manager-core': RecordInferredDefault('Use Credential Manager','Core');
                         else RecordInferredDefault('Use Credential Manager','Disabled');
                         end;
