@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [OpenSSL v1.1.1l](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [subversion v1.14.1](https://svn.apache.org/repos/asf/subversion/tags/1.14.1/CHANGES).
+* [Git Credential Manager for Windows](https://github.com/microsoft/Git-Credential-Manager-for-Windows) (which was superseded by [Git Credential Manager Core](https://aka.ms/gcmcore), and was deprecated for a long time now, and no longer succeeds to authenticate with GitHub) is [no longer included in Git for Windows](https://github.com/git-for-windows/build-extra/pull/377).
 
 ### Bug Fixes
 
