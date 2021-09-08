@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <UI>
+      <Dialog Id="GitChooseTerminalDlg" Width="370" Height="270" Title="!(loc.GitChooseTerminalDlg_Title)" X="50" Y="50">
+        <Control Type="RadioButtonGroup" Property="TERMINAL" Id="RadioButtonGroup" Width="310" Height="30" X="30" Y="77">
+          <RadioButtonGroup Property="TERMINAL">
+            <RadioButton Text="!(loc.GitChooseTerminalDlg_RbMinTTY)" Height="10" Value="MinTTY" Width="310" X="0" Y="0" />
+            <RadioButton Text="!(loc.GitChooseTerminalDlg_RbCmdPrompt)" Height="15" Value="CmdPrompt" Width="310" X="0" Y="15" />
+          </RadioButtonGroup>
+        </Control>
+        <Control Type="PushButton" Id="Back" Width="56" Height="17" X="180" Y="243" Text="!(loc.WixUIBack)" />
+        <Control Type="PushButton" Id="Next" Width="56" Height="17" X="236" Y="243" Default="yes" Text="!(loc.WixUINext)" />
+        <Control Type="PushButton" Id="Cancel" Width="56" Height="17" X="304" Y="243" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Type="Bitmap" Id="BannerBitmap" Width="370" Height="44" X="0" Y="0" Text="!(loc.GitChooseTerminalDlgBannerBitmap)" TabSkip="no" />
+        <Control Type="Line" Id="BannerLine" Width="370" Height="0" X="0" Y="44" />
+        <Control Type="Line" Id="BottomLine" Width="370" Height="0" X="0" Y="234" />
+        <Control Type="Text" Id="Description" Width="280" Height="20" X="25" Y="23" Text="!(loc.GitChooseTerminalDlgDescription)" Transparent="yes" NoPrefix="yes" />
+        <Control Type="Text" Id="Title" Width="200" Height="15" X="15" Y="6" Text="!(loc.GitChooseTerminalDlgTitle)" Transparent="yes" NoPrefix="yes" />
+        <Control Type="Text" Id="Text" Width="340" Height="10" X="15" Y="53" Text="!(loc.GitChooseTerminalDlg_Text)" />
+        <Control Type="Text" Id="OptionDescription" Width="340" Height="10" X="15" Y="121" Text="!(loc.GitChooseTerminalDlg_OptionDescription)" />
+        <Control Type="Text" Id="MinTTYText" Width="324" Height="50" X="23" Y="137" Hidden="yes" Text="!(loc.GitChooseTerminalDlg_MinTTYText)">
+          <Condition Action="show">TERMINAL = "MinTTY"</Condition>
+          <Condition Action="hide"><![CDATA[TERMINAL <> "MinTTY"]]></Condition>
+        </Control>
+        <Control Type="Text" Id="CmdPromptText" Width="324" Height="50" X="23" Y="137" Hidden="yes" Text="!(loc.GitChooseTerminalDlg_CmdPromptText)">
+          <Condition Action="show">TERMINAL = "CmdPrompt"</Condition>
+          <Condition Action="hide"><![CDATA[TERMINAL <> "CmdPrompt"]]></Condition>
+        </Control>
+      </Dialog>
+    </UI>
+  </Fragment>
+</Wix>

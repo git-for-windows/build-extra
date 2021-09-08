@@ -1,0 +1,37 @@
+# Maintainer: Michael Haggerty <mhagger@github.com>
+
+_realname="git-sizer"
+pkgbase="mingw-w64-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=1.4.0
+pkgrel=1
+pkgdesc="Compute various size metrics for a Git repository, flagging those that might cause problems"
+arch=('any')
+url="https://github.com/github/git-sizer"
+src_zip_url="${url}/archive/v${pkgver}.zip"
+license=('MIT')
+groups=('VCS')
+
+case "$CARCH" in
+i686)
+  zipname="git-sizer-$pkgver-windows-386.zip"
+  sha256sum=3d72cf32d30b82c5c76e560c702c41e50cb03710451dc1764097c64cecf3ed22
+  ;;
+x86_64)
+  zipname="git-sizer-$pkgver-windows-amd64.zip"
+  sha256sum=d37945ec6e253281adadcbbd358da00e0fbfb4a099700a2a58e320ec1c2edca4
+  ;;
+esac
+
+source=("https://github.com/github/git-sizer/releases/download/v$pkgver/$zipname"
+	"$src_zip_url")
+
+sha256sums=("$sha256sum" SKIP)
+options=('!strip')
+
+package() {
+  install -d -m755 $pkgdir/$MINGW_PREFIX/bin
+  install -m755 $srcdir/git-sizer.exe $pkgdir/$MINGW_PREFIX/bin/git-sizer.exe
+  install -d -m755 $pkgdir/$MINGW_PREFIX/share/doc/git-sizer
+  install -m644 $srcdir/README.md $pkgdir/$MINGW_PREFIX/share/doc/git-sizer/README.md
+}

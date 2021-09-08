@@ -1,0 +1,58 @@
+# Maintainer: Johannes Schindelin <johannes.schindelin@gmx.de>
+
+_realname=wintoast
+pkgbase="mingw-w64-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=1.0.0.181.9b0663d
+pkgrel=1
+pkgdesc="A console application to show a toast notification on Windows 8 and 10 (mingw-w64)"
+arch=('any')
+url="https://github.com/mohabouje/WinToast"
+license=('MIT')
+
+options=('!strip')
+
+source=("${_realname}"::"git+https://github.com/git-for-windows/WinToast#tag=g4w-20171117-01")
+
+sha256sums=('SKIP')
+
+die () {
+  echo "$*" >&2
+  exit 1
+}
+
+test -n "$MSBUILD_DIR" ||
+MSBUILD_DIR="/c/Program Files (x86)/MSBuild/14.0/Bin"
+
+test -d "$MSBUILD_DIR" ||
+die "Need a valid MSBUILD_DIR to point to MSBuild"
+
+case "$CARCH" in
+i686) WARCH=x86; OUTDIR=Release;;
+x86_64) WARCH=x64; OUTDIR=x64/Release;;
+*) die "Unsupported architecture: $CARCH"
+esac
+
+pkgver() {
+  cd "$srcdir/wintoast"
+  echo 1.0.0.$(git rev-list --count HEAD).$(git rev-parse --short HEAD)
+}
+
+build() {
+  cd "$srcdir/wintoast"
+
+  (cd example/console-example/ &&
+   "$MSBUILD_DIR"/MSBuild.exe //p:Configuration=Release //p:Platform="$WARCH")
+
+  cp example/console-example/$OUTDIR/WinToast\ Console\ Example.exe wintoast.exe
+
+  test -z "$SIGNTOOL" ||
+  eval "$SIGNTOOL wintoast.exe"
+}
+
+package () {
+  cd "$srcdir"/wintoast
+
+  install -d "${pkgdir}/${MINGW_PREFIX}/bin"
+  install -m755 wintoast.exe "${pkgdir}/${MINGW_PREFIX}/bin"
+}

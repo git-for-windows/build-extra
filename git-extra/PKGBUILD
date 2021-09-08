@@ -1,0 +1,151 @@
+# Maintainer: nalla <nalla@hamal.uberspace.de>
+
+pkgname=('git-extra')
+_ver_base=1.1
+pkgver=1.1.555.3da707f
+pkgrel=1
+pkgdesc="Git for Windows extra files"
+arch=('i686' 'x86_64')
+url="https://github.com/git-for-windows/build-extra"
+license=('GPL')
+groups=('VCS')
+depends=('git-for-windows-keyring' 'diffutils')
+optdepends=('vim' 'filesystem')
+install='git-extra.install'
+pkgver() {
+  cd "$startdir"
+  test ! -f "$(git rev-parse --git-path shallow)" || git -c http.sslbackend fetch --unshallow
+  rev="$(git rev-list -1 HEAD -- .)"
+  test -n "$(git show . |
+    sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]/p')" ||
+  rev="$(git rev-list -1 $rev^ -- .)"
+  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $rev -- .)" \
+    "$(git rev-parse --short $rev)"
+}
+source=('inputrc'
+        'vimrc'
+        'vi'
+        'git.nanorc'
+        'notepad'
+        'wordpad'
+        'create-shortcut.c'
+        'Makefile'
+        'SystemInfo.cpp'
+        'SystemInfo.h'
+        'WhoUses.cpp'
+        'git-prompt.sh'
+        'aliases.sh'
+        'env.sh'
+        'bash_profile.sh'
+        'msys2-32.ico'
+        '99-post-install-cleanup.post'
+        'gitattributes'
+        'astextplain'
+        'git-sdk.sh'
+        'sdk.completion'
+        'git-update-git-for-windows'
+        'git-update'
+        'blocked-file-util.c'
+        'zzz_rm_stackdumps.sh'
+        'proxy-lookup.c'
+        'git-askyesno.c'
+        'update-via-pacman.bat'
+        'git-credential-helper-selector.c'
+        'git-credential-helper-selector.manifest'
+        'git-credential-helper-selector.rc'
+        'git-askpass.c'
+        'git-askpass.h'
+        'git-askpass.rc')
+sha256sums=('2a8b8630bc2b0c6667790d1ba11534cdf685fff58b026cc4e01b21a10085db1d'
+            'c26d22aaa1d3dc615d474e0d60c5c0f19598d61d9205e19ec87aac1b28bb07c1'
+            '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
+            '17c90698d4dd52dd9f383e72aee54ecea0f62520baf56722de5c83285507c0d9'
+            '3cd83627f1d20e1108533419fcf33c657cbcf777c3dc39fa7f13748b7d63858a'
+            'd51229e5ec3653782a2c09aa5ad9af8f159aba94bc28498d7f358c33399b313d'
+            '4716d520e7e6e0a1281bad1ae4c21e3e6442127c3030d27681162b9c40aa6b9d'
+            '45624af23bafea406d40e1fd55ac62d546fc87716f7662732d7db4111e141fb0'
+            'd212e1bbe75a9f81443126701324c9c44c3ed5750dd9822eba754a1799ed13b3'
+            '402c51eba82453a76f5110f4754bb1005df507a6e4532574c2b9627ff4e1dc81'
+            'd9024bab283ebb67b5d39d49ee5d2592e170abf1f92d3db34edcdd7eeed0b6b9'
+            '0a4d04eb5ce035f9b94ebad51f0fc366ffda1f384fa6e586e8eef140440fb012'
+            '4678d4939642b9a5b13e2f700a6968550f8e936738879a625479df5429a60e53'
+            'f9b404c641447a96d624a418adec3defe894be3198d26922455bf80875bc0e80'
+            '02d38e480a1ec4227e94a5aa073945901680aa3387e3386f8b77f10426ebbc75'
+            'dcbd1b981d5b899afe30151a5f5a27ea52025ff1335f131af1b5891f62ddd55b'
+            '683ab066be19cb4defec470ebd53f165ca5dbf761fd40c13aee8abe31ba42803'
+            '1cf2c13fb97c51375a76ed479362c3cbcdb51ab4d3a745e8d2c3a780badd8d46'
+            '37e3412480f0fc5b742406d569baa1a6c572f5be16650ae70c65169c5fd4a8e3'
+            '943e40f76acca4b4b0959887de5fdb64a0519f64c2b0c4217d47692ec33f65d9'
+            '22f41610dea842890955032af30efdb60e80f310e95a04e57ab36b10e0376923'
+            '26eac82cba8606a1fec0108eaf392d5a2161dcad8d4110bdcb971ac11b168b06'
+            '15b40ab72dea884f659cfbe441e9a40b2d8d63e490a3c14824a55607368e476d'
+            'ebd1d20aa94be11c6b9bec7d33614d32016343d282c4716d0561ab41407c99bf'
+            '97e89689d91747ddb5ee873ae864aebcbb8d0364a52fa198db1e439ee2965b9b'
+            '2199a518823de64a581854b9173f5f06cab191cfde50f04f3628200127690a4f'
+            '0e3af7dacb665306076590ce9aec935929c198cec1bf9c5e161dfe285502ba67'
+            '25c4cff9fa0d82d87ce7f9cf34d2558dd051a398d33e6c3440e9371ebb72471e'
+            'febd9504ed7a9e07771d9ae35ddface253a6160a8df9f4c18e4111eb45386712'
+            '247dc84535c89d2e00c6a741d4317cd76ae5958c91ac867e2e74d4e73bc3c998'
+            '78307cd6c04a16240f68197e9155697bc75d5df8e4c8514ff67712bb93a1cd4a'
+            'c2ffb2262882d465ec205098564a159b4364d4f1f793d380103965071533fa8a'
+            '51e31c6ce824f66b9a8310f1ac10ccdc06b60967a557c996868bc0d9c9866ccf'
+            '0dd30dc3acd406e70b5ff08fb0bf180ec3782119455989af18c05cf59d09df64')
+
+prepare() {
+  test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
+  test $startdir/$pkgname.install -nt $startdir/gitconfig &&
+  test $startdir/$pkgname.install -nt $startdir/gitattributes ||
+  sed -e "/^@@GITCONFIG@@$/r $startdir/gitconfig" \
+        -e "/^@@GITCONFIG@@$/d" \
+        -e "/^@@GITATTRIBUTES@@$/r $startdir/gitattributes" \
+        -e "/^@@GITATTRIBUTES@@$/d" \
+        <$startdir/$pkgname.install.in >$startdir/$pkgname.install
+}
+
+build() {
+  export CC=${MINGW_CHOST}-gcc
+  export CXX=${MINGW_CHOST}-g++
+  export SRCDIR=$srcdir
+  export BUILDDIR=build-${MINGW_CHOST}
+  mkdir -p ${BUILDDIR}
+  make -f Makefile
+}
+
+package() {
+  builddir=build-${MINGW_CHOST}
+  install -d -m755 $pkgdir/etc/profile.d
+  install -d -m755 $pkgdir/usr/share/bash-completion/completions
+  install -d -m755 $pkgdir/etc/post-install
+  install -d -m755 $pkgdir/usr/bin
+  install -d -m755 $pkgdir/usr/share/git
+  install -d -m755 $pkgdir/usr/share/nano
+  install -d -m755 $pkgdir${MINGW_PREFIX}/bin
+  install -d -m755 $pkgdir${MINGW_PREFIX}/libexec/git-core
+  install -d -m755 $pkgdir/usr/share/makepkg/lint_package
+  install -m644 inputrc $pkgdir/etc
+  install -m644 vimrc $pkgdir/etc
+  install -m644 git.nanorc $pkgdir/usr/share/nano
+  install -m755 vi $pkgdir/usr/bin
+  install -m755 notepad $pkgdir/usr/bin
+  install -m755 wordpad $pkgdir/usr/bin
+  install -m755 $builddir/create-shortcut.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/WhoUses.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/blocked-file-util.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/proxy-lookup.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/git-askyesno.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/git-credential-helper-selector.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/git-askpass.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 git-prompt.sh $pkgdir/etc/profile.d
+  install -m755 aliases.sh $pkgdir/etc/profile.d
+  install -m755 env.sh $pkgdir/etc/profile.d
+  install -m755 bash_profile.sh $pkgdir/etc/profile.d
+  install -m755 git-sdk.sh $pkgdir/etc/profile.d
+  install -m755 sdk.completion $pkgdir/usr/share/bash-completion/completions/sdk
+  install -m644 msys2-32.ico $pkgdir/usr/share/git
+  install -m644 99-post-install-cleanup.post $pkgdir/etc/post-install
+  install -m755 astextplain $pkgdir/usr/bin
+  install -m755 git-update-git-for-windows $pkgdir${MINGW_PREFIX}/bin
+  install -m755 git-update $pkgdir${MINGW_PREFIX}/libexec/git-core
+  install -m755 update-via-pacman.bat $pkgdir
+  install -m755 zzz_rm_stackdumps.sh $pkgdir/usr/share/makepkg/lint_package
+}

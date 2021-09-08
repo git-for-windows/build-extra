@@ -1,0 +1,266 @@
+export LC_ALL=C
+
+post_install () {
+	ETC_GITCONFIG="$(git -c core.editor=echo config --system -e 2>/dev/null)"
+	test -f "$ETC_GITCONFIG" ||
+	cat > "$ETC_GITCONFIG" <<\GITCONFIG
+[core]
+	symlinks = false
+	autocrlf = true
+[color]
+	diff = auto
+	status = auto
+	branch = auto
+	interactive = true
+[pack]
+	packSizeLimit = 2g
+[help]
+	format = html
+[http]
+	sslCAinfo = /ssl/certs/ca-bundle.crt
+[diff "astextplain"]
+	textconv = astextplain
+[rebase]
+	autosquash = true
+GITCONFIG
+	ETC_GITATTRIBUTES="${ETC_GITCONFIG%/*}/gitattributes"
+	test -f "$ETC_GITATTRIBUTES" ||
+	cat > "$ETC_GITATTRIBUTES" <<\GITATTRIBUTES
+*.doc	diff=astextplain
+*.DOC	diff=astextplain
+*.docx	diff=astextplain
+*.DOCX	diff=astextplain
+*.docm	diff=astextplain
+*.DOCM	diff=astextplain
+*.dot	diff=astextplain
+*.DOT	diff=astextplain
+*.dotx	diff=astextplain
+*.DOTX	diff=astextplain
+*.dotm	diff=astextplain
+*.DOTM	diff=astextplain
+*.pdf	diff=astextplain
+*.PDF	diff=astextplain
+*.rtf	diff=astextplain
+*.RTF	diff=astextplain
+*.ods	diff=astextplain
+*.ODS	diff=astextplain
+*.odf	diff=astextplain
+*.ODF	diff=astextplain
+*.odt	diff=astextplain
+*.ODT	diff=astextplain
+
+GITATTRIBUTES
+
+	grep -q '^\*\.docm' "$ETC_GITATTRIBUTES" ||
+	sed -i -e 's/^\*\.DOCX\(.*\)/&\n*.docm\1\n*.DOCM\1/' \
+		-e 's/^\*\.DOT\(.*\)/&\n*.dotm\1\n*.DOTM\1/' \
+		"$ETC_GITATTRIBUTES"
+
+	for dir in mingw32 mingw64
+	do
+		# Drop git-wrapper in place of builtins "to save space"
+		git_wrapper=/$dir/share/git/git-wrapper.exe
+		if test -f $git_wrapper &&
+			! cmp -s $git_wrapper /$dir/bin/git-receive-pack.exe
+		then
+			for b in $(cat /$dir/share/git/builtins.txt)
+			do
+				rm /$dir/libexec/git-core/$b &&
+				ln $git_wrapper /$dir/libexec/git-core/$b
+
+				if test -x /$dir/bin/$b
+				then
+					rm /$dir/bin/$b &&
+					ln $git_wrapper /$dir/bin/$b
+				fi
+			done
+		fi
+	done
+
+	grep -q '^db_home: env windows' /etc/nsswitch.conf ||
+	sed -i 's/^\(db_home: \)\(windows \)\?\([^w]\)/\1env windows \3/' \
+		/etc/nsswitch.conf
+
+	! grep -q '^db_shell: [^#]*cygwin' /etc/nsswitch.conf ||
+	sed -i 's/^\(db_shell: \)\(env \)\?\(windows \)\?/\1env windows # /' \
+		/etc/nsswitch.conf
+
+	! grep -q '^db_gecos: [^#]*\(cygwin\|windows\)' /etc/nsswitch.conf ||
+	sed -i 's/^\(db_gecos: \)\(env \)\?\([^e]\)/\1env # \3/' \
+		/etc/nsswitch.conf
+
+	! grep -q '^group: [^#]*db' /etc/nsswitch.conf ||
+	sed -i 's/^\(group: \)\(.* \)\?\(db\)/\1\2# \3/' \
+		/etc/nsswitch.conf
+
+	! grep -q '^PS1=' /etc/bash.bashrc ||
+	sed -i 's/^PS1=/#&/' /etc/bash.bashrc
+
+	grep -q '^# Fixup git-bash in non login env' /etc/bash.bashrc ||
+	printf "\n# Fixup git-bash in non login env\nshopt -q login_shell || . /etc/profile.d/git-prompt.sh\n" >> /etc/bash.bashrc
+
+	uname_m="$(uname -m)"
+	case "$uname_m" in
+	i686)
+		arch=i686
+		otherarch=x86-64
+		otherpacman=git-for-windows-mingw64
+		;;
+	x86_64)
+		arch=x86-64
+		otherarch=i686
+		otherpacman=git-for-windows-mingw32
+		;;
+	esac
+
+	grep -q git-for-windows[^-] etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://wingit.blob.core.windows.net/'$arch'\n' etc/pacman.conf
+
+	! grep -A2 git-for-windows[^-] etc/pacman.conf |
+	grep -q '^SigLevel = Optional' ||
+	sed -i -e '/\[git-for-windows\]/{N;N;s/\nSigLevel = Optional//}' \
+		etc/pacman.conf
+
+	grep -q "$otherpacman" etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i['$otherpacman']\nServer = https://wingit.blob.core.windows.net/'$otherarch'\n' etc/pacman.conf
+
+	! grep -q 'https://dl.bintray.com/\$repo/pacman/\$arch' etc/pacman.conf ||
+	sed -i -e 's/https:\/\/dl\.bintray\.com\/\$repo\/pacman\/\$arch/https:\/\/wingit.blob.core.windows.net\/'$arch'/g' etc/pacman.conf
+
+	! grep -q 'https://dl.bintray.com/git-for-windows/pacman/i686' etc/pacman.conf ||
+	sed -i -e 's/https:\/\/dl\.bintray\.com\/git-for-windows\/pacman\/i686/https:\/\/wingit.blob.core.windows.net\/i686/g' etc/pacman.conf
+
+	! grep -q 'https://dl.bintray.com/git-for-windows/pacman/x86_64' etc/pacman.conf ||
+	sed -i -e 's/https:\/\/dl\.bintray\.com\/git-for-windows\/pacman\/x86_64/https:\/\/wingit.blob.core.windows.net\/x86-64/g' etc/pacman.conf
+
+	test i686 != $"uname -m" ||
+	case "$(md5sum.exe < /msys2.ico)" in
+	292ad5cd*) cp /usr/share/git/msys2-32.ico /msys2.ico;;
+	esac
+
+	test ! -f /etc/post-install/05-home-dir.post ||
+	rm /etc/post-install/05-home-dir.post
+
+	grep -qw usertemp /etc/fstab ||
+	sed -i '$a\
+none /tmp usertemp binary,posix=0,noacl 0 0' /etc/fstab
+	grep -qw usertemp.*noacl /etc/fstab ||
+	sed -i '$s/^none \/tmp usertemp [^ ]*/&,noacl/' /etc/fstab
+
+	! grep -q '^export TERM=' /etc/profile ||
+	sed -i 's/^export TERM=/test -n "$TERM" || &/' /etc/profile
+
+	! grep -q ' $1 == ~\* ' /usr/share/bash-completion/bash_completion ||
+	sed -i 's/\( \$1 == \|printf -v \$2 \)\(~\* \|~%q \)/\1\\\2/' \
+		/usr/share/bash-completion/bash_completion
+
+	! grep -qi '^TMP=' /etc/profile ||
+	sed -i 's/^TE\?MP=/#&/i' /etc/profile
+	! grep -q '^unset TMP' /etc/profile ||
+	sed -i 's/^unset TMP/#&/' /etc/profile
+	grep -q '^test -d "$TMPDIR"' /etc/profile || {
+		if lineno="$(grep -n '^#TEMP=' /etc/profile)"
+		then
+			lineno=${lineno%%:*}
+		else
+			lineno='$'
+		fi
+		sed -i "$lineno"'a\
+case "$TMP" in *\\\\*) TMP="$(cygpath -m "$TMP")";; esac\
+case "$TEMP" in *\\\\*) TEMP="$(cygpath -m "$TEMP")";; esac\
+test -d "$TMPDIR" || test ! -d "$TMP" || {\
+  TMPDIR="$TMP"\
+  export TMPDIR\
+}\
+' /etc/profile
+	}
+
+	grep -q 'case "\${MSYS2_PATH_TYPE:-inherit}"' /etc/profile ||
+	sed -i 's/{MSYS2_PATH_TYPE:-[^}]*}/{MSYS2_PATH_TYPE:-inherit}/g' \
+		/etc/profile
+
+	! grep -qw PERL_PATH /etc/profile.d/perlbin.sh 2>/dev/null ||
+	sed -i 's/PERL_PATH/PERL_PATH_EXTRA/g' /etc/profile.d/perlbin.sh
+
+	! grep -q '^# Define default printer' /etc/profile ||
+	sed -i -e '/^# Define default printer/,/^$/d' \
+		-e 's/^\(export .* \)PRINTER /\1/' /etc/profile
+
+	test ! -f /usr/share/vim/vim81/defaults.vim ||
+	! grep -A3 '^ *autocmd BufReadPost \*' \
+		/usr/share/vim/vim81/defaults.vim |
+	grep -q ' exe "normal! g`\\""' ||
+	sed -i -e '/^ *autocmd BufReadPost \*/,/\\ \(| \)\?endif$/s/^/"/' \
+		/usr/share/vim/vim81/defaults.vim
+
+	test ! -f /usr/share/vim/vim80/defaults.vim ||
+	! grep -q '^"  augroup END$' /usr/share/vim/vim80/defaults.vim ||
+	sed -i -e '/^"  augroup END$/,$s/^"//' \
+		/usr/share/vim/vim80/defaults.vim
+
+	! grep -q '^if .*command -v getent' /etc/bash.bashrc ||
+	sed -i '/^if .*command -v getent/,/^fi/s/^/#/' /etc/bash.bashrc
+
+	# Ensure that Git for Windows' GPG keyring is still imported
+	pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
+	pacman-key --populate git-for-windows
+
+	# .bat files in /mingw{32,64}/bin are non-portable because they
+	# typically contain absolute paths
+	find /mingw*/bin/ -name \*.bat -exec rm {} \;
+
+	# absolute paths in the she-bang lines must be POSIX paths, not
+	# Windows paths, otherwise the SDK won't be portable
+	root="$(cygpath -am / | sed 's/\/$//')" &&
+	rootw="$(echo "$root" | sed "s/\//\\\\&/g")" &&
+	for s in $(grep -l "#\!$root/" $(find /mingw*/bin/ -size -17k -type f))
+	do
+		sed -i "1s/#\!$rootw/#\!/" $s || break
+	done
+
+	# Re-enable at least AES256-cbc and AES128-cbc, as they are still used
+	# e.g. in VSTS
+	test ! -f /etc/ssh/ssh_config || {
+		# Revert change by prior versions of git-extra.
+		! grep -q '^Ciphers [a-z].*cbc' /etc/ssh/ssh_config ||
+		sed -i -e 's/^Ciphers [a-z].*cbc/#   &/' /etc/ssh/ssh_config
+
+		grep -q '^Ciphers\s\++' /etc/ssh/ssh_config ||
+		printf "%s\n%s\n" \
+			'# Added by git-extra' \
+			'Ciphers +aes128-cbc,3des-cbc,aes256-cbc,aes192-cbc' \
+			>>/etc/ssh/ssh_config
+	}
+
+	# Enable color and syntax-highlighting in GNU nano
+	test ! -f /etc/nanorc ||
+	grep -q '^set titlecolor' /etc/nanorc ||
+	sed -i -e '/Paint the interface elements/,/root.s .nanorc/s/^# //' \
+		-e 's/^# \(include .*nanorc"\)$/\1/' /etc/nanorc
+
+	# Do not require /usr/bin/cmd in /usr/bin/start
+	grep -q '^"\$COMSPEC" ' /usr/bin/start ||
+	sed -i 's/^cmd /"$COMSPEC" /' /usr/bin/start
+
+	# Undo the damage of
+	# https://github.com/mirror/mingw-w64/commit/69effce76945e
+	for dir in mingw32 mingw64
+	do
+		case "$dir" in
+		*32) header=/$dir/i686-w64-mingw32/include/pthread_unistd.h;;
+		*64) header=/$dir/x86_64-w64-mingw32/include/pthread_unistd.h;;
+		esac
+		test ! -e $header ||
+		grep -q '^#define _POSIX_THREAD_SAFE_FUNCTIONS' $header ||
+		sed -i '$i#undef _POSIX_THREAD_SAFE_FUNCTIONS\n#define _POSIX_THREAD_SAFE_FUNCTIONS 200112L\n' $header
+	done
+
+	# Make sure that `/ssl` is a symbolic link pointing to `/usr/ssl`.
+	# This is needed because `/etc/gitconfig` is shared between the MSYS
+	# and the MINGW variants of `git.exe`.
+	test -h /ssl || (cd / && rm -f ssl && cmd //c 'mklink /d ssl usr\ssl')
+}
+
+post_upgrade () {
+	post_install
+}

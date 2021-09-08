@@ -1,0 +1,32 @@
+# Maintainer: Johannes Schindelin/Matthew J Cheetham
+
+_realname="git-credential-manager-core"
+pkgbase="mingw-w64-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=2.0.498.54650
+pkgrel=1
+_realver=$pkgver
+_realtag=v${pkgver%.*}
+pkgdesc="Credential Manager for Git"
+install=git-credential-manager-core.install
+arch=('any')
+project_url="https://github.com/microsoft/Git-Credential-Manager-Core"
+zip_url="${project_url}/releases/download/${_realtag}/gcmcore-win-x86-${_realver}.zip"
+src_zip_url="${project_url}/archive/${_realtag}.zip"
+license=('MIT')
+groups=('VCS')
+options=('!strip')
+
+source=("${zip_url}" "$src_zip_url")
+
+sha256sums=('4bb0ef73f0ed9892ae5ac2200389a8a3ee3200e47f0fcf598406caff1c4a6885'
+            '33b3214e545a4fec19b018ea3d31094f0b1e814642b7e02f927cc1569b9febf0')
+
+package() {
+  prefix="$pkgdir/${MINGW_PREFIX}"
+  srcdir2="${srcdir}/"
+  install -d -m755 "${prefix}"/libexec/git-core
+  install -m755 "$srcdir2"/*.{dll,exe,config} "${prefix}"/libexec/git-core
+  install -d -m755 "${prefix}"/doc/git-credential-manager-core
+  install -m644 "$srcdir2"/Git-Credential-Manager-Core-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager-core
+}

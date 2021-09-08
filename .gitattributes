@@ -1,0 +1,16 @@
+* eol=lf
+*.iss eol=lf whitespace=tab-in-indent
+*.exe -text
+*.dll -text
+*.chm -text
+*.bmp -text
+*.ico -text
+*.png -text
+*.sfx -text
+*.cub -text
+*.zip -text
+*.gz -text
+*.xz -text
+/installer/InnoSetup/*.e32 -text
+*.bat eol=crlf
+*.patch -text
