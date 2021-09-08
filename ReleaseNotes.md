@@ -50,6 +50,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Wordpad [can be configured as Git's preferred editor](https://github.com/git-for-windows/build-extra/pull/378) again.
+* A bug where Git's garbage collection during a `git pull` failed to delete obsolete files [was fixed](https://github.com/git-for-windows/git/pull/3415).
 
 ## Changes since Git for Windows v2.33.0 (August 17th 2021)
 
