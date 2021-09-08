@@ -422,15 +422,6 @@ set_package () {
 		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man mingw-w64-git-test-artifacts mingw-w64-git-pdb"
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
-	mingw-w64-git-credential-manager)
-		type=MINGW
-		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager
-		;;
-	gcm|credential-manager|git-credential-manager)
-		package=mingw-w64-git-credential-manager
-		type=MINGW
-		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager
-		;;
 	mingw-w64-git-credential-manager-core)
 		type=MINGW
 		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager-core
@@ -2464,45 +2455,6 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 	release_notes_feature=
 	case "$package" in
-	mingw-w64-git-credential-manager)
-		repo=Microsoft/Git-Credential-Manager-for-Windows
-		url=https://api.github.com/repos/$repo/releases/latest
-		release="$(curl --netrc -s $url)"
-		test -n "$release" ||
-		die "Could not determine the latest version of %s\n" "$package"
-		tag_name="$(echo "$release" |
-			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
-		test 1.18.5 != "$tag_name" || {
-			tag_name=1.19.0
-			release="$(curl --netrc -s ${url%/latest}/16090167)"
-		}
-		zip_name="$(echo "$release" | sed -n \
-			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p')"
-		version=${tag_name#v}
-		zip_prefix=${zip_name%$version.zip}
-		if test "$zip_prefix" = "$zip_name"
-		then
-			# The version in the tag and the zip file name differ
-			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]*/\1'$zip_name/
-		else
-			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]*/\1'$zip_prefix'${_realver}.zip/'
-		fi
-		src_zip_prefix=${tag_name%$version}
-		(cd "$sdk64$pkgpath" &&
-		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" -e "$zip_replace" \
-		 -e 's/^\(src_zip_url=.*\/\).*\(\$.*\)/\1'$src_zip_prefix'\2/' \
-		 -e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
-		 updpkgsums &&
-		 srcdir2="$(unzip -l $zip_prefix$version.zip | sed -n \
-		   's/^.\{28\} *\(.*\/\)\?git-credential-manager.exe/\1/p')" &&
-		 sed -i -e 's/^\(  srcdir2=\).*/\1"${srcdir}\/'$srcdir2'"/' \
-			PKGBUILD &&
-		 maybe_force_pkgrel "$force_pkgrel" &&
-		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD &&
-		 create_bundle_artifact) &&
-		url=https://github.com/$repo/releases/tag/$tag_name &&
-		release_notes_feature='Comes with [Git Credential Manager v'$version']('"$url"').'
-		;;
 	mingw-w64-git-credential-manager-core)
 		repo=microsoft/git-credential-manager-core
 		url=https://api.github.com/repos/$repo/releases

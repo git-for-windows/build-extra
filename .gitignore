@@ -25,12 +25,6 @@ edit-git-bash.exe
 /mingit/root/
 /mingit/sorted-all
 /mingit/sorted-libexec-exes
-/mingw-w64-git-credential-manager/pkg/
-/mingw-w64-git-credential-manager/src/
-/mingw-w64-git-credential-manager/*.pkg.tar.xz
-/mingw-w64-git-credential-manager/*.src.tar.gz
-/mingw-w64-git-credential-manager/gcmw-*.zip
-/mingw-w64-git-credential-manager/v[1-9]*.zip
 /mingw-w64-git-credential-manager-core/pkg/
 /mingw-w64-git-credential-manager-core/src/
 /mingw-w64-git-credential-manager-core/*.pkg.tar.*

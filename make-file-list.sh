@@ -95,7 +95,7 @@ mingw-w64-$ARCH-zstd"
 
 # Packages that have been added after Git SDK 1.0.0 was released...
 required=
-for req in mingw-w64-$ARCH-git-credential-manager mingw-w64-$ARCH-git-credential-manager-core $SH_FOR_REBASE \
+for req in mingw-w64-$ARCH-git-credential-manager-core $SH_FOR_REBASE \
 	$(test -n "$MINIMAL_GIT" || echo \
 		mingw-w64-$ARCH-connect git-flow unzip docx2txt \
 		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt \
@@ -110,7 +110,7 @@ test -z "$required" ||
 pacman -Sy --noconfirm $required >&2 ||
 die "Could not install required packages: $required"
 
-packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager mingw-w64-$ARCH-git-credential-manager-core
+packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager-core
 git-extra openssh $UTIL_PACKAGES"
 if test -z "$MINIMAL_GIT"
 then

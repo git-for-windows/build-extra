@@ -353,7 +353,7 @@
     <CustomAction Id="ExecConfigureCoreAutoCrlf" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
     <SetProperty Id="ExecConfigureFsCache" Value='"[#GitExe]" config --system core.fscache [ENABLEFSCACHE]' Sequence="execute" Before="ExecConfigureFsCache"><![CDATA[ REMOVE <> "ALL" ]]></SetProperty>
     <CustomAction Id="ExecConfigureFsCache" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
-    <SetProperty Id="ExecConfigureGcm" Value='"[#GitExe]" config --system credential.helper manager' Sequence="execute" Before="ExecConfigureGcm"><![CDATA[ REMOVE <> "ALL" AND ENABLEGCM=1 ]]></SetProperty>
+    <SetProperty Id="ExecConfigureGcm" Value='"[#GitExe]" config --system credential.helper manager-core' Sequence="execute" Before="ExecConfigureGcm"><![CDATA[ REMOVE <> "ALL" AND ENABLEGCM=1 ]]></SetProperty>
     <CustomAction Id="ExecConfigureGcm" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="ignore" Impersonate="no" />
     <SetProperty Id="ExecEditGitBash" Value='"[#EditGitBash]" "[#GitBash]" "SHOW_CONSOLE=1 APPEND_QUOTE=1 @@COMSPEC@@ /S /C \"\"@@EXEPATH@@\usr\bin\bash.exe\" --login -i"' Sequence="execute" Before="ExecEditGitBash"><![CDATA[ REMOVE <> "ALL" AND TERMINAL = "CmdPrompt" ]]></SetProperty>
     <CustomAction Id="ExecEditGitBash" BinaryKey="WixCA" DllEntry="WixQuietExec$(var.SixtyFourBit)" Execute="deferred" Return="check" Impersonate="no" />
