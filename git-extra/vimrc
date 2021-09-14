@@ -44,7 +44,7 @@ if has("autocmd")
       \           && &filetype !~# 'commit\|gitrebase'
       \           && expand("%") !~ "ADD_EDIT.patch"
       \           && expand("%") !~ "addp-hunk-edit.diff" |
-      \   exe "normal g`\"" |
+      \   exe "normal! g`\"" |
       \ endif
 
       autocmd BufNewFile,BufRead *.patch set filetype=diff
