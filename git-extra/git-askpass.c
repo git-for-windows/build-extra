@@ -70,13 +70,9 @@ int wmain(int argc, wchar_t **wargv)
 {
 	INT_PTR res;
 	wchar_t *prompt = NULL;
+	wchar_t *default_prompt = L"Please enter your password:";
 
-	if (argc < 2) {
-		MessageBoxW(NULL, L"Usage: git askpass <prompt>", L"Error!", MB_OK);
-		return 1;
-	}
-
-	if (argc > 2) {
+	if (argc > 1) {
 		size_t count = wcslen(wargv[1]), i;
 
 		for (i = 2; i < argc; i++)
@@ -102,7 +98,7 @@ int wmain(int argc, wchar_t **wargv)
 		MAKEINTRESOURCEW(IDD_PASSWORD), /* dialog box resource */
 		NULL,                          /* owner window */
 		PasswordProc,                  /* dialog box window procedure */
-		(LPARAM) (prompt ? prompt : wargv[1]));
+		(LPARAM) (prompt ? prompt : default_prompt));
 
 	free(prompt);
 	return !res;
