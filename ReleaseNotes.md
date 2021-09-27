@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * The included `git svn` now uses [subversion v1.14.1](https://svn.apache.org/repos/asf/subversion/tags/1.14.1/CHANGES) internally.
 * [Git Credential Manager for Windows](https://github.com/microsoft/Git-Credential-Manager-for-Windows) (which was superseded by [Git Credential Manager Core](https://aka.ms/gcmcore), and was deprecated for a long time now, and no longer succeeds to authenticate with GitHub) is [no longer included in Git for Windows](https://github.com/git-for-windows/build-extra/pull/377).
 * Comes with [cURL v7.79.1](https://curl.haxx.se/changes.html#7_79_1).
+* Comes with [OpenSSH v8.8p1](https://www.openssh.com/txt/release-8.8).
 
 ### Bug Fixes
 
