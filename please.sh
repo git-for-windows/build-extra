@@ -2622,7 +2622,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		# Git LFS sometimes lists SHA-256 sums below, sometimes
 		# above the file names. Work around that particular issue
 		if test -n "$(echo "$release" |
-			grep "$needle1"'.*\\n[0-9a-z]\{64\}\(\\r\)\?\(\\n\)\?"$')"
+			grep "$needle1"'.*\\n[0-9a-z]\{64\}\(\\r\)\?\(\\n\)\?",\?$')"
 		then
 			# The SHA-256 sums are listed below the file names
 			needle2="$version\\.zip[^0-9a-f]*\\([0-9a-f]*\\).*"
