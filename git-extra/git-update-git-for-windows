@@ -205,7 +205,7 @@ update_git_for_windows () {
 
 		releases_url=https://api.github.com/repos/$fork/releases
 		latest_tag_url=$releases_url/latest
-		latest_eval='latest=${latest_tag#*\"tag_name\": \"}; latest=${latest%%\"*}'
+		latest_eval='latest=${latest_tag#*\"tag_name\": \"v}; latest=${latest%%\"*}'
 	else
 		git_label="Git for Windows"
 		releases_url=https://api.github.com/repos/git-for-windows/git/releases
