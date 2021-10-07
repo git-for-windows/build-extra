@@ -229,6 +229,9 @@ update_git_for_windows () {
 	esac
 
 	eval "$latest_eval"
+	# Be extra careful to remove a leading 'v' from the tag.
+	latest=${latest#v}
+
 	# Did we ask about this version already?
 	recently_seen="$(get_recently_seen)"
 	test -n "$quiet" && test "x$recently_seen" = "x$latest" && return
