@@ -233,8 +233,11 @@ update_git_for_windows () {
 	latest=${latest#v}
 
 	# Did we ask about this version already?
-	recently_seen="$(get_recently_seen)"
-	test -n "$quiet" && test "x$recently_seen" = "x$latest" && return
+	if test -z "$use_recently_seen"
+	then
+		recently_seen="$(get_recently_seen)"
+		test -n "$quiet" && test "x$recently_seen" = "x$latest" && return
+	fi
 
 	version=$(git --version | sed "s/git version //")
 	if test -d /arm64/bin
