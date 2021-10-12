@@ -1756,6 +1756,11 @@ begin
     Result:=Copy(Command, 2, Length(Command) - 7);
 end;
 
+function ExtractCodeCLIPath(Command:String;Suffix:String):String;
+begin
+    Result:=ExtractFilePath(ExtractCommandPath(Command)) + Suffix;
+end;
+
 procedure QueryUninstallValues; forward;
 
 procedure InitializeWizard;
@@ -1845,15 +1850,15 @@ begin
 
     // Remove `" %1"` from end and unqote the string.
     if (EditorAvailable[GE_VisualStudioCode]) then
-        VisualStudioCodePath:=ExtractCommandPath(VisualStudioCodePath);
+        VisualStudioCodePath:=ExtractCodeCLIPath(VisualStudioCodePath, 'bin\code.cmd');
     if (EditorAvailable[GE_VisualStudioCodeInsiders]) then
-        VisualStudioCodeInsidersPath:=ExtractCommandPath(VisualStudioCodeInsidersPath);
+        VisualStudioCodeInsidersPath:=ExtractCodeCLIPath(VisualStudioCodeInsidersPath, 'bin\code-insiders.cmd');
     if (EditorAvailable[GE_SublimeText]) and SublimeTextUserInstallation then
         SublimeTextPath:=ExtractCommandPath(SublimeTextPath);
     if (EditorAvailable[GE_Atom]) then
         AtomPath:=ExtractCommandPath(AtomPath);
     if (EditorAvailable[GE_VSCodium]) then
-        VSCodiumPath:=ExtractCommandPath(VSCodiumPath);
+        VSCodiumPath:=ExtractCodeCLIPath(VSCodiumPath, 'bin\codium.cmd');
 
     // 1st choice
     Top:=TopOfLabels;
