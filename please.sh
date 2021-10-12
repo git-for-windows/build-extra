@@ -2722,7 +2722,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 die "Could not determine latest tag of '%s'\n" "$package"
 
 		 # Git for Windows will skip v3.2.0 and stay on v3.1.7 until v3.2.1 comes out
-		 test cygwin-3_2_0-release != "$tag" || tag=cygwin-3_1_7-release
+		 test refs/tags/cygwin-3_2_0-release != "$tag" || tag=refs/tags/cygwin-3_1_7-release
 
 		 version="$(echo "$tag" | sed -ne 'y/_/./' -e \
 		    's|^refs/tags/cygwin-\([1-9][.0-9]*\)-release$|\1|p')" &&
