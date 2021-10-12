@@ -1750,6 +1750,12 @@ begin
     end;
 end;
 
+// Extract <path> from "<path>" "%1"
+function ExtractCommandPath(Command:String):String;
+begin
+    Result:=Copy(Command, 2, Length(Command) - 7);
+end;
+
 procedure QueryUninstallValues; forward;
 
 procedure InitializeWizard;
@@ -1839,20 +1845,15 @@ begin
 
     // Remove `" %1"` from end and unqote the string.
     if (EditorAvailable[GE_VisualStudioCode]) then
-        // Extract <path> from "<path>" "%1"
-        VisualStudioCodePath:=Copy(VisualStudioCodePath, 2, Length(VisualStudioCodePath) - 7);
+        VisualStudioCodePath:=ExtractCommandPath(VisualStudioCodePath);
     if (EditorAvailable[GE_VisualStudioCodeInsiders]) then
-        // Extract <path> from "<path>" "%1"
-        VisualStudioCodeInsidersPath:=Copy(VisualStudioCodeInsidersPath, 2, Length(VisualStudioCodeInsidersPath) - 7);
+        VisualStudioCodeInsidersPath:=ExtractCommandPath(VisualStudioCodeInsidersPath);
     if (EditorAvailable[GE_SublimeText]) and SublimeTextUserInstallation then
-        // Extract <path> from "<path>" "%1"
-        SublimeTextPath:=Copy(SublimeTextPath, 2, Length(SublimeTextPath) - 7);
+        SublimeTextPath:=ExtractCommandPath(SublimeTextPath);
     if (EditorAvailable[GE_Atom]) then
-        // Extract <path> from "<path>" "%1"
-        AtomPath:=Copy(AtomPath, 2, Length(AtomPath) - 7);
+        AtomPath:=ExtractCommandPath(AtomPath);
     if (EditorAvailable[GE_VSCodium]) then
-        // Extract <path> from "<path>" "%1"
-        VSCodiumPath:=Copy(VSCodiumPath, 2, Length(VSCodiumPath) - 7);
+        VSCodiumPath:=ExtractCommandPath(VSCodiumPath);
 
     // 1st choice
     Top:=TopOfLabels;
