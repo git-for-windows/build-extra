@@ -51,7 +51,6 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSH v8.8p1](https://www.openssh.com/txt/release-8.8).
 * Comes with [Git LFS v3.0.1](https://github.com/git-lfs/git-lfs/releases/tag/v3.0.1).
 * The built-in filesystem watcher ("FSMonitor") [has been updated to the latest version](https://github.com/git-for-windows/git/pull/3447).
-* Comes with [patch level 6](https://github.com/git-for-windows/msys2-runtime/commit/cecae3b0646bdb554621f316b1ae3a74179cbc1d) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.1.7](https://cygwin.com/pipermail/cygwin-announce/2020-August/009678.html).
 
 ### Bug Fixes
 
@@ -59,6 +58,7 @@ This package contains software from a number of other projects including Bash, z
 * A bug where Git's garbage collection during a `git pull` failed to delete obsolete files [was fixed](https://github.com/git-for-windows/git/pull/3415).
 * The `git svn` command, [which was broken in Git for Windows v2.33.0(2)](https://github.com/git-for-windows/git/issues/3392), has been fixed.
 * The password prompt when cloning via SSH [works again](https://github.com/git-for-windows/build-extra/pull/381).
+* The MSYS2 runtime [no longer complains about FAST_CWD on Windows/ARM64](https://github.com/git-for-windows/msys2-runtime/pull/33).
 
 ## Changes since Git for Windows v2.33.0 (August 17th 2021)
 
