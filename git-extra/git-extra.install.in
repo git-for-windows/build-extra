@@ -180,8 +180,8 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 		sed -i "1s/#\!$rootw/#\!/" $s || break
 	done
 
-	# Re-enable at least AES256-cbc and AES128-cbc, as they are still used
-	# e.g. in VSTS
+	# Re-enable ssh-rsa and at least AES256-cbc and AES128-cbc, as they are
+	# still used e.g. in Azure Repos
 	test ! -f /etc/ssh/ssh_config || {
 		# Revert change by prior versions of git-extra.
 		! grep -q '^Ciphers [a-z].*cbc' /etc/ssh/ssh_config ||
