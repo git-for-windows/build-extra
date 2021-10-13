@@ -192,6 +192,22 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 			'# Added by git-extra' \
 			'Ciphers +aes128-cbc,3des-cbc,aes256-cbc,aes192-cbc' \
 			>>/etc/ssh/ssh_config
+
+		grep -q '^Host\s\+ssh\.dev\.azure\.com' /etc/ssh/ssh_config ||
+		printf '%s\n%s\n\t%s\n\t%s\n' \
+			'# Added by git-extra' \
+			'Host ssh.dev.azure.com' \
+			'HostkeyAlgorithms +ssh-rsa' \
+			'PubkeyAcceptedAlgorithms +ssh-rsa' \
+			>>/etc/ssh/ssh_config
+
+		grep -q '^Host\s\+\*\.visualstudio\.com' /etc/ssh/ssh_config ||
+		printf '%s\n%s\n\t%s\n\t%s\n' \
+			'# Added by git-extra' \
+			'Host *.visualstudio.com' \
+			'HostkeyAlgorithms +ssh-rsa' \
+			'PubkeyAcceptedAlgorithms +ssh-rsa' \
+			>>/etc/ssh/ssh_config
 	}
 
 	# Enable color and syntax-highlighting in GNU nano
