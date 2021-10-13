@@ -60,6 +60,7 @@ This package contains software from a number of other projects including Bash, z
 * The `git svn` command, [which was broken in Git for Windows v2.33.0(2)](https://github.com/git-for-windows/git/issues/3392), has been fixed.
 * The password prompt when cloning via SSH [works again](https://github.com/git-for-windows/build-extra/pull/381).
 * The MSYS2 runtime [no longer complains about FAST_CWD on Windows/ARM64](https://github.com/git-for-windows/msys2-runtime/pull/33).
+* When VS Code is configured as editor, [it no longer needs the window to be closed, just the tab](https://github.com/git-for-windows/git/issues/3452).
 
 ## Changes since Git for Windows v2.33.0 (August 17th 2021)
 
