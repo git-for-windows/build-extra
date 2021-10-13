@@ -51,6 +51,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSH v8.8p1](https://www.openssh.com/txt/release-8.8).
 * Comes with [Git LFS v3.0.1](https://github.com/git-lfs/git-lfs/releases/tag/v3.0.1).
 * The built-in filesystem watcher ("FSMonitor") [has been updated to the latest version](https://github.com/git-for-windows/git/pull/3447).
+* Comes with [Git Credential Manager Core v2.0.567.18224](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.567).
 
 ### Bug Fixes
 
