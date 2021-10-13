@@ -188,7 +188,7 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 		sed -i -e 's/^Ciphers [a-z].*cbc/#   &/' /etc/ssh/ssh_config
 
 		grep -q '^Ciphers\s\++' /etc/ssh/ssh_config ||
-		printf "%s\n%s\n" \
+		printf '%s\n%s\n' \
 			'# Added by git-extra' \
 			'Ciphers +aes128-cbc,3des-cbc,aes256-cbc,aes192-cbc' \
 			>>/etc/ssh/ssh_config
