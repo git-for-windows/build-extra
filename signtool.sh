@@ -25,6 +25,12 @@ for f in "$@"
 do
 	s "$f" || {
 		echo "Giving timestamp host some time..." >&2
-		sleep 5 && s "$f"
+		sleep 5 && s "$f" || {
+			sleep 10 && s "$f" || {
+				sleep 20 && s "$f" || {
+					sleep 40 && s "$f"
+				}
+			}
+		}
 	} || exit
 done
