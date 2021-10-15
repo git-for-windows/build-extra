@@ -46,6 +46,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Config settings referring to paths relative to where Git is installed [now have to be marked via `%(prefix)/` instead of the now-deprecated leading slash](https://github.com/git-for-windows/git/pull/3472).
 
+### Bug Fixes
+
+* Configuring a system-wide VS Code as Git's editor [was broken](https://github.com/git-for-windows/git/issues/3471), which has been fixed.
+
 ## Changes since Git for Windows v2.33.0(2) (August 24th 2021)
 
 ### New Features
