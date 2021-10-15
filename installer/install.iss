@@ -1850,15 +1850,15 @@ begin
 
     // Remove `" %1"` from end and unqote the string.
     if (EditorAvailable[GE_VisualStudioCode]) then
-        VisualStudioCodePath:=ExtractCodeCLIPath(VisualStudioCodePath, 'bin\code.cmd');
+        VisualStudioCodePath:=ExtractCodeCLIPath(VisualStudioCodePath, 'bin\code');
     if (EditorAvailable[GE_VisualStudioCodeInsiders]) then
-        VisualStudioCodeInsidersPath:=ExtractCodeCLIPath(VisualStudioCodeInsidersPath, 'bin\code-insiders.cmd');
+        VisualStudioCodeInsidersPath:=ExtractCodeCLIPath(VisualStudioCodeInsidersPath, 'bin\code-insiders');
     if (EditorAvailable[GE_SublimeText]) and SublimeTextUserInstallation then
         SublimeTextPath:=ExtractCommandPath(SublimeTextPath);
     if (EditorAvailable[GE_Atom]) then
         AtomPath:=ExtractCommandPath(AtomPath);
     if (EditorAvailable[GE_VSCodium]) then
-        VSCodiumPath:=ExtractCodeCLIPath(VSCodiumPath, 'bin\codium.cmd');
+        VSCodiumPath:=ExtractCodeCLIPath(VSCodiumPath, 'bin\codium');
 
     // 1st choice
     Top:=TopOfLabels;
