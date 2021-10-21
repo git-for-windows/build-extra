@@ -173,7 +173,11 @@ update_git_for_windows () {
 			"Usage: git update-git-for-windows [options]" \
 			"Options:" \
 			"-g, --gui Use GUI instead of terminal to prompt" \
-			"-y, --yes Automatic yes to download and install prompt"
+			"-y, --yes Automatic yes to download and install prompt" \
+			"Return code:" \
+			" 0: no update available" \
+			" 1: update available and user selected not to update" \
+			" 2: update available and it was started"
 		return 1
 	done
 
@@ -348,6 +352,7 @@ update_git_for_windows () {
 	# that link to *this* MSYS2 runtime, i.e. no processes from other Git
 	# installations (e.g. Git for Windows' SDK) will be killed.
 	ps | grep ' /usr/bin/bash$' | awk '{print "kill -9 " $1 ";" }' | sh
+	return 2
 }
 
 update_git_for_windows "$@"
