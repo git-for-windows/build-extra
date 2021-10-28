@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Config settings referring to paths relative to where Git is installed [now have to be marked via `%(prefix)/` instead of the now-deprecated leading slash](https://github.com/git-for-windows/git/pull/3472).
+* Comes with [Git LFS v3.0.2](https://github.com/git-lfs/git-lfs/releases/tag/v3.0.2).
 
 ### Bug Fixes
 
