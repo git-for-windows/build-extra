@@ -3014,6 +3014,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		;;
 	mingw-w64-wintoast|mingw-w64-cv2pdb)
 		(cd "$sdk64$pkgpath" &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
 		 MINGW_INSTALLS=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			'makepkg-mingw --nobuild -s --noconfirm' &&
