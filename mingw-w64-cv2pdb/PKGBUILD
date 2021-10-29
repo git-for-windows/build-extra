@@ -13,10 +13,12 @@ license=('Artistic2')
 options=('!strip')
 
 source=("${_realname}"::"git+https://github.com/rainers/cv2pdb#branch=HEAD"
-        "0001-Learn-to-use-vswhere.exe-to-figure-out-the-mspdb140..patch")
+        "0001-Learn-to-use-vswhere.exe-to-figure-out-the-mspdb140..patch"
+        "0002-Add-rudimentary-support-for-DWARF5.patch")
 
 sha256sums=('SKIP'
-            '078f4187e65cc017e6987f4a7f587c48bd08c53a965bd7564a5afedd55216011')
+            '078f4187e65cc017e6987f4a7f587c48bd08c53a965bd7564a5afedd55216011'
+            '229c1aa5752ae5110e8781c9c5b2b5b5ce88c5925ee61ab92ab167dec49855f0')
 
 die () {
   echo "$*" >&2
@@ -50,6 +52,7 @@ pkgver() {
 prepare () {
   cd "$srcdir/cv2pdb"
   git apply -v "${srcdir}"/0001-Learn-to-use-vswhere.exe-to-figure-out-the-mspdb140..patch
+  git apply -v "${srcdir}"/0002-Add-rudimentary-support-for-DWARF5.patch
   sed -i 's/\(<PlatformToolset>\)[^<]*/\1$(DefaultPlatformToolset)/g' src/cv2pdb.vcxproj
 }
 
