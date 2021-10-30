@@ -642,6 +642,7 @@ ff_main_branch () {
 	require_clean_worktree
 
 	git pull --ff-only origin HEAD ||
+	test 0 -eq $(git rev-list --count ..FETCH_HEAD) ||
 	die "%s: cannot fast-forward main branch\n" "$sdk$pkgpath"
 }
 
