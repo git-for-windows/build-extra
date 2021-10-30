@@ -134,7 +134,9 @@ http_get () {
 }
 
 get_recently_seen() {
-    if [ -f "$HOME"/.git-for-windows-updater ]; then
+    if [ -f "$APPDATA/Git/updater.ini" ]; then
+        git config -f "$APPDATA/Git/updater.ini" winUpdater.recentlySeenVersion
+    elif [ -f "$HOME"/.git-for-windows-updater ]; then
         git config -f "$HOME"/.git-for-windows-updater winUpdater.recentlySeenVersion
     else
         git config --global winUpdater.recentlySeenVersion
@@ -142,7 +144,8 @@ get_recently_seen() {
 }
 
 set_recently_seen() {
-    git config -f "$HOME"/.git-for-windows-updater winUpdater.recentlySeenVersion "$1"
+	mkdir -p "$APPDATA/Git" &&
+	git config -f "$APPDATA/Git/updater.ini" winUpdater.recentlySeenVersion "$1"
 }
 
 # The main function of this script
