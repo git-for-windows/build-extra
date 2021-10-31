@@ -56,7 +56,7 @@ source=('inputrc'
         'git-askpass.c'
         'git-askpass.h'
         'git-askpass.rc')
-sha256sums=('2a8b8630bc2b0c6667790d1ba11534cdf685fff58b026cc4e01b21a10085db1d'
+sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             'ab571470d4f05748582cec1280efe0d984383819e26c14f1a8fe7a75dbc06253'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
             '17c90698d4dd52dd9f383e72aee54ecea0f62520baf56722de5c83285507c0d9'
