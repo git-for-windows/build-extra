@@ -52,6 +52,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Configuring a system-wide VS Code as Git's editor [was broken](https://github.com/git-for-windows/git/issues/3471), which has been fixed.
 * It is [now possible](https://github.com/git-for-windows/git/pull/3487) to clone files larger than 4GB as long as they are transferred via [Git LFS](https://git-lfs.github.io/).
+* Git now works around [an issue with `vi` and incorrect line breaks in the Windows Terminal](https://github.com/microsoft/terminal/issues/9359).
 
 ## Changes since Git for Windows v2.33.0(2) (August 24th 2021)
 
