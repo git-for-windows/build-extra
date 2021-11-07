@@ -1,24 +1,13 @@
 name: build-and-deploy
 
-on:
-  workflow_dispatch:
-    inputs:
-      package:
-        description: 'The package to build'
-        required: true
-      build_only:
-        description: 'Skip deployment (if non-empty)'
-        required: false
-      debug_with_ssh_key:
-        description: 'Public SSH key to use to debug failures'
-        required: false
+on: [push]
 
 env:
-  PACKAGE_TO_BUILD: "${{github.event.inputs.package}}"
-  BUILD_ONLY: "${{github.event.inputs.build_only}}"
+  PACKAGE_TO_BUILD: cv2pdb
+  BUILD_ONLY: true
   GPG_OPTIONS: "--batch --yes --no-tty --list-options no-show-photos --verify-options no-show-photos --pinentry-mode loopback"
   HOME: "${{github.workspace}}\\home"
-  DEBUG_WITH_SSH_KEY: "${{github.event.inputs.debug_with_ssh_key}}"
+  DEBUG_WITH_SSH_KEY: ""
 
 jobs:
   build-and-deploy:
@@ -28,6 +17,7 @@ jobs:
       - name: Configure build
         shell: bash
         run: |
+          set -x
           USER_NAME="$GITHUB_ACTOR" &&
           USER_EMAIL="$GITHUB_ACTOR@users.noreply.github.com" &&
           mkdir -p "$HOME" &&
