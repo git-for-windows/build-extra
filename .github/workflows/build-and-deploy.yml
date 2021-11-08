@@ -9,12 +9,16 @@ on:
       build_only:
         description: 'Skip deployment (if non-empty)'
         required: false
+      debug_with_ssh_key:
+        description: 'Public SSH key to use to debug failures'
+        required: false
 
 env:
   PACKAGE_TO_BUILD: "${{github.event.inputs.package}}"
   BUILD_ONLY: "${{github.event.inputs.build_only}}"
   GPG_OPTIONS: "--batch --yes --no-tty --list-options no-show-photos --verify-options no-show-photos --pinentry-mode loopback"
   HOME: "${{github.workspace}}\\home"
+  DEBUG_WITH_SSH_KEY: "${{github.event.inputs.debug_with_ssh_key}}"
 
 jobs:
   build-and-deploy:
@@ -114,6 +118,31 @@ jobs:
           GPGKEY: ${{secrets.GPGKEY}}
           PACMANDRYRUN: ${{env.BUILD_ONLY}}
         run: /usr/src/build-extra/pacman-helper.sh quick_add artifacts/*
+      - name: Debug using tmate
+        if: failure() && env.DEBUG_WITH_SSH_KEY != ''
+        shell: bash
+        run: |
+          # Install tmate
+          pacman -Sy --noconfirm tmate openssh &&
+
+          # Restrict SSH access to the "actor", i.e. the GitHub user who triggered this workflow
+          mkdir -p ~/.ssh &&
+          echo "$DEBUG_WITH_SSH_KEY" >~/.ssh/authorized_keys &&
+
+          # Generate an SSH key (needed for tmate)
+          echo -e 'y\n' | ssh-keygen -q -t rsa -N '' -f ~/.ssh/id_rsa &&
+
+          # Start tmate session
+          export CHERE_INVOKING=1 &&
+          tmate -S /tmp/tmate.sock -a ~/.ssh/authorized_keys new-session -d &&
+          tmate -S /tmp/tmate.sock wait tmate-ready &&
+
+          # Print SSH invocation every 5 seconds, until tmate session has terminated
+          while test -e /tmp/tmate.sock
+          do
+            tmate -S /tmp/tmate.sock display -p '#{tmate_ssh}'
+            sleep 5
+          done
       - name: Clean up temporary files
         if: always()
         shell: bash
