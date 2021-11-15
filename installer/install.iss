@@ -786,6 +786,13 @@ begin
     end;
 end;
 
+function EndsWith(S:String;T:String):Boolean;
+begin
+    if (Length(S)>Length(T)) then
+        Delete(S,0,Length(S)-Length(T));
+    Result:=(CompareText(S,T)=0)
+end;
+
 function GetDefaultsFromGitConfig(WhichOne:String):Boolean;
 var
     ExtraOptions,StdOut,StdErr,Key,Value:String;
@@ -841,7 +848,13 @@ begin
                         case Value of
                             'manager': RecordInferredDefault('Use Credential Manager','Core');
                             'manager-core': RecordInferredDefault('Use Credential Manager','Core');
-                        else RecordInferredDefault('Use Credential Manager','Disabled');
+                        else
+                            begin
+                                if EndsWith(Value, 'manager-core') then
+                                    RecordInferredDefault('Use Credential Manager','Core');
+                                else
+                                    RecordInferredDefault('Use Credential Manager','Disabled');
+                            end;
                         end;
                     'core.symlinks':
                         case Value of
