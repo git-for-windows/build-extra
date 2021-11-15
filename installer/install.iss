@@ -789,7 +789,7 @@ end;
 function EndsWith(S:String;T:String):Boolean;
 begin
     if (Length(S)>Length(T)) then
-        Delete(S,0,Length(S)-Length(T));
+        Delete(S,1,Length(S)-Length(T));
     Result:=(CompareText(S,T)=0)
 end;
 
