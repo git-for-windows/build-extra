@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.34.0](https://github.com/git/git/blob/v2.34.0/Documentation/RelNotes/2.34.0.txt).
 * Config settings referring to paths relative to where Git is installed [now have to be marked via `%(prefix)/` instead of the now-deprecated leading slash](https://github.com/git-for-windows/git/pull/3472).
 * Comes with [Git LFS v3.0.2](https://github.com/git-lfs/git-lfs/releases/tag/v3.0.2).
 * Contains [new, experimental support for `core.fsyncObjectFiles=batch`](https://github.com/git-for-windows/git/pull/3492).
