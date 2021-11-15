@@ -758,14 +758,14 @@ var
     StdOut,StdErr:String;
 begin
     if (Value=#0) then begin
-        if ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config --system --unset '+Key,StdOut,StdErr,ExitCode) And ((ExitCode=0) Or (ExitCode=5)) then
+        if ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config --system --unset-all '+Key,StdOut,StdErr,ExitCode) And ((ExitCode=0) Or (ExitCode=5)) then
             // exit code 5 means it was already unset, so that's okay
             Result:=True
         else begin
             LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(ExitCode)+#13+#10+StdOut+#13+#10+'stderr:'+#13+#10+StdErr);
             Result:=False
         end
-    end else if ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config --system '+ShellQuote(Key)+' '+ShellQuote(Value),StdOut,StdErr,ExitCode) And (ExitCode=0) then
+    end else if ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config --system --replace-all '+ShellQuote(Key)+' '+ShellQuote(Value),StdOut,StdErr,ExitCode) And (ExitCode=0) then
         Result:=True
     else begin
         LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(ExitCode)+#13+#10+StdOut+#13+#10+'stderr:'+#13+#10+StdErr);
@@ -784,6 +784,13 @@ begin
         i:=InferredDefaultKeys.Add(Key);
         InferredDefaultValues.Add(Value)
     end;
+end;
+
+function EndsWith(S:String;T:String):Boolean;
+begin
+    if (Length(S)>Length(T)) then
+        Delete(S,0,Length(S)-Length(T));
+    Result:=(CompareText(S,T)=0)
 end;
 
 function GetDefaultsFromGitConfig(WhichOne:String):Boolean;
@@ -841,7 +848,13 @@ begin
                         case Value of
                             'manager': RecordInferredDefault('Use Credential Manager','Core');
                             'manager-core': RecordInferredDefault('Use Credential Manager','Core');
-                        else RecordInferredDefault('Use Credential Manager','Disabled');
+                        else
+                            begin
+                                if EndsWith(Value, 'manager-core') then
+                                    RecordInferredDefault('Use Credential Manager','Core');
+                                else
+                                    RecordInferredDefault('Use Credential Manager','Disabled');
+                            end;
                         end;
                     'core.symlinks':
                         case Value of
