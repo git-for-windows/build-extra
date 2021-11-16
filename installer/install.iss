@@ -851,7 +851,7 @@ begin
                         else
                             begin
                                 if EndsWith(Value, 'manager-core') then
-                                    RecordInferredDefault('Use Credential Manager','Core');
+                                    RecordInferredDefault('Use Credential Manager','Core')
                                 else
                                     RecordInferredDefault('Use Credential Manager','Disabled');
                             end;
