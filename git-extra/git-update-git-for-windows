@@ -36,9 +36,9 @@ version_compare () {
 		b1="$(expr "$b" : '^\([^0-9]\+\)')"; b="${b#$b1}"
 
 		case "$a1,$b1" in
-		-rc,-rc) ;; # both are -rc versions
-		-rc,*) echo -1; return;;
-		*,-rc) echo 1; return;;
+		[.-]rc,[.-]rc) ;; # both are -rc versions
+		[.-]rc,*) echo -1; return;;
+		*,[.-]rc) echo 1; return;;
 		esac
 	done
 }
@@ -65,6 +65,8 @@ test "--test-version-compare" != "$*" || {
 	test_version_compare 2.32.0.vfs.0.1 2.32.0.vfs.0.2 -1
 	test_version_compare 2.32.0-rc0.windows.1 2.31.1.windows.1 1
 	test_version_compare 2.32.0-rc2.windows.1 2.32.0.windows.1 -1
+	test_version_compare 2.34.0.rc1.windows.1 2.33.1.windows.1 1
+	test_version_compare 2.34.0.rc2.windows.1 2.34.0.windows.1 -1
 	exit 0
 }
 
