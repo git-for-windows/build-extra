@@ -44,7 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [Git Credential Manager Core v2.0.603.10294](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.603).
+* Comes with [Git Credential Manager Core v2.0.605.12951](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.605).
 
 ## Changes since Git for Windows v2.33.1 (October 13th 2021)
 
