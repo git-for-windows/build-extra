@@ -376,11 +376,6 @@ const
     GB_MinTTY         = 1;
     GB_ConHost        = 2;
 
-    // `git pull` behavior settings.
-    GP_GitPullMerge   = 1;
-    GP_GitPullRebase  = 2;
-    GP_GitPullFFOnly  = 3;
-
     // Git Credential Manager settings.
     GCM_None          = 1;
     GCM_Core          = 2;
@@ -485,10 +480,6 @@ var
     // Wizard page and variables for the terminal emulator settings.
     BashTerminalPage:TWizardPage;
     RdbBashTerminal:array[GB_MinTTY..GB_ConHost] of TRadioButton;
-
-    // Wizard page and variables for the `git pull` options.
-    GitPullBehaviorPage:TWizardPage;
-    RdbGitPullBehavior:array[GP_GitPullMerge..GP_GitPullFFOnly] of TRadioButton;
 
     // Wizard page and variables for the credential manager options.
     GitCredentialManagerPage:TWizardPage;
@@ -2238,30 +2229,6 @@ begin
     end;
 
     (*
-     * Create a custom page for the default behavior of `git pull`.
-     *)
-
-    GitPullBehaviorPage:=CreatePage(PrevPageID,'Choose the default behavior of `git pull`','What should `git pull` do by default?',TabOrder,Top,Left);
-
-    // 1st choice
-    RdbGitPullBehavior[GP_GitPullMerge]:=CreateRadioButton(GitPullBehaviorPage,'Default (fast-forward or merge)','This is the standard behavior of `git pull`: fast-forward the current branch to'+#13+'the fetched branch when possible, otherwise create a merge commit.',TabOrder,Top,Left);
-
-    // 2nd choice
-    RdbGitPullBehavior[GP_GitPullRebase]:=CreateRadioButton(GitPullBehaviorPage,'Rebase','Rebase the current branch onto the fetched branch. If there are no local'+#13+'commits to rebase, this is equivalent to a fast-forward.',TabOrder,Top,Left);
-
-    // 3rd choice
-    RdbGitPullBehavior[GP_GitPullFFOnly]:=CreateRadioButton(GitPullBehaviorPage,'Only ever fast-forward','Fast-forward to the fetched branch. Fail if that is not possible.',TabOrder,Top,Left);
-
-    // Restore the setting chosen during a previous install.
-    case ReplayChoice('Git Pull Behavior Option','Merge') of
-        'Merge': RdbGitPullBehavior[GP_GitPullMerge].Checked:=True;
-        'Rebase': RdbGitPullBehavior[GP_GitPullRebase].Checked:=True;
-        'FFOnly': RdbGitPullBehavior[GP_GitPullFFOnly].Checked:=True;
-    else
-        RdbGitPullBehavior[GP_GitPullMerge].Checked:=True;
-    end;
-
-    (*
      * Create a custom page for the choice of Git Credential Manager.
      *)
 
@@ -3086,19 +3053,6 @@ begin
     end;
 
     {
-        Configure the default `git pull` behavior
-    }
-
-    WizardForm.StatusLabel.Caption:='Configuring default `git pull` behavior';
-    if RdbGitPullBehavior[GP_GitPullMerge].Checked then begin
-        GitSystemConfigSet('pull.rebase','false')
-    end else if RdbGitPullBehavior[GP_GitPullRebase].Checked then begin
-        GitSystemConfigSet('pull.rebase','true')
-    end else if RdbGitPullBehavior[GP_GitPullFFOnly].Checked then begin
-        GitSystemConfigSet('pull.ff','only')
-    end;
-
-    {
         Configure credential helper
     }
 
@@ -3534,15 +3488,6 @@ begin
         Data:='ConHost';
     end;
     RecordChoice(PreviousDataKey,'Bash Terminal Option',Data);
-
-    // Default behavior of `git pull`.
-    Data:='Merge';
-    if RdbGitPullBehavior[GP_GitPullRebase].Checked then begin
-        Data:='Rebase'
-    end else if RdbGitPullBehavior[GP_GitPullFFOnly].Checked then begin
-        Data:='FFOnly'
-    end;
-    RecordChoice(PreviousDataKey,'Git Pull Behavior Option',Data);
 
     // Credential helper.
     Data:='Disabled';
