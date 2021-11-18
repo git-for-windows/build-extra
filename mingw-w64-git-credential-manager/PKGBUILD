@@ -3,6 +3,7 @@
 _realname="git-credential-manager"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+replaces=("${MINGW_PACKAGE_PREFIX}-${_realname}-git-credential-manager-core")
 pkgver=2.0.605.12951
 pkgrel=1
 _realver=$pkgver
