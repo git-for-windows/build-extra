@@ -111,6 +111,10 @@ build() {
   make -f Makefile
 }
 
+check() {
+  ./git-update-git-for-windows --test-version-compare
+}
+
 package() {
   builddir=build-${MINGW_CHOST}
   install -d -m755 $pkgdir/etc/profile.d
