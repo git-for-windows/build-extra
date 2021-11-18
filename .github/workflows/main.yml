@@ -1,0 +1,49 @@
+name: PR build
+
+on: pull_request
+
+jobs:
+  determine-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: determine packages to build
+        id: set-matrix
+        shell: bash
+        run: |
+          git ls-files \*/PKGBUILD | sed 's|[^/]*$||' | sort >directories.txt &&
+          git diff ${{github.event.pull_request.base.sha}}... --name-only | sed 's|[^/]*$||' | sort -u >touched.txt &&
+          comm -12 directories.txt touched.txt >packages.txt &&
+          cat packages.txt &&
+          sed -e 's/\/$//' -e 's/.*/"&",/' -e '$s/,$//' <packages.txt >list.txt &&
+          echo "::set-output name=matrix::[$(cat list.txt)]"
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+  build-packages:
+    needs: determine-packages
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJSON(needs.determine-packages.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: git-for-windows/setup-git-for-windows-sdk@v1
+        with:
+          flavor: full
+      - name: build ${{ matrix.directory }}
+        shell: bash
+        run: |
+          top_dir=$PWD &&
+          cd "${{ matrix.directory }}" &&
+          MAKEFLAGS=-j8 makepkg-mingw -s --noconfirm &&
+          artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
+          mkdir -p "$top_dir/$artifacts" &&
+          mv *.tar.* "$top_dir/$artifacts"/ &&
+          echo "artifacts=$artifacts" >>$GITHUB_ENV
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.artifacts }}
+          path: ${{ env.artifacts }}
