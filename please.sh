@@ -422,14 +422,14 @@ set_package () {
 		extra_packages="mingw-w64-git-doc-html mingw-w64-git-doc-man mingw-w64-git-test-artifacts mingw-w64-git-pdb"
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
-	mingw-w64-git-credential-manager-core)
+	mingw-w64-git-credential-manager)
 		type=MINGW
-		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager-core
+		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager
 		;;
-	gcm|credential-manager-core|git-credential-manager-core)
-		package=mingw-w64-git-credential-manager-core
+	gcm|credential-manager|git-credential-manager)
+		package=mingw-w64-git-credential-manager
 		type=MINGW
-		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager-core
+		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager
 		;;
 	lfs|git-lfs|mingw-w64-git-lfs)
 		package=mingw-w64-git-lfs
@@ -2456,7 +2456,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 
 	release_notes_feature=
 	case "$package" in
-	mingw-w64-git-credential-manager-core)
+	mingw-w64-git-credential-manager)
 		repo=GitCredentialManager/git-credential-manager
 		url=https://api.github.com/repos/$repo/releases
 		release="$(curl --netrc -s $url)"
