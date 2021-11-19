@@ -10,7 +10,7 @@ _realtag=v${pkgver%.*}
 pkgdesc="Credential Manager for Git"
 install=git-credential-manager-core.install
 arch=('any')
-project_url="https://github.com/microsoft/Git-Credential-Manager-Core"
+project_url="https://github.com/GitCredentialManager/git-credential-manager"
 zip_url="${project_url}/releases/download/${_realtag}/gcmcore-win-x86-${_realver}.zip"
 src_zip_url="${project_url}/archive/${_realtag}.zip"
 license=('MIT')
@@ -20,7 +20,7 @@ options=('!strip')
 source=("${zip_url}" "$src_zip_url")
 
 sha256sums=('3433ebedd65fd7b19edbb52410a89621a4e32f00933b8b00f730cf540af04898'
-            'e55e95c85e093885f55becdd79345ba2f1ba7b4d7ae6b16cfe3caa0b537f9f5c')
+            'efa417d55d48c24f80de0a3358e9bb29e0b454a36168a76ae0b4f9688f05101b')
 
 package() {
   prefix="$pkgdir/${MINGW_PREFIX}"
@@ -28,5 +28,5 @@ package() {
   install -d -m755 "${prefix}"/libexec/git-core
   install -m755 "$srcdir2"/*.{dll,exe,config} "${prefix}"/libexec/git-core
   install -d -m755 "${prefix}"/doc/git-credential-manager-core
-  install -m644 "$srcdir2"/Git-Credential-Manager-Core-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager-core
+  install -m644 "$srcdir2"/git-credential-manager-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager-core
 }

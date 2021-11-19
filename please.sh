@@ -2457,7 +2457,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	release_notes_feature=
 	case "$package" in
 	mingw-w64-git-credential-manager-core)
-		repo=microsoft/git-credential-manager-core
+		repo=GitCredentialManager/git-credential-manager
 		url=https://api.github.com/repos/$repo/releases
 		release="$(curl --netrc -s $url)"
 		test -n "$release" ||
