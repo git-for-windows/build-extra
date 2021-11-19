@@ -17,8 +17,8 @@ jobs:
           git diff ${{github.event.pull_request.base.sha}}... --name-only | sed 's|[^/]*$||' | sort -u >touched.txt &&
           comm -12 directories.txt touched.txt >packages.txt &&
           cat packages.txt &&
-          sed -e 's/\/$//' -e 's/.*/"&",/' -e '$s/,$//' <packages.txt >list.txt &&
-          echo "::set-output name=matrix::[$(cat list.txt)]"
+          sed -e 's/\/$//' -e 's/.*/"&", /' -e '$s/, $//' <packages.txt >list.txt &&
+          echo "::set-output name=matrix::[$(tr -d '\n' <list.txt)]"
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
   build-packages:
