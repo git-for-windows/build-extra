@@ -19,8 +19,15 @@ jobs:
           cat packages.txt &&
           sed -e 's/\/$//' -e 's/.*/"&", /' -e '$s/, $//' <packages.txt >list.txt &&
           echo "::set-output name=matrix::[$(tr -d '\n' <list.txt)]"
+
+          git ls-files \*/release.sh | sed 's|[^/]*$||' | sort >releaseable.txt &&
+          comm -12 releaseable.txt touched.txt >artifacts.txt &&
+          cat artifacts.txt &&
+          sed -e 's/\/$//' -e 's/.*/"&", /' -e '$s/, $//' <artifacts.txt >list.txt &&
+          echo "::set-output name=artifacts::[$(tr -d '\n' <list.txt)]"
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
+      artifacts: ${{ steps.set-matrix.outputs.artifacts }}
   build-packages:
     needs: determine-packages
     runs-on: windows-latest
@@ -42,6 +49,29 @@ jobs:
           artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
           mkdir -p "$top_dir/$artifacts" &&
           mv *.tar.* "$top_dir/$artifacts"/ &&
+          echo "artifacts=$artifacts" >>$GITHUB_ENV
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.artifacts }}
+          path: ${{ env.artifacts }}
+  build-artifacts:
+    needs: determine-packages
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJSON(needs.determine-packages.outputs.artifacts) }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: git-for-windows/setup-git-for-windows-sdk@v1
+        with:
+          flavor: build-installers
+      - name: build ${{ matrix.directory }}/
+        shell: bash
+        run: |
+          artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
+          mkdir -p "$artifacts" &&
+          ./"${{ matrix.directory }}"/release.sh --output="$PWD/$artifacts/" 0-test &&
           echo "artifacts=$artifacts" >>$GITHUB_ENV
       - uses: actions/upload-artifact@v2
         with:
