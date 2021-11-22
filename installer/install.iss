@@ -82,7 +82,7 @@ InfoBeforeFile={#SourcePath}\..\gpl-2.0.rtf
 #ifdef OUTPUT_TO_TEMP
 PrivilegesRequired=lowest
 #else
-PrivilegesRequired=none
+PrivilegesRequired=admin
 #endif
 UninstallDisplayName={#APP_NAME}
 UninstallDisplayIcon={app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
