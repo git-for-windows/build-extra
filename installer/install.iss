@@ -383,7 +383,7 @@ const
 
     // Git Credential Manager settings.
     GCM_None          = 1;
-    GCM_Core          = 2;
+    GCM               = 2;
 
     // Extra options
     GP_FSCache        = 1;
@@ -492,7 +492,7 @@ var
 
     // Wizard page and variables for the credential manager options.
     GitCredentialManagerPage:TWizardPage;
-    RdbGitCredentialManager:array[GCM_None..GCM_Core] of TRadioButton;
+    RdbGitCredentialManager:array[GCM_None..GCM] of TRadioButton;
 
     // Wizard page and variables for the extra options.
     ExtraOptionsPage:TWizardPage;
@@ -846,12 +846,12 @@ begin
                         end;
                     'credential.helper':
                         case Value of
-                            'manager': RecordInferredDefault('Use Credential Manager','Core');
-                            'manager-core': RecordInferredDefault('Use Credential Manager','Core');
+                            'manager': RecordInferredDefault('Use Credential Manager','Enabled');
+                            'manager-core': RecordInferredDefault('Use Credential Manager','Enabled');
                         else
                             begin
-                                if EndsWith(Value, 'manager-core') then
-                                    RecordInferredDefault('Use Credential Manager','Core')
+                                if EndsWith(Value,'manager-core') or EndsWith(Value,'manager') then
+                                    RecordInferredDefault('Use Credential Manager','Enabled')
                                 else
                                     RecordInferredDefault('Use Credential Manager','Disabled');
                             end;
@@ -2280,8 +2280,8 @@ begin
 
     GitCredentialManagerPage:=CreatePage(PrevPageID,'Choose a credential helper','Which credential helper should be configured?',TabOrder,Top,Left);
 
-    // Git Credential Manager Core
-    RdbGitCredentialManager[GCM_Core]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager Core','<RED>(NEW!)</RED> Use the new, <A HREF=https://github.com/GitCredentialManager/git-credential-manager>cross-platform version of the Git Credential Manager</A>.'+#13+'See more information about the future of Git Credential Manager <A HREF=https://github.com/GitCredentialManager/git-credential-manager/blob/HEAD/docs/faq.md#about-the-project>here</A>.',TabOrder,Top,Left);
+    // Git Credential Manager
+    RdbGitCredentialManager[GCM]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager','Use the <A HREF=https://github.com/GitCredentialManager/git-credential-manager>cross-platform Git Credential Manager</A>.'+#13+'See more information about the future of Git Credential Manager <A HREF=https://github.com/GitCredentialManager/git-credential-manager/blob/HEAD/docs/faq.md#about-the-project>here</A>.',TabOrder,Top,Left);
 
     // No credential helper
     RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.',TabOrder,Top,Left);
@@ -2289,15 +2289,15 @@ begin
     // Restore the settings chosen during a previous install, if .NET 4.5.1
     // or later is available.
     if DetectNetFxVersion()<378675 then begin
-        RdbGitCredentialManager[GCM_Core].Checked:=False;
-        RdbGitCredentialManager[GCM_Core].Enabled:=False;
+        RdbGitCredentialManager[GCM].Checked:=False;
+        RdbGitCredentialManager[GCM].Enabled:=False;
     end else begin
-        case ReplayChoice('Use Credential Manager','Core') of
+        case ReplayChoice('Use Credential Manager','Enabled') of
             'Disabled': RdbGitCredentialManager[GCM_None].Checked:=True;
-            'Enabled': RdbGitCredentialManager[GCM_Core].Checked:=True;
-            'Core': RdbGitCredentialManager[GCM_Core].Checked:=True;
+            'Enabled': RdbGitCredentialManager[GCM].Checked:=True;
+            'Core': RdbGitCredentialManager[GCM].Checked:=True;
         else
-            RdbGitCredentialManager[GCM_Core].Checked:=True;
+            RdbGitCredentialManager[GCM].Checked:=True;
         end;
     end;
 
@@ -3119,7 +3119,7 @@ begin
     if RdbGitCredentialManager[GCM_None].checked then begin
         GitSystemConfigSet('credential.helper',#0);
         GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath',#0);
-    end else if RdbGitCredentialManager[GCM_Core].checked then begin
+    end else if RdbGitCredentialManager[GCM].checked then begin
         GitSystemConfigSet('credential.helper','manager-core');
         GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath','true');
     end;
@@ -3559,8 +3559,8 @@ begin
 
     // Credential helper.
     Data:='Disabled';
-    if RdbGitCredentialManager[GCM_Core].Checked then begin;
-        Data:='Core';
+    if RdbGitCredentialManager[GCM].Checked then begin;
+        Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Use Credential Manager',Data);
 
