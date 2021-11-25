@@ -1161,13 +1161,14 @@ begin
         i:=InferredDefaultKeys.IndexOf(Key); // cannot use .Find because the list is not sorted
         if (i>=0) then
             Result:=InferredDefaultValues[i]
-        else
+        else begin
             // Restore the settings chosen during a previous install.
             Result:=GetPreviousData(Key,Default);
             // Check to see if this result was the default, or was previously set.
             // If it was the default, the user has not seen this option yet.
             if GetPreviousData(Key,'z'+Result)<>Result then
                 AddToSet(CustomPagesWithUnseenOptions,CurrentCustomPageID)
+        end
     end;
 end;
 
