@@ -41,6 +41,8 @@ die () {
 }
 
 parse_version () {
+	test 0-test != "$1" || set 0.0.0
+
 	echo "$1" | grep -Px '\d+(\.(0|[1-9]+)){2,3}' ||
 	die "
 Either the version format was incorrect or no version was specified.
