@@ -127,7 +127,13 @@ esac
 git_core="$SCRIPT_PATH/root/mingw$BITNESS/libexec/git-core" &&
 rm -rf "$git_core" &&
 mkdir -p "$git_core" &&
-ln $(echo "$LIST" | sed -n "s|^mingw$BITNESS/bin/[^/]*\.dll$|/&|p") "$git_core" ||
+if test "$(stat -c %D /mingw$BITNESS/bin)" = "$(stat -c %D "$git_core")"
+then
+	ln_or_cp=ln
+else
+	ln_or_cp=cp
+fi &&
+$ln_or_cp $(echo "$LIST" | sed -n "s|^mingw$BITNESS/bin/[^/]*\.dll$|/&|p") "$git_core" ||
 die "Could not copy .dll files into libexec/git-core/"
 
 test -z "$include_pdbs" || {
