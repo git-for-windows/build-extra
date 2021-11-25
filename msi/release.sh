@@ -181,7 +181,7 @@ cat <<EOF
     </Fragment>
 </Wix>
 EOF
-) | sed -e 's/\(<File \(Id=".*" \)\?Source="\)\(.*\(compat-\)\?\(ba\)\?sh\.exe\|.*git.*\.exe\)\([^>]\)* \/>/\1\3" BindPath="[BindImagePaths]\6 \/>/' \
+) | sed -e 's/\(<File \(Id=".*" \)\?Source="\)\(.*\(compat-\)\?\(ba\)\?sh\.exe\|.*git.*\.exe\)\("[^>]\)* \/>/\1\3" BindPath="[BindImagePaths]\6 \/>/' \
 	-e 's/\(<File \)\(DoNotBind\) \([^>]*\)>/\1\3>/' >GitComponents.wxs
 
 # Make the .msi file
