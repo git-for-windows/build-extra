@@ -436,7 +436,12 @@ EOF
 		;;
 	esac
 }
-GIT_SDK_SH_PATH="$(realpath "$BASH_SOURCE")"
+
+if [ -n "$ZSH_VERSION" ]; then
+	GIT_SDK_SH_PATH="$(realpath "${(%):-%x}")"
+else
+	GIT_SDK_SH_PATH="$(realpath "$BASH_SOURCE")"
+fi
 
 case $- in
 *i*)
