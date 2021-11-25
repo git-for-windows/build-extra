@@ -72,7 +72,7 @@ do
 	-h|--help)
 		usage
 		;;
-	-o=*|--outputDir=*)
+	-o=*|--output=*|--outputDir=*)
 		TARGET="${1#*=}"
 		shift
 		;;
