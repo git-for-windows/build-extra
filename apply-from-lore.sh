@@ -5,6 +5,23 @@ die () {
 	exit 1
 }
 
+dry_run=
+while test $# -gt 0
+do
+	case "$1" in
+	--dry-run|-n)
+		dry_run=0
+		;;
+	-*)
+		die "Unhandled option: '$1'"
+		;;
+	*)
+		break
+		;;
+	esac
+	shift
+done
+
 for URL
 do
 	case "$URL" in
@@ -47,6 +64,11 @@ do
 	esac
 
 	OUT="$(git rev-parse --git-path lore)"
+	if test -n "$dry_run"
+	then
+		$dry_run=$(($dry_run+1))
+		OUT=$OUT.$dry_run
+	fi
 	curl -f -o "$OUT" $URL ||
 	die "Could not retrieve $URL" >&2
 
@@ -71,8 +93,12 @@ do
 			die "Could not retrieve $URL3" >&2
 			NO=$(($NO+1))
 		done
-		git am --whitespace=fix -3 -s <"$OUT3" || break
-	else
+		OUT=$OUT3
+	fi
+	if test -z "$dry_run"
+	then
 		git am --whitespace=fix -3 -s <"$OUT" || break
+	else
+		echo git am --whitespace=fix -3 -s "$OUT"
 	fi
 done
