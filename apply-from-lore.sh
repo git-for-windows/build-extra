@@ -23,13 +23,13 @@ do
 		die "No match, or ambiguous GMane ID: $GID"
 		URL="$(sed -n '/^1\./{N;s/.*href="\([^"]*\).*/\1/p}' <"$HTML")"
 		test -n "$URL" || die "Could not extract URL for GMane ID $GID"
-		URL=https://public-inbox.org/git/${URL%/}/raw
+		URL=https://lore.kernel.org/git/${URL%/}/raw
 		;;
 	http*)
 		;; # okay
 	*@*)
 		# Message-ID:
-		URL=https://public-inbox.org/git/"$URL"/raw
+		URL=https://lore.kernel.org/git/"$URL"/raw
 		;;
 	esac
 
@@ -46,7 +46,7 @@ do
 		;;
 	esac
 
-	OUT="$(git rev-parse --git-path public-inbox)"
+	OUT="$(git rev-parse --git-path lore)"
 	curl -f -o "$OUT" $URL ||
 	die "Could not retrieve $URL" >&2
 
@@ -66,7 +66,7 @@ do
 					s/^href="\.\.\/\([^"]*\).*/\1/p;q
 				}' <"$OUT2")"
 			test -n "$URL3" || break
-			curl -f https://public-inbox.org/git/${URL3%/}/raw \
+			curl -f https://lore.kernel.org/git/${URL3%/}/raw \
 				>>"$OUT3" ||
 			die "Could not retrieve $URL3" >&2
 			NO=$(($NO+1))
