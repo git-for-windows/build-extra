@@ -272,6 +272,10 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 		# add the /mingw32 fall-back paths to MANPATH
 		s|:\${MANPATH}|:/mingw32/local/man:/mingw32/share/man&|
 	}' /etc/profile
+
+	# Work around /etc/xml/catalog being updated using the MINGW version of xmlcatalog
+	! grep -q 'C:/git-sdk-[36][24]-ci' /etc/xml/catalog ||
+	sed -i -e 's|C:/git-sdk-[36][24]-ci||g' /etc/xml/catalog
 }
 
 post_upgrade () {
