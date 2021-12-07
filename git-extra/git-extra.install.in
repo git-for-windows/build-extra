@@ -274,8 +274,8 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	}' /etc/profile
 
 	# Work around /etc/xml/catalog being updated using the MINGW version of xmlcatalog
-	! grep -q 'C:/git-sdk-[36][24]-ci' /etc/xml/catalog ||
-	sed -i -e 's|C:/git-sdk-[36][24]-ci||g' /etc/xml/catalog
+	! grep -q '"[CD]:/' /etc/xml/catalog ||
+	sed -i -e 's|"[CD]:/[^"]*/usr/|"/usr/|g' /etc/xml/catalog
 }
 
 post_upgrade () {
