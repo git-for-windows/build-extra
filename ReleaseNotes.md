@@ -44,7 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/6e0141cf6151d9cfe74dd0196cf9698a2a6cbfcb) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.3](https://cygwin.com/pipermail/cygwin-announce/2021-December/010338.html).
+* Comes with a version of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.3](https://cygwin.com/pipermail/cygwin-announce/2021-December/010338.html).
 
 ## Changes since Git for Windows v2.34.0 (November 15th 2021)
 
