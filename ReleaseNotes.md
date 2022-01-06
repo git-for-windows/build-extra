@@ -42,6 +42,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.34.1 (November 25th 2021)
 
+### Upcoming breaking changes
+
+We plan to update the included bash to version 5.1 (currently 4.4) soon after Git for Windows 2.35.0 is released. Please check your shell scripts for potential compatibility issues.
+
 ### New Features
 
 * Comes with a version of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.3](https://cygwin.com/pipermail/cygwin-announce/2021-December/010338.html).
