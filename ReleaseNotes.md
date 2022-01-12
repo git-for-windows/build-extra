@@ -53,6 +53,10 @@ We plan to update the included bash to version 5.1 (currently 4.4) soon after Gi
 * Comes with [Git Credential Manager Core v2.0.632.34631](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.632).
 * Comes with [cURL v7.81.0](https://curl.haxx.se/changes.html#7_81_0).
 
+### Bug Fixes
+
+* A [bug](https://github.com/git-for-windows/git/issues/3624) which caused crashes when running `git log` with custom date formats in 32-bit builds was fixed.
+
 ## Changes since Git for Windows v2.34.0 (November 15th 2021)
 
 ### New Features
