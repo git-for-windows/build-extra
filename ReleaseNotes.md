@@ -52,6 +52,7 @@ We plan to update the included bash to version 5.1 (currently 4.4) soon after Gi
 * Comes with [OpenSSL v1.1.1m](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [Git Credential Manager Core v2.0.632.34631](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.632).
 * Comes with [cURL v7.81.0](https://curl.haxx.se/changes.html#7_81_0).
+* Comes with [tig v2.5.5](https://github.com/jonas/tig/releases/tag/tig-2.5.5).
 
 ### Bug Fixes
 
