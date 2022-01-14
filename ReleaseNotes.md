@@ -53,6 +53,7 @@ We plan to update the included bash to version 5.1 (currently 4.4) soon after Gi
 * Comes with [Git Credential Manager Core v2.0.632.34631](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.632).
 * Comes with [cURL v7.81.0](https://curl.haxx.se/changes.html#7_81_0).
 * Comes with [tig v2.5.5](https://github.com/jonas/tig/releases/tag/tig-2.5.5).
+* Comes with [patch level 3](https://github.com/git-for-windows/msys2-runtime/commit/d3172a709434851576a68f0ffac5a45119a9e8e1) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.3](https://cygwin.com/pipermail/cygwin-announce/2021-December/010338.html).
 
 ### Bug Fixes
 
