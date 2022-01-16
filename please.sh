@@ -744,6 +744,14 @@ pkg_build () {
 	MSYS)
 		require msys2-devel binutils
 		opt_j=-j5
+		if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
+			config alias.signtool)"
+		then
+			extra=
+		else
+			extra="SIGNTOOL=\"git --git-dir=\\\"$sdk64/usr/src"
+			extra="$extra/build-extra/.git\\\" signtool\" "
+		fi
 		if test msys2-runtime = "$package"
 		then
 			opt_j=-j1
@@ -783,7 +791,7 @@ pkg_build () {
 			 export PATH=/usr/bin:/opt/bin:$PATH &&
 			 unset ORIGINAL_PATH &&
 			 . /etc/profile &&
-			 MAKEFLAGS='"$opt_j"' makepkg -s --noconfirm \
+			 MAKEFLAGS='"$opt_j"' '"$extra"'makepkg -s --noconfirm \
 				'"$extra_makepkg_opts"' &&
 			 makepkg --allsource '"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk$pkgpath"
