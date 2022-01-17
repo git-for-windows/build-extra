@@ -788,7 +788,7 @@ pkg_build () {
 		"$sdk/git-cmd" --command=usr\\bin\\sh.exe -l -c \
 			'cd '"$pkgpath"' &&
 			 export MSYSTEM=MSYS &&
-			 export PATH=/usr/bin:/opt/bin:$PATH &&
+			 export PATH=/usr/bin:/opt/bin:/mingw64/bin:/mingw32/bin:$PATH &&
 			 unset ORIGINAL_PATH &&
 			 . /etc/profile &&
 			 MAKEFLAGS='"$opt_j"' '"$extra"'makepkg -s --noconfirm \
