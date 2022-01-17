@@ -724,7 +724,7 @@ pkg_build () {
 			extra="$extra/build-extra/.git\\\" signtool\" "
 		fi
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
+			'MAKEFLAGS=-j5 MINGW_ARCH=mingw32\ mingw64 \
 				'"$extra"'makepkg-mingw -s --noconfirm \
 					'"$extra_makepkg_opts"' &&
 			 if test mingw-w64-git = "'"$package"'"
@@ -732,7 +732,7 @@ pkg_build () {
 				git -C src/git push "$PWD/git" \
 					refs/tags/"'"$tag"'"
 			 fi &&
-			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
+			 MINGW_ARCH=mingw64 makepkg-mingw --allsource \
 				'"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk$pkgpath"
 
@@ -1650,13 +1650,13 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 			"cd \"$git_src_dir/../..\" &&"'
 			rm -f src/git/{git-wrapper.o,*.res} &&
 			MAKEFLAGS=-j5 \
-			MINGW_INSTALLS='"$(test -n "$only_64_bit" ||
+			MINGW_ARCH='"$(test -n "$only_64_bit" ||
 				echo mingw32)"'\ mingw64 \
 			'"$extra"' \
 			makepkg-mingw -s --noconfirm '"$force_tag"' \
 				'"$force_makepkg"' \
 				-p prerelease-'"$pkgver"'.pkgbuild &&
-			MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
+			MINGW_ARCH=mingw64 makepkg-mingw --allsource \
 				-p prerelease-'"$pkgver".pkgbuild ||
 		die "%s: could not build '%s'\n" "$git_src_dir" "$pkgver"
 
@@ -2209,7 +2209,7 @@ main () { # <package>
 }
 
 updpkgsums () {
-	MINGW_INSTALLS=mingw64 \
+	MINGW_ARCH=mingw64 \
 	"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c updpkgsums
 }
 
@@ -2522,7 +2522,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 fi &&
 		 if test git-extra.install.in -nt git-extra.install
 		 then
-			MINGW_INSTALLS=mingw64 \
+			MINGW_ARCH=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 				'makepkg-mingw --nobuild -s --noconfirm' &&
 			git checkout HEAD -- PKGBUILD &&
@@ -2828,7 +2828,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		(cd "$sdk64$pkgpath" &&
 		 if test ! -d src/busybox-w32
 		 then
-			MINGW_INSTALLS=mingw64 \
+			MINGW_ARCH=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 				'makepkg-mingw --nobuild -s --noconfirm'
 		 fi &&
@@ -2864,7 +2864,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 die "Package '%s' already up-to-date at commit '%s'\n" \
 			"$package" "$built_from_commit"
 
-		 MINGW_INSTALLS=mingw64 \
+		 MINGW_ARCH=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			'makepkg-mingw --nobuild -s --noconfirm' &&
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
@@ -3025,7 +3025,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
-		 MINGW_INSTALLS=mingw64 \
+		 MINGW_ARCH=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			'makepkg-mingw --nobuild -s --noconfirm' &&
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
@@ -4738,12 +4738,12 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	src_pkg=
 	while case "$1" in
 	--only-32-bit)
-		MINGW_INSTALLS=mingw32
-		export MINGW_INSTALLS
+		MINGW_ARCH=mingw32
+		export MINGW_ARCH
 		;;
 	--only-64-bit)
-		MINGW_INSTALLS=mingw64
-		export MINGW_INSTALLS
+		MINGW_ARCH=mingw64
+		export MINGW_ARCH
 		;;
 	--skip-test-artifacts)
 		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-test-artifacts"//'
@@ -4834,7 +4834,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag &&
 	 if test -n "$src_pkg"
 	 then
-		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_INSTALLS=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.$tag
+		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_ARCH=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.$tag
 	 fi) ||
 	die "Could not build mingw-w64-git\n"
 
