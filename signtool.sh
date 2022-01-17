@@ -7,8 +7,18 @@
 # the corresponding password in ~/.sig/codesign.pass.
 
 type osslsigncode >/dev/null 2>&1 || {
-	echo "Could not find osslsigncode.exe in the PATH" >&2
-	exit 1
+	if test -x /mingw64/bin/osslsigncode.exe
+	then
+		PATH=/mingw64/bin:$PATH
+	elif test -x /mingw32/bin/osslsigncode.exe
+	then
+		PATH=/mingw32/bin:$PATH
+	else
+		echo "Could not find osslsigncode.exe in the PATH:" >&2
+		echo "$PATH" >&2
+		echo "/ is $(cygpath -aw /)" >&2
+		exit 1
+	fi
 }
 
 s () {
