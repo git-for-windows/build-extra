@@ -258,9 +258,18 @@ test -z "$GITCONFIG_PATH" || {
 
 if test -n "$cmd_git"
 then
-	if test ! -f init.defaultBranch ||
-		test "$git_version" != "$(cat init.defaultBranch.gitVersion 2>/dev/null)"
+	# Find out Git's default branch name
+	case "${git_version#git version }" in
+	[01].*|2.[0-9].*|2.[12][0-9].*|2.3[0-4].*) false;; # does not support `git var GIT_DEFAULT_BRANCH`
+	*) default_branch_name="$(GIT_CONFIG_NOSYSTEM=1 \
+		HOME=.git/x XDG_CONFIG_HOME=.git/x GIT_DIR=.git/x \
+		git var GIT_DEFAULT_BRANCH)";;
+	esac ||
+	if test -f init.defaultBranch &&
+		test "$git_version" = "$(cat init.defaultBranch.gitVersion 2>/dev/null)"
 	then
+		default_branch_name="$(cat init.defaultBranch)"
+	else
 		echo "$git_version" >init.defaultBranch.gitVersion &&
 		d=init.defaultBranch.$$ &&
 		rm -f $d &&
@@ -272,7 +281,7 @@ then
 		die "Could not determine default branch name"
 	fi
 
-	inno_defines="$inno_defines$LF#define DEFAULT_BRANCH_NAME '$(cat init.defaultBranch)'"
+	inno_defines="$inno_defines$LF#define DEFAULT_BRANCH_NAME '$default_branch_name'"
 fi
 
 # 1. Collect all SSH related files from $LIST and pacman, sort each and then return the overlap
