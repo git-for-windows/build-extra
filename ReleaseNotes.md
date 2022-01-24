@@ -48,6 +48,7 @@ We plan to update the included bash to version 5.1 (currently 4.4) soon after Gi
 
 ### New Features
 
+* Comes with [Git v2.35.0](https://github.com/git/git/blob/v2.35.0/Documentation/RelNotes/2.35.0.txt).
 * Comes with a version of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.3](https://cygwin.com/pipermail/cygwin-announce/2021-December/010338.html).
 * Comes with [OpenSSL v1.1.1m](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [Git Credential Manager Core v2.0.632.34631](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.632).
