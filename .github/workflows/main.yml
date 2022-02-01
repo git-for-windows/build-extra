@@ -17,7 +17,7 @@ jobs:
             comm -12 "$2" "$3" >"$4" &&
             cat "$4" &&
             sed -e 's/\/$//' -e 's/.*/"&", /' -e '$s/, $//' <"$4" >list.txt &&
-            echo "::set-output name=$1::[$(tr -d '\n' <list.txt)]"
+            echo "::set-output name=$1::[$(test ! -s list.txt && echo '""' || tr -d '\n' <list.txt)]"
           }
 
           git ls-files \*/PKGBUILD | sed 's|[^/]*$||' | sort >directories.txt &&
@@ -32,6 +32,7 @@ jobs:
   build-packages:
     needs: determine-packages
     runs-on: windows-latest
+    if: needs.determine-packages.outputs.matrix != '[""]'
     strategy:
       fail-fast: false
       matrix:
@@ -58,6 +59,7 @@ jobs:
   build-artifacts:
     needs: determine-packages
     runs-on: windows-latest
+    if: needs.determine-packages.outputs.artifacts != '[""]'
     strategy:
       fail-fast: false
       matrix:
