@@ -12,7 +12,7 @@ case "$1" in
 		odt2txt "$1" || cat "$1"
 		;;
 	*.doc | *.DOC | *.dot | *.DOT)
-		antiword -m UTF-8 "$1" | sed "s/\^M$//" || cat "$1"
+		out=$(antiword -m UTF-8 "$1") && sed "s/\^M$//" <<<$out || cat "$1"
 		;;
 	*.docx | *.DOCX | *.dotx | *.DOTX | *.docm | *.DOCM | *.dotm | *.DOTM)
 		docx2txt.pl "$1" -
