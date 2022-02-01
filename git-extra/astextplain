@@ -18,7 +18,7 @@ case "$1" in
 		docx2txt.pl "$1" - || cat "$1"
 		;;
 	*.pdf | *.PDF)
-		out=$(pdftotext -layout -enc UTF-8 "$1" -) && sed "s/(\^M$)|(^\^L)//" <<<$out || cat "$1"
+		out=$(pdftotext -q -layout -enc UTF-8 "$1" -) && sed "s/(\^M$)|(^\^L)//" <<<$out || cat "$1"
 		;;
 	# TODO add rtf support
 	*.rtf | *.RTF)
