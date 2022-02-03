@@ -13,24 +13,26 @@ jobs:
         id: set-matrix
         shell: bash
         run: |
+          define_matrix () {
+            comm -12 "$2" "$3" >"$4" &&
+            cat "$4" &&
+            sed -e 's/\/$//' -e 's/.*/"&", /' -e '$s/, $//' <"$4" >list.txt &&
+            echo "::set-output name=$1::[$(test ! -s list.txt && echo '""' || tr -d '\n' <list.txt)]"
+          }
+
           git ls-files \*/PKGBUILD | sed 's|[^/]*$||' | sort >directories.txt &&
           git diff ${{github.event.pull_request.base.sha}}... --name-only | sed 's|[^/]*$||' | sort -u >touched.txt &&
-          comm -12 directories.txt touched.txt >packages.txt &&
-          cat packages.txt &&
-          sed -e 's/\/$//' -e 's/.*/"&", /' -e '$s/, $//' <packages.txt >list.txt &&
-          echo "::set-output name=matrix::[$(tr -d '\n' <list.txt)]"
+          define_matrix matrix directories.txt touched.txt packages.txt &&
 
           git ls-files \*/release.sh | sed 's|[^/]*$||' | sort >releaseable.txt &&
-          comm -12 releaseable.txt touched.txt >artifacts.txt &&
-          cat artifacts.txt &&
-          sed -e 's/\/$//' -e 's/.*/"&", /' -e '$s/, $//' <artifacts.txt >list.txt &&
-          echo "::set-output name=artifacts::[$(tr -d '\n' <list.txt)]"
+          define_matrix artifacts releaseable.txt touched.txt artifacts.txt
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       artifacts: ${{ steps.set-matrix.outputs.artifacts }}
   build-packages:
     needs: determine-packages
     runs-on: windows-latest
+    if: needs.determine-packages.outputs.matrix != '[""]'
     strategy:
       fail-fast: false
       matrix:
@@ -57,6 +59,7 @@ jobs:
   build-artifacts:
     needs: determine-packages
     runs-on: windows-latest
+    if: needs.determine-packages.outputs.artifacts != '[""]'
     strategy:
       fail-fast: false
       matrix:
