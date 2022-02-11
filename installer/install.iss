@@ -1934,13 +1934,13 @@ begin
     // 9th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Notepad as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Notepad is a simple GUI editor that comes with windows.',Top,Left,LblEditor[GE_Notepad],False);
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Notepad is a simple GUI editor that comes with Windows.',Top,Left,LblEditor[GE_Notepad],False);
     EditorAvailable[GE_Notepad]:=True;
 
     // 10th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Wordpad as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Wordpad is a basic word processor that comes with windows.'+#13+'It can also be used as a text editor.',Top,Left,LblEditor[GE_Wordpad],False);
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Wordpad is a basic word processor that comes with Windows.'+#13+'It can also be used as a text editor.',Top,Left,LblEditor[GE_Wordpad],False);
     EditorAvailable[GE_Wordpad]:=True;
 
     // Custom choice
