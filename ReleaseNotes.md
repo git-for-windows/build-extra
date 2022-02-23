@@ -47,6 +47,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.4](https://cygwin.com/pipermail/cygwin-announce/2022-January/010438.html).
 * Comes with [Git LFS v3.1.2](https://github.com/git-lfs/git-lfs/releases/tag/v3.1.2).
 * Comes with [OpenSSH v8.9p1](https://www.openssh.com/txt/release-8.9).
+* Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/9f15ca2ed11ad21b0f8d4160e290bfb4fe0ee522) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.4](https://cygwin.com/pipermail/cygwin-announce/2022-January/010438.html).
 
 ## Changes since Git for Windows v2.35.1 (January 29th 2022)
 
