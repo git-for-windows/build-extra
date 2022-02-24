@@ -3042,7 +3042,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		;;
 	bash)
 		url="http://git.savannah.gnu.org/cgit/bash.git/commit/?id=HEAD" &&
-		version=4.4 &&
+		version=5.1 &&
 		patchlevel="$(curl $url | sed -n \
 			's/.*+#define PATCHLEVEL \([1-9][0-9]*\).*/\1/p')" &&
 		if test -z "$patchlevel"
