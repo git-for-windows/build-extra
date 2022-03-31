@@ -42,6 +42,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.35.1(2) (February 1st 2022)
 
+This version addresses [CVE-2022-24765](https://github.com/git-for-windows/git/security/advisories/GHSA-vw2c-22j4-2fh2) and [CVE-2022-24767](https://github.com/git-for-windows/git/security/advisories/GHSA-gf48-x3vr-j5c3).
+
 ### Bug Fixes
 
 * The uninstaller was hardened to [avoid a vulnerability when running under the SYSTEM account](https://github.com/git-for-windows/git/security/advisories/GHSA-gf48-x3vr-j5c3), addressing CVE-2022-24767.
