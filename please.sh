@@ -1911,6 +1911,7 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 		find cov-int/emit/* -name \*.xml -exec sed -i "$gcc10_workaround" {} \; &&
 		rm -f version.o
 	 fi &&
+	 cov-configure --gcc &&
 	 cov-build --dir cov-int \
 		make -j15 DEVELOPER=1 CPPFLAGS="-DFLEX_ARRAY=65536 -DSUPPRESS_ANNOTATED_LEAKS" &&
 	 tar caf git-for-windows.lzma cov-int &&
