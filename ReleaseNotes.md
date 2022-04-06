@@ -49,8 +49,8 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSH v8.9p1](https://www.openssh.com/txt/release-8.9).
 * Comes with [cURL v7.82.0](https://curl.haxx.se/changes.html#7_82_0).
 * Comes with [OpenSSL v1.1.1n](https://www.openssl.org/news/openssl-1.1.1-notes.html).
-* Comes with [GNU TLS v3.7.4](https://lists.gnupg.org/pipermail/gnutls-help/2022-March/004738.html).
 * Comes with [Git Credential Manager Core v2.0.696](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.696).
+* Comes with [GNU TLS v3.7.4](https://lists.gnupg.org/pipermail/gnutls-help/2022-March/004738.html).
 
 ## Changes since Git for Windows v2.35.1 (January 29th 2022)
 
