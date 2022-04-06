@@ -1897,6 +1897,7 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 			"$coverity_bin_dir"
 	 fi &&
 	 PATH="$coverity_bin_dir:$PATH" &&
+	 cov-configure --gcc &&
 	 # Coverity has a long-standing bug where it fails to parse two-digit
 	 # major versions of GCC incorrectly Since Synopsys seems to
 	 # be hardly in a rush to fix this (there's no response at
@@ -1911,7 +1912,6 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 		find cov-int/emit/* -name \*.xml -exec sed -i "$gcc10_workaround" {} \; &&
 		rm -f version.o
 	 fi &&
-	 cov-configure --gcc &&
 	 cov-build --dir cov-int \
 		make -j15 DEVELOPER=1 CPPFLAGS="-DFLEX_ARRAY=65536 -DSUPPRESS_ANNOTATED_LEAKS" &&
 	 tar caf git-for-windows.lzma cov-int &&
