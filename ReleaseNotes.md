@@ -42,6 +42,12 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.35.1(2) (February 1st 2022)
 
+### Upcoming breaking changes
+
+We plan to update the included bash to version 5.1 (currently 4.4) soon after Git for Windows 2.36.0 is released. Please check your shell scripts for potential compatibility issues.
+
+Git for Windows will also stop supporting Windows Vista soon after Git for Windows 2.36.0 is released. Around the beginning of 2023, Git for Windows will drop support for Windows 7 and for Windows 8, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
 ### New Features
 
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.4](https://cygwin.com/pipermail/cygwin-announce/2022-January/010438.html).
@@ -66,10 +72,6 @@ This package contains software from a number of other projects including Bash, z
 
 
 ## Changes since Git for Windows v2.34.1 (November 25th 2021)
-
-### Upcoming breaking changes
-
-We plan to update the included bash to version 5.1 (currently 4.4) soon after Git for Windows 2.35.0 is released. Please check your shell scripts for potential compatibility issues.
 
 ### New Features
 
