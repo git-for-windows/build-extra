@@ -1,5 +1,5 @@
-# Git for Windows v2.35.1(2) Release Notes
-Latest update: February 1st 2022
+# Git for Windows v2.35.2 Release Notes
+Latest update: April 12th 2022
 
 ## Introduction
 
@@ -40,7 +40,7 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
-## Changes since Git for Windows v2.35.1(2) (February 1st 2022)
+## Changes since Git for Windows v2.35.2 (April 12th 2022)
 
 ### Upcoming breaking changes
 
@@ -57,6 +57,19 @@ Git for Windows will also stop supporting Windows Vista soon after Git for Windo
 * Comes with [OpenSSL v1.1.1n](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [Git Credential Manager Core v2.0.696](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.696).
 * Comes with [GNU TLS v3.7.4](https://lists.gnupg.org/pipermail/gnutls-help/2022-March/004738.html).
+
+## Changes since Git for Windows v2.35.1(2) (February 1st 2022)
+
+This version addresses [CVE-2022-24765](https://github.com/git-for-windows/git/security/advisories/GHSA-vw2c-22j4-2fh2) and [CVE-2022-24767](https://github.com/git-for-windows/git/security/advisories/GHSA-gf48-x3vr-j5c3).
+
+### New Features
+
+* Comes with [Git v2.35.2](https://github.com/git/git/blob/v2.35.2/Documentation/RelNotes/2.35.2.txt).
+
+
+### Bug Fixes
+
+* The uninstaller was hardened to [avoid a vulnerability when running under the SYSTEM account](https://github.com/git-for-windows/git/security/advisories/GHSA-gf48-x3vr-j5c3), addressing CVE-2022-24767.
 
 ## Changes since Git for Windows v2.35.1 (January 29th 2022)
 
