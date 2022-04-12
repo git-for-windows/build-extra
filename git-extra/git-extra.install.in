@@ -180,17 +180,33 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 		sed -i "1s/#\!$rootw/#\!/" $s || break
 	done
 
-	# Re-enable at least AES256-cbc and AES128-cbc, as they are still used
-	# e.g. in VSTS
+	# Re-enable ssh-rsa and at least AES256-cbc and AES128-cbc, as they are
+	# still used e.g. in Azure Repos
 	test ! -f /etc/ssh/ssh_config || {
 		# Revert change by prior versions of git-extra.
 		! grep -q '^Ciphers [a-z].*cbc' /etc/ssh/ssh_config ||
 		sed -i -e 's/^Ciphers [a-z].*cbc/#   &/' /etc/ssh/ssh_config
 
 		grep -q '^Ciphers\s\++' /etc/ssh/ssh_config ||
-		printf "%s\n%s\n" \
+		printf '%s\n%s\n' \
 			'# Added by git-extra' \
 			'Ciphers +aes128-cbc,3des-cbc,aes256-cbc,aes192-cbc' \
+			>>/etc/ssh/ssh_config
+
+		grep -q '^Host\s\+ssh\.dev\.azure\.com' /etc/ssh/ssh_config ||
+		printf '%s\n%s\n\t%s\n\t%s\n' \
+			'# Added by git-extra' \
+			'Host ssh.dev.azure.com' \
+			'HostkeyAlgorithms +ssh-rsa' \
+			'PubkeyAcceptedAlgorithms +ssh-rsa' \
+			>>/etc/ssh/ssh_config
+
+		grep -q '^Host\s\+\*\.visualstudio\.com' /etc/ssh/ssh_config ||
+		printf '%s\n%s\n\t%s\n\t%s\n' \
+			'# Added by git-extra' \
+			'Host *.visualstudio.com' \
+			'HostkeyAlgorithms +ssh-rsa' \
+			'PubkeyAcceptedAlgorithms +ssh-rsa' \
 			>>/etc/ssh/ssh_config
 	}
 
@@ -256,6 +272,10 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 		# add the /mingw32 fall-back paths to MANPATH
 		s|:\${MANPATH}|:/mingw32/local/man:/mingw32/share/man&|
 	}' /etc/profile
+
+	# Work around /etc/xml/catalog being updated using the MINGW version of xmlcatalog
+	! grep -q '"[CD]:/' /etc/xml/catalog ||
+	sed -i -e 's|"[CD]:/[^"]*/usr/|"/usr/|g' /etc/xml/catalog
 }
 
 post_upgrade () {

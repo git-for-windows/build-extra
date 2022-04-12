@@ -1,5 +1,5 @@
-# Git for Windows v2.32.0 Release Notes
-Latest update: June 7th 2021
+# Git for Windows v2.35.1(2) Release Notes
+Latest update: February 1st 2022
 
 ## Introduction
 
@@ -40,6 +40,128 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.35.1(2) (February 1st 2022)
+
+### Upcoming breaking changes
+
+We plan to update the included bash to version 5.1 (currently 4.4) soon after Git for Windows 2.36.0 is released. Please check your shell scripts for potential compatibility issues.
+
+Git for Windows will also stop supporting Windows Vista soon after Git for Windows 2.36.0 is released. Around the beginning of 2023, Git for Windows will drop support for Windows 7 and for Windows 8, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+### New Features
+
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.4](https://cygwin.com/pipermail/cygwin-announce/2022-January/010438.html).
+* Comes with [Git LFS v3.1.2](https://github.com/git-lfs/git-lfs/releases/tag/v3.1.2).
+* Comes with [OpenSSH v8.9p1](https://www.openssh.com/txt/release-8.9).
+* Comes with [cURL v7.82.0](https://curl.haxx.se/changes.html#7_82_0).
+* Comes with [OpenSSL v1.1.1n](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [Git Credential Manager Core v2.0.696](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.696).
+* Comes with [GNU TLS v3.7.4](https://lists.gnupg.org/pipermail/gnutls-help/2022-March/004738.html).
+
+## Changes since Git for Windows v2.35.1 (January 29th 2022)
+
+### Bug Fixes
+
+* A [bug](https://github.com/git-for-windows/git/issues/3674) in FSCache that triggered by a patch that made it into Git for Windows v2.35.0 [was fixed](https://github.com/git-for-windows/git/pull/3678).
+
+## Changes since Git for Windows v2.35.0 (January 24th 2022)
+
+### New Features
+
+* Comes with [Git v2.35.1](https://github.com/git/git/blob/v2.35.1/Documentation/RelNotes/2.35.1.txt).
+
+
+## Changes since Git for Windows v2.34.1 (November 25th 2021)
+
+### New Features
+
+* Comes with [Git v2.35.0](https://github.com/git/git/blob/v2.35.0/Documentation/RelNotes/2.35.0.txt).
+* Comes with a version of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.3](https://cygwin.com/pipermail/cygwin-announce/2021-December/010338.html).
+* Comes with [OpenSSL v1.1.1m](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [Git Credential Manager Core v2.0.632.34631](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.632).
+* Comes with [cURL v7.81.0](https://curl.haxx.se/changes.html#7_81_0).
+* Comes with [tig v2.5.5](https://github.com/jonas/tig/releases/tag/tig-2.5.5).
+* Comes with [patch level 4](https://github.com/git-for-windows/msys2-runtime/commit/b600e8ead500aef55e23810c2e630d9be46f3a4c) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.3](https://cygwin.com/pipermail/cygwin-announce/2021-December/010338.html).
+
+### Bug Fixes
+
+* A [bug](https://github.com/git-for-windows/git/issues/3624) which caused crashes when running `git log` with custom date formats in 32-bit builds was fixed.
+
+## Changes since Git for Windows v2.34.0 (November 15th 2021)
+
+### New Features
+
+* Comes with [Git v2.34.1](https://github.com/git/git/blob/v2.34.1/Documentation/RelNotes/2.34.1.txt).
+* Comes with [Git Credential Manager Core v2.0.605.12951](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.605).
+* Comes with [cURL v7.80.0](https://curl.haxx.se/changes.html#7_80_0).
+
+## Changes since Git for Windows v2.33.1 (October 13th 2021)
+
+### New Features
+
+* Comes with [Git v2.34.0](https://github.com/git/git/blob/v2.34.0/Documentation/RelNotes/2.34.0.txt).
+* Config settings referring to paths relative to where Git is installed [now have to be marked via `%(prefix)/` instead of the now-deprecated leading slash](https://github.com/git-for-windows/git/pull/3472).
+* Comes with [Git LFS v3.0.2](https://github.com/git-lfs/git-lfs/releases/tag/v3.0.2).
+* Contains [new, experimental support for `core.fsyncObjectFiles=batch`](https://github.com/git-for-windows/git/pull/3492).
+
+### Bug Fixes
+
+* Configuring a system-wide VS Code as Git's editor [was broken](https://github.com/git-for-windows/git/issues/3471), which has been fixed.
+* It is [now possible](https://github.com/git-for-windows/git/pull/3487) to clone files larger than 4GB as long as they are transferred via [Git LFS](https://git-lfs.github.io/).
+* Git now works around [an issue with `vi` and incorrect line breaks in the Windows Terminal](https://github.com/microsoft/terminal/issues/9359).
+
+## Changes since Git for Windows v2.33.0(2) (August 24th 2021)
+
+### New Features
+
+* Comes with [Git v2.33.1](https://github.com/git/git/blob/v2.33.1/Documentation/RelNotes/2.33.1.txt).
+* Comes with [OpenSSL v1.1.1l](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* The included `git svn` now uses [subversion v1.14.1](https://svn.apache.org/repos/asf/subversion/tags/1.14.1/CHANGES) internally.
+* [Git Credential Manager for Windows](https://github.com/microsoft/Git-Credential-Manager-for-Windows) (which was superseded by [Git Credential Manager Core](https://aka.ms/gcmcore), and was deprecated for a long time now, and no longer succeeds to authenticate with GitHub) is [no longer included in Git for Windows](https://github.com/git-for-windows/build-extra/pull/377).
+* Comes with [cURL v7.79.1](https://curl.haxx.se/changes.html#7_79_1).
+* Comes with [OpenSSH v8.8p1](https://www.openssh.com/txt/release-8.8).
+* Comes with [Git LFS v3.0.1](https://github.com/git-lfs/git-lfs/releases/tag/v3.0.1).
+* The built-in filesystem watcher ("FSMonitor") [has been updated to the latest version](https://github.com/git-for-windows/git/pull/3447).
+* Comes with [Git Credential Manager Core v2.0.567.18224](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.567).
+
+### Bug Fixes
+
+* Wordpad [can be configured as Git's preferred editor](https://github.com/git-for-windows/build-extra/pull/378) again.
+* A bug where Git's garbage collection during a `git pull` failed to delete obsolete files [was fixed](https://github.com/git-for-windows/git/pull/3415).
+* The `git svn` command, [which was broken in Git for Windows v2.33.0(2)](https://github.com/git-for-windows/git/issues/3392), has been fixed.
+* The password prompt when cloning via SSH [works again](https://github.com/git-for-windows/build-extra/pull/381).
+* The MSYS2 runtime [no longer complains about FAST_CWD on Windows/ARM64](https://github.com/git-for-windows/msys2-runtime/pull/33).
+* When VS Code is configured as editor, [it no longer needs the window to be closed, just the tab](https://github.com/git-for-windows/git/issues/3452).
+* The 32-bit versions of Git for Windows included outdated versions of `ca-certificates` and `less`, [which has been rectified](https://github.com/git-for-windows/MSYS2-packages/pull/49).
+
+## Changes since Git for Windows v2.33.0 (August 17th 2021)
+
+### New Features
+
+* Comes with [cURL v7.78.0](https://curl.haxx.se/changes.html#7_78_0).
+* Comes with [OpenSSH v8.7p1](https://www.openssh.com/txt/release-8.7).
+
+### Bug Fixes
+
+* A [bug](https://github.com/git-for-windows/git/issues/3368) affecting older Windows versions that caused the installer to show the error message "Could not call proc" [was fixed](https://github.com/git-for-windows/build-extra/pull/374).
+
+## Changes since Git for Windows v2.32.0(2) (July 6th 2021)
+
+### New Features
+
+* Comes with [Git v2.33.0](https://github.com/git/git/blob/v2.33.0/Documentation/RelNotes/2.33.0.txt).
+* Comes with [Perl v5.34.0](http://search.cpan.org/dist/perl-5.34.0/pod/perldelta.pod) (and some updated Perl modules).
+* It is [now possible](https://github.com/git-for-windows/build-extra/pull/367) to ask Git for Windows to use an SSH found on the `PATH` instead of its bundled OpenSSH executable.
+* Comes with [Git Credential Manager Core v2.0.498.54650](https://github.com/microsoft/git-credential-manager-core/releases/tag/v2.0.498).
+* The experimental FSMonitor patches were replaced with [a newer version](https://github.com/git-for-windows/git/pull/3350).
+* Comes with [GNU Privacy Guard v2.2.29](https://lists.gnupg.org/pipermail/gnupg-announce/2021q3/000461.html).
+
+### Bug Fixes
+
+* The installer no longer [shows an error dialog](https://github.com/git-for-windows/git/issues/3312) when upgrading while the Windows Terminal Profile option is checked.
+* Interaction with [the `git repo` tool](https://gerrit.googlesource.com/git-repo/) was [improved](https://github.com/git-for-windows/git/pull/3328).
+* The version of GNU Privacy Guard (GPG) bundled in Git for Windows [did not work in 64-bit setups](https://github.com/git-for-windows/git/issues/2888), which [was fixed](https://github.com/git-for-windows/MSYS2-packages/pull/46).
+
 ## Changes since Git for Windows v2.32.0 (June 7th 2021)
 
 ### New Features
@@ -53,6 +175,10 @@ This package contains software from a number of other projects including Bash, z
 
 * The built-in file system watcher could hang in some scenarios. [This was fixed](https://github.com/git-for-windows/git/pull/3263).
 * Remote HTTPS repositories [could not be accessed from within portable Git installed into a network share](https://github.com/git-for-windows/git/issues/3266). This [has been fixed](https://github.com/git-for-windows/MINGW-packages/pull/51).
+* When scrolling in the pager (e.g. in the output of `git log`), [lines were duplicated by mistake](https://github.com/git-for-windows/git/issues/3235). This was fixed.
+* The `git subtree` command was [completely broken in the previous release](https://github.com/git-for-windows/git/issues/3260), and was fixed.
+* A bug was fixed where remote operations [appeared to hang](https://github.com/git-for-windows/git/issues/3268) (but were waiting for user feedback on a hidden Console).
+* A bug was fixed where the experimental built-in file system watcher had [a problem with worktrees whose paths had non-ASCII characters](https://github.com/git-for-windows/git/issues/3262).
 
 ## Changes since Git for Windows v2.31.1 (March 27th 2021)
 

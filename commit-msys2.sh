@@ -122,8 +122,18 @@ init)
 	 git commit -s -m "Pacman package index") ||
 	die "Could not conclude initial commits"
 	;;
-add)
+add|remove)
+	action=$1 &&
 	shift &&
+	if test add = "$action"
+	then
+		pacman_option=-Syy &&
+		commit_title_prefix="Add"
+	else
+		pacman_option=-R &&
+		commit_title_prefix="Remove"
+	fi &&
+
 	(cd "$root" &&
 	 if test false != "$(git config core.autocrlf)"
 	 then
@@ -135,12 +145,12 @@ add)
 		mingw-w64-*) echo mingw-w64-$(uname -m)${package#mingw-w64};;
 		*) echo "$package";;
 		esac; done)" &&
-	 pacman -Syy --noconfirm $packages &&
+	 pacman $pacman_option --noconfirm $packages &&
 	 git add -A . ||
-	 die "Could not add $*"
+	 die "Could not $action $*"
 
 	 git diff-index --exit-code --cached HEAD ||
-	 git commit -q -s -m "Add $*") ||
+	 git commit -q -s -m "$commit_title_prefix $*") ||
 	die "Could not commit changes"
 	;;
 summary)

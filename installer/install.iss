@@ -84,6 +84,7 @@ PrivilegesRequired=lowest
 #else
 PrivilegesRequired=none
 #endif
+UninstallDisplayName={#APP_NAME}
 UninstallDisplayIcon={app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 #ifndef COMPILE_FROM_IDE
 VersionInfoVersion={#FILE_VERSION}
@@ -290,6 +291,7 @@ Type: files; Name: {localappdata}\Microsoft\Windows Terminal\Fragments\Git\git-b
 #include "environment.inc.iss"
 #include "putty.inc.iss"
 #include "modules.inc.iss"
+#include "exec-with-capture.inc.iss"
 
 function ParamIsSet(Key:String):Boolean;
 begin
@@ -357,8 +359,9 @@ const
     DB_Manual         = 2;
 
     // Git SSH options.
-    GS_OpenSSH        = 1;
-    GS_Plink          = 2;
+    GS_OpenSSH         = 1;
+    GS_Plink           = 2;
+    GS_ExternalOpenSSH = 3;
 
     // Git HTTPS (cURL) options.
     GC_OpenSSL        = 1;
@@ -380,8 +383,7 @@ const
 
     // Git Credential Manager settings.
     GCM_None          = 1;
-    GCM_Classic       = 2;
-    GCM_Core          = 3;
+    GCM               = 2;
 
     // Extra options
     GP_FSCache        = 1;
@@ -467,8 +469,8 @@ var
     RdbPath:array[GP_BashOnly..GP_CmdTools] of TRadioButton;
 
     // Wizard page and variables for the SSH options.
-    PuTTYPage:TWizardPage;
-    RdbSSH:array[GS_OpenSSH..GS_Plink] of TRadioButton;
+    SSHChoicePage:TWizardPage;
+    RdbSSH:array[GS_OpenSSH..GS_ExternalOpenSSH] of TRadioButton;
     EdtPlink:TEdit;
     TortoisePlink:TCheckBox;
 
@@ -490,7 +492,7 @@ var
 
     // Wizard page and variables for the credential manager options.
     GitCredentialManagerPage:TWizardPage;
-    RdbGitCredentialManager:array[GCM_None..GCM_Core] of TRadioButton;
+    RdbGitCredentialManager:array[GCM_None..GCM] of TRadioButton;
 
     // Wizard page and variables for the extra options.
     ExtraOptionsPage:TWizardPage;
@@ -583,6 +585,7 @@ var
 function ShutdownFSMonitorDaemons():Boolean;
 var
     FindRec:TFindRec;
+    ExitCode:DWORD;
     Path,Str:String;
     Len,i:Integer;
 begin
@@ -604,13 +607,11 @@ begin
             // Find out which form to use.
             if (BuiltinFSMonitorStopOption='') then begin
                 BuiltinFSMonitorStopOption:='(huh?)';
-                Path:=ExpandConstant('{tmp}\fsmonitor--help.err');
-                if not Exec(ExpandConstant('{sys}\cmd.exe'),'/D /C ""'+AppDir+'\cmd\git.exe" fsmonitor--daemon -h 2>"'+Path+'""','',SW_HIDE,ewWaitUntilTerminated,i) or (i<>129) then begin
+                if not ExecWithCapture('"'+AppDir+'\cmd\git.exe" fsmonitor--daemon -h',Str,Str,ExitCode) or (ExitCode<>129) then begin
                     if (i<>1) and (i<>127) then // Suppress message if `git.exe` was not found, or if it does not know about the built-in FSMonitor
-                        LogError('Could not get FSMonitor help:'+#13+ReadFileAsString(Path)+IntToStr(i));
+                        LogError('Could not get FSMonitor help (exit code '+IntToStr(ExitCode)+'):'+#13+Str);
                     Exit;
                 end else begin
-                    Str:=ReadFileAsString(Path);
                     i:=Pos('stop'+#10,Str);
                     if (i=0) then begin
                         LogError('Could not determine stop option from:'+#13+Str);
@@ -633,6 +634,14 @@ begin
             Path:=Copy(FindRec.Name,1,Len);
             if (Length(Path)>2) and (Path[2]='_') then
                 Path[2]:=':';
+
+            // Now we have the gitdir, but we need to get to the worktree
+            if FileExists(Path+'\gitdir') then begin
+                Path:=ReadFileAsString(Path+'\gitdir');
+                StringChangeEx(Path,'/','\',True);
+            end;
+            if WildcardMatch(Path,'*\.git') then
+                Path:=Copy(Path,1,Length(Path)-5);
 
             if ExecSilently('"'+AppDir+'\cmd\git.exe" -C "'+Path+'" fsmonitor--daemon '+BuiltinFSMonitorStopOption,'fsmonitor-stop','Could not stop FSMonitor daemon in '+Path) then
                 Result:=True;
@@ -745,25 +754,21 @@ end;
 
 function GitSystemConfigSet(Key,Value:String):Boolean;
 var
-    i:Integer;
-    OutPath,ErrPath:String;
+    ExitCode:DWORD;
+    StdOut,StdErr:String;
 begin
-    OutPath:=ExpandConstant('{tmp}\config-set.out');
-    ErrPath:=ExpandConstant('{tmp}\config-set.err');
     if (Value=#0) then begin
-        if Exec(ExpandConstant('{cmd}'),'/D /C .\{#MINGW_BITNESS}\bin\git.exe config --system --unset '+Key+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) And ((i=0) Or (i=5)) then
+        if ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config --system --unset-all '+Key,StdOut,StdErr,ExitCode) And ((ExitCode=0) Or (ExitCode=5)) then
             // exit code 5 means it was already unset, so that's okay
             Result:=True
         else begin
-            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(i)+#13+#10+ReadFileAsString(OutPath)+#13+#10+'stderr:'+#13+#10+ReadFileAsString(ErrPath));
+            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(ExitCode)+#13+#10+StdOut+#13+#10+'stderr:'+#13+#10+StdErr);
             Result:=False
         end
-    end else if Exec(ExpandConstant('{cmd}'),'/D /C .\{#MINGW_BITNESS}\bin\git.exe config --system '+ShellQuote(Key)+' '+ShellQuote(Value)+' >'+#34+OutPath+#34+' 2>'+#34+ErrPath+#34,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) And (i=0) then
+    end else if ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config --system --replace-all '+ShellQuote(Key)+' '+ShellQuote(Value),StdOut,StdErr,ExitCode) And (ExitCode=0) then
         Result:=True
     else begin
-        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(i)+#13+#10+ReadFileAsString(OutPath)+#13+#10+'stderr:'+#13+#10+ReadFileAsString(ErrPath));
+        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(ExitCode)+#13+#10+StdOut+#13+#10+'stderr:'+#13+#10+StdErr);
         Result:=False;
     end;
 end;
@@ -781,10 +786,17 @@ begin
     end;
 end;
 
+function EndsWith(S:String;T:String):Boolean;
+begin
+    if (Length(S)>Length(T)) then
+        Delete(S,1,Length(S)-Length(T));
+    Result:=(CompareText(S,T)=0)
+end;
+
 function GetDefaultsFromGitConfig(WhichOne:String):Boolean;
 var
-    ExtraOptions,TmpFile,Key,Value:String;
-    FileContents:AnsiString;
+    ExtraOptions,StdOut,StdErr,Key,Value:String;
+    ExitCode:DWORD;
     Values:TArrayOfString;
     c,i,j,k:Integer;
 begin
@@ -799,39 +811,22 @@ begin
         end
     end;
 
-    TmpFile:=ExpandConstant('{tmp}\git-config-get.txt');
-    if not Exec(ExpandConstant('{cmd}'),'/D /C .\{#MINGW_BITNESS}\bin\git.exe config -l -z '+ExtraOptions+' >'+#34+TmpFile+#34,
-                AppDir,SW_HIDE,ewWaitUntilTerminated,i) then begin
-        if FileExists(AppDir+ExpandConstant('\{#MINGW_BITNESS}\bin\git.exe')) then
-            LogError('Unable to get system config')
-        else
-            // The previous directory went poof
-            SaveStringToFile(TmpFile,'',False)
-    end;
-
-    if not LoadStringFromFile(TmpFile,FileContents) then begin
-        LogError('Could not read '+#34+TmpFile+#34);
-        Result:=False;
-        Exit;
-    end;
-
-    if not DeleteFile(TmpFile) then begin
-        LogError('Could not read '+#34+TmpFile+#34);
-        Result:=False;
-        Exit;
+    if not ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config -l -z '+ExtraOptions,StdOut,StdErr,ExitCode) then begin
+        if FileExists(AppDir+'\{#MINGW_BITNESS}\bin\git.exe') then
+            LogError('Unable to get system config (exit code '+IntToStr(ExitCode)+'):'+#13+#10+StdErr);
     end;
 
     // Split NUL-delimited key/value pairs, extract LF that denotes end of key
-    Value:=FileContents;
+    Value:=StdOut;
     i:=1; j:=i; k:=i;
-    while (j<=Length(FileContents)) do begin
-        c:=Ord(FileContents[j]);
+    while (j<=Length(StdOut)) do begin
+        c:=Ord(StdOut[j]);
         if (c=10) then
             k:=j
         else if (c=0) then begin
             if (i<>k) then begin // Ignore keys without values
-                Key:=Copy(FileContents,i,k-i);
-                Value:=Copy(FileContents,k+1,j-k-1);
+                Key:=Copy(StdOut,i,k-i);
+                Value:=Copy(StdOut,k+1,j-k-1);
                 case Key of
                     'http.sslbackend':
                         case Value of
@@ -852,8 +847,14 @@ begin
                     'credential.helper':
                         case Value of
                             'manager': RecordInferredDefault('Use Credential Manager','Enabled');
-                            'manager-core': RecordInferredDefault('Use Credential Manager','Core');
-                        else RecordInferredDefault('Use Credential Manager','Disabled');
+                            'manager-core': RecordInferredDefault('Use Credential Manager','Enabled');
+                        else
+                            begin
+                                if EndsWith(Value,'manager-core') or EndsWith(Value,'manager') then
+                                    RecordInferredDefault('Use Credential Manager','Enabled')
+                                else
+                                    RecordInferredDefault('Use Credential Manager','Disabled');
+                            end;
                         end;
                     'core.symlinks':
                         case Value of
@@ -988,15 +989,15 @@ var
 
 function GetPreviousGitVersion():String;
 var
-    Path:String;
-    i:Integer;
+    Path,StdOut,StdErr:String;
+    ExitCode:DWORD;
 begin
     if not PreviousGitVersionInitialized then begin
         PreviousGitVersionInitialized:=True;
         if (RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','InstallPath',Path))
-                and (Exec(ExpandConstant('{cmd}'),'/d /c ""'+Path+'\cmd\git.exe" version >"'+ExpandConstant('{tmp}')+'\previous.version""','',SW_HIDE,ewWaitUntilTerminated,i))
-                and (i=0) then begin
-            PreviousGitVersion:=ReadFileAsString(ExpandConstant('{tmp}\previous.version'));
+                and (ExecWithCapture('"'+Path+'\cmd\git.exe" version',StdOut,StdErr,ExitCode))
+                and (ExitCode=0) then begin
+            PreviousGitVersion:=Trim(StdOut);
         end;
     end;
     Result:=PreviousGitVersion;
@@ -1008,7 +1009,10 @@ begin
 #ifdef GIT_VERSION
     if Result or (CountDots(CurrentVersion)>3) or (CountDots(PreviousGitForWindowsVersion)>3) then begin
         // maybe the previous version was a prerelease (prereleases have five numbers: v2.24.0-rc1.windows.1 reduces to '2.24.0.1.1')?
-        CurrentVersion:='{#GIT_VERSION}';
+        if CurrentVersion=ExpandConstant('{#APP_VERSION}') then
+            CurrentVersion:='{#GIT_VERSION}'
+        else
+            CurrentVersion:='git version '+CurrentVersion+'.windows.1';
         Result:=(VersionCompare(CurrentVersion,GetPreviousGitVersion())<0);
     end;
 #endif
@@ -1113,10 +1117,12 @@ begin
         end;
     end;
 
+#ifdef GIT_VERSION
     // Warn about switching away from VFS-enabled Git
     if Result and (Pos('.vfs.','{#GIT_VERSION}')=0) and (Pos('.vfs.',GetPreviousGitVersion())>0) then
         if SuppressibleMsgBox('The VFS for Git-aware flavor of Git for Windows is currently installed.'+#13+'Switching away from that flavor might break your Scalar/VFS for Git enlistments.'+#13+'Do you still want to switch?',mbConfirmation,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO then
             Result:=False;
+#endif
 #endif
 end;
 
@@ -1155,13 +1161,14 @@ begin
         i:=InferredDefaultKeys.IndexOf(Key); // cannot use .Find because the list is not sorted
         if (i>=0) then
             Result:=InferredDefaultValues[i]
-        else
+        else begin
             // Restore the settings chosen during a previous install.
             Result:=GetPreviousData(Key,Default);
             // Check to see if this result was the default, or was previously set.
             // If it was the default, the user has not seen this option yet.
             if GetPreviousData(Key,'z'+Result)<>Result then
                 AddToSet(CustomPagesWithUnseenOptions,CurrentCustomPageID)
+        end
     end;
 end;
 
@@ -1757,6 +1764,17 @@ begin
     end;
 end;
 
+// Extract <path> from "<path>" "%1"
+function ExtractCommandPath(Command:String):String;
+begin
+    Result:=Copy(Command, 2, Length(Command) - 7);
+end;
+
+function ExtractCodeCLIPath(Command:String;Suffix:String):String;
+begin
+    Result:=ExtractFilePath(ExtractCommandPath(Command)) + Suffix;
+end;
+
 procedure QueryUninstallValues; forward;
 
 procedure InitializeWizard;
@@ -1846,20 +1864,15 @@ begin
 
     // Remove `" %1"` from end and unqote the string.
     if (EditorAvailable[GE_VisualStudioCode]) then
-        // Extract <path> from "<path>" "%1"
-        VisualStudioCodePath:=Copy(VisualStudioCodePath, 2, Length(VisualStudioCodePath) - 7);
+        VisualStudioCodePath:=ExtractCodeCLIPath(VisualStudioCodePath, 'bin\code');
     if (EditorAvailable[GE_VisualStudioCodeInsiders]) then
-        // Extract <path> from "<path>" "%1"
-        VisualStudioCodeInsidersPath:=Copy(VisualStudioCodeInsidersPath, 2, Length(VisualStudioCodeInsidersPath) - 7);
+        VisualStudioCodeInsidersPath:=ExtractCodeCLIPath(VisualStudioCodeInsidersPath, 'bin\code-insiders');
     if (EditorAvailable[GE_SublimeText]) and SublimeTextUserInstallation then
-        // Extract <path> from "<path>" "%1"
-        SublimeTextPath:=Copy(SublimeTextPath, 2, Length(SublimeTextPath) - 7);
+        SublimeTextPath:=ExtractCommandPath(SublimeTextPath);
     if (EditorAvailable[GE_Atom]) then
-        // Extract <path> from "<path>" "%1"
-        AtomPath:=Copy(AtomPath, 2, Length(AtomPath) - 7);
+        AtomPath:=ExtractCommandPath(AtomPath);
     if (EditorAvailable[GE_VSCodium]) then
-        // Extract <path> from "<path>" "%1"
-        VSCodiumPath:=Copy(VSCodiumPath, 2, Length(VSCodiumPath) - 7);
+        VSCodiumPath:=ExtractCodeCLIPath(VSCodiumPath, 'bin\codium');
 
     // 1st choice
     Top:=TopOfLabels;
@@ -1921,13 +1934,13 @@ begin
     // 9th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Notepad as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Notepad is a simple GUI editor that comes with windows.',Top,Left,LblEditor[GE_Notepad],False);
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Notepad is a simple GUI editor that comes with Windows.',Top,Left,LblEditor[GE_Notepad],False);
     EditorAvailable[GE_Notepad]:=True;
 
     // 10th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Wordpad as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Wordpad is a basic word processor that comes with windows.'+#13+'It can also be used as a text editor.',Top,Left,LblEditor[GE_Wordpad],False);
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Wordpad is a basic word processor that comes with Windows.'+#13+'It can also be used as a text editor.',Top,Left,LblEditor[GE_Wordpad],False);
     EditorAvailable[GE_Wordpad]:=True;
 
     // Custom choice
@@ -2078,89 +2091,100 @@ begin
     end;
 
     (*
-     * Create a custom page for using (Tortoise)Plink instead of OpenSSH
-     * if at least one PuTTY session is found in the Registry.
+     * Create a custom page for using (Tortoise)Plink or a self-supplied OpenSSH instead of bundled OpenSSH
+     * if at least one PuTTY session is found in the Registry or an OpenSSH binary is found on the PATH.
      *)
 
-    if RegGetSubkeyNames(HKEY_CURRENT_USER,'Software\SimonTatham\PuTTY\Sessions',PuTTYSessions) and (GetArrayLength(PuTTYSessions)>0) then begin
-        PuTTYPage:=CreatePage(PrevPageID,'Choosing the SSH executable','Which Secure Shell client program would you like Git to use?',TabOrder,Top,Left);
+    if (RegGetSubkeyNames(HKEY_CURRENT_USER,'Software\SimonTatham\PuTTY\Sessions',PuTTYSessions) and (GetArrayLength(PuTTYSessions)>0)) or
+       (FileSearch('ssh.exe', GetEnv('PATH')) <> '') then begin
+        SSHChoicePage:=CreatePage(PrevPageID,'Choosing the SSH executable','Which Secure Shell client program would you like Git to use?',TabOrder,Top,Left);
 
         // 1st choice
-        RdbSSH[GS_OpenSSH]:=CreateRadioButton(PuTTYPage,'Use OpenSSH','This uses ssh.exe that comes with Git. The GIT_SSH and SVN_SSH'+#13+'environment variables will not be modified.',TabOrder,Top,Left);
+        RdbSSH[GS_OpenSSH]:=CreateRadioButton(SSHChoicePage,'Use bundled OpenSSH','This uses ssh.exe that comes with Git.',TabOrder,Top,Left);
 
         // 2nd choice
-        RdbSSH[GS_Plink]:=CreateRadioButton(PuTTYPage,'Use (Tortoise)Plink',
-            'PuTTY sessions were found in your Registry. You may specify the path'+#13+
-            'to an existing copy of (Tortoise)Plink.exe from the TortoiseGit/SVN/CVS'+#13+
-            'or PuTTY applications. "ssh.variant" will be set in the GIT configuration. '+#13+
-            'The GIT_SSH and SVN_SSH environment variables will be adjusted to point '+#13+
-            'to the following executable:',TabOrder,Top,Left);
-        EdtPlink:=TEdit.Create(PuTTYPage);
-        EdtPlink.Left:=ScaleX(Left+24);
-        EdtPlink.Top:=ScaleY(Top);
-        with EdtPlink do begin
-            Parent:=PuTTYPage.Surface;
+        if (GetArrayLength(PuTTYSessions)=0) then begin
+            RdbSSH[GS_Plink]:=TRadioButton.Create(SSHChoicePage);
+        end else begin
+            RdbSSH[GS_Plink]:=CreateRadioButton(SSHChoicePage,'Use (Tortoise)Plink','To use PuTTY, specify the path to an existing copy of (Tortoise)Plink.exe:',TabOrder,Top,Left);
+            EdtPlink:=TEdit.Create(SSHChoicePage);
+            EdtPlink.Left:=ScaleX(Left+24);
+            EdtPlink.Top:=ScaleY(Top);
+            with EdtPlink do begin
+                Parent:=SSHChoicePage.Surface;
 
-            EnvSSH:=GetEnvStrings('GIT_SSH',IsAdminLoggedOn);
-            if (GetArrayLength(EnvSSH)=1) and IsPlinkExecutable(EnvSSH[0]) then begin
-                Text:=EnvSSH[0];
-            end;
-            if not FileExists(Text) then begin
-                Text:=GetPreviousData('Plink Path','');
-            end;
-            if not FileExists(Text) then begin
-                Text:=GuessPlinkExecutable;
-            end;
-            if not FileExists(Text) then begin
-                Text:='';
-            end;
+                EnvSSH:=GetEnvStrings('GIT_SSH',IsAdminLoggedOn);
+                if (GetArrayLength(EnvSSH)=1) and IsPlinkExecutable(EnvSSH[0]) then begin
+                    Text:=EnvSSH[0];
+                end;
+                if not FileExists(Text) then begin
+                    Text:=GetPreviousData('Plink Path','');
+                end;
+                if not FileExists(Text) then begin
+                    Text:=GuessPlinkExecutable;
+                end;
+                if not FileExists(Text) then begin
+                    Text:='';
+                end;
 
-            Width:=ScaleX(316);
-            Height:=ScaleY(13);
-            TabOrder:=TabOrder;
-        end;
-        TabOrder:=TabOrder+1;
-        BtnPlink:=TButton.Create(PuTTYPage);
-        BtnPlink.Left:=ScaleX(Left+344);
-        BtnPlink.Top:=ScaleY(Top);
-        with BtnPlink do begin
-            Parent:=PuTTYPage.Surface;
-            Caption:='...';
-            OnClick:=@BrowseForPuTTYFolder;
-            Width:=ScaleX(21);
-            Height:=ScaleY(21);
-            TabOrder:=TabOrder;
-        end;
-        TabOrder:=TabOrder+1;
-        Top:=Top+29;
+                Width:=ScaleX(316);
+                Height:=ScaleY(13);
+                TabOrder:=TabOrder;
+            end;
+            TabOrder:=TabOrder+1;
+            BtnPlink:=TButton.Create(SSHChoicePage);
+            BtnPlink.Left:=ScaleX(Left+344);
+            BtnPlink.Top:=ScaleY(Top);
+            with BtnPlink do begin
+                Parent:=SSHChoicePage.Surface;
+                Caption:='...';
+                OnClick:=@BrowseForPuTTYFolder;
+                Width:=ScaleX(21);
+                Height:=ScaleY(21);
+                TabOrder:=TabOrder;
+            end;
+            TabOrder:=TabOrder+1;
+            Top:=Top+29;
 
-        // Add checkbox for tortoise plink
-        TortoisePlink:=TCheckBox.Create(PuTTYPage);
-        TortoisePlink.Left:=ScaleX(Left+24);
-        TortoisePlink.Top:=ScaleY(Top);
-        with TortoisePlink do begin
-            Caption:='Set ssh.variant for Tortoise Plink';
-            Parent:=PuTTYPage.Surface;
-            Width:=ScaleX(405);
-            Height:=ScaleY(17);
-            TabOrder:=TabOrder;
+            // Add checkbox for tortoise plink
+            TortoisePlink:=TCheckBox.Create(SSHChoicePage);
+            TortoisePlink.Left:=ScaleX(Left+24);
+            TortoisePlink.Top:=ScaleY(Top);
+            with TortoisePlink do begin
+                Caption:='Set ssh.variant for Tortoise Plink';
+                Parent:=SSHChoicePage.Surface;
+                Width:=ScaleX(405);
+                Height:=ScaleY(17);
+                TabOrder:=TabOrder;
+            end;
+            TabOrder:=TabOrder+1;
+            Top:=Top+17;
         end;
-        TabOrder:=TabOrder+1;
-        Top:=Top+17;
+
+        // 3rd choice
+        RdbSSH[GS_ExternalOpenSSH]:=CreateRadioButton(SSHChoicePage,'Use external OpenSSH',
+            '<RED>NEW!</RED> This uses an external ssh.exe. Git will not install its own OpenSSH'+#13+
+            '(and related) binaries but use them as found on the PATH.',
+            TabOrder,Top,Left);
 
         // Restore the setting chosen during a previous install.
         case ReplayChoice('SSH Option','OpenSSH') of
             'OpenSSH': RdbSSH[GS_OpenSSH].Checked:=True;
+            'ExternalOpenSSH': RdbSSH[GS_ExternalOpenSSH].Checked:=True;
             'Plink': RdbSSH[GS_Plink].Checked:=True;
         else
             RdbSSH[GS_OpenSSH].Checked:=True;
         end;
 
+        // Even if the user saw the Tortoise options before v2.33.0, the external SSH choice was not seen yet
+        if IsUpgrade('2.33.0') then
+            AddToSet(CustomPagesWithUnseenOptions,SSHChoicePage.ID);
+
         data:=ReplayChoice('Tortoise Option','');
         if (data='true') then
             TortoisePlink.Checked:=True;
     end else begin
-        PuTTYPage:=NIL;
+        SSHChoicePage:=NIL;
     end;
 
     (*
@@ -2257,11 +2281,8 @@ begin
 
     GitCredentialManagerPage:=CreatePage(PrevPageID,'Choose a credential helper','Which credential helper should be configured?',TabOrder,Top,Left);
 
-    // Git Credential Manager Core
-    RdbGitCredentialManager[GCM_Core]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager Core','<RED>(NEW!)</RED> Use the new, <A HREF=https://github.com/microsoft/Git-Credential-Manager-Core>cross-platform version of the Git Credential Manager</A>.'+#13+'See more information about the future of Git Credential Manager <A HREF=https://github.com/microsoft/Git-Credential-Manager-Core/blob/master/docs/faq.md#about-the-project>here</A>.',TabOrder,Top,Left);
-
-    // Git Credential Manager for Windows
-    RdbGitCredentialManager[GCM_Classic]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager','(DEPRECATED) The <A HREF=https://github.com/Microsoft/Git-Credential-Manager-for-Windows>Git Credential Manager for Windows</A> handles credentials e.g.'+#13+'for Azure DevOps and GitHub (requires .NET framework v4.5.1 or later).',TabOrder,Top,Left);
+    // Git Credential Manager
+    RdbGitCredentialManager[GCM]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager','Use the <A HREF=https://github.com/GitCredentialManager/git-credential-manager>cross-platform Git Credential Manager</A>.'+#13+'See more information about the future of Git Credential Manager <A HREF=https://github.com/GitCredentialManager/git-credential-manager/blob/HEAD/docs/faq.md#about-the-project>here</A>.',TabOrder,Top,Left);
 
     // No credential helper
     RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.',TabOrder,Top,Left);
@@ -2269,22 +2290,15 @@ begin
     // Restore the settings chosen during a previous install, if .NET 4.5.1
     // or later is available.
     if DetectNetFxVersion()<378675 then begin
-        RdbGitCredentialManager[GCM_Classic].Checked:=False;
-        RdbGitCredentialManager[GCM_Classic].Enabled:=False;
-        RdbGitCredentialManager[GCM_Core].Checked:=False;
-        RdbGitCredentialManager[GCM_Core].Enabled:=False;
+        RdbGitCredentialManager[GCM].Checked:=False;
+        RdbGitCredentialManager[GCM].Enabled:=False;
     end else begin
-        case ReplayChoice('Use Credential Manager','Core') of
+        case ReplayChoice('Use Credential Manager','Enabled') of
             'Disabled': RdbGitCredentialManager[GCM_None].Checked:=True;
-            'Enabled': RdbGitCredentialManager[GCM_Classic].Checked:=True;
-            'Core': RdbGitCredentialManager[GCM_Core].Checked:=True;
+            'Enabled': RdbGitCredentialManager[GCM].Checked:=True;
+            'Core': RdbGitCredentialManager[GCM].Checked:=True;
         else
-            RdbGitCredentialManager[GCM_Core].Checked:=True;
-        end;
-        // Auto-upgrade GCM to GCM Core in version v2.29.0
-        if RdbGitCredentialManager[GCM_Classic].Checked and ((PreviousGitForWindowsVersion='') or IsUpgrade('2.29.0')) then begin
-            RdbGitCredentialManager[GCM_Core].Checked:=True;
-            AddToSet(CustomPagesWithUnseenOptions,GitCredentialManagerPage.ID);
+            RdbGitCredentialManager[GCM].Checked:=True;
         end;
     end;
 
@@ -2413,8 +2427,8 @@ end;
 
 function ShouldSkipPage(PageID:Integer):Boolean;
 var
-    Msg,Cmd,LogPath:String;
-    Res:Longint;
+    Msg,Cmd,StdOut,StdErr:String;
+    Res:DWORD;
 begin
     if (ProcessesPage<>NIL) and (PageID=ProcessesPage.ID) then begin
         // This page is only reached forward (by pressing "Next", never by pressing "Back").
@@ -2423,10 +2437,9 @@ begin
             if DirExists(AppDir) then begin
                 if not FileExists(ExpandConstant('{tmp}\blocked-file-util.exe')) then
                     ExtractTemporaryFile('blocked-file-util.exe');
-                LogPath:=ExpandConstant('{tmp}\blocking-pids.log');
-                Cmd:='/D /C ""'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'" 2>"'+LogPath+'""';
-                if not Exec(ExpandConstant('{sys}\cmd.exe'),Cmd,'',SW_HIDE,ewWaitUntilTerminated,Res) or (Res<>0) then begin
-                    Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+ReadFileAsString(LogPath);
+                Cmd:='"'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'"';
+                if not ExecWithCapture(Cmd,StdOut,StdErr,Res) or (Res<>0) then begin
+                    Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+StdErr;
                     if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
                         LogError(Msg)
                     else
@@ -2512,8 +2525,9 @@ begin
             Wizardform.NextButton.Enabled:=False;
             Exit;
         end;
-    end else if (PuTTYPage<>NIL) and (CurPageID=PuTTYPage.ID) then begin
+    end else if (SSHChoicePage<>NIL) and (CurPageID=SSHChoicePage.ID) then begin
         Result:=RdbSSH[GS_OpenSSH].Checked or
+            (RdbSSH[GS_ExternalOpenSSH].Checked and (FileSearch('ssh.exe', GetEnv('PATH')) <> '')) or
             (RdbSSH[GS_Plink].Checked and FileExists(EdtPlink.Text));
         if not Result then begin
             SuppressibleMsgBox('{#PLINK_PATH_ERROR_MSG}',mbError,MB_OK,IDOK);
@@ -2574,7 +2588,7 @@ begin
 
         if not Result then begin
             Result:=(SuppressibleMsgBox(
-                'If you continue without closing the listed applications they will be closed and restarted automatically.' + #13 + #13 +
+                'If you continue without closing the listed applications they will be terminated/restarted automatically.' + #13 + #13 +
                 'Are you sure you want to continue?'
             ,   mbConfirmation
             ,   MB_YESNO
@@ -2652,7 +2666,8 @@ end;
 
 procedure CleanupWhenUpgrading;
 var
-    ErrorCode:Integer;
+    StdOut,StdErr:String;
+    ErrorCode:DWORD;
 begin
     if UninstallAppPath<>'' then begin
         // Save a copy of the system config so that we can copy it back later
@@ -2666,9 +2681,9 @@ begin
     end;
 
     if UninstallString<>'' then begin
-        // Using ShellExec() here, in case privilege elevation is required
-        if not ShellExec('',UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES','',SW_HIDE,ewWaitUntilTerminated,ErrorCode) then
-            LogError('Could not uninstall previous version. Trying to continue anyway.');
+        WizardForm.StatusLabel.Caption:='Removing previous Git version ('+PreviousGitForWindowsVersion+')';
+        if not ExecWithCapture(UninstallString+' /VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES',StdOut,StdErr,ErrorCode) then
+            LogError('Could not uninstall previous version (stderr: '+StdErr+'). Trying to continue anyway.');
     end;
 end;
 
@@ -2775,12 +2790,18 @@ end;
 procedure InstallWindowsTerminalFragment;
 var
     Res:Longint;
-    AppPath,JSONPath:String;
+    AppPath,JSONDirectory,JSONPath:String;
 begin
     if IsAdminInstallMode() then
-        JSONPath:=ExpandConstant('{commonappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json')
+        JSONDirectory:=ExpandConstant('{commonappdata}\Microsoft\Windows Terminal\Fragments\Git')
     else
-        JSONPath:=ExpandConstant('{localappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json');
+        JSONDirectory:=ExpandConstant('{localappdata}\Microsoft\Windows Terminal\Fragments\Git');
+    if not ForceDirectories(JSONDirectory) then begin
+        LogError('Line {#__LINE__}: Unable to install Windows Terminal Fragment to '+JSONDirectory);
+        Exit;
+    end;
+
+    JSONPath:=JSONDirectory+'\git-bash.json';
     AppPath:=ExpandConstant('{app}');
     StringChangeEx(AppPath, '\', '/', True)
     if not SaveStringToFile(JSONPath,
@@ -2873,8 +2894,8 @@ end;
 
 function UpgradeFromDotNetBasedScalar:Boolean;
 var
-    RegKey,UninstallScalar,ScalarExe,Cmd:String;
-    Res:Longint;
+    RegKey,UninstallScalar,ScalarExe,Cmd,StdOut,StdErr:String;
+    Res:DWORD;
     Enlistments:TArrayOfString;
     i:Integer;
 begin
@@ -2901,17 +2922,19 @@ begin
 
     // Now, register them with the C-based Scalar
     for i:=0 to Length(Enlistments)-1 do begin
-        WizardForm.StatusLabel.Caption:='Registering '+Enlistments[i]+' with Scalar';
-        ExecSilentlyAsOriginalUser('"'+AppDir+'\cmd\scalar.exe" register "'+Enlistments[i]+'"','scalar-register-'+IntToStr(i),ExpandConstant('Line {#__LINE__}: Could not register "'+Enlistments[i]+'" with Scalar'));
+        if DirExists(Enlistments[i]) then begin
+            WizardForm.StatusLabel.Caption:='Registering '+Enlistments[i]+' with Scalar';
+            ExecSilentlyAsOriginalUser('"'+AppDir+'\cmd\scalar.exe" register "'+Enlistments[i]+'"','scalar-register-'+IntToStr(i),ExpandConstant('Line {#__LINE__}: Could not register "'+Enlistments[i]+'" with Scalar'));
+        end;
     end;
 
     // Now uninstall the .NET-based Scalar
     // (leaving C:\ProgramData\Scalar in place, in case
     // the user needs to downgrade again to get unblocked)
     WizardForm.StatusLabel.Caption:='Uninstalling .NET-based Scalar';
-    Cmd:='"'+UninstallScalar+'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES /LOG"';
-    if (not Exec(ExpandConstant('{sys}\cmd.exe'),'/D /C '+Cmd,'',SW_HIDE,ewWaitUntilTerminated,Res)) or (Res<>0) then
-        LogError('Could not uninstall Scalar. Trying to continue anyway.');
+    Cmd:=UninstallScalar+'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES /LOG';
+    if (not ExecWithCapture(Cmd,StdOut,StdErr,Res)) or (Res<>0) then
+        LogError('Could not uninstall Scalar (stderr: '+StdErr+'). Trying to continue anyway.');
 end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
@@ -2954,12 +2977,14 @@ begin
         (See https://github.com/git-for-windows/git/issues/145)
     }
 
+    WizardForm.StatusLabel.Caption:='Hard-linking .dll files';
     MaybeHardlinkDLLFiles();
 
     {
         Create the symlinks in `/dev/`
     }
 
+    WizardForm.StatusLabel.Caption:='Creating some Cygwin symlinks';
     CreateCygwinSymlink(AppDir+'\dev\fd','/proc/self/fd');
     CreateCygwinSymlink(AppDir+'\dev\stdin','/proc/self/fd/0');
     CreateCygwinSymlink(AppDir+'\dev\stdout','/proc/self/fd/1');
@@ -2969,6 +2994,7 @@ begin
         Create the built-ins
     }
 
+    WizardForm.StatusLabel.Caption:='Hard-linking Git'+#39+'s built-ins';
     // Load the built-ins from a text file.
     FileName:=AppDir+'\{#MINGW_BITNESS}\{#APP_BUILTINS}';
     if not FileExists(FileName) then
@@ -3027,13 +3053,17 @@ begin
         Configure some defaults in the system config
     }
 
+#ifdef HAVE_SET_SYSTEM_CONFIG_DEFAULTS
+    WizardForm.StatusLabel.Caption:='Initializing the system config';
     if not SetSystemConfigDefaults() then
         LogError('Unable to set system config defaults');
+#endif
 
     {
         Configure http.sslBackend according to the user's choice.
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring the SSL/TLS backend';
     if RdbCurlVariant[GC_WinSSL].Checked then
         GitSystemConfigSet('http.sslBackend','schannel')
     else
@@ -3050,6 +3080,7 @@ begin
         Adapt core.autocrlf
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring core.autoCRLF';
     if RdbCRLF[GC_LFOnly].checked then begin
         Cmd:='input';
     end else if RdbCRLF[GC_CRLFAlways].checked then begin
@@ -3064,6 +3095,7 @@ begin
     }
 
     if RdbBashTerminal[GB_ConHost].checked then begin
+        WizardForm.StatusLabel.Caption:='Setting up Git Bash to run in a ConHost window';
         OverrideGitBashCommandLine(AppDir+'\git-bash.exe','SHOW_CONSOLE=1 APPEND_QUOTE=1 @@COMSPEC@@ /S /C ""@@EXEPATH@@\usr\bin\bash.exe" --login -i');
     end;
 
@@ -3071,6 +3103,7 @@ begin
         Configure the default `git pull` behavior
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring default `git pull` behavior';
     if RdbGitPullBehavior[GP_GitPullMerge].Checked then begin
         GitSystemConfigSet('pull.rebase','false')
     end else if RdbGitPullBehavior[GP_GitPullRebase].Checked then begin
@@ -3083,13 +3116,11 @@ begin
         Configure credential helper
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring the credential helper';
     if RdbGitCredentialManager[GCM_None].checked then begin
         GitSystemConfigSet('credential.helper',#0);
         GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath',#0);
-    end else if RdbGitCredentialManager[GCM_Classic].checked then begin
-        GitSystemConfigSet('credential.helper','manager');
-        GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath',#0);
-    end else if RdbGitCredentialManager[GCM_Core].checked then begin
+    end else if RdbGitCredentialManager[GCM].checked then begin
         GitSystemConfigSet('credential.helper','manager-core');
         GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath','true');
     end;
@@ -3098,6 +3129,7 @@ begin
         Configure extra options
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring extra options';
     if RdbExtraOptions[GP_FSCache].checked then
         GitSystemConfigSet('core.fscache','true');
 
@@ -3111,6 +3143,7 @@ begin
         Configure experimental options
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring experimental options';
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     if RdbExperimentalOptions[GP_BuiltinDifftool].checked then
         GitSystemConfigSet('difftool.useBuiltin','true')
@@ -3159,11 +3192,12 @@ begin
         "ChangesEnvironment=yes" not happend before the change!
     }
 
+    WizardForm.StatusLabel.Caption:='Modifying the environment';
     // Delete GIT_SSH and SVN_SSH if a previous installation set them (this is required for the GS_OpenSSH case).
     DeleteMarkedEnvString('GIT_SSH');
     DeleteMarkedEnvString('SVN_SSH');
 
-    if (PuTTYPage<>NIL) then begin
+    if (SSHChoicePage<>NIL) then begin
         GitSystemConfigSet('ssh.variant',#0);
         if RdbSSH[GS_Plink].Checked then begin
             SetAndMarkEnvString('GIT_SSH',EdtPlink.Text,True);
@@ -3217,6 +3251,7 @@ begin
         Create shortcuts that need to be created regardless of the "Don't create a Start Menu folder" toggle
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring some shortcuts';
     Cmd:=AppDir+'\git-bash.exe';
     FileName:=AppDir+'\{#MINGW_BITNESS}\share\git\git-for-windows.ico';
 
@@ -3250,6 +3285,7 @@ begin
         Create the Windows Explorer integrations
     }
 
+    WizardForm.StatusLabel.Caption:='Initializing Explorer integration';
     if IsAdminLoggedOn then begin
         RootKey:=HKEY_LOCAL_MACHINE;
     end else begin
@@ -3296,6 +3332,7 @@ begin
     }
 
     if not IsComponentSelected('gitlfs') then begin
+        WizardForm.StatusLabel.Caption:='Removing bundled Git LFS';
         if not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\git-lfs.exe') and not DeleteFile(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-lfs.exe') then
             LogError('Line {#__LINE__}: Unable to delete "git-lfs.exe".');
     end;
@@ -3306,6 +3343,7 @@ begin
 
 #ifdef WITH_SCALAR
     if not IsComponentSelected('scalar') then begin
+        WizardForm.StatusLabel.Caption:='Removing bundled Scalar';
         // Remove scalar.exe from Git for Windows' files
         if not DeleteFile(AppDir+'\cmd\scalar.exe') or
            not DeleteFile(AppDir+'\{#MINGW_BITNESS}\bin\scalar.exe') or
@@ -3323,13 +3361,28 @@ begin
         Create the Windows Terminal integration
     }
 
-    if IsComponentSelected('windowsterminal') then
+    if IsComponentSelected('windowsterminal') then begin
+        WizardForm.StatusLabel.Caption:='Writing Windows Terminal Profile';
         InstallWindowsTerminalFragment();
+    end;
+
+    {
+        Optionally "skip" installing bundled SSH binaries conflicting with external OpenSSH:
+    }
+
+#ifdef DELETE_OPENSSH_FILES
+    if (SSHChoicePage<>NIL) and (RdbSSH[GS_ExternalOpenSSH].Checked) then begin
+        WizardForm.StatusLabel.Caption:='Removing bundled Git OpenSSH binaries';
+        if not DeleteOpenSSHFiles() then
+            LogError('Failed to remove OpenSSH file(s)');
+    end;
+#endif
 
     {
         Set the default Git editor
     }
 
+    WizardForm.StatusLabel.Caption:='Configuring default editor';
     if (CbbEditor.ItemIndex=GE_Nano) then
         GitSystemConfigSet('core.editor','nano.exe')
     else if ((CbbEditor.ItemIndex=GE_NotepadPlusPlus)) and (NotepadPlusPlusPath<>'') then
@@ -3368,13 +3421,16 @@ begin
         Install a scheduled task to try to auto-update Git for Windows
     }
 
-    if IsComponentInstalled('autoupdate') then
+    if IsComponentInstalled('autoupdate') then begin
+        WizardForm.StatusLabel.Caption:='Set up daily up to date check';
         InstallAutoUpdater();
+    end;
 
     {
         Run post-install scripts to set up system environment
     }
 
+    WizardForm.StatusLabel.Caption:='Running post-install script';
     Cmd:=AppDir+'\post-install.bat';
     Log('Line {#__LINE__}: Executing '+Cmd);
     if (not Exec(Cmd,ExpandConstant('>"{tmp}\post-install.log"'),AppDir,SW_HIDE,ewWaitUntilTerminated,i) or (i<>0)) and FileExists(Cmd) then begin
@@ -3394,6 +3450,7 @@ begin
     }
 
     if SessionHandle>0 then try
+        WizardForm.StatusLabel.Caption:='Restarting processes';
         RmRestart(SessionHandle,0,0);
         RmEndSession(SessionHandle);
     except
@@ -3454,8 +3511,10 @@ begin
     // Git SSH options.
     Data:='';
     Data2:='false';
-    if (PuTTYPage=NIL) or RdbSSH[GS_OpenSSH].Checked then begin
+    if (SSHChoicePage=NIL) or RdbSSH[GS_OpenSSH].Checked then begin
         Data:='OpenSSH';
+    end else if RdbSSH[GS_ExternalOpenSSH].Checked then begin
+        Data:='ExternalOpenSSH'
     end else if RdbSSH[GS_Plink].Checked then begin
         Data:='Plink';
         RecordChoice(PreviousDataKey,'Plink Path',EdtPlink.Text);
@@ -3501,10 +3560,8 @@ begin
 
     // Credential helper.
     Data:='Disabled';
-    if RdbGitCredentialManager[GCM_Classic].Checked then begin
+    if RdbGitCredentialManager[GCM].Checked then begin;
         Data:='Enabled';
-    end else if RdbGitCredentialManager[GCM_Core].Checked then begin;
-        Data:='Core';
     end;
     RecordChoice(PreviousDataKey,'Use Credential Manager',Data);
 

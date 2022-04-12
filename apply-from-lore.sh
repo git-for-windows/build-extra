@@ -5,6 +5,23 @@ die () {
 	exit 1
 }
 
+dry_run=
+while test $# -gt 0
+do
+	case "$1" in
+	--dry-run|-n)
+		dry_run=0
+		;;
+	-*)
+		die "Unhandled option: '$1'"
+		;;
+	*)
+		break
+		;;
+	esac
+	shift
+done
+
 for URL
 do
 	case "$URL" in
@@ -23,13 +40,13 @@ do
 		die "No match, or ambiguous GMane ID: $GID"
 		URL="$(sed -n '/^1\./{N;s/.*href="\([^"]*\).*/\1/p}' <"$HTML")"
 		test -n "$URL" || die "Could not extract URL for GMane ID $GID"
-		URL=https://public-inbox.org/git/${URL%/}/raw
+		URL=https://lore.kernel.org/git/${URL%/}/raw
 		;;
 	http*)
 		;; # okay
 	*@*)
 		# Message-ID:
-		URL=https://public-inbox.org/git/"$URL"/raw
+		URL=https://lore.kernel.org/git/"$URL"/raw
 		;;
 	esac
 
@@ -46,7 +63,12 @@ do
 		;;
 	esac
 
-	OUT="$(git rev-parse --git-path public-inbox)"
+	OUT="$(git rev-parse --git-path lore)"
+	if test -n "$dry_run"
+	then
+		$dry_run=$(($dry_run+1))
+		OUT=$OUT.$dry_run
+	fi
 	curl -f -o "$OUT" $URL ||
 	die "Could not retrieve $URL" >&2
 
@@ -66,13 +88,17 @@ do
 					s/^href="\.\.\/\([^"]*\).*/\1/p;q
 				}' <"$OUT2")"
 			test -n "$URL3" || break
-			curl -f https://public-inbox.org/git/${URL3%/}/raw \
+			curl -f https://lore.kernel.org/git/${URL3%/}/raw \
 				>>"$OUT3" ||
 			die "Could not retrieve $URL3" >&2
 			NO=$(($NO+1))
 		done
-		git am --whitespace=fix -3 -s <"$OUT3" || break
-	else
+		OUT=$OUT3
+	fi
+	if test -z "$dry_run"
+	then
 		git am --whitespace=fix -3 -s <"$OUT" || break
+	else
+		echo git am --whitespace=fix -3 -s "$OUT"
 	fi
 done

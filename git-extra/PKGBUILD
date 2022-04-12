@@ -2,7 +2,7 @@
 
 pkgname=('git-extra')
 _ver_base=1.1
-pkgver=1.1.544.ed9c4d2
+pkgver=1.1.593.b3125c1
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('i686' 'x86_64')
@@ -52,29 +52,32 @@ source=('inputrc'
         'update-via-pacman.bat'
         'git-credential-helper-selector.c'
         'git-credential-helper-selector.manifest'
-        'git-credential-helper-selector.rc')
-sha256sums=('2a8b8630bc2b0c6667790d1ba11534cdf685fff58b026cc4e01b21a10085db1d'
-            'c26d22aaa1d3dc615d474e0d60c5c0f19598d61d9205e19ec87aac1b28bb07c1'
+        'git-credential-helper-selector.rc'
+        'git-askpass.c'
+        'git-askpass.h'
+        'git-askpass.rc')
+sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
+            'e36a3b93b8a33b0a74619f2449ed6d56ed54e4e2938b97070bce4926f1f44054'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
             '17c90698d4dd52dd9f383e72aee54ecea0f62520baf56722de5c83285507c0d9'
             '3cd83627f1d20e1108533419fcf33c657cbcf777c3dc39fa7f13748b7d63858a'
-            'c580bd3806d864d7e1446d08d881e80d6911d459e6f71fc7b62e9a189d8d1d31'
+            'd51229e5ec3653782a2c09aa5ad9af8f159aba94bc28498d7f358c33399b313d'
             '4716d520e7e6e0a1281bad1ae4c21e3e6442127c3030d27681162b9c40aa6b9d'
-            '573ab22be9381feade4a4cdeb5e3d0761224e2e85e017be418c7004fb85fa8b5'
+            '45624af23bafea406d40e1fd55ac62d546fc87716f7662732d7db4111e141fb0'
             'd212e1bbe75a9f81443126701324c9c44c3ed5750dd9822eba754a1799ed13b3'
             '402c51eba82453a76f5110f4754bb1005df507a6e4532574c2b9627ff4e1dc81'
             'd9024bab283ebb67b5d39d49ee5d2592e170abf1f92d3db34edcdd7eeed0b6b9'
             '0a4d04eb5ce035f9b94ebad51f0fc366ffda1f384fa6e586e8eef140440fb012'
             '4678d4939642b9a5b13e2f700a6968550f8e936738879a625479df5429a60e53'
-            '255c64eecf1dbd188ef3452e73b9e099f3bb0e56bc23ff1493e4cc57f724d52f'
+            'f9b404c641447a96d624a418adec3defe894be3198d26922455bf80875bc0e80'
             '02d38e480a1ec4227e94a5aa073945901680aa3387e3386f8b77f10426ebbc75'
             'dcbd1b981d5b899afe30151a5f5a27ea52025ff1335f131af1b5891f62ddd55b'
             '683ab066be19cb4defec470ebd53f165ca5dbf761fd40c13aee8abe31ba42803'
             '1cf2c13fb97c51375a76ed479362c3cbcdb51ab4d3a745e8d2c3a780badd8d46'
-            '37e3412480f0fc5b742406d569baa1a6c572f5be16650ae70c65169c5fd4a8e3'
-            'a07b71fe84a7afdca44b4f0b9729be3fde78a9cb2c042ea387680a361d21f64d'
+            '0c38bf9944c1366df7ce3e670c887debb835e7c270ede676b4ae6bc6462f4075'
+            '7db260f31f9d31cfb7bcc76f379272e4e4b9fc0890e62adef8bf2cb624f6e296'
             '22f41610dea842890955032af30efdb60e80f310e95a04e57ab36b10e0376923'
-            '26eac82cba8606a1fec0108eaf392d5a2161dcad8d4110bdcb971ac11b168b06'
+            '5fe1fdce2f3c4b8dc2d026f3b8f000925c82e39655aea4e37d543862269d0732'
             '15b40ab72dea884f659cfbe441e9a40b2d8d63e490a3c14824a55607368e476d'
             'ebd1d20aa94be11c6b9bec7d33614d32016343d282c4716d0561ab41407c99bf'
             '97e89689d91747ddb5ee873ae864aebcbb8d0364a52fa198db1e439ee2965b9b'
@@ -83,7 +86,10 @@ sha256sums=('2a8b8630bc2b0c6667790d1ba11534cdf685fff58b026cc4e01b21a10085db1d'
             '25c4cff9fa0d82d87ce7f9cf34d2558dd051a398d33e6c3440e9371ebb72471e'
             'febd9504ed7a9e07771d9ae35ddface253a6160a8df9f4c18e4111eb45386712'
             '247dc84535c89d2e00c6a741d4317cd76ae5958c91ac867e2e74d4e73bc3c998'
-            '78307cd6c04a16240f68197e9155697bc75d5df8e4c8514ff67712bb93a1cd4a')
+            '78307cd6c04a16240f68197e9155697bc75d5df8e4c8514ff67712bb93a1cd4a'
+            '0b4ffbfcf0ab30e0cbcd03507439e468e4ce6d1ccfd6b8f0b3ce3ab2146dc8ee'
+            '51e31c6ce824f66b9a8310f1ac10ccdc06b60967a557c996868bc0d9c9866ccf'
+            '0dd30dc3acd406e70b5ff08fb0bf180ec3782119455989af18c05cf59d09df64')
 
 prepare() {
   test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
@@ -103,6 +109,10 @@ build() {
   export BUILDDIR=build-${MINGW_CHOST}
   mkdir -p ${BUILDDIR}
   make -f Makefile
+}
+
+check() {
+  ./git-update-git-for-windows --test-version-compare
 }
 
 package() {
@@ -128,6 +138,7 @@ package() {
   install -m755 $builddir/proxy-lookup.exe $pkgdir${MINGW_PREFIX}/bin
   install -m755 $builddir/git-askyesno.exe $pkgdir${MINGW_PREFIX}/bin
   install -m755 $builddir/git-credential-helper-selector.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/git-askpass.exe $pkgdir${MINGW_PREFIX}/bin
   install -m755 git-prompt.sh $pkgdir/etc/profile.d
   install -m755 aliases.sh $pkgdir/etc/profile.d
   install -m755 env.sh $pkgdir/etc/profile.d

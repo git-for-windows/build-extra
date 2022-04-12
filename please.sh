@@ -431,15 +431,6 @@ set_package () {
 		type=MINGW
 		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager
 		;;
-	mingw-w64-git-credential-manager-core)
-		type=MINGW
-		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager-core
-		;;
-	gcm|credential-manager-core|git-credential-manager-core)
-		package=mingw-w64-git-credential-manager-core
-		type=MINGW
-		pkgpath=/usr/src/build-extra/mingw-w64-git-credential-manager-core
-		;;
 	lfs|git-lfs|mingw-w64-git-lfs)
 		package=mingw-w64-git-lfs
 		type=MINGW
@@ -651,6 +642,7 @@ ff_main_branch () {
 	require_clean_worktree
 
 	git pull --ff-only origin HEAD ||
+	test 0 -eq $(git rev-list --count ..FETCH_HEAD) ||
 	die "%s: cannot fast-forward main branch\n" "$sdk$pkgpath"
 }
 
@@ -732,7 +724,7 @@ pkg_build () {
 			extra="$extra/build-extra/.git\\\" signtool\" "
 		fi
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
+			'MAKEFLAGS=-j5 MINGW_ARCH=mingw32\ mingw64 \
 				'"$extra"'makepkg-mingw -s --noconfirm \
 					'"$extra_makepkg_opts"' &&
 			 if test mingw-w64-git = "'"$package"'"
@@ -740,7 +732,7 @@ pkg_build () {
 				git -C src/git push "$PWD/git" \
 					refs/tags/"'"$tag"'"
 			 fi &&
-			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
+			 MINGW_ARCH=mingw64 makepkg-mingw --allsource \
 				'"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk$pkgpath"
 
@@ -752,6 +744,14 @@ pkg_build () {
 	MSYS)
 		require msys2-devel binutils
 		opt_j=-j5
+		if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
+			config alias.signtool)"
+		then
+			extra=
+		else
+			extra="SIGNTOOL=\"git --git-dir=\\\"$sdk64/usr/src"
+			extra="$extra/build-extra/.git\\\" signtool\" "
+		fi
 		if test msys2-runtime = "$package"
 		then
 			opt_j=-j1
@@ -788,10 +788,10 @@ pkg_build () {
 		"$sdk/git-cmd" --command=usr\\bin\\sh.exe -l -c \
 			'cd '"$pkgpath"' &&
 			 export MSYSTEM=MSYS &&
-			 export PATH=/usr/bin:/opt/bin:$PATH &&
+			 export PATH=/usr/bin:/opt/bin:/mingw64/bin:/mingw32/bin:$PATH &&
 			 unset ORIGINAL_PATH &&
 			 . /etc/profile &&
-			 MAKEFLAGS='"$opt_j"' makepkg -s --noconfirm \
+			 MAKEFLAGS='"$opt_j"' '"$extra"'makepkg -s --noconfirm \
 				'"$extra_makepkg_opts"' &&
 			 makepkg --allsource '"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk$pkgpath"
@@ -1650,13 +1650,13 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 			"cd \"$git_src_dir/../..\" &&"'
 			rm -f src/git/{git-wrapper.o,*.res} &&
 			MAKEFLAGS=-j5 \
-			MINGW_INSTALLS='"$(test -n "$only_64_bit" ||
+			MINGW_ARCH='"$(test -n "$only_64_bit" ||
 				echo mingw32)"'\ mingw64 \
 			'"$extra"' \
 			makepkg-mingw -s --noconfirm '"$force_tag"' \
 				'"$force_makepkg"' \
 				-p prerelease-'"$pkgver"'.pkgbuild &&
-			MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
+			MINGW_ARCH=mingw64 makepkg-mingw --allsource \
 				-p prerelease-'"$pkgver".pkgbuild ||
 		die "%s: could not build '%s'\n" "$git_src_dir" "$pkgver"
 
@@ -1897,6 +1897,7 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 			"$coverity_bin_dir"
 	 fi &&
 	 PATH="$coverity_bin_dir:$PATH" &&
+	 cov-configure --gcc &&
 	 # Coverity has a long-standing bug where it fails to parse two-digit
 	 # major versions of GCC incorrectly Since Synopsys seems to
 	 # be hardly in a rush to fix this (there's no response at
@@ -2209,7 +2210,7 @@ main () { # <package>
 }
 
 updpkgsums () {
-	MINGW_INSTALLS=mingw64 \
+	MINGW_ARCH=mingw64 \
 	"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c updpkgsums
 }
 
@@ -2306,7 +2307,7 @@ maybe_force_pkgrel () {
 			sed -i "s/^\\(pkgrel=\\).*/\\1"$((1+${blame##*=}))/ PKGBUILD
 		else
 			case "${PWD##*/MSYS2-packages/}" in
-			perl-*)
+			perl-*|subversion)
 				# Handle perl dependencees: if perl changed, increment pkgrel
 				blame_perl="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgver=/,+1' -- ../perl/PKGBUILD)" &&
 				blame_perl="$(echo "$blame_perl" | sed -e 's/ .*//' -e 's/^0*$//')" &&
@@ -2465,46 +2466,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	release_notes_feature=
 	case "$package" in
 	mingw-w64-git-credential-manager)
-		repo=Microsoft/Git-Credential-Manager-for-Windows
-		url=https://api.github.com/repos/$repo/releases/latest
-		release="$(curl --netrc -s $url)"
-		test -n "$release" ||
-		die "Could not determine the latest version of %s\n" "$package"
-		tag_name="$(echo "$release" |
-			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
-		test 1.18.5 != "$tag_name" || {
-			tag_name=1.19.0
-			release="$(curl --netrc -s ${url%/latest}/16090167)"
-		}
-		zip_name="$(echo "$release" | sed -n \
-			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p')"
-		version=${tag_name#v}
-		zip_prefix=${zip_name%$version.zip}
-		if test "$zip_prefix" = "$zip_name"
-		then
-			# The version in the tag and the zip file name differ
-			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]*/\1'$zip_name/
-		else
-			zip_replace='s/^\(zip_url=.*\/\)gcm[^"]*/\1'$zip_prefix'${_realver}.zip/'
-		fi
-		src_zip_prefix=${tag_name%$version}
-		(cd "$sdk64$pkgpath" &&
-		 sed -i -e "s/^\\(pkgver=\\).*/\1$version/" -e "$zip_replace" \
-		 -e 's/^\(src_zip_url=.*\/\).*\(\$.*\)/\1'$src_zip_prefix'\2/' \
-		 -e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
-		 updpkgsums &&
-		 srcdir2="$(unzip -l $zip_prefix$version.zip | sed -n \
-		   's/^.\{28\} *\(.*\/\)\?git-credential-manager.exe/\1/p')" &&
-		 sed -i -e 's/^\(  srcdir2=\).*/\1"${srcdir}\/'$srcdir2'"/' \
-			PKGBUILD &&
-		 maybe_force_pkgrel "$force_pkgrel" &&
-		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD &&
-		 create_bundle_artifact) &&
-		url=https://github.com/$repo/releases/tag/$tag_name &&
-		release_notes_feature='Comes with [Git Credential Manager v'$version']('"$url"').'
-		;;
-	mingw-w64-git-credential-manager-core)
-		repo=microsoft/git-credential-manager-core
+		repo=GitCredentialManager/git-credential-manager
 		url=https://api.github.com/repos/$repo/releases
 		release="$(curl --netrc -s $url)"
 		test -n "$release" ||
@@ -2561,7 +2523,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 fi &&
 		 if test git-extra.install.in -nt git-extra.install
 		 then
-			MINGW_INSTALLS=mingw64 \
+			MINGW_ARCH=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 				'makepkg-mingw --nobuild -s --noconfirm' &&
 			git checkout HEAD -- PKGBUILD &&
@@ -2670,7 +2632,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		# Git LFS sometimes lists SHA-256 sums below, sometimes
 		# above the file names. Work around that particular issue
 		if test -n "$(echo "$release" |
-			grep "$needle1"'.*\\n[0-9a-z]\{64\}\(\\r\)\?\(\\n\)\?"$')"
+			grep "$needle1"'.*\\n[0-9a-z]\{64\}\(\\r\)\?\(\\n\)\?",\?$')"
 		then
 			# The SHA-256 sums are listed below the file names
 			needle2="$version\\.zip[^0-9a-f]*\\([0-9a-f]*\\).*"
@@ -2769,6 +2731,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 test -n "$tag" ||
 		 die "Could not determine latest tag of '%s'\n" "$package"
 
+		 # Git for Windows will skip v3.2.0 and stay on v3.1.7 until v3.2.1 comes out
+		 test refs/tags/cygwin-3_2_0-release != "$tag" || tag=refs/tags/cygwin-3_1_7-release
+
 		 version="$(echo "$tag" | sed -ne 'y/_/./' -e \
 		    's|^refs/tags/cygwin-\([1-9][.0-9]*\)-release$|\1|p')" &&
 		 test -n "$version" ||
@@ -2864,7 +2829,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		(cd "$sdk64$pkgpath" &&
 		 if test ! -d src/busybox-w32
 		 then
-			MINGW_INSTALLS=mingw64 \
+			MINGW_ARCH=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 				'makepkg-mingw --nobuild -s --noconfirm'
 		 fi &&
@@ -2900,7 +2865,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 die "Package '%s' already up-to-date at commit '%s'\n" \
 			"$package" "$built_from_commit"
 
-		 MINGW_INSTALLS=mingw64 \
+		 MINGW_ARCH=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			'makepkg-mingw --nobuild -s --noconfirm' &&
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
@@ -3059,7 +3024,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		;;
 	mingw-w64-wintoast|mingw-w64-cv2pdb)
 		(cd "$sdk64$pkgpath" &&
-		 MINGW_INSTALLS=mingw64 \
+		 sed -i -e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+		 maybe_force_pkgrel "$force_pkgrel" &&
+		 MINGW_ARCH=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			'makepkg-mingw --nobuild -s --noconfirm' &&
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
@@ -3076,7 +3043,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		;;
 	bash)
 		url="http://git.savannah.gnu.org/cgit/bash.git/commit/?id=HEAD" &&
-		version=4.4 &&
+		version=5.1 &&
 		patchlevel="$(curl $url | sed -n \
 			's/.*+#define PATCHLEVEL \([1-9][0-9]*\).*/\1/p')" &&
 		if test -z "$patchlevel"
@@ -3126,7 +3093,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		tags="$(curl https://api.github.com/repos/Perl/perl5/tags)" ||
 		die "Could not download Perl tags\n"
 		ver="$(echo "$tags" | sed -n \
-			'/^    "name": "v5\.[0-9]*[02468]\.[1-9][0-9]*"/{s/.*"v\(.*\)".*/\1/p;q}')"
+			'/^    "name": "v5\.[0-9]*[02468]\.[0-9][0-9]*"/{s/.*"v\(.*\)".*/\1/p;q}')"
 		test -n "$ver" ||
 		die "Could not determine latest Perl version\n"
 
@@ -3152,20 +3119,26 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		case $metaname in
 		Locale-Gettext) metaname=gettext;;
 		esac
-		meta="$(curl -s https://metacpan.org/release/$metaname)" ||
+		meta="$(curl -Ls https://metacpan.org/dist/$metaname)" ||
 		die "Could not download release notes for $package\n"
 
 		ver="$(echo "$meta" | sed -n \
-			's/.*<option selected value="\/release\/\([^"]*\)-\([0-9.]*\)".*/\1 \2/p')"
+			'/<option/{N;N;N;s/.*<option[^a-z]*selected.*value="\([^"]*\/'"$metaname"'\)-\([0-9.]*\)".*/\1 \2/p}')"
 		test -n "$ver" ||
 		die "Could not determine latest $package version\n"
 
 		metapath=${ver% *}
 		ver=${ver##* }
 
+		author_part="$(echo "$meta" | sed -n \
+			's/.*<a itemprop="downloadUrl" href="https:\/\/cpan.metacpan.org\/authors\/id\/\(.*\)\/[^/]*".*/\1/p')"
+		test -n "$author_part" || author_part='&'
+
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$ver/ \
-			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
+			-e 's/^pkgrel=.*/pkgrel=1/' \
+			-e 's|\(https://www.cpan.org/authors/id/\)\([A-Z]*/\)\{3\}|\1'"$author_part/|" \
+			PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
 		 updpkgsums &&
 		 git commit -s -m "$package: new version ($ver)" PKGBUILD &&
@@ -3206,8 +3179,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not determine the latest version of %s\n" "$package"
 
 		version="$(echo "$release" | sed -n \
-		 's/.*<a href="#recommended-release">\([1-9][0-9.]*\)<.*/\1/p' |
-		 sed 's/^[^.]*\.[^.]*$/&.0/')"
+		  '/.*subversion-[1-9][0-9.]*\.zip.*/{s/.*subversion-\([1-9][0-9.]*\)\.zip.*/\1/p;q}')"
 		test -n "$version" ||
 		die "Could not determine version of %s\n" "$package"
 
@@ -3409,12 +3381,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update $sdk32$pkgpath"
 		;;
 	libgpg-error)
-		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=libgpg-error.git;a=tags'
+		url='https://dev.gnupg.org/source/libgpg-error/tags/'
 		tags="$(curl -s "$url")" ||
 		test $? = 56 ||
 		die 'Could not obtain download page from %s\n' "$url"
 		version="$(echo "$tags" |
-			sed -n '/ href=[^>]*>libgpg-error-[1-9][.0-9]*</{s/.*>libgpg-error-\([.0-9]*\).*/\1/p}' |
+			sed 'y/</\n/' |
+			sed -n '/ href=[^>]*>libgpg-error-[1-9][.0-9]*$/{s/.*>libgpg-error-\([.0-9]*\).*/\1/p}' |
 			sort -rnt. -k1,1 -k2,2 -k3,3 |
 			head -n 1)"
 		test -n "$version" ||
@@ -3434,12 +3407,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update $sdk32$pkgpath"
 		;;
 	libgcrypt)
-		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=libgcrypt.git;a=tags'
+		url='https://dev.gnupg.org/source/libgcrypt/tags/'
 		tags="$(curl -s "$url")" ||
 		test $? = 56 ||
 		die 'Could not obtain download page from %s\n' "$url"
 		version="$(echo "$tags" |
-			sed -n '/ href=[^>]*>libgcrypt-[1-9][.0-9]*</{s/.*>libgcrypt-\([.0-9]*\).*/\1/p}' |
+			sed 'y/</\n/' |
+			sed -n '/ href=[^>]*>libgcrypt-[1-9][.0-9]*$/{s/.*>libgcrypt-\([.0-9]*\).*/\1/p}' |
 			sort -rnt. -k1,1 -k2,2 -k3,3 |
 			head -n 1)"
 		test -n "$version" ||
@@ -3459,12 +3433,12 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update $sdk32$pkgpath"
 		;;
 	gnupg)
-		url='https://git.gnupg.org/cgi-bin/gitweb.cgi?p=gnupg.git;a=tags'
+		url='https://dev.gnupg.org/source/gnupg/tags/'
 		tags="$(curl -s "$url")" ||
 		test $? = 56 ||
 		die 'Could not obtain download page from %s\n' "$url"
 		version="$(echo "$tags" |
-			sed -n '/ href=[^>]*>gnupg-[1-9][.0-9]*</{s/.*>gnupg-\([.0-9]*\).*/\1/p;q}')"
+			sed -n '/ href=[^>]*>gnupg-[1-9][.0-9]*</{s/>gnupg-\([.0-9]*\).*/>\1/;s/.*>//p;q}')"
 		test -n "$version" ||
 		die "Could not determine newest $package version\n"
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
@@ -4765,12 +4739,12 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	src_pkg=
 	while case "$1" in
 	--only-32-bit)
-		MINGW_INSTALLS=mingw32
-		export MINGW_INSTALLS
+		MINGW_ARCH=mingw32
+		export MINGW_ARCH
 		;;
 	--only-64-bit)
-		MINGW_INSTALLS=mingw64
-		export MINGW_INSTALLS
+		MINGW_ARCH=mingw64
+		export MINGW_ARCH
 		;;
 	--skip-test-artifacts)
 		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-test-artifacts"//'
@@ -4808,7 +4782,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	git clone --depth 1 --single-branch -b main https://github.com/git-for-windows/MINGW-packages /usr/src/MINGW-packages ||
 	die "Could not clone MINGW-packages\n"
 
-	tag="$(git for-each-ref --format '%(refname:short)' --points-at="${1:-HEAD}" 'refs/tags/v[0-9]*')"
+	tag="$(git for-each-ref --count=1 --sort=-taggerdate --format '%(refname:short)' --points-at="${1:-HEAD}" 'refs/tags/v[0-9]*')"
 	test -n "$tag" || {
 		tag=$(git describe --match=v* "${1:-HEAD}" | sed 's/-.*//').$(date +%Y%m%d%H%M%S) &&
 		git tag $tag "${1:-HEAD}"
@@ -4861,7 +4835,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag &&
 	 if test -n "$src_pkg"
 	 then
-		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_INSTALLS=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.$tag
+		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_ARCH=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.$tag
 	 fi) ||
 	die "Could not build mingw-w64-git\n"
 
@@ -4882,6 +4856,7 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--ve
 	output_path=
 	version=0-test
 	include_arm64_artifacts=
+	include_pdbs=
 	while case "$1" in
 	--pkg=*)
 		install_package="${install_package:+$install_package }$(echo "${1#*=}" | tr , ' ')"
@@ -4929,6 +4904,9 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--ve
 	--include-arm64-artifacts=*)
 		include_arm64_artifacts="$1"
 		;;
+	--include-pdbs)
+		include_pdbs=--include-pdbs
+		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
@@ -4964,7 +4942,7 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--ve
 		test installer != $mode ||
 		extra="${extra:+$extra }--window-title-version=$version"
 
-		sh -x "${this_script_path%/*}/$mode/release.sh" $output $extra $include_arm64_artifacts $version
+		sh -x "${this_script_path%/*}/$mode/release.sh" $output $include_pdbs $extra $include_arm64_artifacts $version
 	done
 }
 

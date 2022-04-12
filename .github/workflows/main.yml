@@ -1,0 +1,82 @@
+name: PR build
+
+on: pull_request
+
+jobs:
+  determine-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+      - name: determine packages to build
+        id: set-matrix
+        shell: bash
+        run: |
+          define_matrix () {
+            comm -12 "$2" "$3" >"$4" &&
+            cat "$4" &&
+            sed -e 's/\/$//' -e 's/.*/"&", /' -e '$s/, $//' <"$4" >list.txt &&
+            echo "::set-output name=$1::[$(test ! -s list.txt && echo '""' || tr -d '\n' <list.txt)]"
+          }
+
+          git ls-files \*/PKGBUILD | sed 's|[^/]*$||' | sort >directories.txt &&
+          git diff ${{github.event.pull_request.base.sha}}... --name-only | sed 's|[^/]*$||' | sort -u >touched.txt &&
+          define_matrix matrix directories.txt touched.txt packages.txt &&
+
+          git ls-files \*/release.sh | sed 's|[^/]*$||' | sort >releaseable.txt &&
+          define_matrix artifacts releaseable.txt touched.txt artifacts.txt
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      artifacts: ${{ steps.set-matrix.outputs.artifacts }}
+  build-packages:
+    needs: determine-packages
+    runs-on: windows-latest
+    if: needs.determine-packages.outputs.matrix != '[""]'
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJSON(needs.determine-packages.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: git-for-windows/setup-git-for-windows-sdk@v1
+        with:
+          flavor: full
+      - name: build ${{ matrix.directory }}
+        shell: bash
+        run: |
+          top_dir=$PWD &&
+          cd "${{ matrix.directory }}" &&
+          MAKEFLAGS=-j8 makepkg-mingw -s --noconfirm &&
+          artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
+          mkdir -p "$top_dir/$artifacts" &&
+          mv *.tar.* "$top_dir/$artifacts"/ &&
+          echo "artifacts=$artifacts" >>$GITHUB_ENV
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.artifacts }}
+          path: ${{ env.artifacts }}
+  build-artifacts:
+    needs: determine-packages
+    runs-on: windows-latest
+    if: needs.determine-packages.outputs.artifacts != '[""]'
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJSON(needs.determine-packages.outputs.artifacts) }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: git-for-windows/setup-git-for-windows-sdk@v1
+        with:
+          flavor: build-installers
+      - name: build ${{ matrix.directory }}/
+        shell: bash
+        run: |
+          artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
+          mkdir -p "$artifacts" &&
+          ./"${{ matrix.directory }}"/release.sh --output="$PWD/$artifacts/" 0-test &&
+          echo "artifacts=$artifacts" >>$GITHUB_ENV
+      - uses: actions/upload-artifact@v2
+        with:
+          name: ${{ env.artifacts }}
+          path: ${{ env.artifacts }}

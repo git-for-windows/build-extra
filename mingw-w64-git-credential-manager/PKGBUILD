@@ -1,32 +1,34 @@
-# Maintainer: Johannes Schindelin/J Wyman
+# Maintainer: Johannes Schindelin/Matthew J Cheetham
 
 _realname="git-credential-manager"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.20.0
+conflicts=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
+replaces=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
+pkgver=2.0.696
 pkgrel=1
 _realver=$pkgver
-_realtag=$pkgver
-pkgdesc="Credential Manager for Git for Windows"
+_realtag=v${pkgver}
+pkgdesc="Credential Manager for Git"
+install=git-credential-manager.install
 arch=('any')
-project_url="https://github.com/Microsoft/Git-Credential-Manager-for-Windows"
-zip_url="${project_url}/releases/download/${_realtag}/gcmw-v${_realver}.zip"
+project_url="https://github.com/GitCredentialManager/git-credential-manager"
+zip_url="${project_url}/releases/download/${_realtag}/gcmcore-win-x86-${_realver}.zip"
 src_zip_url="${project_url}/archive/${_realtag}.zip"
 license=('MIT')
 groups=('VCS')
+options=('!strip')
 
 source=("${zip_url}" "$src_zip_url")
 
-sha256sums=('523847459aef94bf45e15c08ab67c1c23b6dcb563b2cbda956c04dc491f82cdb'
-            'c1473b136cdaae241c96f8ad1b60a71b895be78db63b02151e3aff9356bcd559')
+sha256sums=('9c80110b4ff0f8e30d572431ee612fc57f398019f83cecb617ad32bb9cb5cacd'
+            '4ba2534a81bf8abd08d87fa711104f45f8fd09dd1477635cc700117be6f1a9e3')
 
 package() {
-  builddir=build-${MINGW_CHOST}
   prefix="$pkgdir/${MINGW_PREFIX}"
   srcdir2="${srcdir}/"
   install -d -m755 "${prefix}"/libexec/git-core
-  install -m755 "$srcdir2"/*.{dll,exe} "${prefix}"/libexec/git-core
+  install -m755 "$srcdir2"/*.{dll,exe,config} "${prefix}"/libexec/git-core
   install -d -m755 "${prefix}"/doc/git-credential-manager
-  install -m644 "$srcdir2"/{README.md,LICENSE.txt} \
-    "${prefix}"/doc/git-credential-manager
+  install -m644 "$srcdir2"/git-credential-manager-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager
 }

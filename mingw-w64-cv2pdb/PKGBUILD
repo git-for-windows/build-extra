@@ -3,7 +3,7 @@
 _realname=cv2pdb
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=0.46
+pkgver=0.50
 pkgrel=1
 pkgdesc="Converter of DWARF debug information to PDB files (mingw-w64)"
 arch=('any')
@@ -12,11 +12,9 @@ license=('Artistic2')
 
 options=('!strip')
 
-source=("${_realname}"::"git+https://github.com/rainers/cv2pdb#branch=HEAD"
-        "0001-Learn-to-use-vswhere.exe-to-figure-out-the-mspdb140..patch")
+source=("${_realname}"::"git+https://github.com/rainers/cv2pdb#branch=HEAD")
 
-sha256sums=('SKIP'
-            '078f4187e65cc017e6987f4a7f587c48bd08c53a965bd7564a5afedd55216011')
+sha256sums=('SKIP')
 
 die () {
   echo "$*" >&2
@@ -49,7 +47,6 @@ pkgver() {
 
 prepare () {
   cd "$srcdir/cv2pdb"
-  git apply -v "${srcdir}"/0001-Learn-to-use-vswhere.exe-to-figure-out-the-mspdb140..patch
   sed -i 's/\(<PlatformToolset>\)[^<]*/\1$(DefaultPlatformToolset)/g' src/cv2pdb.vcxproj
 }
 

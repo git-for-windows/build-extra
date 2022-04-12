@@ -49,20 +49,18 @@ do
 		   ! grep "^ *$page:TWizardPage;$" install.iss >/dev/null &&
 		   ! grep "^ *$page:TInputFileWizardPage;$" install.iss >/dev/null
 		then
-			echo "Unknown page '$page'. Known pages:" >&2
+			printf 'Unknown page "%s". Known pages:\n    %s\n' "$page" wpSelectComponents >&2
 			sed -n -e 's/:TWizardPage;$//p' -e 's/:TInputFileWizardPage;$//p' <install.iss >&2
 			exit 1
 		fi
 		inno_defines="$inno_defines$LF#define DEBUG_WIZARD_PAGE '$page_id'$LF#define OUTPUT_TO_TEMP ''"
 		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
-		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;${LF}${LF}"
 		skip_files=t
 		;;
 	--test)
 		test_installer=t
 		inno_defines="$inno_defines$LF#define OUTPUT_TO_TEMP ''"
 		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
-		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;$LF"
 		;;
 	--silent-test)
 		test_installer=t
@@ -70,7 +68,6 @@ do
 		skip_files=t
 		inno_defines="$inno_defines$LF#define OUTPUT_TO_TEMP ''"
 		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
-		inno_defines="$inno_defines$LF[Code]${LF}function SetSystemConfigDefaults():Boolean;${LF}begin${LF}    Result:=True;${LF}end;$LF"
 		;;
 	--output=*)
 		output_directory="$(cygpath -m "${1#*=}")" ||
@@ -253,7 +250,7 @@ test -z "$GITCONFIG_PATH" || {
 	done ||
 	die "Could not split gitconfig"
 
-	gitconfig="$gitconfig${LF}end;$LF"
+	gitconfig="$gitconfig${LF}end;$LF#define HAVE_SET_SYSTEM_CONFIG_DEFAULTS 1$LF"
 	inno_defines="$inno_defines$LF$gitconfig"
 
 	LIST="$(echo "$LIST" | grep -v "^$GITCONFIG_PATH\$")"
@@ -261,9 +258,18 @@ test -z "$GITCONFIG_PATH" || {
 
 if test -n "$cmd_git"
 then
-	if test ! -f init.defaultBranch ||
-		test "$git_version" != "$(cat init.defaultBranch.gitVersion 2>/dev/null)"
+	# Find out Git's default branch name
+	case "${git_version#git version }" in
+	[01].*|2.[0-9].*|2.[12][0-9].*|2.3[0-4].*) false;; # does not support `git var GIT_DEFAULT_BRANCH`
+	*) default_branch_name="$(GIT_CONFIG_NOSYSTEM=1 \
+		HOME=.git/x XDG_CONFIG_HOME=.git/x GIT_DIR=.git/x \
+		git var GIT_DEFAULT_BRANCH)";;
+	esac ||
+	if test -f init.defaultBranch &&
+		test "$git_version" = "$(cat init.defaultBranch.gitVersion 2>/dev/null)"
 	then
+		default_branch_name="$(cat init.defaultBranch)"
+	else
 		echo "$git_version" >init.defaultBranch.gitVersion &&
 		d=init.defaultBranch.$$ &&
 		rm -f $d &&
@@ -275,8 +281,19 @@ then
 		die "Could not determine default branch name"
 	fi
 
-	inno_defines="$inno_defines$LF#define DEFAULT_BRANCH_NAME '$(cat init.defaultBranch)'"
+	inno_defines="$inno_defines$LF#define DEFAULT_BRANCH_NAME '$default_branch_name'"
 fi
+
+# 1. Collect all SSH related files from $LIST and pacman, sort each and then return the overlap
+# 2. Convert paths to Windows filesystem compatible ones and construct the function body for the DeleteOpenSSHFiles function; one DeleteFile operation per file found
+# 3. Construct DeleteOpenSSHFiles function signature to be used in install.iss
+# 4. Assemble function body and compile flag to be used as guard in install.iss
+echo "$LIST" | sort >sorted-file-list.txt
+pacman -Ql openssh | sed -n 's|^openssh /\(.*[^/]\)$|\1|p' | sort >sorted-openssh-file-list.txt
+openssh_deletes="$(comm -12 sorted-file-list.txt sorted-openssh-file-list.txt |
+	sed -e 'y/\//\\/' -e "s|.*|    if not DeleteFile(AppDir+'\\\\&') then\n        Result:=False;|")"
+inno_defines="$inno_defines$LF[Code]${LF}function DeleteOpenSSHFiles():Boolean;${LF}var$LF    AppDir:String;${LF}begin$LF    AppDir:=ExpandConstant('{app}');$LF    Result:=True;"
+inno_defines="$inno_defines$LF$openssh_deletes${LF}end;$LF#define DELETE_OPENSSH_FILES 1"
 
 test -z "$LIST" ||
 echo "$LIST" |

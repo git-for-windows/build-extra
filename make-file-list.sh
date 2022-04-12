@@ -10,7 +10,7 @@ test -n "$BITNESS" ||
 die "Need ARCH and BITNESS to be set"
 
 SH_FOR_REBASE=dash
-PACKAGE_EXCLUDES="db info heimdal git util-linux curl git-for-windows-keyring
+PACKAGE_EXCLUDES="db info heimdal tcl git util-linux curl git-for-windows-keyring
 	mingw-w64-p11-kit"
 EXTRA_FILE_EXCLUDES=
 UTIL_PACKAGES="sed awk grep findutils coreutils"
@@ -18,7 +18,7 @@ if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
 then
 	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES bash coreutils mingw-w64-busybox
 		libiconv libintl libreadline ncurses openssl
-		mingw-w64-libmetalink mingw-w64-spdylay"
+		mingw-w64-libmetalink mingw-w64-spdylay diffutils"
 
 	EXTRA_FILE_EXCLUDES="/etc/post-install/.* /usr/bin/getfacl.exe
 		/usr/bin/msys-\(gmp\|ssl\)-.*.dll
@@ -95,7 +95,7 @@ mingw-w64-$ARCH-zstd"
 
 # Packages that have been added after Git SDK 1.0.0 was released...
 required=
-for req in mingw-w64-$ARCH-git-credential-manager mingw-w64-$ARCH-git-credential-manager-core $SH_FOR_REBASE \
+for req in mingw-w64-$ARCH-git-credential-manager $SH_FOR_REBASE \
 	$(test -n "$MINIMAL_GIT" || echo \
 		mingw-w64-$ARCH-connect git-flow unzip docx2txt \
 		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt \
@@ -110,7 +110,7 @@ test -z "$required" ||
 pacman -Sy --noconfirm $required >&2 ||
 die "Could not install required packages: $required"
 
-packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager mingw-w64-$ARCH-git-credential-manager-core
+packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager
 git-extra openssh $UTIL_PACKAGES"
 if test -z "$MINIMAL_GIT"
 then
@@ -148,7 +148,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../bin/\(autopoint\|[a-z]*-config\)$' \
 	-e '^/mingw../bin/lib\(asprintf\|brotlienc\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13p]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
 	-e '^/mingw../bin/lib\(atomic\|charset\|ffi\|gomp\|systre\|tasn1\)-[0-9]*\.dll$' \
-	-e '^/mingw../bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\)[^/]*\.exe$' \
+	-e '^/mingw../bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\|zip\)[^/]*\.exe$' \
 	-e '^/mingw../bin/recode-sr-latin.exe$' \
 	-e '^/mingw../bin/\(cert\|p11\|psk\|srp\)tool.exe$' \
 	-e '^/mingw../.*/git-\(remote-testsvn\|shell\)\.exe$' \
@@ -161,7 +161,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../share/doc/git-doc/git-cvsexport' \
 	-e '^/mingw../libexec/git-core/git-cvsexport' \
 	-e '^/mingw../share/doc/git-doc/git-cvsimport' \
-	-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
+	-e '^/mingw../share/gtk-doc/' \
 	-e '^/mingw../share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
 	-e '^/usr/bin/msys-\('$(if test i686 = "$ARCH"
@@ -187,6 +187,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/share/perl5/core_perl/CPAN/' \
 	-e '^/usr/share/perl5/core_perl/TAP/' \
 	-e '^/usr/share/vim/vim74/lang/' \
+	-e '^/usr/share/\(bash-completion\|makepkg\)/' \
 	-e '^/update-via-pacman.bat$' \
 	-e '^/etc/profile.d/git-sdk.sh$' |
 if test -n "$WITH_L10N" && test -z "$MINIMAL_GIT"
@@ -195,6 +196,7 @@ then
 else
 	grep -v \
 		-e '^/mingw../share/locale/' \
+		-e '^/mingw../share/git\(k\|-gui\)/lib/msgs/' \
 		-e '^/usr/share/locale/'
 fi |
 if test -z "$MINIMAL_GIT"
