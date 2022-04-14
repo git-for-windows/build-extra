@@ -1051,7 +1051,7 @@ require_git_src_dir () {
 				*/MINGW-packages)
 					o=https://github.com/git-for-windows &&
 					git -C "${mingw_packages_dir%/*}" \
-						clone $o/MINGW-packages ||
+						clone -b git-2.35.3 $o/MINGW-packages ||
 					die "Could not clone into %s\n" \
 						"$mingw_packages_dir"
 					;;
@@ -1063,7 +1063,7 @@ require_git_src_dir () {
 			else
 				git -C "$mingw_packages_dir" fetch &&
 				git -C "$mingw_packages_dir" \
-					checkout -t origin/main ||
+					checkout -t origin/git-2.35.3 ||
 				die "Could not check out %s\n" \
 					"$mingw_packages_dir"
 			fi
@@ -4780,7 +4780,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 
 	git_src_dir="/usr/src/MINGW-packages/mingw-w64-git/src/git"
 	test -d ${git_src_dir%/src/git} ||
-	git clone --depth 1 --single-branch -b main https://github.com/git-for-windows/MINGW-packages /usr/src/MINGW-packages ||
+	git clone --depth 1 --single-branch -b git-2.35.3 https://github.com/git-for-windows/MINGW-packages /usr/src/MINGW-packages ||
 	die "Could not clone MINGW-packages\n"
 
 	tag="$(git for-each-ref --count=1 --sort=-taggerdate --format '%(refname:short)' --points-at="${1:-HEAD}" 'refs/tags/v[0-9]*')"
