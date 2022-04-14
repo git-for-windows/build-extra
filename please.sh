@@ -50,6 +50,8 @@ unset ORIGINAL_PATH
 # Do not follow MSYS2's switch to zstd, at least for now
 PKGEXT='.pkg.tar.xz'
 export PKGEXT
+SRCEXT='.src.tar.gz'
+export SRCEXT
 
 # In MinGit, there is no `cygpath`...
 # We really only use -w, -am and -au in please.sh, so that's what we
