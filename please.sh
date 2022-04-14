@@ -4834,13 +4834,14 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag &&
 	 if test -n "$src_pkg"
 	 then
-		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_ARCH=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.$tag
+		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_ARCH=mingw64 makepkg-mingw $force --log --allsource -p PKGBUILD.$tag
 	 fi) ||
 	die "Could not build mingw-w64-git\n"
 
 	test -z "$output_path" || {
 		pkgpattern="$(sed -n '/^pkgver=/{N;s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2/p}' <${git_src_dir%/src/git}/PKGBUILD.$tag)" &&
 		mkdir -p "$output_path" &&
+		ls ${git_src_dir%/src/git} &&
 		{ test -z "$src_pkg" || cp ${git_src_dir%/src/git}/*-"$pkgpattern".src.tar.gz "$output_path/"; } &&
 		cp ${git_src_dir%/src/git}/*-"$pkgpattern"-any.pkg.tar.xz ${git_src_dir%/src/git}/PKGBUILD.$tag "$output_path/"
 	} ||
