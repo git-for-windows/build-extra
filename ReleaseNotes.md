@@ -1,5 +1,5 @@
-# Git for Windows v2.35.2 Release Notes
-Latest update: April 12th 2022
+# Git for Windows v2.35.3 Release Notes
+Latest update: April 15th 2022
 
 ## Introduction
 
@@ -40,7 +40,7 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
-## Changes since Git for Windows v2.35.2 (April 12th 2022)
+## Changes since Git for Windows v2.35.3 (April 15th 2022)
 
 ### Upcoming breaking changes
 
@@ -57,6 +57,18 @@ Git for Windows will also stop supporting Windows Vista soon after Git for Windo
 * Comes with [OpenSSL v1.1.1n](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [Git Credential Manager Core v2.0.696](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.696).
 * Comes with [GNU TLS v3.7.4](https://lists.gnupg.org/pipermail/gnutls-help/2022-March/004738.html).
+
+## Changes since Git for Windows v2.35.2 (April 12th 2022)
+
+### New Features
+
+* Comes with [Git v2.35.3](https://github.com/git/git/blob/v2.35.3/Documentation/RelNotes/2.35.3.txt).
+
+
+### Bug Fixes
+
+* The advice indicating how to use the `%(prefix)` with a network share path [was updated](https://github.com/git-for-windows/git/pull/3790) to use the appropriate number of slashes.
+* [Various fixes](https://github.com/git-for-windows/git/pull/3791) for usage of the `safe.directory` and `%(prefix)` when using Windows Subsystem for Linux (WSL).
 
 ## Changes since Git for Windows v2.35.1(2) (February 1st 2022)
 
@@ -2266,7 +2278,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 ### New Features
 * Comes with official git 1.6.1.
 * Avoid useless console windows.
-* Installer remembers how to handle PATH. 
+* Installer remembers how to handle PATH.
 
 ## Changes since Git-1.6.0.2-preview20080921
 
@@ -2307,7 +2319,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 * Programs in the system `PATH`, for example editors, can be launched from Git without specifying their full path.
 * `git stash apply stash@{1}` works.
 * Comes with basic ANSI control code emulation for the Windows console to avoid wrapping of pull/merge's diffstats.
-* Git correctly passes port numbers to PuTTY's Plink 
+* Git correctly passes port numbers to PuTTY's Plink
 
 ## Changes since Git-1.5.4-preview20080202
 
