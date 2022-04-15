@@ -42,6 +42,11 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.35.2 (April 12th 2022)
 
+### New Features
+
+* Comes with [Git v2.35.3](https://github.com/git/git/blob/v2.35.3/Documentation/RelNotes/2.35.3.txt).
+
+
 ### Bug Fixes
 
 * The advice indicating how to use the `%(prefix)` with a network share path [was updated](https://github.com/git-for-windows/git/pull/3790) to use the appropriate number of slashes.
