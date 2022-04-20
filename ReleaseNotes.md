@@ -42,6 +42,8 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.35.3 (April 15th 2022)
 
+This version includes Git LFS v3.1.4, addressing [CVE-2022-24826](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-6rw3-3whw-jvjj) (if you use Git LFS with [MinGit](https://github.com/git-for-windows/git/wiki/MinGit), you will want to upgrade).
+
 ### Upcoming breaking changes
 
 We plan to update the included bash to version 5.1 (currently 4.4) soon after Git for Windows 2.36.0 is released. Please check your shell scripts for potential compatibility issues.
