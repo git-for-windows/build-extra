@@ -51,12 +51,12 @@ Git for Windows will also stop supporting Windows Vista soon after Git for Windo
 ### New Features
 
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.4](https://cygwin.com/pipermail/cygwin-announce/2022-January/010438.html).
-* Comes with [Git LFS v3.1.2](https://github.com/git-lfs/git-lfs/releases/tag/v3.1.2).
 * Comes with [OpenSSH v8.9p1](https://www.openssh.com/txt/release-8.9).
 * Comes with [cURL v7.82.0](https://curl.haxx.se/changes.html#7_82_0).
 * Comes with [OpenSSL v1.1.1n](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [Git Credential Manager Core v2.0.696](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.696).
 * Comes with [GNU TLS v3.7.4](https://lists.gnupg.org/pipermail/gnutls-help/2022-March/004738.html).
+* Comes with [Git LFS v3.1.4](https://github.com/git-lfs/git-lfs/releases/tag/v3.1.4).
 
 ## Changes since Git for Windows v2.35.2 (April 12th 2022)
 
