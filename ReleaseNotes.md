@@ -52,6 +52,7 @@ Git for Windows will also stop supporting Windows Vista soon after Git for Windo
 
 ### New Features
 
+* Comes with [Git v2.36.0](https://github.com/git/git/blob/v2.36.0/Documentation/RelNotes/2.36.0.txt).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.4](https://cygwin.com/pipermail/cygwin-announce/2022-January/010438.html).
 * Comes with [OpenSSH v8.9p1](https://www.openssh.com/txt/release-8.9).
 * Comes with [cURL v7.82.0](https://curl.haxx.se/changes.html#7_82_0).
