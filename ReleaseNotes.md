@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * On newer Windows versions, Git [now assumes a Win32 Console with full color capabilities](https://github.com/git-for-windows/git/pull/3751). This helps e.g. when NeoVIM is configured as Git's editor.
+* Comes with [GNU TLS v3.7.4](https://lists.gnupg.org/pipermail/gnutls-help/2022-March/004738.html).
 
 ## Changes since Git for Windows v2.35.3 (April 15th 2022)
 
