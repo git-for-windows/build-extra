@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * On newer Windows versions, Git [now assumes a Win32 Console with full color capabilities](https://github.com/git-for-windows/git/pull/3751). This helps e.g. when NeoVIM is configured as Git's editor.
+* Comes with [OpenSSH v9.0p1](https://www.openssh.com/txt/release-9.0).
 
 ## Changes since Git for Windows v2.35.3 (April 15th 2022)
 
