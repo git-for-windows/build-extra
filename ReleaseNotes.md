@@ -53,6 +53,7 @@ Git for Windows will also stop supporting Windows Vista soon after Git for Windo
 * On newer Windows versions, Git [now assumes a Win32 Console with full color capabilities](https://github.com/git-for-windows/git/pull/3751). This helps e.g. when NeoVIM is configured as Git's editor.
 * Comes with [OpenSSH v9.0p1](https://www.openssh.com/txt/release-9.0).
 * When `git clean` fails due to long paths, [Git now advises the user to set `core.longPaths`](https://github.com/git-for-windows/git/pull/3817).
+* Comes with [cURL v7.83.0](https://curl.haxx.se/changes.html#7_83_0).
 
 ### Bug Fixes
 
