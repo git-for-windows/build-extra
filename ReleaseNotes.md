@@ -60,6 +60,7 @@ Git for Windows will also stop supporting Windows Vista soon after Git for Windo
 ### Bug Fixes
 
 * A regression introduced in Git for Windows v2.36.0 where GPG in 32-bit versions simply would not work [was fixed](https://github.com/git-for-windows/MSYS2-packages/commit/002b641e4409ce76709419e835e1fb2a6de14e7c).
+* The `proxy-lookup` helper [only reported the first letter of the proxy](https://github.com/git-for-windows/git/issues/3818), which was fixed.
 
 ## Changes since Git for Windows v2.35.3 (April 15th 2022)
 
