@@ -55,6 +55,7 @@ Git for Windows will also stop supporting Windows Vista soon after Git for Windo
 * When `git clean` fails due to long paths, [Git now advises the user to set `core.longPaths`](https://github.com/git-for-windows/git/pull/3817).
 * Comes with [cURL v7.83.0](https://curl.haxx.se/changes.html#7_83_0).
 * Git Credential Manager's binaries [are no longer installed in the same location as core Git's own dashed programs](https://github.com/git-for-windows/build-extra/pull/406). This separates more clearly the core Git executables from the Git executables provided by third-parties.
+* Comes with [Git Credential Manager Core v2.0.696](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.696).
 
 ### Bug Fixes
 
