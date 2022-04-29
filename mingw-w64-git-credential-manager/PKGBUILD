@@ -27,8 +27,8 @@ sha256sums=('9c80110b4ff0f8e30d572431ee612fc57f398019f83cecb617ad32bb9cb5cacd'
 package() {
   prefix="$pkgdir/${MINGW_PREFIX}"
   srcdir2="${srcdir}/"
-  install -d -m755 "${prefix}"/libexec/git-core
-  install -m755 "$srcdir2"/*.{dll,exe,config} "${prefix}"/libexec/git-core
+  install -d -m755 "${prefix}"/bin
+  install -m755 "$srcdir2"/*.{dll,exe,config} "${prefix}"/bin
   install -d -m755 "${prefix}"/doc/git-credential-manager
   install -m644 "$srcdir2"/git-credential-manager-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager
 }
