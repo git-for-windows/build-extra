@@ -80,9 +80,9 @@ int main(int argc, char **argv)
 			proxy = L"";
 
 		if (verbose)
-			wprintf(L"URL: %s, proxy: %s\n", arg, proxy);
+			wprintf(L"URL: %ls, proxy: %ls\n", arg, proxy);
 		else
-			wprintf(L"%s\n", proxy);
+			wprintf(L"%ls\n", proxy);
 	}
 
 	return 0;
