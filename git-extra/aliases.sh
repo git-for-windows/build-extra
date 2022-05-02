@@ -15,7 +15,9 @@ xterm*)
 		case "$(type -p "$name".exe 2>/dev/null)" in
 		''|/usr/bin/*) continue;;
 		esac
-		alias $name="winpty $name.exe"
+		# The -Xallow-non-tty undocumented switch allows
+		# for pipe '|' to work as expected with those commands
+		alias $name="winpty -Xallow-non-tty $name.exe"
 	done
 	;;
 esac
