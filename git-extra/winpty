@@ -1,0 +1,15 @@
+#!/bin/bash
+
+die () {
+	echo "$*" >&2
+	exit 1
+}
+
+test $# = 1 ||
+die "Usage: $0 <command>"
+
+if [ -t 0 -a -t 1 ]; then
+	exec winpty.exe "$@"
+else
+	exec "$@"
+fi

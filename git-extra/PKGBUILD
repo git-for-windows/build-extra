@@ -55,7 +55,8 @@ source=('inputrc'
         'git-credential-helper-selector.rc'
         'git-askpass.c'
         'git-askpass.h'
-        'git-askpass.rc')
+        'git-askpass.rc'
+        'winpty')
 sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             'e36a3b93b8a33b0a74619f2449ed6d56ed54e4e2938b97070bce4926f1f44054'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
@@ -89,7 +90,8 @@ sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             '78307cd6c04a16240f68197e9155697bc75d5df8e4c8514ff67712bb93a1cd4a'
             '0b4ffbfcf0ab30e0cbcd03507439e468e4ce6d1ccfd6b8f0b3ce3ab2146dc8ee'
             '51e31c6ce824f66b9a8310f1ac10ccdc06b60967a557c996868bc0d9c9866ccf'
-            '0dd30dc3acd406e70b5ff08fb0bf180ec3782119455989af18c05cf59d09df64')
+            '0dd30dc3acd406e70b5ff08fb0bf180ec3782119455989af18c05cf59d09df64'
+            '8b17174b47664fe995b0669589cf201b281bae465c9594a400d2119c93d8e18a')
 
 prepare() {
   test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
@@ -152,4 +154,5 @@ package() {
   install -m755 git-update $pkgdir${MINGW_PREFIX}/libexec/git-core
   install -m755 update-via-pacman.bat $pkgdir
   install -m755 zzz_rm_stackdumps.sh $pkgdir/usr/share/makepkg/lint_package
+  install -m755 winpty $pkgdir/usr/bin/winpty
 }
