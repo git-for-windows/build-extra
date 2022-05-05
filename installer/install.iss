@@ -2287,12 +2287,12 @@ begin
     // No credential helper
     RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.',TabOrder,Top,Left);
 
-    // Restore the settings chosen during a previous install, if .NET 4.7.2
+    // Restore the settings chosen during a previous install, if .NET Framework 4.7.2
     // or later is available.
     if DetectNetFxVersion()<461808 then begin
         RdbGitCredentialManager[GCM].Checked:=False;
         RdbGitCredentialManager[GCM].Enabled:=False;
-        RdbGitCredentialManager[GCM].Caption:=RdbGitCredentialManager[GCM].Caption+' (requires .NET >= 4.7.2)'
+        RdbGitCredentialManager[GCM].Caption:=RdbGitCredentialManager[GCM].Caption+' (requires .NET Framework >= 4.7.2)'
     end else begin
         case ReplayChoice('Use Credential Manager','Enabled') of
             'Disabled': RdbGitCredentialManager[GCM_None].Checked:=True;
