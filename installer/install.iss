@@ -2292,6 +2292,7 @@ begin
     if DetectNetFxVersion()<378675 then begin
         RdbGitCredentialManager[GCM].Checked:=False;
         RdbGitCredentialManager[GCM].Enabled:=False;
+        RdbGitCredentialManager[GCM].Caption:=RdbGitCredentialManager[GCM].Caption+' (requires .NET >= 4.5.1)'
     end else begin
         case ReplayChoice('Use Credential Manager','Enabled') of
             'Disabled': RdbGitCredentialManager[GCM_None].Checked:=True;
