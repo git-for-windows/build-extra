@@ -57,6 +57,7 @@ Git for Windows will also stop supporting Windows Vista soon after Git for Windo
 * Git Credential Manager's binaries [are no longer installed in the same location as core Git's own dashed programs](https://github.com/git-for-windows/build-extra/pull/406). This separates more clearly the core Git executables from the Git executables provided by third-parties.
 * Comes with [Git Credential Manager Core v2.0.696](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.696).
 * Comes with [OpenSSL v1.1.1o](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [patch level 3](https://github.com/git-for-windows/msys2-runtime/commit/df18b6b1f849d0934f6836b9c37d68bc91313ad8) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.4](https://cygwin.com/pipermail/cygwin-announce/2022-January/010438.html).
 
 ### Bug Fixes
 
