@@ -50,6 +50,7 @@ Git for Windows will also stop supporting Windows Vista soon after Git for Windo
 
 ### New Features
 
+* Comes with [Git v2.36.1](https://github.com/git/git/blob/v2.36.1/Documentation/RelNotes/2.36.1.txt).
 * On newer Windows versions, Git [now assumes a Win32 Console with full color capabilities](https://github.com/git-for-windows/git/pull/3751). This helps e.g. when NeoVIM is configured as Git's editor.
 * Comes with [OpenSSH v9.0p1](https://www.openssh.com/txt/release-9.0).
 * When `git clean` fails due to long paths, [Git now advises the user to set `core.longPaths`](https://github.com/git-for-windows/git/pull/3817).
