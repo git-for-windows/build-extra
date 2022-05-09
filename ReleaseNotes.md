@@ -57,13 +57,13 @@ Git for Windows will also stop supporting Windows Vista soon after Git for Windo
 * Git Credential Manager's binaries [are no longer installed in the same location as core Git's own dashed programs](https://github.com/git-for-windows/build-extra/pull/406). This separates more clearly the core Git executables from the Git executables provided by third-parties.
 * Comes with [Git Credential Manager Core v2.0.696](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.696).
 * Comes with [OpenSSL v1.1.1o](https://www.openssl.org/news/openssl-1.1.1-notes.html).
-* Comes with [patch level 3](https://github.com/git-for-windows/msys2-runtime/commit/df18b6b1f849d0934f6836b9c37d68bc91313ad8) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.4](https://cygwin.com/pipermail/cygwin-announce/2022-January/010438.html).
 
 ### Bug Fixes
 
 * A regression introduced in Git for Windows v2.36.0 where GPG in 32-bit versions simply would not work [was fixed](https://github.com/git-for-windows/MSYS2-packages/commit/002b641e4409ce76709419e835e1fb2a6de14e7c).
 * The `proxy-lookup` helper [only reported the first letter of the proxy](https://github.com/git-for-windows/git/issues/3818), which was fixed.
 * The installer [now verifies that .NET Framework 4.7.2 is available](https://github.com/git-for-windows/build-extra/pull/329) before offering Git Credential Manager (GCM) as an option (because it is required for GCM to work).
+* A bug introduced into v2.36.0 where [shell scripts failed to run on some network shares with the error "Too many levels of symbolic links"](https://github.com/git-for-windows/git/issues/3825) was fixed.
 
 ## Changes since Git for Windows v2.35.3 (April 15th 2022)
 
