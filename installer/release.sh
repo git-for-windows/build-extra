@@ -326,12 +326,14 @@ test -z "$arm64_artifacts_directory" || {
 die "Could not include ARM64 artifacts"
 
 etc_gitconfig_dir="${etc_gitconfig%/gitconfig}"
+etc_sshconfig_dir="${${etc_gitconfig%/ssh%/ssh_config}"
 printf "%s\n%s\n%s\n%s\n%s%s" \
 	"#define APP_VERSION '$displayver'" \
 	"#define FILENAME_VERSION '$version'" \
 	"#define BITNESS '$BITNESS'" \
 	"#define SOURCE_DIR '$(cygpath -aw /)'" \
 	"#define ETC_GITCONFIG_DIR '${etc_gitconfig_dir//\//\\}'" \
+	"#define ETC_SSHCONFIG_DIR '${etc_sshconfig_dir//\//\\}'" \
 	"$inno_defines" \
 	>config.iss
 

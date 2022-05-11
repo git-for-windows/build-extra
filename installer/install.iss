@@ -2679,6 +2679,15 @@ begin
         end else if FileExists(UninstallAppPath+'\etc\gitconfig') and
             (not FileCopy(UninstallAppPath+'\etc\gitconfig',ExpandConstant('{tmp}\gitconfig.system'),True)) then
             LogError('Could not save system config; continuing anyway');
+
+        // Save a copy of the system ssh config so that we can copy it back later
+        if FileExists(UninstallAppPath+'\{#MINGW_BITNESS}\etc\ssh\ssh_config') then begin
+            if (not FileCopy(UninstallAppPath+'\{#MINGW_BITNESS}\etc\ssh\ssh_config',ExpandConstant('{tmp}\ssh_config.system'),True)) then
+                LogError('Could not save system ssh config; continuing anyway');
+        // Save a copy of the system ssh config so that we can copy it back later
+        end else if FileExists(UninstallAppPath+'\etc\ssh\ssh_config') and
+            (not FileCopy(UninstallAppPath+'\etc\ssh\ssh_config',ExpandConstant('{tmp}\ssh_config.system'),True)) then
+            LogError('Could not save system ssh config; continuing anyway');
     end;
 
     if UninstallString<>'' then begin
@@ -3048,6 +3057,14 @@ begin
             LogError('Failed to create \{#ETC_GITCONFIG_DIR}; continuing anyway')
         else
             FileCopy(ExpandConstant('{tmp}\gitconfig.system'),AppDir+'\{#ETC_GITCONFIG_DIR}\gitconfig',True)
+    end;
+
+    // Copy previous system wide ssh_config file, if any
+    if FileExists(ExpandConstant('{tmp}\ssh_config.system')) then begin
+        if (not ForceDirectories(AppDir+'\{#ETC_SSHCONFIG_DIR}')) then
+            LogError('Failed to create \{#ETC_SSHCONFIG_DIR}; continuing anyway')
+        else
+            FileCopy(ExpandConstant('{tmp}\ssh_config.system'),AppDir+'\{#ETC_SSHCONFIG_DIR}\ssh_config',True)
     end;
 
     {
