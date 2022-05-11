@@ -40,6 +40,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.36.1 (May 9th 2022)
+
+### New Features
+
+* Comes with [cURL v7.83.1](https://curl.haxx.se/changes.html#7_83_1).
+
 ## Changes since Git for Windows v2.36.0 (April 20th 2022)
 
 ### Upcoming breaking changes
