@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [cURL v7.83.1](https://curl.haxx.se/changes.html#7_83_1).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.5](https://cygwin.com/pipermail/cygwin-announce/2022-May/010565.html).
 
 ## Changes since Git for Windows v2.36.0 (April 20th 2022)
 
