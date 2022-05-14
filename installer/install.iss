@@ -3181,9 +3181,9 @@ begin
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
     if RdbExperimentalOptions[GP_EnableFSMonitor].checked then
-        GitSystemConfigSet('core.useBuiltinFSMonitor','true')
+        GitSystemConfigSet('core.fsmonitor','true')
     else
-        GitSystemConfigSet('core.useBuiltinFSMonitor',#0);
+        GitSystemConfigSet('core.fsmonitor',#0);
 #endif
 
     {
