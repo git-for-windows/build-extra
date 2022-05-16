@@ -49,6 +49,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.5](https://cygwin.com/pipermail/cygwin-announce/2022-May/010565.html).
 * Comes with [GNU TLS v3.7.5](https://lists.gnupg.org/pipermail/gnutls-help/2022-May/004743.html).
 
+### Bug Fixes
+
+* The Git for Windows-only `--show-ignored-directory` option of `git status`, which was deprecated a long time ago, [was finally removed](https://github.com/git-for-windows/git/pull/2067).
+
 ## Changes since Git for Windows v2.36.0 (April 20th 2022)
 
 ### Upcoming breaking changes
