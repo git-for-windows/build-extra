@@ -274,7 +274,8 @@ then
 		d=init.defaultBranch.$$ &&
 		rm -f $d &&
 		GIT_CONFIG_NOSYSTEM=true HOME=$d XDG_CONFIG_HOME=$d GIT_TEST_DEFAULT_INITIAL_BRANCH_NAME= git init --bare $d &&
-		default_branch_name="$(git -C $d symbolic-ref --short HEAD)" &&
+		git config -f $d/.gitconfig --add safe.directory "$(cygpath -am $d)" &&
+		default_branch_name="$(HOME=$d git -C $d symbolic-ref --short HEAD)" &&
 		rm -rf $d &&
 		test -n "$default_branch_name" &&
 		echo "$default_branch_name" >init.defaultBranch ||
