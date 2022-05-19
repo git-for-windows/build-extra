@@ -3478,14 +3478,15 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update $sdk32$pkgpath"
 		;;
 	mingw-w64-pcre2)
-		url=https://pcre.org/news.txt
-		news="$(curl $url)" ||
-		die "Could not download %s\n" "$url"
-
-		version="$(echo "$news" | sed -n -e \
-			'/^Version [1-9][0-9]*\.[1-9]/{s/^[^1-9]*\([^ ]*\).*/\1/p;q}' )"
+		repo=PhilipHazel/pcre2
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -Ls $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		version="$(echo "$release" |
+			sed -n 's/^  "tag_name": "pcre2-\(.*\)",\?$/\1/p')"
 		test -n "$version" ||
-		die "Could not determine current PCRE2 version\n"
+		die "Could not determine version of %s\n" "$package"
 
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
