@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.5](https://cygwin.com/pipermail/cygwin-announce/2022-May/010565.html).
 * Comes with [GNU TLS v3.7.5](https://lists.gnupg.org/pipermail/gnutls-help/2022-May/004743.html).
 * Comes with [PCRE2 v10.40](https://api.github.com/repos/PhilipHazel/pcre2/releases/latest).
+* Comes with [Git LFS v3.2.0](https://github.com/git-lfs/git-lfs/releases/tag/v3.2.0).
 
 ### Bug Fixes
 
