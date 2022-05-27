@@ -800,6 +800,12 @@ var
     Values:TArrayOfString;
     c,i,j,k:Integer;
 begin
+    if AppDir='' then begin
+        // No previous installation detected, therefore we cannot execute `git config`
+        Result:=True;
+        Exit;
+    end;
+
     case WhichOne of
     'ProgramData': ExtraOptions:='-f "'+ExpandConstant('{commonappdata}\Git\config')+'"';
     'system': ExtraOptions:='--system';
