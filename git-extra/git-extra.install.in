@@ -187,11 +187,9 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 		! grep -q '^Ciphers [a-z].*cbc' /etc/ssh/ssh_config ||
 		sed -i -e 's/^Ciphers [a-z].*cbc/#   &/' /etc/ssh/ssh_config
 
-		grep -q '^Ciphers\s\++' /etc/ssh/ssh_config ||
-		printf '%s\n%s\n' \
-			'# Added by git-extra' \
-			'Ciphers +aes128-cbc,3des-cbc,aes256-cbc,aes192-cbc' \
-			>>/etc/ssh/ssh_config
+		# Revert change by prior versions of git-extra.
+		! grep -q '^Ciphers\s\++' /etc/ssh/ssh_config ||
+		sed -i -e '/^# Added by git-extra/{N;/^\(.*\n\)\?Ciphers +[a-z].*cbc/d}' /etc/ssh/ssh_config
 
 		grep -q '^Host\s\+ssh\.dev\.azure\.com' /etc/ssh/ssh_config ||
 		printf '%s\n%s\n\t%s\n\t%s\n' \
