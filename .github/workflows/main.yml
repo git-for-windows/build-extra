@@ -21,7 +21,11 @@ jobs:
           }
 
           git diff ${{github.event.pull_request.base.sha}}... --name-only |
-            sed 's|[^/]*$||' |
+            sed \
+              -e '/^make-file-list\.sh$/ainstaller/' \
+              -e '/^make-file-list\.sh$/aportable/' \
+              -e '/^make-file-list\.sh$/amingit/' \
+              -e 's|[^/]*$||' |
             sort -u >touched.txt &&
 
           git ls-files \*/PKGBUILD | sed 's|[^/]*$||' | sort >directories.txt &&
