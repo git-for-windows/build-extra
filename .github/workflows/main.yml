@@ -20,7 +20,9 @@ jobs:
             echo "::set-output name=$1::[$(test ! -s list.txt && echo '""' || tr -d '\n' <list.txt)]"
           }
 
-          git diff ${{github.event.pull_request.base.sha}}... --name-only | sed 's|[^/]*$||' | sort -u >touched.txt &&
+          git diff ${{github.event.pull_request.base.sha}}... --name-only |
+            sed 's|[^/]*$||' |
+            sort -u >touched.txt &&
 
           git ls-files \*/PKGBUILD | sed 's|[^/]*$||' | sort >directories.txt &&
           define_matrix matrix directories.txt touched.txt packages.txt &&
