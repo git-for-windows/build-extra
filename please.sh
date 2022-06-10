@@ -4600,6 +4600,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		/usr/bin/msys-pcre*.dll
 		/usr/bin/msys-gcc_s-*.dll
 
+		# markdown, to render the release notes
+		/usr/bin/markdown
+
 		# Files to include into the installer/Portable Git/MinGit
 		EOF
 		git -C "$output_path" checkout -- &&
