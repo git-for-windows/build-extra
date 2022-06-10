@@ -49,6 +49,21 @@ then
 	UTIL_PACKAGES="$UTIL_PACKAGES tmux libevent"
 fi
 
+# It is totally okay to exclude built-in commands, e.g. via
+# `make -C /usr/src/git SKIP_DASHED_BUILT_INS=YesPlease install`
+EXCLUDE_MISSING_BUILTINS=
+if test -f "/mingw$BITNESS/share/git/builtins.txt"
+then
+	BUILTINS_ON_RECORD="$(sed "s|^|/mingw$BITNESS/libexec/git-core/|" <"/mingw$BITNESS/share/git/builtins.txt" | sort)" &&
+	BUILTINS_ON_DISK="$(find "/mingw$BITNESS/libexec/git-core" -name git-\*.exe | sort)" &&
+	# emulate `comm -23 <(...<on-disk>...) <(...<on-record>...)`,
+	# i.e. list the entries that are on record but not on disk,
+	# because `dash` does not understand the `<(...)` syntax.
+	EXCLUDE_MISSING_BUILTINS="$(printf '%s\n' "$BUILTINS_ON_RECORD" "$BUILTINS_ON_DISK" "$BUILTINS_ON_DISK" |
+		sort | uniq -u)" ||
+	die "Could not exclude missing dashed versions of the built-in commands"
+fi
+
 this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
 
@@ -161,6 +176,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../share/doc/git-doc/git-cvsexport' \
 	-e '^/mingw../libexec/git-core/git-cvsexport' \
 	-e '^/mingw../share/doc/git-doc/git-cvsimport' \
+	-e "^\\($(echo $EXCLUDE_MISSING_BUILTINS | sed 's/ /\\|/g')\\)\$" \
 	-e '^/mingw../share/gtk-doc/' \
 	-e '^/mingw../share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
