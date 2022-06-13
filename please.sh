@@ -4502,6 +4502,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	mode=
 	case "$1" in
 	minimal|git-sdk-minimal) mode=minimal-sdk;;
+	full) mode=full-sdk;;
 	minimal-sdk|makepkg-git|build-installers|full-sdk) mode=$1;;
 	*) die "Unhandled artifact: '%s'\n" "$1";;
 	esac
@@ -4599,6 +4600,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		/usr/bin/msys-intl-*.dll
 		/usr/bin/msys-pcre*.dll
 		/usr/bin/msys-gcc_s-*.dll
+
+		# markdown, to render the release notes
+		/usr/bin/markdown
 
 		# Files to include into the installer/Portable Git/MinGit
 		EOF
