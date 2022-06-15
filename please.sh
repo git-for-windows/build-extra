@@ -3747,7 +3747,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 
 	case "$branch_to_use" in
 	*@*)
-		git "$dir_option" fetch --tags \
+		git "$dir_option" fetch --tags --prune-tags \
 			"${branch_to_use#*@}" "${branch_to_use%%@*}" ||
 		die "Could not fetch '%s' from '%s'\n" \
 			"${branch_to_use%%@*}" "${branch_to_use#*@}"
