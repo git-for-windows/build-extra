@@ -3483,8 +3483,9 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		release="$(curl --netrc -Ls $url)"
 		test -n "$release" ||
 		die "Could not determine the latest version of %s\n" "$package"
-		version="$(echo "$release" |
-			sed -n 's/^  "tag_name": "pcre2-\(.*\)",\?$/\1/p')"
+		tag="$(echo "$release" |
+			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
+		version=${tag#pcre2-}
 		test -n "$version" ||
 		die "Could not determine version of %s\n" "$package"
 
@@ -3497,6 +3498,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		exit
 
+		url=https://raw.githubusercontent.com/$repo/$tag/ChangeLog
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
 		release_notes_feature="Comes with [PCRE2 $v]($url)."
 		;;
