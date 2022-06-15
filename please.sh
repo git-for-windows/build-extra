@@ -3478,7 +3478,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update $sdk32$pkgpath"
 		;;
 	mingw-w64-pcre2)
-		repo=PhilipHazel/pcre2
+		repo=PCRE2Project/pcre2
 		url=https://api.github.com/repos/$repo/releases/latest
 		release="$(curl --netrc -Ls $url)"
 		test -n "$release" ||
