@@ -4830,6 +4830,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	# Work around bug where the incorrect xmlcatalog.exe wrote /etc/xml/catalog
 	sed -i -e 's|C:/git-sdk-64-ci||g' /etc/xml/catalog
 
+	test true = "$GITHUB_ACTIONS" || # GitHub Actions' agents have the mspdb.dll, and cv2pdb finds it
 	find_mspdb_dll >/dev/null || {
 		WITHOUT_PDBS=1
 		export WITHOUT_PDBS
