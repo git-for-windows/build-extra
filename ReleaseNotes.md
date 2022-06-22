@@ -52,6 +52,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [GNU TLS v3.7.6](https://lists.gnupg.org/pipermail/gnutls-help/2022-May/004744.html).
 * SSH's CBC ciphers, which were re-enabled in 2017 to better support Azure Repos [have again been disabled by default](https://github.com/git-for-windows/build-extra/pull/421) because Azure Repos does not require them any longer.
 * Comes with [OpenSSL v1.1.1p](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [Git Credential Manager Core v2.0.779](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.779).
 
 ### Bug Fixes
 
