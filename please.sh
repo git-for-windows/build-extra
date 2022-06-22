@@ -2475,9 +2475,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not determine the latest version of %s\n" "$package"
 		tag_name="$(echo "$release" |
 			sed -n 's/^    "tag_name": "\(.*\)",\?$/\1/p' | head -n 1)"
-		zip_name="$(echo "$release" | sed -n \
+		zip_name="$(echo "$release" | sed -ne 's/gcm[^"]*-symbols\.zip//' -e \
 			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p' | head -n 1)"
 		version=${zip_name#gcmcore-win-x86-}
+		version=${zip_name#gcm-win-x86-}
 		version=${version%.zip}
 		zip_prefix=${zip_name%$version.zip}
 		if test "$zip_prefix" = "$zip_name"
