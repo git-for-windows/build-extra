@@ -59,6 +59,7 @@ This package contains software from a number of other projects including Bash, z
 * The Git for Windows-only `--show-ignored-directory` option of `git status`, which was deprecated a long time ago, [was finally removed](https://github.com/git-for-windows/git/pull/2067).
 * A crash when running Git for Windows in Wine [was fixed](https://github.com/git-for-windows/git/pull/3875).
 * A bug in the interaction between FSCache and parallel checkout [was fixed](https://github.com/git-for-windows/git/pull/3909).
+* Cloning to network shares failed on some network file systems, which was [fixed](https://github.com/git-for-windows/git/pull/3646).
 
 ## Changes since Git for Windows v2.36.0 (April 20th 2022)
 
