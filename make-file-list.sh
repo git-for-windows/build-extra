@@ -125,7 +125,7 @@ for req in mingw-w64-$ARCH-git-credential-manager $SH_FOR_REBASE \
 		mingw-w64-$ARCH-connect git-flow unzip docx2txt \
 		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt \
 		mingw-w64-$ARCH-xpdf-tools ssh-pageant mingw-w64-$ARCH-git-lfs \
-		tig nano perl-JSON $GIT_UPDATE_EXTRA_PACKAGES)
+		tig nano perl-JSON libpcre2_8 libpcre2posix $GIT_UPDATE_EXTRA_PACKAGES)
 do
 	test -d /var/lib/pacman/local/$req-[0-9]* ||
 	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
@@ -200,7 +200,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 		echo 'uuid\|'
 	    fi)'lzma\|fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(hdb\|history8\|kadm5\|kdc\|otp\|sl\).*\.dll$' \
-	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|pcre2-8\|ssh2\)-.*\.dll$' \
+	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|ssh2\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(ncurses++w6\|asprintf-[0-9]*\|\)\.dll$' \
 	-e '^/usr/bin/msys-\(formw6\|menuw6\|panelw6\)\.dll$' \
 	-e '^/usr/bin/msys-svn_swig_\(py\|ruby\)-.*\.dll$' \
