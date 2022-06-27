@@ -44,7 +44,6 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [cURL v7.83.1](https://curl.haxx.se/changes.html#7_83_1).
 * Many anti-malware products seem to have problems with our MSYS2 runtime, leading to problems running e.g. `git subtree`. We [added a workaround](https://github.com/git-for-windows/msys2-runtime/pull/37) that hopefully helps in most of these scenarios.
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.5](https://cygwin.com/pipermail/cygwin-announce/2022-May/010565.html).
 * Comes with [PCRE2 v10.40](https://raw.githubusercontent.com/PCRE2Project/pcre2/pcre2-10.40/ChangeLog).
@@ -53,6 +52,7 @@ This package contains software from a number of other projects including Bash, z
 * SSH's CBC ciphers, which were re-enabled in 2017 to better support Azure Repos [have again been disabled by default](https://github.com/git-for-windows/build-extra/pull/421) because Azure Repos does not require them any longer.
 * Comes with [OpenSSL v1.1.1p](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [Git Credential Manager Core v2.0.779](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.779).
+* Comes with [cURL v7.84.0](https://curl.haxx.se/changes.html#7_84_0).
 
 ### Bug Fixes
 
