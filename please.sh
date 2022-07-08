@@ -538,7 +538,7 @@ set_package () {
 		pkgpath=/usr/src/MSYS2-packages/$package
 		extra_makepkg_opts=--nocheck
 		;;
-	perl-Net-SSLeay|perl-HTML-Parser|perl-TermReadKey|perl-Locale-Gettext|perl-XML-Parser|perl-YAML-Syck)
+	perl-Net-SSLeay|perl-HTML-Parser|perl-TermReadKey|perl-Locale-Gettext|perl-XML-Parser|perl-YAML-Syck|perl-Clone)
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
@@ -3117,7 +3117,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		url=http://search.cpan.org/dist/perl-$ver/pod/perldelta.pod &&
 		release_notes_feature='Comes with [Perl v'$ver']('"$url"').'
 		;;
-	perl-Net-SSLeay|perl-HTML-Parser|perl-TermReadKey|perl-Locale-Gettext|perl-XML-Parser|perl-YAML-Syck)
+	perl-Net-SSLeay|perl-HTML-Parser|perl-TermReadKey|perl-Locale-Gettext|perl-XML-Parser|perl-YAML-Syck|perl-Clone)
 		metaname=${package#perl-}
 		case $metaname in
 		Locale-Gettext) metaname=gettext;;
