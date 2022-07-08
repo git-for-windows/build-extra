@@ -4454,6 +4454,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	output_path=
 	force=
 	bitness=auto
+	keep_worktree=
 	while case "$1" in
 	--out|-o)
 		shift
@@ -4487,6 +4488,12 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		;;
 	--force|-f)
 		force=t
+		;;
+	--keep-worktree)
+		keep_worktree=t
+		;;
+	--no-keep-worktree)
+		keep_worktree=
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -4728,8 +4735,11 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
   <rewriteURI uriStartString="http://docbook.sourceforge.net/release/xsl-ns/current" rewritePrefix="/usr/share/xml/docbook-xsl-ns-1.78.1"/>' \
 			"$output_path/etc/xml/catalog"
 	fi &&
-	rm -r "$(cat "$output_path/.git" | sed 's/^gitdir: //')" &&
-	rm "$output_path/.git" &&
+	if test -z "$keep_worktree"
+	then
+		rm -r "$(cat "$output_path/.git" | sed 's/^gitdir: //')" &&
+		rm "$output_path/.git"
+	fi &&
 	echo "Output written to '$output_path'" >&2 ||
 	die "Could not write artifact at '%s'\n" "$output_path"
 }
