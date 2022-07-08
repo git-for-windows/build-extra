@@ -25,9 +25,9 @@ esac
 
 if test -t 2
 then
-	next_line='\033[K\r'
+	print_dir=t
 else
-	next_line='\n'
+	print_dir=
 fi
 
 used_dlls_file=/tmp/used-dlls.$$.txt
@@ -40,7 +40,8 @@ mingw_bin_dlls="$(echo "$all_files" | grep '^mingw'$BITNESS'/bin/[^/]*\.dll$')" 
 dirs="$(echo "$all_files" | sed -n 's/[^/]*\.\(dll\|exe\)$//p' | sort | uniq)" &&
 for dir in $dirs
 do
-	printf "dir: $dir$next_line\\r" >&2
+	test -z "$print_dir" ||
+	printf "dir: $dir\\033[K\\r" >&2
 
 	case "$dir" in
 	usr/*) dlls="$sys_dlls$LF$usr_bin_dlls$LF";;
