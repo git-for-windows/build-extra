@@ -46,6 +46,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [OpenSSL v1.1.1q](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
+### Bug Fixes
+
+* Pasting large amounts of text in Git for Windows' Bash when running inside Windows Terminal [often resulted in garbled text](https://github.com/git-for-windows/git/issues/3936), which has been fixed.
+
 ## Changes since Git for Windows v2.36.1 (May 9th 2022)
 
 ### New Features
