@@ -34,8 +34,9 @@ used_dlls_file=/tmp/used-dlls.$$.txt
 >"$used_dlls_file"
 missing_dlls_file=/tmp/missing-dlls.$$.txt
 >"$missing_dlls_file"
+unused_dlls_file=/tmp/unused-dlls.$$.txt
 tmp_file=/tmp/tmp.$$.txt
-trap "rm \"$used_dlls_file\" \"$missing_dlls_file\" \"$tmp_file\"" EXIT
+trap "rm \"$used_dlls_file\" \"$missing_dlls_file\" \"$unused_dlls_file\" \"$tmp_file\"" EXIT
 
 all_files="$(export ARCH BITNESS && "$thisdir"/make-file-list.sh | tr A-Z a-z | grep -v '/getprocaddr64.exe$')" &&
 usr_bin_dlls="$(echo "$all_files" | grep '^usr/bin/[^/]*\.dll$')" &&
@@ -107,6 +108,7 @@ echo "$all_files" |
 		-e '^usr/lib/coreutils/libstdbuf.dll' \
 		-e '^mingw../bin/\(atlassian\|azuredevops\|bitbucket\|gcmcore.*\|github\|gitlab\|microsoft\|newtonsoft\|system\..*\|webview2loader\)\.' \
 		-e '^mingw../lib/\(engines\|reg\|thread\)' |
-	sed 's/^/unused dll: /' >&2
+	sed 's/^/unused dll: /' |
+	tee "$unused_dlls_file" >&2
 
-test ! -s "$missing_dlls_file"
+test ! -s "$missing_dlls_file" && test ! -s "$unused_dlls_file"
