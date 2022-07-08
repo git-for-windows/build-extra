@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [OpenSSL v1.1.1q](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [patch level 2](https://github.com/git-for-windows/msys2-runtime/commit/4ca643eb665edffa3391bf6f505bff86ff447914) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.5](https://cygwin.com/pipermail/cygwin/2022-May/251439.html).
 
 ### Bug Fixes
 
