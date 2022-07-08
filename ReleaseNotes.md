@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [OpenSSL v1.1.1q](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [perl-Clone v0.45](https://metacpan.org/source/ATOOMIC/Clone-0.45/Changes).
 
 ### Bug Fixes
 
