@@ -31,8 +31,11 @@ else
 fi
 
 used_dlls_file=/tmp/used-dlls.$$.txt
+>"$used_dlls_file"
+missing_dlls_file=/tmp/missing-dlls.$$.txt
+>"$missing_dlls_file"
 tmp_file=/tmp/tmp.$$.txt
-trap "rm \"$used_dlls_file\" \"$tmp_file\"" EXIT
+trap "rm \"$used_dlls_file\" \"$missing_dlls_file\" \"$tmp_file\"" EXIT
 
 all_files="$(export ARCH BITNESS && "$thisdir"/make-file-list.sh | tr A-Z a-z | grep -v '/getprocaddr64.exe$')" &&
 usr_bin_dlls="$(echo "$all_files" | grep '^usr/bin/[^/]*\.dll$')" &&
@@ -67,14 +70,20 @@ do
 			echo "$a" >>"$used_dlls_file"
 			case "$dlls" in
 			*"/$a$LF"*) ;; # okay, it's included
-			*) echo "$current is missing $a" >&2;;
+			*)
+				echo "$current is missing $a" >&2
+				echo "$a" >>"$missing_dlls_file"
+				;;
 			esac
 			;;
 		dll,name:) # `objdump -p` output
 			echo "$c" >>"$used_dlls_file"
 			case "$dlls" in
 			*"/$c$LF"*) ;; # okay, it's included
-			*) echo "$current is missing $c" >&2;;
+			*)
+				echo "$current is missing $c" >&2
+				echo "$c" >>"$missing_dlls_file"
+				;;
 			esac
 			;;
 		esac
@@ -99,3 +108,5 @@ echo "$all_files" |
 		-e '^mingw../bin/\(atlassian\|azuredevops\|bitbucket\|gcmcore.*\|github\|gitlab\|microsoft\|newtonsoft\|system\..*\|webview2loader\)\.' \
 		-e '^mingw../lib/\(engines\|reg\|thread\)' |
 	sed 's/^/unused dll: /' >&2
+
+test ! -s "$missing_dlls_file"
