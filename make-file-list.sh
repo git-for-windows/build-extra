@@ -355,3 +355,5 @@ test -z "$INCLUDE_TMUX" || cat <<EOF
 usr/bin/tmux.exe
 $(ldd /usr/bin/tmux.exe | sed -n 's/.*> \/\(.*msys-event[^ ]*\).*/\1/p')
 EOF
+
+test -z "$INCLUDE_OBJDUMP" || echo usr/bin/objdump.exe

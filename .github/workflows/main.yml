@@ -37,10 +37,14 @@ jobs:
           test -z "$(git log -L :create_sdk_artifact:please.sh ${{github.event.pull_request.base.sha}}.. -- )" ||
           test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- make-file-list.sh)" ||
           echo "::set-output name=test-sdk-artifacts::true"
+
+          test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- check-for-missing-dlls.sh)" ||
+          echo "::set-output name=check-for-missing-dlls::true"
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       artifacts: ${{ steps.set-matrix.outputs.artifacts }}
       test-sdk-artifacts: ${{ steps.set-matrix.outputs.test-sdk-artifacts }}
+      check-for-missing-dlls: ${{ steps.set-matrix.outputs.check-for-missing-dlls }}
   build-packages:
     needs: determine-packages
     runs-on: windows-latest
@@ -158,3 +162,36 @@ jobs:
         with:
           name: installer-${{ matrix.bitness }}
           path: installer-${{ matrix.bitness }}
+  check-for-missing-dlls:
+    needs: determine-packages
+    if: needs.determine-packages.outputs.test-sdk-artifacts == 'true' || needs.determine-packages.outputs.check-for-missing-dlls == 'true'
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        bitness: ['32', '64']
+    steps:
+      - uses: actions/checkout@v3
+      - name: initialize bare SDK clone
+        shell: bash
+        run: |
+          git clone --bare --depth=1 --single-branch --branch=main --filter=blob:none \
+            https://github.com/git-for-windows/git-sdk-${{ matrix.bitness }} .sdk
+      - name: build build-installers-${{ matrix.bitness }} artifact
+        shell: bash
+        run: |
+          INCLUDE_OBJDUMP=t \
+          ./please.sh create-sdk-artifact \
+            --bitness=${{ matrix.bitness }} \
+            --sdk=.sdk \
+            --out=sdk-artifact \
+            build-installers &&
+          cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
+          cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
+          cygpath -aw "$PWD/sdk-artifact/mingw${{ matrix.bitness }}/bin" >>$GITHUB_PATH
+      - name: check for missing DLLs
+        shell: bash
+        run: ./check-for-missing-dlls.sh
+      - name: check for missing DLLs (MinGit)
+        shell: bash
+        run: MINIMAL_GIT=1 ./check-for-missing-dlls.sh
