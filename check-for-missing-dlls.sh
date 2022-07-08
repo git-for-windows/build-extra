@@ -34,7 +34,7 @@ used_dlls_file=/tmp/used-dlls.$$.txt
 tmp_file=/tmp/tmp.$$.txt
 trap "rm \"$used_dlls_file\" \"$tmp_file\"" EXIT
 
-all_files="$(export ARCH BITNESS && "$thisdir"/make-file-list.sh | tr A-Z a-z)" &&
+all_files="$(export ARCH BITNESS && "$thisdir"/make-file-list.sh | tr A-Z a-z | grep -v '/getprocaddr64.exe$')" &&
 usr_bin_dlls="$(echo "$all_files" | grep '^usr/bin/[^/]*\.dll$')" &&
 mingw_bin_dlls="$(echo "$all_files" | grep '^mingw'$BITNESS'/bin/[^/]*\.dll$')" &&
 dirs="$(echo "$all_files" | sed -n 's/[^/]*\.\(dll\|exe\)$//p' | sort | uniq)" &&
