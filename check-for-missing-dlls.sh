@@ -95,6 +95,7 @@ echo "$all_files" |
 		-e '^usr/lib/gawk/' \
 		-e '^usr/lib/openssl/engines' \
 		-e '^usr/lib/sasl2/' \
+		-e '^usr/lib/coreutils/libstdbuf.dll' \
 		-e '^mingw../bin/\(atlassian\|azuredevops\|bitbucket\|gcmcore.*\|github\|gitlab\|microsoft\|newtonsoft\|system\..*\|webview2loader\)\.' \
 		-e '^mingw../lib/\(engines\|reg\|thread\)' |
 	sed 's/^/unused dll: /' >&2
