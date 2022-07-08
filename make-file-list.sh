@@ -156,13 +156,14 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/include/' -e '^/mingw../include/' \
 	-e '^/usr/share/doc/' \
 	-e '^/usr/share/info/' -e '^/mingw../share/info/' \
+	-e '^/mingw32/bin/lib\(ffi\|tasn1\)-.*\.dll$' \
 	-e '^/mingw../share/git-doc/technical/' \
 	-e '^/mingw../lib/cmake/' \
 	-e '^/mingw../itcl/' \
 	-e '^/mingw../t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
 	-e '^/mingw../bin/\(autopoint\|[a-z]*-config\)$' \
 	-e '^/mingw../bin/lib\(asprintf\|brotlienc\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13p]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
-	-e '^/mingw../bin/lib\(atomic\|charset\|ffi\|gomp\|systre\|tasn1\)-[0-9]*\.dll$' \
+	-e '^/mingw../bin/lib\(atomic\|charset\|gomp\|systre\)-[0-9]*\.dll$' \
 	-e '^/mingw../bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\|zip\)[^/]*\.exe$' \
 	-e '^/mingw../bin/recode-sr-latin.exe$' \
 	-e '^/mingw../bin/\(cert\|p11\|psk\|srp\)tool.exe$' \
@@ -230,7 +231,7 @@ else
 		-e '^/mingw../bin/\(gitk\|git-upload-archive\.exe\)$' \
 		-e '^/mingw../bin/libgcc_s_seh-.*\.dll$' \
 		-e '^/mingw../bin/libjemalloc\.dll$' \
-		-e '^/mingw../bin/lib\(gmp\|gomp\|jansson\|metalink\|minizip\)-.*\.dll$' \
+		-e '^/mingw../bin/lib\(ffi\|gmp\|gomp\|jansson\|metalink\|minizip\|tasn1\)-.*\.dll$' \
 		-e '^/mingw../bin/libvtv.*\.dll$' \
 		-e '^/mingw../bin/libpcreposix.*\.dll$' \
 		-e '^/mingw../bin/\(.*\.def\|update-ca-trust\)$' \
