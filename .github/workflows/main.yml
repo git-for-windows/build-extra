@@ -78,9 +78,22 @@ jobs:
         directory: ${{ fromJSON(needs.determine-packages.outputs.artifacts) }}
     steps:
       - uses: actions/checkout@v3
-      - uses: git-for-windows/setup-git-for-windows-sdk@v1
-        with:
-          flavor: build-installers
+      - name: initialize bare SDK clone
+        shell: bash
+        run: |
+          git clone --bare --depth=1 --single-branch --branch=main --filter=blob:none \
+            https://github.com/git-for-windows/git-sdk-64 .sdk
+      - name: build build-installers-64 artifact
+        shell: bash
+        run: |
+          ./please.sh create-sdk-artifact \
+            --bitness=64 \
+            --sdk=.sdk \
+            --out=sdk-artifact \
+            build-installers &&
+          cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
+          cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
+          cygpath -aw "$PWD/sdk-artifact/mingw64/bin" >>$GITHUB_PATH
       - name: build ${{ matrix.directory }}/
         shell: bash
         run: |
