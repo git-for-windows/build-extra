@@ -99,13 +99,20 @@ mingw-w64-$ARCH-zstd"
 		;;
 	esac &&
 
+	pacman_stderr=/tmp/pacman-stderr.$$.txt
+	>$pacman_stderr
 	if test -n "$PACKAGE_VERSIONS_FILE"
 	then
-		pacman -Q $package_list >"$PACKAGE_VERSIONS_FILE"
+		pacman -Q $package_list >"$PACKAGE_VERSIONS_FILE" 2>$pacman_stderr
 	fi &&
-	pacman -Ql $package_list |
+	pacman -Ql $package_list 2>$pacman_stderr |
 	grep -v '/$' |
 	sed 's/^[^ ]* //'
+	res=$?
+
+	grep -v 'database file for .* does not exist' <$pacman_stderr >&2
+	rm $pacman_stderr
+	return $res
 }
 
 # Packages that have been added after Git SDK 1.0.0 was released...
