@@ -42,7 +42,7 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.37.0 (June 27th 2022)
 
-This release addresses [CVE-2022-31012](https://github.com/git-for-windows/git/security/advisories/GHSA-gjrj-fxvp-hjj2).
+This release addresses [CVE-2022-31012](https://github.com/git-for-windows/git/security/advisories/GHSA-gjrj-fxvp-hjj2) and [CVE-2022-29187](https://github.com/git/git/security/advisories/GHSA-j342-m5hw-rr3v).
 
 ### New Features
 
@@ -55,6 +55,7 @@ This release addresses [CVE-2022-31012](https://github.com/git-for-windows/git/s
 * Pasting large amounts of text in Git for Windows' Bash when running inside Windows Terminal [often resulted in garbled text](https://github.com/git-for-windows/git/issues/3936), which has been fixed.
 * The Perl module [perl-Clone](https://metacpan.org/source/ATOOMIC/Clone-0.45/Changes) which linked to a non-existing DLL was rebuilt to fix the issue.
 * The Git for Windows installer can no longer be tricked into running an untrusted `git.exe` in elevated mode ([CVE-2022-31012](https://github.com/git-for-windows/git/security/advisories/GHSA-gjrj-fxvp-hjj2)).
+* When running Git in a world-writable directory owned by the current user (think `C:\Windows\Temp`, when running under the `SYSTEM` account), the checks for dubious ownership of the `.git` directory now detect this situation properly ([CVE-2022-29187](https://github.com/git/git/security/advisories/GHSA-j342-m5hw-rr3v)).
 
 ## Changes since Git for Windows v2.36.1 (May 9th 2022)
 
