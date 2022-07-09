@@ -289,7 +289,8 @@ fi
 # 3. Construct DeleteOpenSSHFiles function signature to be used in install.iss
 # 4. Assemble function body and compile flag to be used as guard in install.iss
 echo "$LIST" | sort >sorted-file-list.txt
-pacman -Ql openssh | sed -n 's|^openssh /\(.*[^/]\)$|\1|p' | sort >sorted-openssh-file-list.txt
+pacman -Ql openssh 2>pacman.stderr | sed -n 's|^openssh /\(.*[^/]\)$|\1|p' | sort >sorted-openssh-file-list.txt
+grep -v 'database file for .* does not exist' <pacman.stderr >&2
 openssh_deletes="$(comm -12 sorted-file-list.txt sorted-openssh-file-list.txt |
 	sed -e 'y/\//\\/' -e "s|.*|    if not DeleteFile(AppDir+'\\\\&') then\n        Result:=False;|")"
 inno_defines="$inno_defines$LF[Code]${LF}function DeleteOpenSSHFiles():Boolean;${LF}var$LF    AppDir:String;${LF}begin$LF    AppDir:=ExpandConstant('{app}');$LF    Result:=True;"
