@@ -4603,6 +4603,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		/usr/bin/dirname.exe
 		/usr/bin/grep.exe
 		/usr/bin/ls.exe
+		/usr/bin/rm.exe
 		/usr/bin/sed.exe
 		/usr/bin/sort.exe
 		/usr/bin/uniq.exe
