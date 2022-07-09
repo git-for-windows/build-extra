@@ -45,11 +45,11 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [OpenSSL v1.1.1q](https://www.openssl.org/news/openssl-1.1.1-notes.html).
-* Comes with [perl-Clone v0.45](https://metacpan.org/source/ATOOMIC/Clone-0.45/Changes).
 
 ### Bug Fixes
 
 * Pasting large amounts of text in Git for Windows' Bash when running inside Windows Terminal [often resulted in garbled text](https://github.com/git-for-windows/git/issues/3936), which has been fixed.
+* The Perl module [perl-Clone](https://metacpan.org/source/ATOOMIC/Clone-0.45/Changes) which linked to a non-existing DLL was rebuilt to fix the issue.
 
 ## Changes since Git for Windows v2.36.1 (May 9th 2022)
 
