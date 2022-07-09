@@ -4603,6 +4603,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		/usr/bin/dirname.exe
 		/usr/bin/grep.exe
 		/usr/bin/ls.exe
+		/usr/bin/rm.exe
 		/usr/bin/sed.exe
 		/usr/bin/sort.exe
 		/usr/bin/uniq.exe
@@ -4617,6 +4618,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		# Files to include into the installer/Portable Git/MinGit
 		EOF
 		git -C "$output_path" checkout -- &&
+		mkdir -p "$output_path/tmp" &&
 		printf 'export MSYSTEM=MINGW%s\nexport PATH=/mingw%s/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' "$bitness" "$bitness" >"$output_path/etc/profile" &&
 		mkdir -p "$output_path/mingw$bitness/bin" &&
 		case $bitness in
@@ -4645,7 +4647,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file" &&
-			printf '\n' >>"$sparse_checkout_file" &&
+			printf '\n# markdown, to render the release notes\n/usr/bin/markdown\n\n' >>"$sparse_checkout_file" &&
 			BITNESS=64 ARCH=x86_64 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
 			"${this_script_path%/*}/make-file-list.sh" | sed -e 's|[][]|\\&|g' -e 's|^|/|' >>"$sparse_checkout_file"
 			;;

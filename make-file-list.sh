@@ -67,6 +67,9 @@ fi
 this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
 
+pacman_stderr="/tmp/pacman-stderr.$$.txt"
+trap "rm \"$pacman_stderr\"" EXIT
+
 pacman_list () {
 	test -n "$MINIMAL_GIT" ||
 	cat "$this_script_dir/keep-despite-upgrade.txt" 2>/dev/null |
@@ -99,19 +102,19 @@ mingw-w64-$ARCH-zstd"
 		;;
 	esac &&
 
-	pacman_stderr=/tmp/pacman-stderr.$$.txt
-	>$pacman_stderr
 	if test -n "$PACKAGE_VERSIONS_FILE"
 	then
-		pacman -Q $package_list >"$PACKAGE_VERSIONS_FILE" 2>$pacman_stderr
+		pacman -Q $package_list >"$PACKAGE_VERSIONS_FILE" 2>"$pacman_stderr"
+		res=$?
+		grep -v 'database file for .* does not exist' <"$pacman_stderr" >&2
+		test $res = 0
 	fi &&
-	pacman -Ql $package_list 2>$pacman_stderr |
+	pacman -Ql $package_list 2>"$pacman_stderr" |
 	grep -v '/$' |
 	sed 's/^[^ ]* //'
 	res=$?
 
-	grep -v 'database file for .* does not exist' <$pacman_stderr >&2
-	rm $pacman_stderr
+	grep -v 'database file for .* does not exist' <"$pacman_stderr" >&2
 	return $res
 }
 
@@ -128,9 +131,13 @@ do
 	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
 	required="$required $req"
 done
-test -z "$required" ||
-pacman -Sy --noconfirm $required >&2 ||
-die "Could not install required packages: $required"
+test -z "$required" || {
+	pacman -Sy --noconfirm $required 2>"$pacman_stderr" >&2 || {
+		cat "$pacman_stderr" >&2
+		die "Could not install required packages: $required"
+	}
+	grep -v 'database file for .* does not exist' <"$pacman_stderr" >&2
+}
 
 packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager
 git-extra openssh $UTIL_PACKAGES"
@@ -302,11 +309,16 @@ fi |
 LC_CTYPE=C.UTF-8 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|screen.*|xterm.*)$)' |
 sed 's/^\///' | sort | uniq
 
-test -z "$PACKAGE_VERSIONS_FILE" ||
-pacman -Q filesystem $SH_FOR_REBASE rebase \
-	$(test -n "$MINIMAL_GIT" || echo util-linux unzip \
-		mingw-w64-$ARCH-xpdf-tools) \
-	>>"$PACKAGE_VERSIONS_FILE"
+test -z "$PACKAGE_VERSIONS_FILE" || {
+	pacman -Q filesystem $SH_FOR_REBASE rebase \
+		$(test -n "$MINIMAL_GIT" || echo util-linux unzip \
+			mingw-w64-$ARCH-xpdf-tools) \
+		>>"$PACKAGE_VERSIONS_FILE" 2>"$pacman_stderr" || {
+		cat "$pacman_stderr" >&2
+		die "Could not generate '$PACKAGE_VERSIONS_FILE'"
+	}
+	grep -v 'database file for .* does not exist' <"$pacman_stderr" >&2
+}
 
 test -n "$ETC_GITCONFIG" ||
 ETC_GITCONFIG=etc/gitconfig
