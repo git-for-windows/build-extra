@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [OpenSSL v1.1.1q](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [Git Credential Manager Core v2.0.785](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.785).
 
 ### Bug Fixes
 
