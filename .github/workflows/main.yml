@@ -37,7 +37,7 @@ jobs:
           git ls-files \*/release.sh | sed 's|[^/]*$||' | sort >releaseable.txt &&
           define_matrix artifacts releaseable.txt touched.txt artifacts.txt
 
-          test -z "$(git log -L :create_sdk_artifact:please.sh ${{github.event.pull_request.base.sha}}.. -- )" ||
+          test -z "$(git log -L :create_sdk_artifact:please.sh ${{github.event.pull_request.base.sha}}.. -- )" &&
           test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- make-file-list.sh)" ||
           echo "::set-output name=test-sdk-artifacts::true"
 
