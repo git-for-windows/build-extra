@@ -4647,7 +4647,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file" &&
-			printf '\n' >>"$sparse_checkout_file" &&
+			printf '\n# markdown, to render the release notes\n/usr/bin/markdown\n\n' >>"$sparse_checkout_file" &&
 			BITNESS=64 ARCH=x86_64 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
 			"${this_script_path%/*}/make-file-list.sh" | sed -e 's|[][]|\\&|g' -e 's|^|/|' >>"$sparse_checkout_file"
 			;;
