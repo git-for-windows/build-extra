@@ -2,6 +2,9 @@ name: PR build
 
 on: pull_request
 
+env:
+  GIT_CONFIG_PARAMETERS: "'checkout.workers=56'"
+
 jobs:
   determine-packages:
     runs-on: ubuntu-latest
@@ -139,7 +142,6 @@ jobs:
         run: |
           case "${{ matrix.artifact }}" in
           full)
-            GIT_CONFIG_PARAMETERS="'checkout.workers=8'" \
             git --git-dir=.sdk worktree add --detach sdk-artifact
             ;;
           *)
