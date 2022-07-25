@@ -46,6 +46,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [tig v2.5.6](https://github.com/jonas/tig/releases/tag/tig-2.5.6).
 
+### Bug Fixes
+
+* Git for Windows [now ships without the `zmore` and `bzmore` utilities](https://github.com/git-for-windows/build-extra/pull/430) (which were broken and included only inadvertently).
+
 ## Changes since Git for Windows v2.37.0 (June 27th 2022)
 
 This release addresses [CVE-2022-31012](https://github.com/git-for-windows/git/security/advisories/GHSA-gjrj-fxvp-hjj2) and [CVE-2022-29187](https://github.com/git/git/security/advisories/GHSA-j342-m5hw-rr3v).
