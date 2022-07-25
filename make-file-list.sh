@@ -159,6 +159,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/bin/svn' \
 	-e '^/usr/bin/xml.*exe$' \
 	-e '^/usr/bin/xslt.*$' \
+	-e '^/usr/bin/b*zmore$' \
 	-e '^/mingw../bin/.*zstd\.exe$' \
 	-e '^/mingw../share/doc/openssl/' \
 	-e '^/mingw../share/doc/gettext/' \
