@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Git for Windows [now ships without the `zmore` and `bzmore` utilities](https://github.com/git-for-windows/build-extra/pull/430) (which were broken and included only inadvertently).
+* A [regression in the `vimdiff` mode of `git mergetool`](https://github.com/git-for-windows/git/issues/3945) has been [fixed](https://github.com/git-for-windows/git/pull/3960).
 
 ## Changes since Git for Windows v2.37.0 (June 27th 2022)
 
