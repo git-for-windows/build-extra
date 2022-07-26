@@ -96,7 +96,6 @@ WizardImageBackColor=clWhite
 WizardImageStretch=no
 WizardImageFile={#SourcePath}\git.bmp
 WizardSmallImageFile={#SourcePath}\gitsmall.bmp
-MinVersion=6.0
 
 [Types]
 ; Define a custom type to avoid getting the three default types.
