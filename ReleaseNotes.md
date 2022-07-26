@@ -42,6 +42,14 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.37.1 (July 12th 2022)
 
+### (Upcoming) breaking changes
+
+We updated the included Bash to version 5.1 (previously 4.4). Please check your shell scripts for potential compatibility issues.
+
+Also, as previously announced, Git for Windows dropped support for Windows Vista.
+
+Around the beginning of 2023, Git for Windows will drop support for Windows 7 and for Windows 8, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
 ### New Features
 
 * Comes with [tig v2.5.6](https://github.com/jonas/tig/releases/tag/tig-2.5.6).
