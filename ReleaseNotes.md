@@ -56,6 +56,7 @@ Around the beginning of 2023, Git for Windows will drop support for Windows 7 an
 * Comes with [Bash v5.1 patchlevel 016 ](https://tiswww.case.edu/php/chet/bash/NEWS).
 * Comes with [Perl v5.36.0](http://search.cpan.org/dist/perl-5.36.0/pod/perldelta.pod).
 * Git's executables are [now](https://github.com/git-for-windows/build-extra/pull/429) marked [Terminal Server-aware](https://github.com/git-for-windows/git/pull/3942), meaning: Git will be slightly faster when being run using Remote Desktop Services.
+* Comes with [perl-YAML-Syck v1.34](https://metacpan.org/source/TODDR/YAML-Syck-1.34/Changes).
 
 ### Bug Fixes
 
