@@ -57,6 +57,7 @@ Around the beginning of 2023, Git for Windows will drop support for Windows 7 an
 * Comes with [Perl v5.36.0](http://search.cpan.org/dist/perl-5.36.0/pod/perldelta.pod).
 * Git's executables are [now](https://github.com/git-for-windows/build-extra/pull/429) marked [Terminal Server-aware](https://github.com/git-for-windows/git/pull/3942), meaning: Git will be slightly faster when being run using Remote Desktop Services.
 * `git svn` is now based on [subversion v1.14.2](https://svn.apache.org/repos/asf/subversion/tags/1.14.2/CHANGES).
+* Comes with [GNU TLS v3.7.7](https://lists.gnupg.org/pipermail/gnutls-help/2022-July/004746.html).
 
 ### Bug Fixes
 
