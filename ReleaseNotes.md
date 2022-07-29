@@ -63,6 +63,7 @@ Around the beginning of 2023, Git for Windows will drop support for Windows 7 an
 
 * Git for Windows [now ships without the `zmore` and `bzmore` utilities](https://github.com/git-for-windows/build-extra/pull/430) (which were broken and included only inadvertently).
 * A [regression in the `vimdiff` mode of `git mergetool`](https://github.com/git-for-windows/git/issues/3945) has been [fixed](https://github.com/git-for-windows/git/pull/3960).
+* With certain network drives, [it was reported](https://github.com/git-for-windows/git/issues/3727) that some attributes associated with caching confused Git for Windows. This [was fixed](https://github.com/git-for-windows/git/pull/3753).
 
 ## Changes since Git for Windows v2.37.0 (June 27th 2022)
 
