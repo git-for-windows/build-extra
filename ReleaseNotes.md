@@ -1,5 +1,5 @@
-# Git for Windows v2.37.1 Release Notes
-Latest update: July 12th 2022
+# Git for Windows v2.37.2 Release Notes
+Latest update: August 11th 2022
 
 ## Introduction
 
