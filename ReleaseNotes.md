@@ -52,6 +52,7 @@ Around the beginning of 2023, Git for Windows will drop support for Windows 7 an
 
 ### New Features
 
+* Comes with [Git v2.37.2](https://github.com/git/git/blob/v2.37.2/Documentation/RelNotes/2.37.2.txt).
 * Comes with [tig v2.5.6](https://github.com/jonas/tig/releases/tag/tig-2.5.6).
 * Comes with [Bash v5.1 patchlevel 016 ](https://tiswww.case.edu/php/chet/bash/NEWS).
 * Comes with [Perl v5.36.0](http://search.cpan.org/dist/perl-5.36.0/pod/perldelta.pod).
