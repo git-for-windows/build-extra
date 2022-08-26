@@ -42,6 +42,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.37.2(2) (August 11th 2022)
 
+### New Features
+
+* Comes with [tig v2.5.7](https://github.com/jonas/tig/releases/tag/tig-2.5.7).
+
 ### Bug Fixes
 
 * Git for Windows [now correctly handles `.doc` files that are not Word Documents](https://github.com/git-for-windows/build-extra/pull/432).
