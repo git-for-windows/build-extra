@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.37.3](https://github.com/git/git/blob/v2.37.3/Documentation/RelNotes/2.37.3.txt).
 * Comes with [tig v2.5.7](https://github.com/jonas/tig/releases/tag/tig-2.5.7).
 
 ### Bug Fixes
