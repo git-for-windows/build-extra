@@ -4858,6 +4858,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag &&
 	 if test -n "$src_pkg"
 	 then
+		git -C git repack -adf &&
 		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_ARCH=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.$tag
 	 fi) ||
 	die "Could not build mingw-w64-git\n"
