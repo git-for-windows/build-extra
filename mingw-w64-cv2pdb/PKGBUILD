@@ -3,7 +3,7 @@
 _realname=cv2pdb
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=0.50
+pkgver=0.51.8.g9286b93
 pkgrel=1
 pkgdesc="Converter of DWARF debug information to PDB files (mingw-w64)"
 arch=('any')
@@ -24,6 +24,7 @@ die () {
 case "$CARCH" in
 i686) WARCH=Win32; OUTDIR=bin/Release;;
 x86_64) WARCH=x64; OUTDIR=bin/Release_x64;;
+aarch64) WARCH=ARM64; OUTDIR=bin/Release_ARM64;;
 *) die "Unsupported architecture: $CARCH"
 esac
 
