@@ -26,6 +26,12 @@ x86_64)
   sha256sum=c2ee1f7b22d98f614cab94e1033052143f4dbf1207c09ce57e9390acc4bbf86e
   exesuffix=
   ;;
+aarch64)
+  zipname="git-lfs-windows-arm64-v$pkgver.zip"
+  folder=git-lfs-3.2.0/
+  sha256sum=dda85631f931ea0d2edaf8ef922bed5cb2c60f83ac6d741c16159495e59a2ea4
+  exesuffix=
+  ;;
 esac
 
 source=("https://github.com/github/git-lfs/releases/download/v$pkgver/$zipname"
