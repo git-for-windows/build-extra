@@ -2834,7 +2834,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 then
 			MINGW_ARCH=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-				'makepkg-mingw --nobuild -s --noconfirm'
+				'makepkg-mingw --nobuild --noprepare -s --noconfirm'
 		 fi &&
 		 git stash &&
 		 url=https://github.com/git-for-windows/busybox-w32 &&
@@ -2843,8 +2843,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		  require_remote rmyorston \
 			https://github.com/rmyorston/busybox-w32 ||
 		  die "Could not connect remotes for '%s'\n" "$package"
+		  base_rev=$(git for-each-ref --format='%(objectname)' --sort=-taggerdate \
+			  --count=1 refs/tags/FRP-\*) ||
+		  die "Could not determine base revision\n"
 		  if test 0 -lt $(git rev-list --count \
-			git-for-windows/main..rmyorston/HEAD)
+			git-for-windows/main..$base_rev)
 		  then
 			{ test -n "$skip_upload" ||
 			  require_push_url git-for-windows; } &&
@@ -2852,7 +2855,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			git checkout git-for-windows/main &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh --merging \
-				--onto rmyorston/HEAD merging-rebase &&
+				--onto $base_rev merging-rebase &&
 			create_bundle_artifact &&
 			{ test -n "$skip_upload" ||
 			  git push git-for-windows HEAD:main; } ||
@@ -2868,10 +2871,20 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 die "Package '%s' already up-to-date at commit '%s'\n" \
 			"$package" "$built_from_commit"
 
-		 MINGW_ARCH=mingw64 \
-		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'makepkg-mingw --nobuild -s --noconfirm' &&
-		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
+		 base_rev=$(git -C src/busybox-w32 for-each-ref \
+			--format='%(objectname)' --sort=-taggerdate \
+			--count=1 refs/tags/FRP-\*) &&
+		 base_tag=$(git -C src/busybox-w32 for-each-ref \
+			--format='%(refname:short)' --sort=-committerdate --count=1 \
+			--merged $base_rev "refs/tags/[1-9]*") &&
+		 _ver_base=$(echo "$base_tag" | tr _ .) ||
+		 die "Could not determine base revision or version\n"
+
+		 sed -i "s/^\(_ver_base=\).*/\1$_ver_base/" PKGBUILD &&
+		 git -C src/busybox-w32 switch -C makepkg git-for-windows/main &&
+		 version="$(bash -c "srcdir=src && . ./PKGBUILD && pkgver")" &&
+		 sed -i -e "s/^\(pkgver=\).*/\1$version/" \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 git commit -s -m "busybox: upgrade to $version" PKGBUILD &&
 		 create_bundle_artifact &&
 		 url=$url/commit/${version##*.} &&
