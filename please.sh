@@ -2836,6 +2836,13 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 				'makepkg-mingw --nobuild --noprepare -s --noconfirm'
 		 fi &&
+		 case "$(test -x /usr/bin/git && cat src/busybox-w32/.git/objects/info/alternates 2>/dev/null)" in
+		 /*)
+			echo "dissociating worktree, to allow MINGW Git to access the worktree" >&2 &&
+			/usr/bin/git -C src/busybox-w32 repack -ad &&
+			rm src/busybox-w32/.git/objects/info/alternates
+			;;
+		 esac &&
 		 git stash &&
 		 url=https://github.com/git-for-windows/busybox-w32 &&
 		 (cd src/busybox-w32 &&
