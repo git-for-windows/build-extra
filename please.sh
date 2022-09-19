@@ -2834,7 +2834,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 then
 			MINGW_ARCH=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-				'makepkg-mingw --nobuild -s --noconfirm'
+				'makepkg-mingw --nobuild --noprepare -s --noconfirm'
 		 fi &&
 		 git stash &&
 		 url=https://github.com/git-for-windows/busybox-w32 &&
