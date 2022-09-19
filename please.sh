@@ -2843,8 +2843,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		  require_remote rmyorston \
 			https://github.com/rmyorston/busybox-w32 ||
 		  die "Could not connect remotes for '%s'\n" "$package"
+		  base_rev=$(git for-each-ref --format='%(objectname)' --sort=-taggerdate \
+			  --count=1 refs/tags/FRP-\*) ||
+		  die "Could not determine base revision\n"
 		  if test 0 -lt $(git rev-list --count \
-			git-for-windows/main..rmyorston/HEAD)
+			git-for-windows/main..$base_rev)
 		  then
 			{ test -n "$skip_upload" ||
 			  require_push_url git-for-windows; } &&
@@ -2852,7 +2855,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			git checkout git-for-windows/main &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh --merging \
-				--onto rmyorston/HEAD merging-rebase &&
+				--onto $base_rev merging-rebase &&
 			create_bundle_artifact &&
 			{ test -n "$skip_upload" ||
 			  git push git-for-windows HEAD:main; } ||
