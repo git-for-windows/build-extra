@@ -56,11 +56,22 @@ jobs:
       fail-fast: false
       matrix:
         directory: ${{ fromJSON(needs.determine-packages.outputs.matrix) }}
+    env:
+      HOME: "${{github.workspace}}\\home"
     steps:
       - uses: actions/checkout@v3
       - uses: git-for-windows/setup-git-for-windows-sdk@v1
         with:
           flavor: full
+      - name: configure build
+        shell: bash
+        run: |
+          USER_NAME="$GITHUB_ACTOR" &&
+          USER_EMAIL="$GITHUB_ACTOR@users.noreply.github.com" &&
+          mkdir -p "$HOME" &&
+          git config --global user.name "$USER_NAME" &&
+          git config --global user.email "$USER_EMAIL" &&
+          echo "PACKAGER=$USER_NAME <$USER_EMAIL>" >>$GITHUB_ENV &&
       - name: build ${{ matrix.directory }}
         shell: bash
         run: |
