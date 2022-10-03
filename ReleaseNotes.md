@@ -44,6 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
+* Comes with [Git v2.38.0](https://github.com/git/git/blob/v2.38.0/Documentation/RelNotes/2.38.0.txt).
 * Comes with [cURL v7.85.0](https://curl.haxx.se/changes.html#7_85_0).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.6](https://cygwin.com/pipermail/cygwin-announce/2022-September/010707.html).
 * Comes with [BusyBox v1.34.0.19688.985b51cf7](https://github.com/git-for-windows/busybox-w32/commit/985b51cf7).
