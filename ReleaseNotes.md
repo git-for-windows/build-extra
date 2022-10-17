@@ -44,7 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [OpenSSL v1.1.1r](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [OpenSSL v1.1.1q](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
 ## Changes since Git for Windows v2.37.3 (August 30th 2022)
 
