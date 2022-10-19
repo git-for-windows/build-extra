@@ -44,6 +44,10 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [OpenSSL v1.1.1q](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
+### New Features
+
+* Comes with [GNU TLS v3.7.8](https://lists.gnupg.org/pipermail/gnutls-help/2022-September/004765.html).
+
 ## Changes since Git for Windows v2.38.0 (October 3rd 2022)
 
 ### New Features
