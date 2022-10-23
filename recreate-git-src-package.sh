@@ -28,5 +28,5 @@ sed -i \
 	-e 's/^pkgver=.*/pkgver='"$(echo "${tag#v}" | tr +- .)"/ \
 	-e 's/^tag=.*/tag='"${tag#v}"/ \
 	PKGBUILD &&
-MINGW_INSTALLS=mingw64 makepkg-mingw --allsource ||
+MINGW_ARCH=mingw64 makepkg-mingw --allsource ||
 die "Failed to recreate source package for $tag"

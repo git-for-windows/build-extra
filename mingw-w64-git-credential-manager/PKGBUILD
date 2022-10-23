@@ -3,16 +3,17 @@
 _realname="git-credential-manager"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-replaces=("${MINGW_PACKAGE_PREFIX}-${_realname}-git-credential-manager-core")
-pkgver=2.0.605.12951
+conflicts=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
+replaces=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
+pkgver=2.0.785
 pkgrel=1
 _realver=$pkgver
-_realtag=v${pkgver%.*}
+_realtag=v${pkgver}
 pkgdesc="Credential Manager for Git"
 install=git-credential-manager.install
 arch=('any')
 project_url="https://github.com/GitCredentialManager/git-credential-manager"
-zip_url="${project_url}/releases/download/${_realtag}/gcmcore-win-x86-${_realver}.zip"
+zip_url="${project_url}/releases/download/${_realtag}/gcm-win-x86-${_realver}.zip"
 src_zip_url="${project_url}/archive/${_realtag}.zip"
 license=('MIT')
 groups=('VCS')
@@ -20,14 +21,14 @@ options=('!strip')
 
 source=("${zip_url}" "$src_zip_url")
 
-sha256sums=('3433ebedd65fd7b19edbb52410a89621a4e32f00933b8b00f730cf540af04898'
-            'efa417d55d48c24f80de0a3358e9bb29e0b454a36168a76ae0b4f9688f05101b')
+sha256sums=('825dbecad84959f84294469ccbdc8dd623dfb60e3d8f312f5e210d5394223f0b'
+            '63f14865d37e586bd36cc4717895f3b8843230238f00c57ae92dab95efe5d830')
 
 package() {
   prefix="$pkgdir/${MINGW_PREFIX}"
   srcdir2="${srcdir}/"
-  install -d -m755 "${prefix}"/libexec/git-core
-  install -m755 "$srcdir2"/*.{dll,exe,config} "${prefix}"/libexec/git-core
+  install -d -m755 "${prefix}"/bin
+  install -m755 "$srcdir2"/*.{dll,exe,config} "${prefix}"/bin
   install -d -m755 "${prefix}"/doc/git-credential-manager
   install -m644 "$srcdir2"/git-credential-manager-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager
 }

@@ -66,8 +66,11 @@ generate_package_gitignore () {
 		die "$1: not installed?"
 		;;
 	*)
-		test -d "${root%/}/var/lib/pacman/local/$dir" ||
-		die "$1: not installed?"
+		test -d "${root%/}/var/lib/pacman/local/$dir" || {
+			test -n "$2" ||
+			die "$1: not installed?"
+			return
+		}
 
 		printf '\n# Package: %s\n%s\n' \
 			"$dir" "/var/lib/pacman/local/$dir/" &&
@@ -188,12 +191,18 @@ commit)
 ignore)
 	shift
 
+	remove_uninstalled=
 	case "$*" in
 	-a|--all)
-		set -- $(git -C "${root%/}"/ ls-files --exclude-standard  \
+		set -- $( (
+			git -C "${root%/}"/ ls-files --exclude-standard  \
 				--other var/lib/pacman/local/ |
-			sed -n 's|^var/lib/pacman/local/\([^/]*\)-r\?[0-9][-0-9a-z_.]*-[1-9][0-9]*/.*|\1|p' |
-			uniq)
+			sed -n 's|^var/lib/pacman/local/\([^/]*\)-r\?[0-9][-0-9a-z_.]*-[1-9][0-9]*/.*|\1|p';
+			sed -n 's|^# Package: \(.*\)-r\?[0-9][-0-9a-z_.]*-[1-9][0-9]*|\1|p' \
+				<"${root%/}/.git/info/exclude"
+			) | sort | uniq
+		)
+		remove_uninstalled=t
 		;;
 	esac
 
@@ -215,7 +224,7 @@ ignore)
 				b1
 			}
 		}' "$root_gitdir"/info/exclude &&
-		generate_package_gitignore "$pkg" \
+		generate_package_gitignore "$pkg" $remove_uninstalled \
 			>>"$root_gitdir"/info/exclude ||
 		die "Could not ignore $pkg"
 	done

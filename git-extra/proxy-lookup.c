@@ -60,12 +60,9 @@ LPCWSTR get_proxy_for_url(LPCWSTR url)
 	return config.lpszProxy;
 }
 
-int main(int argc, char **argv)
+int wmain(int wargc, WCHAR **wargv)
 {
-	LPWSTR *wargv;
-	int i, wargc, verbose = 0;
-
-	wargv = CommandLineToArgvW(GetCommandLineW(), &wargc);
+	int i, verbose = 0;
 
 	for (i = 1; i < wargc; i++) {
 		LPCWSTR arg = wargv[i], proxy;
@@ -80,9 +77,9 @@ int main(int argc, char **argv)
 			proxy = L"";
 
 		if (verbose)
-			wprintf(L"URL: %s, proxy: %s\n", arg, proxy);
+			wprintf(L"URL: %ls, proxy: %ls\n", arg, proxy);
 		else
-			wprintf(L"%s\n", proxy);
+			wprintf(L"%ls\n", proxy);
 	}
 
 	return 0;

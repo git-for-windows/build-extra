@@ -25,22 +25,27 @@ esac
 
 if test -t 2
 then
-	next_line='\033[K\r'
+	print_dir=t
 else
-	next_line='\n'
+	print_dir=
 fi
 
 used_dlls_file=/tmp/used-dlls.$$.txt
+>"$used_dlls_file"
+missing_dlls_file=/tmp/missing-dlls.$$.txt
+>"$missing_dlls_file"
+unused_dlls_file=/tmp/unused-dlls.$$.txt
 tmp_file=/tmp/tmp.$$.txt
-trap "rm \"$used_dlls_file\" \"$tmp_file\"" EXIT
+trap "rm \"$used_dlls_file\" \"$missing_dlls_file\" \"$unused_dlls_file\" \"$tmp_file\"" EXIT
 
-all_files="$(export ARCH BITNESS && "$thisdir"/make-file-list.sh | tr A-Z a-z)" &&
+all_files="$(export ARCH BITNESS && "$thisdir"/make-file-list.sh | tr A-Z a-z | grep -v '/getprocaddr64.exe$')" &&
 usr_bin_dlls="$(echo "$all_files" | grep '^usr/bin/[^/]*\.dll$')" &&
 mingw_bin_dlls="$(echo "$all_files" | grep '^mingw'$BITNESS'/bin/[^/]*\.dll$')" &&
 dirs="$(echo "$all_files" | sed -n 's/[^/]*\.\(dll\|exe\)$//p' | sort | uniq)" &&
 for dir in $dirs
 do
-	printf "dir: $dir$next_line\\r" >&2
+	test -z "$print_dir" ||
+	printf "dir: $dir\\033[K\\r" >&2
 
 	case "$dir" in
 	usr/*) dlls="$sys_dlls$LF$usr_bin_dlls$LF";;
@@ -66,14 +71,20 @@ do
 			echo "$a" >>"$used_dlls_file"
 			case "$dlls" in
 			*"/$a$LF"*) ;; # okay, it's included
-			*) echo "$current is missing $a" >&2;;
+			*)
+				echo "$current is missing $a" >&2
+				echo "$a" >>"$missing_dlls_file"
+				;;
 			esac
 			;;
 		dll,name:) # `objdump -p` output
 			echo "$c" >>"$used_dlls_file"
 			case "$dlls" in
 			*"/$c$LF"*) ;; # okay, it's included
-			*) echo "$current is missing $c" >&2;;
+			*)
+				echo "$current is missing $c" >&2
+				echo "$c" >>"$missing_dlls_file"
+				;;
 			esac
 			;;
 		esac
@@ -94,6 +105,10 @@ echo "$all_files" |
 		-e '^usr/lib/gawk/' \
 		-e '^usr/lib/openssl/engines' \
 		-e '^usr/lib/sasl2/' \
-		-e '^mingw../libexec/git-core/\(atlassian\|azuredevops\|bitbucket\|github\|microsoft\|newtonsoft\|system\..*\|webview2loader\)\.' \
+		-e '^usr/lib/coreutils/libstdbuf.dll' \
+		-e '^mingw../bin/\(atlassian\|azuredevops\|bitbucket\|gcmcore.*\|github\|gitlab\|microsoft\|newtonsoft\|system\..*\|webview2loader\)\.' \
 		-e '^mingw../lib/\(engines\|reg\|thread\)' |
-	sed 's/^/unused dll: /' >&2
+	sed 's/^/unused dll: /' |
+	tee "$unused_dlls_file" >&2
+
+test ! -s "$missing_dlls_file" && test ! -s "$unused_dlls_file"

@@ -1,5 +1,5 @@
-# Git for Windows v2.34.1 Release Notes
-Latest update: November 25th 2021
+# Git for Windows v2.38.1 Release Notes
+Latest update: October 18th 2022
 
 ## Introduction
 
@@ -40,11 +40,209 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.38.1 (October 18th 2022)
+
+* Comes with [OpenSSL v1.1.1q](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+
+### New Features
+
+* Comes with [GNU TLS v3.7.8](https://lists.gnupg.org/pipermail/gnutls-help/2022-September/004765.html).
+
+## Changes since Git for Windows v2.38.0 (October 3rd 2022)
+
+### New Features
+
+* Comes with [Git v2.38.1](https://github.com/git/git/blob/v2.38.1/Documentation/RelNotes/2.38.1.txt).
+
+## Changes since Git for Windows v2.37.3 (August 30th 2022)
+
+### New Features
+
+* Comes with [Git v2.38.0](https://github.com/git/git/blob/v2.38.0/Documentation/RelNotes/2.38.0.txt).
+* Comes with [cURL v7.85.0](https://curl.haxx.se/changes.html#7_85_0).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.6](https://cygwin.com/pipermail/cygwin-announce/2022-September/010707.html).
+* Comes with [BusyBox v1.34.0.19688.985b51cf7](https://github.com/git-for-windows/busybox-w32/commit/985b51cf7).
+* The `scalar` command is now included. [Scalar](https://github.com/microsoft/git/blob/vfs-2.37.3/contrib/scalar/docs/philosophy.md) is a helper to automatically configure your (large) Git repositories to take advantage of the latest and greatest features. Note: If you work with repositories hosted on Azure Repos, use [Microsoft's fork of Git](https://github.com/microsoft/git/releases/latest) for the best user experience.
+
+## Changes since Git for Windows v2.37.2(2) (August 11th 2022)
+
+### New Features
+
+* Comes with [Git v2.37.3](https://github.com/git/git/blob/v2.37.3/Documentation/RelNotes/2.37.3.txt).
+* Comes with [tig v2.5.7](https://github.com/jonas/tig/releases/tag/tig-2.5.7).
+
+### Bug Fixes
+
+* Git for Windows [now correctly handles `.doc` files that are not Word Documents](https://github.com/git-for-windows/build-extra/pull/432).
+
+## Changes since Git for Windows v2.37.1 (July 12th 2022)
+
+### (Upcoming) breaking changes
+
+We updated the included Bash to version 5.1 (previously 4.4). Please check your shell scripts for potential compatibility issues.
+
+Also, as previously announced, Git for Windows dropped support for Windows Vista.
+
+Around the beginning of 2023, Git for Windows will drop support for Windows 7 and for Windows 8, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+### New Features
+
+* Comes with [Git v2.37.2](https://github.com/git/git/blob/v2.37.2/Documentation/RelNotes/2.37.2.txt).
+* Comes with [tig v2.5.6](https://github.com/jonas/tig/releases/tag/tig-2.5.6).
+* Comes with [Bash v5.1 patchlevel 016 ](https://tiswww.case.edu/php/chet/bash/NEWS).
+* Comes with [Perl v5.36.0](http://search.cpan.org/dist/perl-5.36.0/pod/perldelta.pod).
+* Git's executables are [now](https://github.com/git-for-windows/build-extra/pull/429) marked [Terminal Server-aware](https://github.com/git-for-windows/git/pull/3942), meaning: Git will be slightly faster when being run using Remote Desktop Services.
+* `git svn` is now based on [subversion v1.14.2](https://svn.apache.org/repos/asf/subversion/tags/1.14.2/CHANGES).
+* Comes with [GNU TLS v3.7.7](https://lists.gnupg.org/pipermail/gnutls-help/2022-July/004746.html).
+
+### Bug Fixes
+
+* Git for Windows [now ships without the `zmore` and `bzmore` utilities](https://github.com/git-for-windows/build-extra/pull/430) (which were broken and included only inadvertently).
+* A [regression in the `vimdiff` mode of `git mergetool`](https://github.com/git-for-windows/git/issues/3945) has been [fixed](https://github.com/git-for-windows/git/pull/3960).
+* With certain network drives, [it was reported](https://github.com/git-for-windows/git/issues/3727) that some attributes associated with caching confused Git for Windows. This [was fixed](https://github.com/git-for-windows/git/pull/3753).
+
+## Changes since Git for Windows v2.37.0 (June 27th 2022)
+
+This release addresses [CVE-2022-31012](https://github.com/git-for-windows/git/security/advisories/GHSA-gjrj-fxvp-hjj2) and [CVE-2022-29187](https://github.com/git/git/security/advisories/GHSA-j342-m5hw-rr3v).
+
+### New Features
+
+* Comes with [Git v2.37.1](https://github.com/git/git/blob/v2.37.1/Documentation/RelNotes/2.37.1.txt).
+* Comes with [OpenSSL v1.1.1q](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [Git Credential Manager Core v2.0.785](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.785).
+* Comes with [tig v2.5.5](https://github.com/jonas/tig/releases/tag/tig-2.5.5).
+
+### Bug Fixes
+
+* Pasting large amounts of text in Git for Windows' Bash when running inside Windows Terminal [often resulted in garbled text](https://github.com/git-for-windows/git/issues/3936), which has been fixed.
+* The Perl module [perl-Clone](https://metacpan.org/source/ATOOMIC/Clone-0.45/Changes) which linked to a non-existing DLL was rebuilt to fix the issue.
+* The Git for Windows installer can no longer be tricked into running an untrusted `git.exe` in elevated mode ([CVE-2022-31012](https://github.com/git-for-windows/git/security/advisories/GHSA-gjrj-fxvp-hjj2)).
+* When running Git in a world-writable directory owned by the current user (think `C:\Windows\Temp`, when running under the `SYSTEM` account), the checks for dubious ownership of the `.git` directory now detect this situation properly ([CVE-2022-29187](https://github.com/git/git/security/advisories/GHSA-j342-m5hw-rr3v)).
+
+## Changes since Git for Windows v2.36.1 (May 9th 2022)
+
+### New Features
+
+* Comes with [Git v2.37.0](https://github.com/git/git/blob/v2.37.0/Documentation/RelNotes/2.37.0.txt).
+* Many anti-malware products seem to have problems with our MSYS2 runtime, leading to problems running e.g. `git subtree`. We [added a workaround](https://github.com/git-for-windows/msys2-runtime/pull/37) that hopefully helps in most of these scenarios.
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.5](https://cygwin.com/pipermail/cygwin-announce/2022-May/010565.html).
+* Comes with [PCRE2 v10.40](https://raw.githubusercontent.com/PCRE2Project/pcre2/pcre2-10.40/ChangeLog).
+* Comes with [Git LFS v3.2.0](https://github.com/git-lfs/git-lfs/releases/tag/v3.2.0).
+* Comes with [GNU TLS v3.7.6](https://lists.gnupg.org/pipermail/gnutls-help/2022-May/004744.html).
+* SSH's CBC ciphers, which were re-enabled in 2017 to better support Azure Repos [have again been disabled by default](https://github.com/git-for-windows/build-extra/pull/421) because Azure Repos does not require them any longer.
+* Comes with [OpenSSL v1.1.1p](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [Git Credential Manager Core v2.0.779](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.779).
+* Comes with [cURL v7.84.0](https://curl.haxx.se/changes.html#7_84_0).
+
+### Bug Fixes
+
+* The Git for Windows-only `--show-ignored-directory` option of `git status`, which was deprecated a long time ago, [was finally removed](https://github.com/git-for-windows/git/pull/2067).
+* A crash when running Git for Windows in Wine [was fixed](https://github.com/git-for-windows/git/pull/3875).
+* A bug in the interaction between FSCache and parallel checkout [was fixed](https://github.com/git-for-windows/git/pull/3909).
+* Cloning to network shares failed on some network file systems, which was [fixed](https://github.com/git-for-windows/git/pull/3646).
+* When Git indicates an unsafe directory due to the file system (e.g. FAT32) being unable to record ownership, Git [now gives better hints](https://github.com/git-for-windows/git/pull/3887).
+
+## Changes since Git for Windows v2.36.0 (April 20th 2022)
+
+### Upcoming breaking changes
+
+We plan to update the included bash to version 5.1 (currently 4.4) soon after Git for Windows 2.36.0 is released. Please check your shell scripts for potential compatibility issues.
+
+Git for Windows will also stop supporting Windows Vista soon after Git for Windows 2.36.0 is released. Around the beginning of 2023, Git for Windows will drop support for Windows 7 and for Windows 8, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+### New Features
+
+* Comes with [Git v2.36.1](https://github.com/git/git/blob/v2.36.1/Documentation/RelNotes/2.36.1.txt).
+* On newer Windows versions, Git [now assumes a Win32 Console with full color capabilities](https://github.com/git-for-windows/git/pull/3751). This helps e.g. when NeoVIM is configured as Git's editor.
+* Comes with [OpenSSH v9.0p1](https://www.openssh.com/txt/release-9.0).
+* When `git clean` fails due to long paths, [Git now advises the user to set `core.longPaths`](https://github.com/git-for-windows/git/pull/3817).
+* Comes with [cURL v7.83.0](https://curl.haxx.se/changes.html#7_83_0).
+* Git Credential Manager's binaries [are no longer installed in the same location as core Git's own dashed programs](https://github.com/git-for-windows/build-extra/pull/406). This separates more clearly the core Git executables from the Git executables provided by third-parties.
+* Comes with [Git Credential Manager Core v2.0.696](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.696).
+* Comes with [OpenSSL v1.1.1o](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [patch level 4](https://github.com/git-for-windows/msys2-runtime/commit/d72d5e8aeb7df99c55bdc438fb71fdeffd2bd1e5) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.4](https://cygwin.com/pipermail/cygwin-announce/2022-January/010438.html).
+
+### Bug Fixes
+
+* A regression introduced in Git for Windows v2.36.0 where GPG in 32-bit versions simply would not work [was fixed](https://github.com/git-for-windows/MSYS2-packages/commit/002b641e4409ce76709419e835e1fb2a6de14e7c).
+* The `proxy-lookup` helper [only reported the first letter of the proxy](https://github.com/git-for-windows/git/issues/3818), which was fixed.
+* The installer [now verifies that .NET Framework 4.7.2 is available](https://github.com/git-for-windows/build-extra/pull/329) before offering Git Credential Manager (GCM) as an option (because it is required for GCM to work).
+* A bug introduced into v2.36.0 where [shell scripts failed to run on some network shares with the error "Too many levels of symbolic links"](https://github.com/git-for-windows/git/issues/3825) was fixed.
+
+## Changes since Git for Windows v2.35.3 (April 15th 2022)
+
+This version includes Git LFS v3.1.4, addressing [CVE-2022-24826](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-6rw3-3whw-jvjj) (if you use Git LFS with [MinGit](https://github.com/git-for-windows/git/wiki/MinGit), you will want to upgrade).
+
+### Upcoming breaking changes
+
+We plan to update the included bash to version 5.1 (currently 4.4) soon after Git for Windows 2.36.0 is released. Please check your shell scripts for potential compatibility issues.
+
+Git for Windows will also stop supporting Windows Vista soon after Git for Windows 2.36.0 is released. Around the beginning of 2023, Git for Windows will drop support for Windows 7 and for Windows 8, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+### New Features
+
+* Comes with [Git v2.36.0](https://github.com/git/git/blob/v2.36.0/Documentation/RelNotes/2.36.0.txt).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.4](https://cygwin.com/pipermail/cygwin-announce/2022-January/010438.html).
+* Comes with [OpenSSH v8.9p1](https://www.openssh.com/txt/release-8.9).
+* Comes with [cURL v7.82.0](https://curl.haxx.se/changes.html#7_82_0).
+* Comes with [OpenSSL v1.1.1n](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [Git Credential Manager Core v2.0.696](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.696).
+* Comes with [GNU TLS v3.7.4](https://lists.gnupg.org/pipermail/gnutls-help/2022-March/004738.html).
+* Comes with [Git LFS v3.1.4](https://github.com/git-lfs/git-lfs/releases/tag/v3.1.4).
+
+## Changes since Git for Windows v2.35.2 (April 12th 2022)
+
+### New Features
+
+* Comes with [Git v2.35.3](https://github.com/git/git/blob/v2.35.3/Documentation/RelNotes/2.35.3.txt).
+
+
+### Bug Fixes
+
+* The advice indicating how to use the `%(prefix)` with a network share path [was updated](https://github.com/git-for-windows/git/pull/3790) to use the appropriate number of slashes.
+* [Various fixes](https://github.com/git-for-windows/git/pull/3791) for usage of the `safe.directory` and `%(prefix)` when using Windows Subsystem for Linux (WSL).
+
+## Changes since Git for Windows v2.35.1(2) (February 1st 2022)
+
+This version addresses [CVE-2022-24765](https://github.com/git-for-windows/git/security/advisories/GHSA-vw2c-22j4-2fh2) and [CVE-2022-24767](https://github.com/git-for-windows/git/security/advisories/GHSA-gf48-x3vr-j5c3).
+
+### New Features
+
+* Comes with [Git v2.35.2](https://github.com/git/git/blob/v2.35.2/Documentation/RelNotes/2.35.2.txt).
+
+
+### Bug Fixes
+
+* The uninstaller was hardened to [avoid a vulnerability when running under the SYSTEM account](https://github.com/git-for-windows/git/security/advisories/GHSA-gf48-x3vr-j5c3), addressing CVE-2022-24767.
+
+## Changes since Git for Windows v2.35.1 (January 29th 2022)
+
+### Bug Fixes
+
+* A [bug](https://github.com/git-for-windows/git/issues/3674) in FSCache that triggered by a patch that made it into Git for Windows v2.35.0 [was fixed](https://github.com/git-for-windows/git/pull/3678).
+
+## Changes since Git for Windows v2.35.0 (January 24th 2022)
+
+### New Features
+
+* Comes with [Git v2.35.1](https://github.com/git/git/blob/v2.35.1/Documentation/RelNotes/2.35.1.txt).
+
+
 ## Changes since Git for Windows v2.34.1 (November 25th 2021)
 
 ### New Features
 
-* Comes with [patch level 1](https://github.com/git-for-windows/msys2-runtime/commit/70d23484c10a2f093a11e28085099c972cd1e72d) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.3](https://cygwin.com/pipermail/cygwin-announce/2021-December/010338.html).
+* Comes with [Git v2.35.0](https://github.com/git/git/blob/v2.35.0/Documentation/RelNotes/2.35.0.txt).
+* Comes with a version of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.3](https://cygwin.com/pipermail/cygwin-announce/2021-December/010338.html).
+* Comes with [OpenSSL v1.1.1m](https://www.openssl.org/news/openssl-1.1.1-notes.html).
+* Comes with [Git Credential Manager Core v2.0.632.34631](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.632).
+* Comes with [cURL v7.81.0](https://curl.haxx.se/changes.html#7_81_0).
+* Comes with [tig v2.5.5](https://github.com/jonas/tig/releases/tag/tig-2.5.5).
+* Comes with [patch level 4](https://github.com/git-for-windows/msys2-runtime/commit/b600e8ead500aef55e23810c2e630d9be46f3a4c) of the MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.3.3](https://cygwin.com/pipermail/cygwin-announce/2021-December/010338.html).
+
+### Bug Fixes
+
+* A [bug](https://github.com/git-for-windows/git/issues/3624) which caused crashes when running `git log` with custom date formats in 32-bit builds was fixed.
 
 ## Changes since Git for Windows v2.34.0 (November 15th 2021)
 
@@ -2212,7 +2410,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 ### New Features
 * Comes with official git 1.6.1.
 * Avoid useless console windows.
-* Installer remembers how to handle PATH. 
+* Installer remembers how to handle PATH.
 
 ## Changes since Git-1.6.0.2-preview20080921
 
@@ -2253,7 +2451,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 * Programs in the system `PATH`, for example editors, can be launched from Git without specifying their full path.
 * `git stash apply stash@{1}` works.
 * Comes with basic ANSI control code emulation for the Windows console to avoid wrapping of pull/merge's diffstats.
-* Git correctly passes port numbers to PuTTY's Plink 
+* Git correctly passes port numbers to PuTTY's Plink
 
 ## Changes since Git-1.5.4-preview20080202
 

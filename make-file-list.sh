@@ -49,8 +49,26 @@ then
 	UTIL_PACKAGES="$UTIL_PACKAGES tmux libevent"
 fi
 
+# It is totally okay to exclude built-in commands, e.g. via
+# `make -C /usr/src/git SKIP_DASHED_BUILT_INS=YesPlease install`
+EXCLUDE_MISSING_BUILTINS=
+if test -f "/mingw$BITNESS/share/git/builtins.txt"
+then
+	BUILTINS_ON_RECORD="$(sed "s|^|/mingw$BITNESS/libexec/git-core/|" <"/mingw$BITNESS/share/git/builtins.txt" | sort)" &&
+	BUILTINS_ON_DISK="$(find "/mingw$BITNESS/libexec/git-core" -name git-\*.exe | sort)" &&
+	# emulate `comm -23 <(...<on-disk>...) <(...<on-record>...)`,
+	# i.e. list the entries that are on record but not on disk,
+	# because `dash` does not understand the `<(...)` syntax.
+	EXCLUDE_MISSING_BUILTINS="$(printf '%s\n' "$BUILTINS_ON_RECORD" "$BUILTINS_ON_DISK" "$BUILTINS_ON_DISK" |
+		sort | uniq -u)" ||
+	die "Could not exclude missing dashed versions of the built-in commands"
+fi
+
 this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
+
+pacman_stderr="/tmp/pacman-stderr.$$.txt"
+trap "rm \"$pacman_stderr\"" EXIT
 
 pacman_list () {
 	test -n "$MINIMAL_GIT" ||
@@ -86,31 +104,42 @@ mingw-w64-$ARCH-zstd"
 
 	if test -n "$PACKAGE_VERSIONS_FILE"
 	then
-		pacman -Q $package_list >"$PACKAGE_VERSIONS_FILE"
+		pacman -Q $package_list >"$PACKAGE_VERSIONS_FILE" 2>"$pacman_stderr"
+		res=$?
+		grep -v 'database file for .* does not exist' <"$pacman_stderr" >&2
+		test $res = 0
 	fi &&
-	pacman -Ql $package_list |
+	pacman -Ql $package_list 2>"$pacman_stderr" |
 	grep -v '/$' |
 	sed 's/^[^ ]* //'
+	res=$?
+
+	grep -v 'database file for .* does not exist' <"$pacman_stderr" >&2
+	return $res
 }
 
 # Packages that have been added after Git SDK 1.0.0 was released...
 required=
-for req in mingw-w64-$ARCH-git-credential-manager-core $SH_FOR_REBASE \
+for req in mingw-w64-$ARCH-git-credential-manager $SH_FOR_REBASE \
 	$(test -n "$MINIMAL_GIT" || echo \
 		mingw-w64-$ARCH-connect git-flow unzip docx2txt \
 		mingw-w64-$ARCH-antiword mingw-w64-$ARCH-odt2txt \
 		mingw-w64-$ARCH-xpdf-tools ssh-pageant mingw-w64-$ARCH-git-lfs \
-		tig nano perl-JSON $GIT_UPDATE_EXTRA_PACKAGES)
+		tig nano perl-JSON libpcre2_8 libpcre2posix $GIT_UPDATE_EXTRA_PACKAGES)
 do
 	test -d /var/lib/pacman/local/$req-[0-9]* ||
 	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
 	required="$required $req"
 done
-test -z "$required" ||
-pacman -Sy --noconfirm $required >&2 ||
-die "Could not install required packages: $required"
+test -z "$required" || {
+	pacman -Sy --noconfirm $required 2>"$pacman_stderr" >&2 || {
+		cat "$pacman_stderr" >&2
+		die "Could not install required packages: $required"
+	}
+	grep -v 'database file for .* does not exist' <"$pacman_stderr" >&2
+}
 
-packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager-core
+packages="mingw-w64-$ARCH-git mingw-w64-$ARCH-git-credential-manager
 git-extra openssh $UTIL_PACKAGES"
 if test -z "$MINIMAL_GIT"
 then
@@ -124,12 +153,13 @@ pacman_list $packages "$@" |
 
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '/man/' -e '/pkgconfig/' -e '/emacs/' \
-	-e '^/usr/lib/python' -e '^/usr/lib/ruby' \
+	-e '^/usr/lib/python' -e '^/usr/lib/ruby' -e '^/mingw../lib/python' \
 	-e '^/usr/share/subversion' \
 	-e '^/etc/skel/' -e '^/mingw../etc/skel/' \
 	-e '^/usr/bin/svn' \
 	-e '^/usr/bin/xml.*exe$' \
 	-e '^/usr/bin/xslt.*$' \
+	-e '^/usr/bin/b*zmore$' \
 	-e '^/mingw../bin/.*zstd\.exe$' \
 	-e '^/mingw../share/doc/openssl/' \
 	-e '^/mingw../share/doc/gettext/' \
@@ -141,13 +171,14 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/include/' -e '^/mingw../include/' \
 	-e '^/usr/share/doc/' \
 	-e '^/usr/share/info/' -e '^/mingw../share/info/' \
+	-e '^/mingw32/bin/lib\(ffi\|tasn1\)-.*\.dll$' \
 	-e '^/mingw../share/git-doc/technical/' \
 	-e '^/mingw../lib/cmake/' \
 	-e '^/mingw../itcl/' \
 	-e '^/mingw../t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
 	-e '^/mingw../bin/\(autopoint\|[a-z]*-config\)$' \
 	-e '^/mingw../bin/lib\(asprintf\|brotlienc\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13p]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
-	-e '^/mingw../bin/lib\(atomic\|charset\|ffi\|gomp\|systre\|tasn1\)-[0-9]*\.dll$' \
+	-e '^/mingw../bin/lib\(atomic\|charset\|gomp\|systre\)-[0-9]*\.dll$' \
 	-e '^/mingw../bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\|zip\)[^/]*\.exe$' \
 	-e '^/mingw../bin/recode-sr-latin.exe$' \
 	-e '^/mingw../bin/\(cert\|p11\|psk\|srp\)tool.exe$' \
@@ -161,17 +192,16 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/mingw../share/doc/git-doc/git-cvsexport' \
 	-e '^/mingw../libexec/git-core/git-cvsexport' \
 	-e '^/mingw../share/doc/git-doc/git-cvsimport' \
+	-e "^\\($(echo $EXCLUDE_MISSING_BUILTINS | sed 's/ /\\|/g')\\)\$" \
 	-e '^/mingw../share/gtk-doc/' \
 	-e '^/mingw../share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
 	-e '^/usr/bin/msys-\('$(if test i686 = "$ARCH"
 	    then
 		echo 'uuid\|'
-	    else
-		echo 'lzma\|'
-	    fi)'fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
+	    fi)'lzma\|fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(hdb\|history8\|kadm5\|kdc\|otp\|sl\).*\.dll$' \
-	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|pcre2-8\|ssh2\)-.*\.dll$' \
+	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|ssh2\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(ncurses++w6\|asprintf-[0-9]*\|\)\.dll$' \
 	-e '^/usr/bin/msys-\(formw6\|menuw6\|panelw6\)\.dll$' \
 	-e '^/usr/bin/msys-svn_swig_\(py\|ruby\)-.*\.dll$' \
@@ -214,7 +244,7 @@ else
 		-e '^/mingw../bin/\(gitk\|git-upload-archive\.exe\)$' \
 		-e '^/mingw../bin/libgcc_s_seh-.*\.dll$' \
 		-e '^/mingw../bin/libjemalloc\.dll$' \
-		-e '^/mingw../bin/lib\(gmp\|gomp\|jansson\|metalink\|minizip\)-.*\.dll$' \
+		-e '^/mingw../bin/lib\(ffi\|gmp\|gomp\|jansson\|metalink\|minizip\|tasn1\)-.*\.dll$' \
 		-e '^/mingw../bin/libvtv.*\.dll$' \
 		-e '^/mingw../bin/libpcreposix.*\.dll$' \
 		-e '^/mingw../bin/\(.*\.def\|update-ca-trust\)$' \
@@ -277,14 +307,19 @@ else
 		-e "^\\($(echo $EXTRA_FILE_EXCLUDES |
 			sed 's/ /\\|/g')\\)\$"
 fi |
-grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|screen.*|xterm.*)$)' |
+LC_CTYPE=C.UTF-8 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|screen.*|xterm.*)$)' |
 sed 's/^\///' | sort | uniq
 
-test -z "$PACKAGE_VERSIONS_FILE" ||
-pacman -Q filesystem $SH_FOR_REBASE rebase \
-	$(test -n "$MINIMAL_GIT" || echo util-linux unzip \
-		mingw-w64-$ARCH-xpdf-tools) \
-	>>"$PACKAGE_VERSIONS_FILE"
+test -z "$PACKAGE_VERSIONS_FILE" || {
+	pacman -Q filesystem $SH_FOR_REBASE rebase \
+		$(test -n "$MINIMAL_GIT" || echo util-linux unzip \
+			mingw-w64-$ARCH-xpdf-tools) \
+		>>"$PACKAGE_VERSIONS_FILE" 2>"$pacman_stderr" || {
+		cat "$pacman_stderr" >&2
+		die "Could not generate '$PACKAGE_VERSIONS_FILE'"
+	}
+	grep -v 'database file for .* does not exist' <"$pacman_stderr" >&2
+}
 
 test -n "$ETC_GITCONFIG" ||
 ETC_GITCONFIG=etc/gitconfig
@@ -340,3 +375,5 @@ test -z "$INCLUDE_TMUX" || cat <<EOF
 usr/bin/tmux.exe
 $(ldd /usr/bin/tmux.exe | sed -n 's/.*> \/\(.*msys-event[^ ]*\).*/\1/p')
 EOF
+
+test -z "$INCLUDE_OBJDUMP" || echo usr/bin/objdump.exe

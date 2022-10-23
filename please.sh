@@ -50,6 +50,8 @@ unset ORIGINAL_PATH
 # Do not follow MSYS2's switch to zstd, at least for now
 PKGEXT='.pkg.tar.xz'
 export PKGEXT
+SRCEXT='.src.tar.gz'
+export SRCEXT
 
 # In MinGit, there is no `cygpath`...
 # We really only use -w, -am and -au in please.sh, so that's what we
@@ -536,7 +538,7 @@ set_package () {
 		pkgpath=/usr/src/MSYS2-packages/$package
 		extra_makepkg_opts=--nocheck
 		;;
-	perl-Net-SSLeay|perl-HTML-Parser|perl-TermReadKey|perl-Locale-Gettext|perl-XML-Parser|perl-YAML-Syck)
+	perl-Net-SSLeay|perl-HTML-Parser|perl-TermReadKey|perl-Locale-Gettext|perl-XML-Parser|perl-YAML-Syck|perl-Clone)
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
@@ -724,7 +726,7 @@ pkg_build () {
 			extra="$extra/build-extra/.git\\\" signtool\" "
 		fi
 		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'MAKEFLAGS=-j5 MINGW_INSTALLS=mingw32\ mingw64 \
+			'MAKEFLAGS=-j5 MINGW_ARCH=mingw32\ mingw64 \
 				'"$extra"'makepkg-mingw -s --noconfirm \
 					'"$extra_makepkg_opts"' &&
 			 if test mingw-w64-git = "'"$package"'"
@@ -732,7 +734,7 @@ pkg_build () {
 				git -C src/git push "$PWD/git" \
 					refs/tags/"'"$tag"'"
 			 fi &&
-			 MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
+			 MINGW_ARCH=mingw64 makepkg-mingw --allsource \
 				'"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk$pkgpath"
 
@@ -744,6 +746,14 @@ pkg_build () {
 	MSYS)
 		require msys2-devel binutils
 		opt_j=-j5
+		if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
+			config alias.signtool)"
+		then
+			extra=
+		else
+			extra="SIGNTOOL=\"git --git-dir=\\\"$sdk64/usr/src"
+			extra="$extra/build-extra/.git\\\" signtool\" "
+		fi
 		if test msys2-runtime = "$package"
 		then
 			opt_j=-j1
@@ -780,10 +790,10 @@ pkg_build () {
 		"$sdk/git-cmd" --command=usr\\bin\\sh.exe -l -c \
 			'cd '"$pkgpath"' &&
 			 export MSYSTEM=MSYS &&
-			 export PATH=/usr/bin:/opt/bin:$PATH &&
+			 export PATH=/usr/bin:/opt/bin:/mingw64/bin:/mingw32/bin:$PATH &&
 			 unset ORIGINAL_PATH &&
 			 . /etc/profile &&
-			 MAKEFLAGS='"$opt_j"' makepkg -s --noconfirm \
+			 MAKEFLAGS='"$opt_j"' '"$extra"'makepkg -s --noconfirm \
 				'"$extra_makepkg_opts"' &&
 			 makepkg --allsource '"$extra_makepkg_opts" ||
 		die "%s: could not build\n" "$sdk$pkgpath"
@@ -1642,13 +1652,13 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 			"cd \"$git_src_dir/../..\" &&"'
 			rm -f src/git/{git-wrapper.o,*.res} &&
 			MAKEFLAGS=-j5 \
-			MINGW_INSTALLS='"$(test -n "$only_64_bit" ||
+			MINGW_ARCH='"$(test -n "$only_64_bit" ||
 				echo mingw32)"'\ mingw64 \
 			'"$extra"' \
 			makepkg-mingw -s --noconfirm '"$force_tag"' \
 				'"$force_makepkg"' \
 				-p prerelease-'"$pkgver"'.pkgbuild &&
-			MINGW_INSTALLS=mingw64 makepkg-mingw --allsource \
+			MINGW_ARCH=mingw64 makepkg-mingw --allsource \
 				-p prerelease-'"$pkgver".pkgbuild ||
 		die "%s: could not build '%s'\n" "$git_src_dir" "$pkgver"
 
@@ -1889,6 +1899,7 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 			"$coverity_bin_dir"
 	 fi &&
 	 PATH="$coverity_bin_dir:$PATH" &&
+	 cov-configure --gcc &&
 	 # Coverity has a long-standing bug where it fails to parse two-digit
 	 # major versions of GCC incorrectly Since Synopsys seems to
 	 # be hardly in a rush to fix this (there's no response at
@@ -2201,7 +2212,7 @@ main () { # <package>
 }
 
 updpkgsums () {
-	MINGW_INSTALLS=mingw64 \
+	MINGW_ARCH=mingw64 \
 	"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c updpkgsums
 }
 
@@ -2285,7 +2296,7 @@ maybe_force_pkgrel () {
 		die "Invalid pkgrel: '%s'\n" "$1"
 
 		sed -i "s/^\\(pkgrel=\\).*/\\1$1/" PKGBUILD
-	elif git diff --exit-code -G'^(_ver|_realver|pkgver|_pkgver)=' -- PKGBUILD # version was not changed
+	elif git diff --exit-code -G'^(_ver|_realver|pkgver|_pkgver|_base_ver)=' -- PKGBUILD # version was not changed
 	then
 		# Maybe there have been changes since the latest release?
 		blame_ver="$(MSYS_NO_PATHCONV=1 git blame -L '/^pkgver=/,+1' -- ./PKGBUILD)" &&
@@ -2464,9 +2475,10 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not determine the latest version of %s\n" "$package"
 		tag_name="$(echo "$release" |
 			sed -n 's/^    "tag_name": "\(.*\)",\?$/\1/p' | head -n 1)"
-		zip_name="$(echo "$release" | sed -n \
+		zip_name="$(echo "$release" | sed -ne 's/gcm[^"]*-symbols\.zip//' -e \
 			's/.*"browser_download_url":.*\/\(gcm.*\.zip\).*/\1/p' | head -n 1)"
 		version=${zip_name#gcmcore-win-x86-}
+		version=${zip_name#gcm-win-x86-}
 		version=${version%.zip}
 		zip_prefix=${zip_name%$version.zip}
 		if test "$zip_prefix" = "$zip_name"
@@ -2514,7 +2526,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 fi &&
 		 if test git-extra.install.in -nt git-extra.install
 		 then
-			MINGW_INSTALLS=mingw64 \
+			MINGW_ARCH=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 				'makepkg-mingw --nobuild -s --noconfirm' &&
 			git checkout HEAD -- PKGBUILD &&
@@ -2820,10 +2832,17 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		(cd "$sdk64$pkgpath" &&
 		 if test ! -d src/busybox-w32
 		 then
-			MINGW_INSTALLS=mingw64 \
+			MINGW_ARCH=mingw64 \
 			"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-				'makepkg-mingw --nobuild -s --noconfirm'
+				'makepkg-mingw --nobuild --noprepare -s --noconfirm'
 		 fi &&
+		 case "$(test -x /usr/bin/git && cat src/busybox-w32/.git/objects/info/alternates 2>/dev/null)" in
+		 /*)
+			echo "dissociating worktree, to allow MINGW Git to access the worktree" >&2 &&
+			/usr/bin/git -C src/busybox-w32 repack -ad &&
+			rm src/busybox-w32/.git/objects/info/alternates
+			;;
+		 esac &&
 		 git stash &&
 		 url=https://github.com/git-for-windows/busybox-w32 &&
 		 (cd src/busybox-w32 &&
@@ -2831,8 +2850,11 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		  require_remote rmyorston \
 			https://github.com/rmyorston/busybox-w32 ||
 		  die "Could not connect remotes for '%s'\n" "$package"
+		  base_rev=$(git for-each-ref --format='%(objectname)' --sort=-taggerdate \
+			  --count=1 refs/tags/FRP-\*) ||
+		  die "Could not determine base revision\n"
 		  if test 0 -lt $(git rev-list --count \
-			git-for-windows/main..rmyorston/HEAD)
+			git-for-windows/main..$base_rev)
 		  then
 			{ test -n "$skip_upload" ||
 			  require_push_url git-for-windows; } &&
@@ -2840,7 +2862,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 			git checkout git-for-windows/main &&
 			GIT_EDITOR=true \
 			"$sdk64"/usr/src/build-extra/shears.sh --merging \
-				--onto rmyorston/HEAD merging-rebase &&
+				--onto $base_rev merging-rebase &&
 			create_bundle_artifact &&
 			{ test -n "$skip_upload" ||
 			  git push git-for-windows HEAD:main; } ||
@@ -2856,10 +2878,20 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 die "Package '%s' already up-to-date at commit '%s'\n" \
 			"$package" "$built_from_commit"
 
-		 MINGW_INSTALLS=mingw64 \
-		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'makepkg-mingw --nobuild -s --noconfirm' &&
-		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
+		 base_rev=$(git -C src/busybox-w32 for-each-ref \
+			--format='%(objectname)' --sort=-taggerdate \
+			--count=1 refs/tags/FRP-\*) &&
+		 base_tag=$(git -C src/busybox-w32 for-each-ref \
+			--format='%(refname:short)' --sort=-committerdate --count=1 \
+			--merged $base_rev "refs/tags/[1-9]*") &&
+		 _ver_base=$(echo "$base_tag" | tr _ .) ||
+		 die "Could not determine base revision or version\n"
+
+		 sed -i "s/^\(_ver_base=\).*/\1$_ver_base/" PKGBUILD &&
+		 git -C src/busybox-w32 switch -C makepkg git-for-windows/main &&
+		 version="$(bash -c "srcdir=src && . ./PKGBUILD && pkgver")" &&
+		 sed -i -e "s/^\(pkgver=\).*/\1$version/" \
+			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 git commit -s -m "busybox: upgrade to $version" PKGBUILD &&
 		 create_bundle_artifact &&
 		 url=$url/commit/${version##*.} &&
@@ -3017,7 +3049,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
 		 maybe_force_pkgrel "$force_pkgrel" &&
-		 MINGW_INSTALLS=mingw64 \
+		 MINGW_ARCH=mingw64 \
 		 "$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
 			'makepkg-mingw --nobuild -s --noconfirm' &&
 		 version="$(sed -n 's/^pkgver=\(.*\)$/\1/p' <PKGBUILD)" &&
@@ -3034,7 +3066,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		;;
 	bash)
 		url="http://git.savannah.gnu.org/cgit/bash.git/commit/?id=HEAD" &&
-		version=4.4 &&
+		version=5.1 &&
 		patchlevel="$(curl $url | sed -n \
 			's/.*+#define PATCHLEVEL \([1-9][0-9]*\).*/\1/p')" &&
 		if test -z "$patchlevel"
@@ -3105,7 +3137,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		url=http://search.cpan.org/dist/perl-$ver/pod/perldelta.pod &&
 		release_notes_feature='Comes with [Perl v'$ver']('"$url"').'
 		;;
-	perl-Net-SSLeay|perl-HTML-Parser|perl-TermReadKey|perl-Locale-Gettext|perl-XML-Parser|perl-YAML-Syck)
+	perl-Net-SSLeay|perl-HTML-Parser|perl-TermReadKey|perl-Locale-Gettext|perl-XML-Parser|perl-YAML-Syck|perl-Clone)
 		metaname=${package#perl-}
 		case $metaname in
 		Locale-Gettext) metaname=gettext;;
@@ -3467,14 +3499,16 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		die "Could not update $sdk32$pkgpath"
 		;;
 	mingw-w64-pcre2)
-		url=https://pcre.org/news.txt
-		news="$(curl $url)" ||
-		die "Could not download %s\n" "$url"
-
-		version="$(echo "$news" | sed -n -e \
-			'/^Version [1-9][0-9]*\.[1-9]/{s/^[^1-9]*\([^ ]*\).*/\1/p;q}' )"
+		repo=PCRE2Project/pcre2
+		url=https://api.github.com/repos/$repo/releases/latest
+		release="$(curl --netrc -Ls $url)"
+		test -n "$release" ||
+		die "Could not determine the latest version of %s\n" "$package"
+		tag="$(echo "$release" |
+			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
+		version=${tag#pcre2-}
 		test -n "$version" ||
-		die "Could not determine current PCRE2 version\n"
+		die "Could not determine version of %s\n" "$package"
 
 		(cd "$sdk64$pkgpath" &&
 		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
@@ -3485,6 +3519,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 create_bundle_artifact) ||
 		exit
 
+		url=https://raw.githubusercontent.com/$repo/$tag/ChangeLog
 		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
 		release_notes_feature="Comes with [PCRE2 $v]($url)."
 		;;
@@ -3735,7 +3770,7 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 
 	case "$branch_to_use" in
 	*@*)
-		git "$dir_option" fetch --tags \
+		git "$dir_option" fetch --tags --prune-tags \
 			"${branch_to_use#*@}" "${branch_to_use%%@*}" ||
 		die "Could not fetch '%s' from '%s'\n" \
 			"${branch_to_use%%@*}" "${branch_to_use#*@}"
@@ -3854,8 +3889,7 @@ sign_files () {
 }
 
 bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--arch=<arch>] [<package-versions>]
-	packages="mingw-w64-git-pdb mingw-w64-curl-pdb mingw-w64-openssl-pdb
-		bash-devel"
+	packages="mingw-w64-git-pdb mingw-w64-curl-pdb mingw-w64-openssl-pdb"
 
 	artifactsdir=
 	architectures=
@@ -4439,6 +4473,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	output_path=
 	force=
 	bitness=auto
+	keep_worktree=
 	while case "$1" in
 	--out|-o)
 		shift
@@ -4473,6 +4508,12 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	--force|-f)
 		force=t
 		;;
+	--keep-worktree)
+		keep_worktree=t
+		;;
+	--no-keep-worktree)
+		keep_worktree=
+		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
 	esac; do shift; done
@@ -4490,6 +4531,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	mode=
 	case "$1" in
 	minimal|git-sdk-minimal) mode=minimal-sdk;;
+	full) mode=full-sdk;;
 	minimal-sdk|makepkg-git|build-installers|full-sdk) mode=$1;;
 	*) die "Unhandled artifact: '%s'\n" "$1";;
 	esac
@@ -4580,6 +4622,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		/usr/bin/dirname.exe
 		/usr/bin/grep.exe
 		/usr/bin/ls.exe
+		/usr/bin/rm.exe
 		/usr/bin/sed.exe
 		/usr/bin/sort.exe
 		/usr/bin/uniq.exe
@@ -4588,9 +4631,13 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		/usr/bin/msys-pcre*.dll
 		/usr/bin/msys-gcc_s-*.dll
 
+		# markdown, to render the release notes
+		/usr/bin/markdown
+
 		# Files to include into the installer/Portable Git/MinGit
 		EOF
 		git -C "$output_path" checkout -- &&
+		mkdir -p "$output_path/tmp" &&
 		printf 'export MSYSTEM=MINGW%s\nexport PATH=/mingw%s/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' "$bitness" "$bitness" >"$output_path/etc/profile" &&
 		mkdir -p "$output_path/mingw$bitness/bin" &&
 		case $bitness in
@@ -4619,7 +4666,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file" &&
-			printf '\n' >>"$sparse_checkout_file" &&
+			printf '\n# markdown, to render the release notes\n/usr/bin/markdown\n\n' >>"$sparse_checkout_file" &&
 			BITNESS=64 ARCH=x86_64 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
 			"${this_script_path%/*}/make-file-list.sh" | sed -e 's|[][]|\\&|g' -e 's|^|/|' >>"$sparse_checkout_file"
 			;;
@@ -4709,8 +4756,11 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
   <rewriteURI uriStartString="http://docbook.sourceforge.net/release/xsl-ns/current" rewritePrefix="/usr/share/xml/docbook-xsl-ns-1.78.1"/>' \
 			"$output_path/etc/xml/catalog"
 	fi &&
-	rm -r "$(cat "$output_path/.git" | sed 's/^gitdir: //')" &&
-	rm "$output_path/.git" &&
+	if test -z "$keep_worktree"
+	then
+		rm -r "$(cat "$output_path/.git" | sed 's/^gitdir: //')" &&
+		rm "$output_path/.git"
+	fi &&
 	echo "Output written to '$output_path'" >&2 ||
 	die "Could not write artifact at '%s'\n" "$output_path"
 }
@@ -4730,12 +4780,12 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	src_pkg=
 	while case "$1" in
 	--only-32-bit)
-		MINGW_INSTALLS=mingw32
-		export MINGW_INSTALLS
+		MINGW_ARCH=mingw32
+		export MINGW_ARCH
 		;;
 	--only-64-bit)
-		MINGW_INSTALLS=mingw64
-		export MINGW_INSTALLS
+		MINGW_ARCH=mingw64
+		export MINGW_ARCH
 		;;
 	--skip-test-artifacts)
 		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-test-artifacts"//'
@@ -4812,6 +4862,8 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	# Work around bug where the incorrect xmlcatalog.exe wrote /etc/xml/catalog
 	sed -i -e 's|C:/git-sdk-64-ci||g' /etc/xml/catalog
 
+	test true = "$GITHUB_ACTIONS" || # GitHub Actions' agents have the mspdb.dll, and cv2pdb finds it
+	test -n "$SYSTEM_COLLECTIONURI$SYSTEM_TASKDEFINITIONSURI" || # Same for Azure Pipelines
 	find_mspdb_dll >/dev/null || {
 		WITHOUT_PDBS=1
 		export WITHOUT_PDBS
@@ -4826,7 +4878,8 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag &&
 	 if test -n "$src_pkg"
 	 then
-		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_INSTALLS=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.$tag
+		git -C git repack -adf &&
+		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_ARCH=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.$tag
 	 fi) ||
 	die "Could not build mingw-w64-git\n"
 

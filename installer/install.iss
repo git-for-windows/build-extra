@@ -96,7 +96,6 @@ WizardImageBackColor=clWhite
 WizardImageStretch=no
 WizardImageFile={#SourcePath}\git.bmp
 WizardSmallImageFile={#SourcePath}\gitsmall.bmp
-MinVersion=6.0
 
 [Types]
 ; Define a custom type to avoid getting the three default types.
@@ -801,6 +800,12 @@ var
     Values:TArrayOfString;
     c,i,j,k:Integer;
 begin
+    if AppDir='' then begin
+        // No previous installation detected, therefore we cannot execute `git config`
+        Result:=True;
+        Exit;
+    end;
+
     case WhichOne of
     'ProgramData': ExtraOptions:='-f "'+ExpandConstant('{commonappdata}\Git\config')+'"';
     'system': ExtraOptions:='--system';
@@ -1175,8 +1180,8 @@ end;
 
 function DetectNetFxVersion:Cardinal;
 begin
-    // We are only interested in version v4.5.1 or later, therefore it
-    // is enough to only use the 4.5 method described in
+    // We are only interested in version v4.7.2 or later, therefore it
+    // is enough to only use the "4.5 and later" method described in
     // https://docs.microsoft.com/en-us/dotnet/framework/migration-guide/how-to-determine-which-versions-are-installed
     if IsWin64 then begin
         if (
@@ -1935,13 +1940,13 @@ begin
     // 9th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Notepad as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Notepad is a simple GUI editor that comes with windows.',Top,Left,LblEditor[GE_Notepad],False);
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Notepad is a simple GUI editor that comes with Windows.',Top,Left,LblEditor[GE_Notepad],False);
     EditorAvailable[GE_Notepad]:=True;
 
     // 10th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Wordpad as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Wordpad is a basic word processor that comes with windows.'+#13+'It can also be used as a text editor.',Top,Left,LblEditor[GE_Wordpad],False);
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Wordpad is a basic word processor that comes with Windows.'+#13+'It can also be used as a text editor.',Top,Left,LblEditor[GE_Wordpad],False);
     EditorAvailable[GE_Wordpad]:=True;
 
     // Custom choice
@@ -2288,11 +2293,12 @@ begin
     // No credential helper
     RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.',TabOrder,Top,Left);
 
-    // Restore the settings chosen during a previous install, if .NET 4.5.1
+    // Restore the settings chosen during a previous install, if .NET Framework 4.7.2
     // or later is available.
-    if DetectNetFxVersion()<378675 then begin
+    if DetectNetFxVersion()<461808 then begin
         RdbGitCredentialManager[GCM].Checked:=False;
         RdbGitCredentialManager[GCM].Enabled:=False;
+        RdbGitCredentialManager[GCM].Caption:=RdbGitCredentialManager[GCM].Caption+' (requires .NET Framework >= 4.7.2)'
     end else begin
         case ReplayChoice('Use Credential Manager','Enabled') of
             'Disabled': RdbGitCredentialManager[GCM_None].Checked:=True;
@@ -3182,9 +3188,9 @@ begin
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
     if RdbExperimentalOptions[GP_EnableFSMonitor].checked then
-        GitSystemConfigSet('core.useBuiltinFSMonitor','true')
+        GitSystemConfigSet('core.fsmonitor','true')
     else
-        GitSystemConfigSet('core.useBuiltinFSMonitor',#0);
+        GitSystemConfigSet('core.fsmonitor',#0);
 #endif
 
     {
