@@ -3127,7 +3127,7 @@ begin
         GitSystemConfigSet('credential.helper',#0);
         GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath',#0);
     end else if RdbGitCredentialManager[GCM].checked then begin
-        GitSystemConfigSet('credential.helper','manager-core');
+        GitSystemConfigSet('credential.helper','manager');
         GitSystemConfigSet('credential.https://dev.azure.com.useHttpPath','true');
     end;
 
