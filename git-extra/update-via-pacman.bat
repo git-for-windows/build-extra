@@ -27,8 +27,10 @@
 @REM Set to MSYS mode
 @SET MSYSTEM=MSYS
 
-@ECHO Run Pacman
+@ECHO Run Pacman (First Pass)
 @pacman -Syyu --noconfirm
+@ECHO End of Pacman (First Pass)
+@ECHO ==
 @IF ERRORLEVEL 1 GOTO DIE
 
 @REM If Pacman updated "core" packages, e.g. the MSYS2 runtime, it stops
@@ -65,22 +67,28 @@
 @REM error level is 0 *or higher*, i.e. it would always jump. Not what we want.
 @REM So we *must* make it an "error" when everything is upgraded already.
 
+@ECHO Find last Upgrade in Pacman.log
 @git-cmd.exe --command=usr\bin\bash.exe -lc ^" ^
 	needle=\^"$(tail -c 16384 /var/log/pacman.log ^| ^
 		   grep '\[PACMAN\] starting .* system upgrade' ^| ^
 		   tail -n 1)\^" ^&^& ^
 	test -n \^"$needle\^" ^&^& ^
 	test \^"a$needle\^" = \^"a${needle#*full system upgrade}\^"^"
-
+@ECHO End of search for full/partial Upgrade indicator in Pacman.log
+@ECHO ==
 @IF ERRORLEVEL 1 GOTO FINISH
 
-@ECHO "Run Pacman again to upgrade the remaining (non-core) packages"
+@ECHO "Run Pacman again (Second Pass) to upgrade the remaining (non-core) packages"
 @pacman -Su --noconfirm
+@ECHO "End of Pacman (Second Pass) for (non-core) packages"
+@ECHO ==
 @IF ERRORLEVEL 1 GOTO DIE
 
 :FINISH
-@REM Wrapping up: re-install git-extra
+@ECHO Wrapping up: re-install git-extra
 @pacman -S --noconfirm git-extra
+@ECHO End of re-install of git-extra
+@ECHO ==
 @IF ERRORLEVEL 1 GOTO DIE
 
 @ECHO All done!
