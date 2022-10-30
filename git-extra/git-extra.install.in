@@ -18,7 +18,7 @@ GITATTRIBUTES
 		-e 's/^\*\.DOT\(.*\)/&\n*.dotm\1\n*.DOTM\1/' \
 		"$ETC_GITATTRIBUTES"
 
-	for dir in mingw32 mingw64
+	for dir in mingw32 mingw64 clangarm64
 	do
 		# Drop git-wrapper in place of builtins "to save space"
 		git_wrapper=/$dir/share/git/git-wrapper.exe
