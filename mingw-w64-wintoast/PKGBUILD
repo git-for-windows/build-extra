@@ -12,7 +12,7 @@ license=('MIT')
 
 options=('!strip')
 
-source=("${_realname}"::"git+https://github.com/git-for-windows/WinToast#tag=g4w-20171117-01")
+source=("${_realname}"::"git+https://github.com/git-for-windows/WinToast#tag=g4w-20221103-01")
 
 sha256sums=('SKIP')
 
@@ -24,6 +24,7 @@ die () {
 case "$CARCH" in
 i686) WARCH=x86; OUTDIR=Release;;
 x86_64) WARCH=x64; OUTDIR=x64/Release;;
+aarch64) WARCH=ARM64; OUTDIR=ARM64/Release;;
 *) die "Unsupported architecture: $CARCH"
 esac
 
