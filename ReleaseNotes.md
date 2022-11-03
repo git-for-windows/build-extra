@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [GNU TLS v3.7.8](https://lists.gnupg.org/pipermail/gnutls-help/2022-September/004765.html).
 * Comes with [OpenSSL v1.1.1s](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [cURL v7.86.0 (3)](https://curl.haxx.se/changes.html#7_86_0).
+* The Portable Git edition (which comes as a self-extracting 7-Zip archive) [now uses the latest 7-Zip version to self-extract](https://github.com/git-for-windows/build-extra/commit/0240a09014a4fcfd9f487e50d7a09464a2e428b8).
 
 ## Changes since Git for Windows v2.38.0 (October 3rd 2022)
 
