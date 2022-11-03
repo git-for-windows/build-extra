@@ -52,6 +52,7 @@ This package contains software from a number of other projects including Bash, z
 * The Portable Git edition (which comes as a self-extracting 7-Zip archive) [now uses the latest 7-Zip version to self-extract](https://github.com/git-for-windows/build-extra/commit/0240a09014a4fcfd9f487e50d7a09464a2e428b8).
 * Comes with [libcbor v0.9.0](https://github.com/PJK/libcbor/releases/tag/0.9.0).
 * Comes with [libfido2 v1.12.0](https://github.com/Yubico/libfido2/releases/tag/1.12.0).
+* Comes with [OpenSSH v9.1p1](https://www.openssh.com/txt/release-9.1).
 
 ## Changes since Git for Windows v2.38.0 (October 3rd 2022)
 
