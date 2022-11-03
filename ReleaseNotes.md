@@ -57,6 +57,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The Git executables (e.g. `git.exe` itself) used to have incomplete version information recorded in their resources, which [has been fixed](https://github.com/git-for-windows/git/pull/4092).
+* A [regression](https://github.com/git-for-windows/git/issues/4052) introduced in Git for Windows v2.38.0 that prevented `git.exe` from running in Windows Nano Server containers [was fixed](https://github.com/git-for-windows/git/pull/4074).
 
 ## Changes since Git for Windows v2.38.0 (October 3rd 2022)
 
