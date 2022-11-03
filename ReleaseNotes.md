@@ -53,6 +53,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSH v9.1p1](https://www.openssh.com/txt/release-9.1).
 * It [is now possible](https://github.com/git-for-windows/MSYS2-packages/commit/6823ee7b329b53f38747f64db8fb8d6de077a0e4) to generate and use [SSH keys protected by security keys](https://man.openbsd.org/ssh-keygen#FIDO_AUTHENTICATOR) (AKA FIDO devices) via Windows Hello, e.g. via `ssh-keygen.exe -t ecdsa-sk`.
 
+### Bug Fixes
+
+* The Git executables (e.g. `git.exe` itself) used to have incomplete version information recorded in their resources, which [has been fixed](https://github.com/git-for-windows/git/pull/4092).
+
 ## Changes since Git for Windows v2.38.0 (October 3rd 2022)
 
 ### New Features
