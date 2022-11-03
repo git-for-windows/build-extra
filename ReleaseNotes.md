@@ -50,9 +50,8 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSL v1.1.1s](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 * Comes with [cURL v7.86.0 (3)](https://curl.haxx.se/changes.html#7_86_0).
 * The Portable Git edition (which comes as a self-extracting 7-Zip archive) [now uses the latest 7-Zip version to self-extract](https://github.com/git-for-windows/build-extra/commit/0240a09014a4fcfd9f487e50d7a09464a2e428b8).
-* Comes with [libcbor v0.9.0](https://github.com/PJK/libcbor/releases/tag/0.9.0).
-* Comes with [libfido2 v1.12.0](https://github.com/Yubico/libfido2/releases/tag/1.12.0).
 * Comes with [OpenSSH v9.1p1](https://www.openssh.com/txt/release-9.1).
+* It [is now possible](https://github.com/git-for-windows/MSYS2-packages/commit/6823ee7b329b53f38747f64db8fb8d6de077a0e4) to generate and use [SSH keys protected by security keys](https://man.openbsd.org/ssh-keygen#FIDO_AUTHENTICATOR) (AKA FIDO devices) via Windows Hello, e.g. via `ssh-keygen.exe -t ecdsa-sk`.
 
 ## Changes since Git for Windows v2.38.0 (October 3rd 2022)
 
