@@ -21,12 +21,6 @@ die () {
   exit 1
 }
 
-test -n "$MSBUILD_DIR" ||
-MSBUILD_DIR="/c/Program Files (x86)/MSBuild/14.0/Bin"
-
-test -d "$MSBUILD_DIR" ||
-die "Need a valid MSBUILD_DIR to point to MSBuild"
-
 case "$CARCH" in
 i686) WARCH=x86; OUTDIR=Release;;
 x86_64) WARCH=x64; OUTDIR=x64/Release;;
@@ -42,7 +36,7 @@ build() {
   cd "$srcdir/wintoast"
 
   (cd example/console-example/ &&
-   "$MSBUILD_DIR"/MSBuild.exe //p:Configuration=Release //p:Platform="$WARCH")
+   cmd //c '..\..\..\..\..\msbuild\hMSBuild.bat -notamd64 -vsw-version local /p:Configuration=Release /p:Platform='"$WARCH")
 
   cp example/console-example/$OUTDIR/WinToast\ Console\ Example.exe wintoast.exe
 
