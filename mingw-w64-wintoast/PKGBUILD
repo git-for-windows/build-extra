@@ -12,7 +12,7 @@ license=('MIT')
 
 options=('!strip')
 
-source=("${_realname}"::"git+https://github.com/git-for-windows/WinToast#tag=g4w-20171117-01")
+source=("${_realname}"::"git+https://github.com/git-for-windows/WinToast#tag=g4w-20221103-01")
 
 sha256sums=('SKIP')
 
@@ -21,15 +21,10 @@ die () {
   exit 1
 }
 
-test -n "$MSBUILD_DIR" ||
-MSBUILD_DIR="/c/Program Files (x86)/MSBuild/14.0/Bin"
-
-test -d "$MSBUILD_DIR" ||
-die "Need a valid MSBUILD_DIR to point to MSBuild"
-
 case "$CARCH" in
 i686) WARCH=x86; OUTDIR=Release;;
 x86_64) WARCH=x64; OUTDIR=x64/Release;;
+aarch64) WARCH=ARM64; OUTDIR=ARM64/Release;;
 *) die "Unsupported architecture: $CARCH"
 esac
 
@@ -42,7 +37,7 @@ build() {
   cd "$srcdir/wintoast"
 
   (cd example/console-example/ &&
-   "$MSBUILD_DIR"/MSBuild.exe //p:Configuration=Release //p:Platform="$WARCH")
+   cmd //c '..\..\..\..\..\msbuild\hMSBuild.bat -notamd64 -vsw-version local /p:Configuration=Release /p:Platform='"$WARCH")
 
   cp example/console-example/$OUTDIR/WinToast\ Console\ Example.exe wintoast.exe
 
