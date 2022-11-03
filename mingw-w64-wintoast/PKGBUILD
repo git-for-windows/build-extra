@@ -3,7 +3,7 @@
 _realname=wintoast
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.0.0.181.9b0663d
+pkgver=1.0.0.275.a44fa02
 pkgrel=1
 pkgdesc="A console application to show a toast notification on Windows 8 and 10 (mingw-w64)"
 arch=('any')
