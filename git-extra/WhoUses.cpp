@@ -70,10 +70,10 @@ void WhoUsesModule( LPCTSTR lpFileName, BOOL bFullPathCheck )
 			else
 				processName = "";
 
-				_tprintf( _T("0x%04X  %-20s  %s\n"),
-					(unsigned int)m.ProcessId,
-					processName.c_str(),
-					m.FullPath );
+			_tprintf( _T("0x%04X  %-20s  %s\n"),
+				(unsigned int)m.ProcessId,
+				processName.c_str(),
+				m.FullPath );
 		}
 	}
 }
