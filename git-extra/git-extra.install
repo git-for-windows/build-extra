@@ -8,9 +8,7 @@ post_install () {
 	symlinks = false
 	autocrlf = true
 [color]
-	diff = auto
-	status = auto
-	branch = auto
+	ui = auto
 	interactive = true
 [pack]
 	packSizeLimit = 2g
