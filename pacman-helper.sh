@@ -557,19 +557,19 @@ quick_add () { # <file>...
 		file="${path##*/}"
 		mingw=
 		case "${path##*/}" in
-		mingw-w64-*.pkg.tar.xz)
+		mingw-w64-*.pkg.tar.xz|mingw-w64-*.pkg.tar.zst)
 			arch=${file##mingw-w64-}
 			arch=${arch#clang-}
 			arch=${arch%%-*}
 			key=${arch}_mingw
 			;;
-		git-extra-*.pkg.tar.xz)
-			arch=${file%.pkg.tar.xz}
+		git-extra-*.pkg.tar.xz|git-extra-*.pkg.tar.zst)
+			arch=${file%.pkg.tar.*}
 			arch=${arch##*-}
 			key=${arch}_mingw
 			;;
-		*-*.pkg.tar.xz)
-			arch=${file%.pkg.tar.xz}
+		*-*.pkg.tar.xz|*-*.pkg.tar.zst)
+			arch=${file%.pkg.tar.*}
 			arch=${arch##*-}
 			test any != "$arch" || {
 				arch="$(tar Oxf "$path" .BUILDINFO |
@@ -579,7 +579,7 @@ quick_add () { # <file>...
 			}
 			key=${arch}_msys
 			;;
-		*.src.tar.gz)
+		*.src.tar.gz|*.src.tar.xz|*.src.tar.zst)
 			arch=sources
 			key=
 			;;
