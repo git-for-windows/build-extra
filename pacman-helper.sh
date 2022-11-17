@@ -562,8 +562,12 @@ quick_add () { # <file>...
 		*-*.pkg.tar.xz)
 			arch=${file%.pkg.tar.xz}
 			arch=${arch##*-}
-			test any != "$arch" ||
-			arch="$FALLBACK_ARCHITECTURE"
+			test any != "$arch" || {
+				arch="$(tar Oxf "$path" .BUILDINFO |
+					sed -n 's/^installed = msys2-runtime-[0-9].*-\(.*\)/\1/p')"
+				test -n "$arch" ||
+				die "Could not determine architecture of '$path'"
+			}
 			key=${arch}_msys
 			;;
 		*.src.tar.gz) arch=sources; key= ;;
