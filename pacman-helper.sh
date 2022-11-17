@@ -557,8 +557,17 @@ quick_add () { # <file>...
 		file="${path##*/}"
 		mingw=
 		case "${path##*/}" in
-		mingw-w64-*.pkg.tar.xz) arch=${file##mingw-w64-}; arch=${arch#clang-}; arch=${arch%%-*}; key=${arch}_mingw;;
-		git-extra-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; key=${arch}_mingw;;
+		mingw-w64-*.pkg.tar.xz)
+			arch=${file##mingw-w64-}
+			arch=${arch#clang-}
+			arch=${arch%%-*}
+			key=${arch}_mingw
+			;;
+		git-extra-*.pkg.tar.xz)
+			arch=${file%.pkg.tar.xz}
+			arch=${arch##*-}
+			key=${arch}_mingw
+			;;
 		*-*.pkg.tar.xz)
 			arch=${file%.pkg.tar.xz}
 			arch=${arch##*-}
@@ -570,9 +579,18 @@ quick_add () { # <file>...
 			}
 			key=${arch}_msys
 			;;
-		*.src.tar.gz) arch=sources; key= ;;
-		*.sig) continue;; # skip explicit signatures; we copy them automatically
-		*) echo "Skipping unknown file: $file" >&2; continue;;
+		*.src.tar.gz)
+			arch=sources
+			key=
+			;;
+		*.sig)
+			# skip explicit signatures; we copy them automatically
+			continue
+			;;
+		*)
+			echo "Skipping unknown file: $file" >&2
+			continue
+			;;
 		esac
 		test -n "$arch" || die "Could not determine architecture for $path"
 		case " $architectures sources " in
