@@ -3333,7 +3333,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	case "$1" in
 	minimal|git-sdk-minimal) mode=minimal-sdk;;
 	full) mode=full-sdk;;
-	minimal-sdk|makepkg-git|build-installers|full-sdk) mode=$1;;
+	minimal-sdk|makepkg-git|build-installers|pacman|full-sdk) mode=$1;;
 	*) die "Unhandled artifact: '%s'\n" "$1";;
 	esac
 
@@ -3486,6 +3486,82 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		# BusyBox
 		/mingw$bitness/bin/busybox.exe
 		EOF
+		mkdir -p "$output_path/.sparse" &&
+		cp "$sparse_checkout_file" "$output_path/.sparse/build-installers"
+		;;
+	pacman)
+		# In partial clones, preemptively fetch /var/lib/pacman/local/*
+		if test true = "$(git -C "$git_sdk_path" config remote.origin.promisor)"
+		then
+			# "abuse" the fact that `diff --numstat` prefetches the objects
+			git -C "$git_sdk_path" diff --quiet --numstat \
+				HEAD:usr/share/makepkg HEAD:var/lib/pacman/local ||
+			test $? = 1 # we expect the trees to differ
+		fi &&
+
+		pkg_map=" $(git -C "$git_sdk_path" ls-tree HEAD:var/lib/pacman/local |
+			sed -n 's/^.* \([0-9a-f]*\)\t\(.*\)/\2:\1/p' |
+			# remove the package version
+			sed 's/-[0-9][^:]*//g' |
+			tr '\n' ' ')" &&
+		pkg_tree_oid () {
+			tree="${pkg_map##* $1:}" &&
+			test "z$tree" != "z$pkg_map" &&
+			tree=${tree%% *} &&
+			test -n "$tree" &&
+			echo "$tree" ||
+			die "Could not get tree for $1"
+		} &&
+		pkg_blob_oid () {
+			git -C "$git_sdk_path" rev-parse --verify "$(pkg_tree_oid "$1")":$2 ||
+			die "Could not get oid for $1:$2"
+		} &&
+		pkg_files () {
+			git -C "$git_sdk_path" cat-file blob "$(pkg_blob_oid "$1" files)" |
+			sed -n '/^%FILES%$/,/^$/{/^%FILES%$/d;/^$/d;/\/$/d;p}'
+		} &&
+		pkg_deps () {
+			git -C "$git_sdk_path" cat-file blob "$(pkg_blob_oid "$1" desc)" |
+			sed -n '/^%DEPENDS%$/,/^$/{/^%DEPENDS%$/d;/^$/d;s/[>=].*//;p}'
+		} &&
+		pkgs_deps () {
+			deps_tree=' '
+			args_remaining="$* "
+			while test -n "$args_remaining"
+			do
+				arg="${args_remaining%% *}"
+				args_remaining="${args_remaining#$arg }"
+				test sh != "$arg" || arg=bash
+				case " $deps_tree" in *" $arg "*) continue;; esac # already handled
+				deps_tree="$deps_tree$arg "
+				for dep in $(pkg_deps $arg)
+				do
+					case " $deps_tree" in *" $dep "*) continue;; esac # already handled
+					args_remaining="$args_remaining$dep "
+				done
+			done &&
+			echo "${deps_tree% }"
+		} &&
+		pkgs_sparse_checkout () {
+			printf '# Sparse checkout file for %s\n\n%s\n%s\n%s\n' \
+				'# Pacman database' \
+				'/var/lib/pacman/local/ALPM_DB_VERSION' \
+				'/var/lib/pacman/sync/' "$*" &&
+			echo "Generating dependency tree for $*" >&2 &&
+			for pkg in $(pkgs_deps "$@")
+			do
+				printf '\n# %s\n/var/lib/pacman/local/%s-[0-9]*/\n' "$pkg" "$pkg"
+				echo "Generating file list for $pkg" >&2
+				files="$(pkg_files $pkg)" &&
+				echo "$files" | sed 's/^/\//' ||
+				die "Could not enumerate files for $pkg"
+			done
+		} &&
+		pkgs_sparse_checkout pacman bsdtar msys2-runtime >"$sparse_checkout_file" &&
+
+		mkdir -p "$output_path/tmp" &&
+		mkdir -p "$output_path/etc" &&
+		printf 'export MSYSTEM=MINGW%s\nexport PATH=/mingw%s/bin:/usr/bin/:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' "$bitness" "$bitness" >"$output_path/etc/profile" &&
 		mkdir -p "$output_path/.sparse" &&
 		cp "$sparse_checkout_file" "$output_path/.sparse/build-installers"
 		;;
