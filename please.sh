@@ -3333,7 +3333,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	case "$1" in
 	minimal|git-sdk-minimal) mode=minimal-sdk;;
 	full) mode=full-sdk;;
-	minimal-sdk|makepkg-git|build-installers|pacman|full-sdk) mode=$1;;
+	minimal-sdk|makepkg-git|build-installers|pacman|pacman-full|full-sdk) mode=$1;;
 	*) die "Unhandled artifact: '%s'\n" "$1";;
 	esac
 
@@ -3489,7 +3489,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		mkdir -p "$output_path/.sparse" &&
 		cp "$sparse_checkout_file" "$output_path/.sparse/build-installers"
 		;;
-	pacman)
+	pacman|pacman-full)
 		# In partial clones, preemptively fetch /var/lib/pacman/local/*
 		if test true = "$(git -C "$git_sdk_path" config remote.origin.promisor)"
 		then
@@ -3497,6 +3497,21 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			git -C "$git_sdk_path" diff --quiet --numstat \
 				HEAD:usr/share/makepkg HEAD:var/lib/pacman/local ||
 			test $? = 1 # we expect the trees to differ
+		fi &&
+
+		sparse_checkout_exclude= &&
+		pkgs_exclude=
+		if test pacman-full != "$mode"
+		then
+			# skip documentation
+			sparse_checkout_exclude='/usr/share/\(doc\|gtc-doc\|info\|man\)/'
+			# skip headers, terminfo and locales
+			sparse_checkout_exclude="$sparse_checkout_exclude\|/\(include\|terminfo\|locale\)/"
+			# skip C++/Fortran libraries (unused)
+			sparse_checkout_exclude="$sparse_checkout_exclude\|/msys-\(gmpxx\|gnutlsxx\|ncurses++\|stdc++\|gfortran\)[^/]*$"
+			# skip Cygwin's core dumper (unused)
+			sparse_checkout_exclude="$sparse_checkout_exclude\|^/usr/bin/dumper\.exe$"
+			pkgs_exclude='info tcl libasprintf'
 		fi &&
 
 		pkg_map=" $(git -C "$git_sdk_path" ls-tree HEAD:var/lib/pacman/local |
@@ -3531,6 +3546,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			do
 				arg="${args_remaining%% *}"
 				args_remaining="${args_remaining#$arg }"
+				case " $pkgs_exclude " in *" $arg "*) continue;; esac
 				test sh != "$arg" || arg=bash
 				case " $deps_tree" in *" $arg "*) continue;; esac # already handled
 				deps_tree="$deps_tree$arg "
@@ -3543,17 +3559,19 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			echo "${deps_tree% }"
 		} &&
 		pkgs_sparse_checkout () {
-			printf '# Sparse checkout file for %s\n\n%s\n%s\n%s\n' \
-				'# Pacman database' \
+			printf '# Sparse checkout file for %s\n\n%s\n%s\n%s\n%s\n' "$*" \
+				'# Pacman local state' \
+				'/etc/pacman.d/gnupg/' \
 				'/var/lib/pacman/local/ALPM_DB_VERSION' \
-				'/var/lib/pacman/sync/' "$*" &&
+				'/var/lib/pacman/sync/' &&
 			echo "Generating dependency tree for $*" >&2 &&
 			for pkg in $(pkgs_deps "$@")
 			do
 				printf '\n# %s\n/var/lib/pacman/local/%s-[0-9]*/\n' "$pkg" "$pkg"
 				echo "Generating file list for $pkg" >&2
 				files="$(pkg_files $pkg)" &&
-				echo "$files" | sed 's/^/\//' ||
+				echo "$files" | sed 's/^/\//' |
+				grep -v "${sparse_checkout_exclude:-.^}" ||
 				die "Could not enumerate files for $pkg"
 			done
 		} &&
