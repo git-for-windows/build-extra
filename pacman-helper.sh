@@ -559,7 +559,13 @@ quick_add () { # <file>...
 		case "${path##*/}" in
 		mingw-w64-*.pkg.tar.xz) arch=${file##mingw-w64-}; arch=${arch#clang-}; arch=${arch%%-*}; key=${arch}_mingw;;
 		git-extra-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; key=${arch}_mingw;;
-		*-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; test any != "$arch" || arch="$FALLBACK_ARCHITECTURE"; key=${arch}_msys;;
+		*-*.pkg.tar.xz)
+			arch=${file%.pkg.tar.xz}
+			arch=${arch##*-}
+			test any != "$arch" ||
+			arch="$FALLBACK_ARCHITECTURE"
+			key=${arch}_msys
+			;;
 		*.src.tar.gz) arch=sources; key= ;;
 		*.sig) continue;; # skip explicit signatures; we copy them automatically
 		*) echo "Skipping unknown file: $file" >&2; continue;;
