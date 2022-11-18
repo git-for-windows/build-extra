@@ -54,6 +54,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Bash v5.2 patchlevel 009 ](https://tiswww.case.edu/php/chet/bash/NEWS).
 * Portable Git no longer configures `color.diff`, `color.status` and `color.branch` individually, but [configures `color.ui` instead](https://github.com/git-for-windows/build-extra/pull/442), which makes it easier to override the default.
 * Comes with [GNU TLS v3.7.8](https://lists.gnupg.org/pipermail/gnutls-help/2022-September/004765.html).
+* Comes with [Git Credential Manager Core v2.0.877](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.877).
 
 ### Bug Fixes
 
