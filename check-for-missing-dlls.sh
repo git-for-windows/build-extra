@@ -5,6 +5,14 @@ die () {
 	exit 1
 }
 
+while case "$1" in
+--mingit) MINIMAL_GIT=1; export MINIMAL_GIT;;
+-*) die "Unknown option: $1";;
+*) break;;
+esac; do shift; done
+
+test $# = 0 || die "$0 does not take arguments"
+
 thisdir="$(cd "$(dirname "$0")" && pwd)" ||
 die "Could not determine script directory"
 
