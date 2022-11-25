@@ -50,7 +50,12 @@ const addReleaseNote = (type, message) => {
   }
 
   // Add the message to the section
-  sections[type].push(type === 'blurb' ? message : `* ${message}`)
+  if (type === 'feature' && message.startsWith('Comes with [Git v')) {
+    // Make sure that the Git version is always reported first
+    sections.feature.unshift(`* ${message}`)
+  } else {
+    sections[type].push(type === 'blurb' ? message : `* ${message}`)
+  }
 
   // Put it all back together
   const blurb = sections.blurb.length ? `\n${sections.blurb.join('\n\n')}\n` : ''
