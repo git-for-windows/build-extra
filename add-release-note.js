@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const { execFileSync } = require('child_process')
 const fs = require('fs')
 
 /**
@@ -67,12 +68,31 @@ const addReleaseNote = (type, message) => {
   fs.writeFileSync(path, entries.join(''))
 }
 
+const wrap = (text, columns) => text
+  .split(new RegExp(`(.{0,${columns}}|\\S{${columns + 1},})(\\s+)`))
+  .filter((_, i) => (i % 2) === 1)
+  .join('\n')
+
 const main = async () => {
+  let doCommit = false
+  if (process.argv.length > 4 && process.argv[2] === '--commit') {
+    doCommit = true
+    process.argv.splice(2, 1)
+  }
+
   if (process.argv.length !== 4) {
     throw new Error(`Usage: ${process.argv[1]} ( blurb | feature | bug ) <message>\n`)
   }
   const [, , type, message] = process.argv
   addReleaseNote(type, message)
+
+  if (doCommit) {
+      const subject = `Add a release note${type !== 'blurb' ? ` (${type})` : ''}`
+      const body = wrap(message, 72)
+      console.log(execFileSync('git', [
+        'commit', '-s', '-m', subject, '-m', body, '--', 'ReleaseNotes.md'
+      ]).toString('utf-8'))
+  }
 }
 
 main().catch(e => {
