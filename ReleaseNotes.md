@@ -53,7 +53,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [GNU TLS v3.7.8](https://lists.gnupg.org/pipermail/gnutls-help/2022-September/004765.html).
 * Comes with [Git Credential Manager Core v2.0.877](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.877).
 * Comes with [MinTTY v3.6.2](https://github.com/mintty/mintty/releases/tag/3.6.2).
-* Comes with [Bash v5.2 patchlevel 12](https://github.com/git-for-windows/git/issues/4133).
+* Comes with [Bash v5.2 patchlevel 12](https://tiswww.case.edu/php/chet/bash/NEWS).
 
 ### Bug Fixes
 
