@@ -43,6 +43,12 @@ const addReleaseNote = (type, message) => {
     else current.push(line)
   }
 
+  // Remove any superseded entries
+  if (type === 'feature') {
+    const match = message.match(/^(Comes with \[[^\]]+ )(v|patch level)/)
+    if (match) sections.feature = sections.feature.filter(e => !e.startsWith(`* ${match[1]}`))
+  }
+
   // Add the message to the section
   sections[type].push(type === 'blurb' ? message : `* ${message}`)
 
