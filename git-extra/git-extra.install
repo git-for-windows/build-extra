@@ -272,6 +272,17 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	! grep -q '^	sslCAinfo = /ssl/certs/ca-bundle.crt$' /etc/gitconfig ||
 	sed -i -e 's/^	sslCAinfo = \/ssl\/certs\/ca-bundle\.crt$/#&/' /etc/gitconfig
 
+	# We no longer want to configure `color.diff`, `color.status` and `color.branch`
+	# by default.
+	test ! -f /etc/gitconfig || # just a little defensive programming
+	test -z "$(sed -n '/^\[color\]/{N;/\(diff\|status\|branch\) = auto/p}' </etc/gitconfig)" || {
+		git config -f /etc/gitconfig color.ui auto &&
+		for key in diff status branch
+		do
+			git config -f /etc/gitconfig --unset color.$key # ignore errors, e.g. if already unset
+		done
+	}
+
 	# Previously, we made sure that `/ssl` is a symbolic link pointing to
 	# `/usr/ssl` so that the http.sslCAInfo setting could be shared between
 	# the MSYS and the MINGW variants of `git.exe`.
