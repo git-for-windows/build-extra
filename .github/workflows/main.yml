@@ -75,6 +75,18 @@ jobs:
         with:
           name: ${{ env.artifacts }}
           path: ${{ env.artifacts }}
+      - name: ensure that the Git worktree is still clean
+        shell: bash
+        run: |
+          cd "${{ matrix.directory }}" &&
+          if ! git update-index --ignore-submodules --refresh ||
+            ! git diff-files --ignore-submodules ||
+            ! git diff-index --cached --ignore-submodules HEAD
+          then
+            echo "::error::Uncommitted changes after build!" >&2
+            git diff
+            exit 1
+          fi
   build-artifacts:
     needs: determine-packages
     runs-on: windows-latest

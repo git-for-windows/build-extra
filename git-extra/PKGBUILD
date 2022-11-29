@@ -2,7 +2,7 @@
 
 pkgname=('git-extra')
 _ver_base=1.1
-pkgver=1.1.609.6752ff0
+pkgver=1.1.612.56636bbd4
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('i686' 'x86_64')
@@ -20,7 +20,7 @@ pkgver() {
     sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]/p')" ||
   rev="$(git rev-list -1 $rev^ -- .)"
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $rev -- .)" \
-    "$(git rev-parse --short $rev)"
+    "$(git rev-parse --short=9 $rev)"
 }
 source=('inputrc'
         'vimrc'
