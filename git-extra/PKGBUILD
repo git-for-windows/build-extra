@@ -20,7 +20,7 @@ pkgver() {
     sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]/p')" ||
   rev="$(git rev-list -1 $rev^ -- .)"
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $rev -- .)" \
-    "$(git rev-parse --short $rev)"
+    "$(git rev-parse --short=9 $rev)"
 }
 source=('inputrc'
         'vimrc'
