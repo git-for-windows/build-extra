@@ -20,7 +20,7 @@ jobs:
             comm -12 "$2" "$3" >"$4" &&
             cat "$4" &&
             sed -e 's/\/$//' -e 's/.*/"&", /' -e '$s/, $//' <"$4" >list.txt &&
-            echo "::set-output name=$1::[$(test ! -s list.txt && echo '""' || tr -d '\n' <list.txt)]"
+            echo "$1=[$(test ! -s list.txt && echo '""' || tr -d '\n' <list.txt)]" >>$GITHUB_OUTPUT
           }
 
           git diff ${{github.event.pull_request.base.sha}}... --name-only |
@@ -39,10 +39,10 @@ jobs:
 
           test -z "$(git log -L :create_sdk_artifact:please.sh ${{github.event.pull_request.base.sha}}.. -- )" &&
           test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- make-file-list.sh)" ||
-          echo "::set-output name=test-sdk-artifacts::true"
+          echo "test-sdk-artifacts=true" >>$GITHUB_OUTPUT
 
           test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- check-for-missing-dlls.sh)" ||
-          echo "::set-output name=check-for-missing-dlls::true"
+          echo "check-for-missing-dlls=true" >>$GITHUB_OUTPUT
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
       artifacts: ${{ steps.set-matrix.outputs.artifacts }}
@@ -71,7 +71,7 @@ jobs:
           mkdir -p "$top_dir/$artifacts" &&
           mv *.tar.* "$top_dir/$artifacts"/ &&
           echo "artifacts=$artifacts" >>$GITHUB_ENV
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.artifacts }}
           path: ${{ env.artifacts }}
@@ -108,7 +108,7 @@ jobs:
           mkdir -p "$artifacts" &&
           ./"${{ matrix.directory }}"/release.sh --output="$PWD/$artifacts/" 0-test &&
           echo "artifacts=$artifacts" >>$GITHUB_ENV
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         with:
           name: ${{ env.artifacts }}
           path: ${{ env.artifacts }}
@@ -159,7 +159,7 @@ jobs:
         if: matrix.artifact == 'build-installers'
         shell: bash
         run: ./installer/release.sh --output=$PWD/installer-${{ matrix.bitness }} 0-test
-      - uses: actions/upload-artifact@v2
+      - uses: actions/upload-artifact@v3
         if: matrix.artifact == 'build-installers'
         with:
           name: installer-${{ matrix.bitness }}
