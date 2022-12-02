@@ -23,12 +23,12 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
-            const username = '${{ github.triggering_actor }}'
+            const username = '${{ github.triggering_actor }}'.replace('[bot]', '-bot')
             const email = `${username}@users.noreply.github.com`
             const { data: { name } } = await github.rest.users.getByUsername({ username })
-            core.exportVariable('GIT_AUTHOR_NAME', name)
+            core.exportVariable('GIT_AUTHOR_NAME', name || username)
             core.exportVariable('GIT_AUTHOR_EMAIL', email)
-            core.exportVariable('GIT_COMMITTER_NAME', name)
+            core.exportVariable('GIT_COMMITTER_NAME', name || username)
             core.exportVariable('GIT_COMMITTER_EMAIL', email)
       - name: Partial & sparse clone
         run: |
