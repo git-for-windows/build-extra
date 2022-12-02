@@ -54,6 +54,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git Credential Manager Core v2.0.877](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.877).
 * Comes with [MinTTY v3.6.2](https://github.com/mintty/mintty/releases/tag/3.6.2).
 * Comes with [Bash v5.2 patchlevel 12](https://tiswww.case.edu/php/chet/bash/NEWS).
+* Comes with [Git LFS v3.3.0](https://github.com/git-lfs/git-lfs/releases/tag/v3.3.0).
 
 ### Bug Fixes
 
