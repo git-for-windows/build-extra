@@ -55,6 +55,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [MinTTY v3.6.2](https://github.com/mintty/mintty/releases/tag/3.6.2).
 * Comes with [Bash v5.2 patchlevel 12](https://tiswww.case.edu/php/chet/bash/NEWS).
 * Comes with [Git LFS v3.3.0](https://github.com/git-lfs/git-lfs/releases/tag/v3.3.0).
+* Comes with [PCRE2 v10.41](https://github.com/PCRE2Project/pcre2/blob/pcre2-10.41/ChangeLog).
 
 ### Bug Fixes
 
