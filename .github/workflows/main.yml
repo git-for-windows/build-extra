@@ -112,7 +112,8 @@ jobs:
             build-installers &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
-          cygpath -aw "$PWD/sdk-artifact/mingw64/bin" >>$GITHUB_PATH
+          cygpath -aw "$PWD/sdk-artifact/mingw64/bin" >>$GITHUB_PATH &&
+          echo "MSYSTEM=MINGW64" >>$GITHUB_ENV
       - name: build ${{ matrix.directory }}/
         shell: bash
         run: |
@@ -166,7 +167,8 @@ jobs:
           esac &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
-          cygpath -aw "$PWD/sdk-artifact/mingw${{ matrix.bitness }}/bin" >>$GITHUB_PATH
+          cygpath -aw "$PWD/sdk-artifact/mingw${{ matrix.bitness }}/bin" >>$GITHUB_PATH &&
+          echo "MSYSTEM=MINGW${{ matrix.bitness }}" >>$GITHUB_ENV
       - name: build installer
         if: matrix.artifact == 'build-installers'
         shell: bash
@@ -202,7 +204,8 @@ jobs:
             build-installers &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
-          cygpath -aw "$PWD/sdk-artifact/mingw${{ matrix.bitness }}/bin" >>$GITHUB_PATH
+          cygpath -aw "$PWD/sdk-artifact/mingw${{ matrix.bitness }}/bin" >>$GITHUB_PATH &&
+          echo "MSYSTEM=MINGW${{ matrix.bitness }}" >>$GITHUB_ENV
       - name: check for missing DLLs
         shell: bash
         run: ./check-for-missing-dlls.sh
