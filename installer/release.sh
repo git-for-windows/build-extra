@@ -78,13 +78,6 @@ do
 	--include-pdbs)
 		include_pdbs=t
 		;;
-	--include-arm64-artifacts=*)
-		case "${1#*=}" in
-		/*) ;; # absolute path, okay
-		*) die "Need an absolute path: $1";;
-		esac
-		arm64_artifacts_directory="${1#*=}"
-		;;
 	*)
 		break
 	esac
@@ -111,19 +104,25 @@ case "$displayver" in
 esac
 
 # Evaluate architecture
-ARCH="$(uname -m)"
-
-case "$ARCH" in
-i686)
+case "$MSYSTEM" in
+MINGW32)
 	BITNESS=32
+	ARCH=i686
 	;;
-x86_64)
+MINGW64)
 	BITNESS=64
+	ARCH=x86_64
+	;;
+CLANGARM64)
+	BITNESS=64
+	ARCH=aarch64
+	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX 'arm64'"
 	;;
 *)
-	die "Unhandled architecture: $ARCH"
+	die "Unhandled MSYSTEM: $MSYSTEM"
 	;;
 esac
+MSYSTEM_LOWER=${MSYSTEM,,}
 
 echo "Generating release notes to be included in the installer ..."
 ../render-release-notes.sh --css usr/share/git/ ||
@@ -152,7 +151,7 @@ then
 	LIST=
 else
 	echo "Generating file list to be included in the installer ..."
-	LIST="$(ARCH=$ARCH BITNESS=$BITNESS \
+	LIST="$(ARCH=$ARCH \
 		ETC_GITCONFIG="$etc_gitconfig" \
 		PACKAGE_VERSIONS_FILE=package-versions.txt \
 		INCLUDE_GIT_UPDATE=1 \
@@ -168,12 +167,12 @@ test -z "$cmd_git" || {
 die "Could not execute 'git version'"
 
 printf '; List of files\n%s\n%s\n%s\n%s\n%s\n%s\n' \
-	"Source: \"mingw$BITNESS\\bin\\blocked-file-util.exe\"; Flags: dontcopy" \
+	"Source: \"$MSYSTEM_LOWER\\bin\\blocked-file-util.exe\"; Flags: dontcopy" \
 	"Source: \"{#SourcePath}\\package-versions.txt\"; DestDir: {app}\\etc; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"{#SourcePath}\\..\\ReleaseNotes.css\"; DestDir: {app}\\usr\\share\\git; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"cmd\\git.exe\"; DestDir: {app}\\bin; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
-	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: bash.exe; DestDir: {app}\\bin; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
-	"Source: \"mingw$BITNESS\\share\\git\\compat-bash.exe\"; DestName: sh.exe; DestDir: {app}\\bin; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"$MSYSTEM_LOWER\\share\\git\\compat-bash.exe\"; DestName: bash.exe; DestDir: {app}\\bin; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
+	"Source: \"$MSYSTEM_LOWER\\share\\git\\compat-bash.exe\"; DestName: sh.exe; DestDir: {app}\\bin; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore" \
 	"Source: \"{#SourcePath}\\..\\post-install.bat\"; DestName: post-install.bat; DestDir: {app}; Flags: replacesameversion restartreplace" \
 >file-list.iss ||
 die "Could not write to file-list.iss"
@@ -316,22 +315,12 @@ test -z "$include_pdbs" || {
 } ||
 die "Could not include .pdb files"
 
-test -z "$arm64_artifacts_directory" || {
-	echo "Including ARM64 artifacts from $arm64_artifacts_directory" &&
-	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX 'arm64'" &&
-	mixed="$(cygpath -m "$arm64_artifacts_directory")" &&
-	find "$arm64_artifacts_directory" -type f |
-	sed -e "s|^$arm64_artifacts_directory\\(/.*\)\?/\([^/]*\)$|Source: \"$mixed\\1/\\2\"; DestDir: {app}/arm64\\1; Flags: replacesameversion restartreplace; AfterInstall: DeleteFromVirtualStore|" \
-		-e 's|/|\\|g' \
-		>> file-list.iss
-} ||
-die "Could not include ARM64 artifacts"
-
 etc_gitconfig_dir="${etc_gitconfig%/gitconfig}"
-printf "%s\n%s\n%s\n%s\n%s%s" \
+printf "%s\n%s\n%s\n%s\n%s\n%s%s" \
 	"#define APP_VERSION '$displayver'" \
 	"#define FILENAME_VERSION '$version'" \
 	"#define BITNESS '$BITNESS'" \
+	"#define MINGW_BITNESS '$MSYSTEM_LOWER'" \
 	"#define SOURCE_DIR '$(cygpath -aw /)'" \
 	"#define ETC_GITCONFIG_DIR '${etc_gitconfig_dir//\//\\}'" \
 	"$inno_defines" \

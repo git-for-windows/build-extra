@@ -50,6 +50,7 @@ edit-git-bash.exe
 /portable/root/bin/
 /portable/root/cmd/
 /portable/root/etc/
+/portable/root/clangarm64/
 /portable/root/mingw32/
 /portable/root/mingw64/
 /portable/root/post-install.bat

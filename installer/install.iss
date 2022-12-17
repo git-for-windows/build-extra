@@ -4,8 +4,8 @@
 
 #include "config.iss"
 
-#if !defined(APP_VERSION) || !defined(BITNESS)
-#error "config.iss should define APP_VERSION and BITNESS"
+#if !defined(APP_VERSION) || !defined(BITNESS) || !defined(MINGW_BITNESS)
+#error "config.iss should define APP_VERSION, BITNESS and MINGW_BITNESS"
 #endif
 
 #define APP_NAME      'Git'
@@ -13,7 +13,6 @@
 #undef APP_VERSION
 #define APP_VERSION   'Snapshot'
 #endif
-#define MINGW_BITNESS 'mingw'+BITNESS
 #define APP_CONTACT_URL 'https://github.com/git-for-windows/git/wiki/Contact'
 #define APP_URL       'https://gitforwindows.org/'
 #define APP_BUILTINS  'share\git\builtins.txt'

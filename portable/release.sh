@@ -22,9 +22,6 @@ do
 	--include-pdbs)
 		include_pdbs=t
 		;;
-	--include-arm64-artifacts=*)
-		arm64_artifacts_directory="${1#*=}"
-		;;
 	-*)
 		die "Unknown option: $1"
 		;;
@@ -40,23 +37,33 @@ die "Usage: $0 [--output=<directory>] <version> [optional components]"
 test -d "$output_directory" ||
 die "Directory inaccessible: '$output_directory'"
 
-ARCH="$(uname -m)"
-case "$ARCH" in
-i686)
+case "$MSYSTEM" in
+MINGW32)
 	BITNESS=32
+	ARCH=i686
+	ARTIFACT_SUFFIX=32
 	MD_ARG=128M
 	;;
-x86_64)
+MINGW64)
 	BITNESS=64
+	ARCH=x86_64
+	ARTIFACT_SUFFIX=64
+	MD_ARG=256M
+	;;
+CLANGARM64)
+	BITNESS=64
+	ARCH=aarch64
+	ARTIFACT_SUFFIX=ARM64
 	MD_ARG=256M
 	;;
 *)
-	die "Unhandled architecture: $ARCH"
+	die "Unhandled MSYSTEM: $MSYSTEM"
 	;;
 esac
+MSYSTEM_LOWER=${MSYSTEM,,}
 VERSION=$1
 shift
-TARGET="$output_directory"/PortableGit-"$VERSION"-"$BITNESS"-bit.7z.exe
+TARGET="$output_directory"/PortableGit-"$VERSION"-"$ARTIFACT_SUFFIX"-bit.7z.exe
 OPTS7="-m0=lzma -mx=9 -md=$MD_ARG -mfb=273 -ms=256M "
 TMPPACK=/tmp.7z
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
@@ -89,8 +96,8 @@ mkdir -p "$SCRIPT_PATH/root/bin" ||
 die "Could not make bin/ directory"
 
 cp /cmd/git.exe "$SCRIPT_PATH/root/bin/git.exe" &&
-cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/bash.exe" &&
-cp /mingw$BITNESS/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/sh.exe" ||
+cp /$MSYSTEM_LOWER/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/bash.exe" &&
+cp /$MSYSTEM_LOWER/share/git/compat-bash.exe "$SCRIPT_PATH/root/bin/sh.exe" ||
 die "Could not install bin/ redirectors"
 
 cp "$SCRIPT_PATH/../post-install.bat" "$SCRIPT_PATH/root/" ||
@@ -102,7 +109,7 @@ etc_gitconfig="${etc_gitconfig#/}" ||
 die "Could not determine the path of the system config"
 
 # Make a list of files to include
-LIST="$(ARCH=$ARCH BITNESS=$BITNESS ETC_GITCONFIG="$etc_gitconfig" \
+LIST="$(ARCH=$ARCH ETC_GITCONFIG="$etc_gitconfig" \
 	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/root/etc/package-versions.txt \
 	sh "$SCRIPT_PATH"/../make-file-list.sh "$@" |
 	grep -v "^$etc_gitconfig$")" ||
@@ -124,16 +131,16 @@ case "$LIST" in
 	;;
 esac
 
-git_core="$SCRIPT_PATH/root/mingw$BITNESS/libexec/git-core" &&
+git_core="$SCRIPT_PATH/root/$MSYSTEM_LOWER/libexec/git-core" &&
 rm -rf "$git_core" &&
 mkdir -p "$git_core" &&
-if test "$(stat -c %D /mingw$BITNESS/bin)" = "$(stat -c %D "$git_core")"
+if test "$(stat -c %D /$MSYSTEM_LOWER/bin)" = "$(stat -c %D "$git_core")"
 then
 	ln_or_cp=ln
 else
 	ln_or_cp=cp
 fi &&
-$ln_or_cp $(echo "$LIST" | sed -n "s|^mingw$BITNESS/bin/[^/]*\.dll$|/&|p") "$git_core" ||
+$ln_or_cp $(echo "$LIST" | sed -n "s|^$MSYSTEM_LOWER/bin/[^/]*\.dll$|/&|p") "$git_core" ||
 die "Could not copy .dll files into libexec/git-core/"
 
 test -z "$include_pdbs" || {
@@ -144,17 +151,7 @@ test -z "$include_pdbs" || {
 die "Could not unpack .pdb files"
 
 TITLE="$BITNESS-bit"
-
-# ARM64 Windows handling
-if test -n "$arm64_artifacts_directory"
-then
-	echo "Including ARM64 artifacts from $arm64_artifacts_directory" &&
-	TARGET="$output_directory"/PortableGit-"$VERSION"-arm64.7z.exe &&
-	TITLE="ARM64" &&
-	rm -rf "$SCRIPT_PATH/root/arm64" &&
-	cp -ar "$arm64_artifacts_directory" "$SCRIPT_PATH/root/arm64" ||
-	die "Could not copy ARM64 artifacts from $arm64_artifacts_directory"
-fi
+test $ARCH == "aarch64" && TITLE="ARM64"
 
 # 7-Zip will strip absolute paths completely... therefore, we can add another
 # root directory like this:
