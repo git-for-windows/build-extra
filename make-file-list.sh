@@ -17,6 +17,10 @@ i686)
 	MSYSTEM_LOWER=mingw32
 	PACMAN_ARCH=i686
 	;;
+aarch64)
+	MSYSTEM_LOWER=clangarm64
+	PACMAN_ARCH=clang-aarch64
+	;;
 *)
 	die "Architecture ${ARCH} not supported"
 	;;
@@ -104,7 +108,7 @@ pacman_list () {
 		done |
 		grep -v "^\\($(echo $PACKAGE_EXCLUDES | sed \
 			-e 's/ /\\|/g' \
-			-e 's/mingw-w64-/&\\(i686\\|x86_64\\)-/g')\\)\$" |
+			-e 's/mingw-w64-/&\\(i686\\|x86_64\\|clang-aarch64\\)-/g')\\)\$" |
 		sort |
 		uniq) &&
 
