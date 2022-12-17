@@ -22,9 +22,6 @@ do
 	--include-pdbs)
 		include_pdbs=t
 		;;
-	--include-arm64-artifacts=*)
-		arm64_artifacts_directory="${1#*=}"
-		;;
 	-*)
 		die "Unknown option: $1"
 		;;
@@ -51,6 +48,12 @@ MINGW64)
 	BITNESS=64
 	ARCH=x86_64
 	ARTIFACT_SUFFIX=64
+	MD_ARG=256M
+	;;
+CLANGARM64)
+	BITNESS=64
+	ARCH=aarch64
+	ARTIFACT_SUFFIX=ARM64
 	MD_ARG=256M
 	;;
 *)
@@ -148,17 +151,7 @@ test -z "$include_pdbs" || {
 die "Could not unpack .pdb files"
 
 TITLE="$BITNESS-bit"
-
-# ARM64 Windows handling
-if test -n "$arm64_artifacts_directory"
-then
-	echo "Including ARM64 artifacts from $arm64_artifacts_directory" &&
-	TARGET="$output_directory"/PortableGit-"$VERSION"-arm64.7z.exe &&
-	TITLE="ARM64" &&
-	rm -rf "$SCRIPT_PATH/root/arm64" &&
-	cp -ar "$arm64_artifacts_directory" "$SCRIPT_PATH/root/arm64" ||
-	die "Could not copy ARM64 artifacts from $arm64_artifacts_directory"
-fi
+test $ARCH == "aarch64" && TITLE="ARM64"
 
 # 7-Zip will strip absolute paths completely... therefore, we can add another
 # root directory like this:

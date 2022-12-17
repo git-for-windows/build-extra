@@ -1419,6 +1419,8 @@ prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--on
 	portable_root=/usr/src/build-extra/portable/root/
 	rm -rf "$sdk$portable_root"/mingw64/libexec/git-core ||
 	die "Could not ensure that portable Git in '%s' is cleaned\n" "$sdk"
+	rm -rf "$sdk$portable_root"/clangarm64/libexec/git-core ||
+	die "Could not ensure that portable Git in '%s' is cleaned\n" "$sdk"
 	test -n "$only_64_bit" ||
 	rm -rf "$sdk32$portable_root"/mingw32/libexec/git-core ||
 	die "Could not ensure that portable Git in '%s' is cleaned\n" "$sdk32"
