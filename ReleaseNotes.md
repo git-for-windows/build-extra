@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [PCRE2 v10.42](https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.42).
 * Comes with [Git Credential Manager v2.0.886](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.886).
+* Comes with [MinTTY v3.6.3](https://github.com/mintty/mintty/releases/tag/3.6.3).
 
 ## Changes since Git for Windows v2.38.1 (October 18th 2022)
 
