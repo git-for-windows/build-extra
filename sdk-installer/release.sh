@@ -21,6 +21,10 @@ MINGW64)
 	SDK_ARCH=64
 	SDK_TITLE="64-bit"
 	;;
+CLANGARM64)
+	SDK_ARCH=arm64
+	SDK_TITLE=arm64
+	;;
 *)
 	die "Unhandled MSYSTEM: $MSYSTEM"
 	;;
