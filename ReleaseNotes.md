@@ -48,6 +48,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git Credential Manager v2.0.886](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.886).
 * Comes with [MinTTY v3.6.3](https://github.com/mintty/mintty/releases/tag/3.6.3).
 
+### Bug Fixes
+
+* The installer is expected to stop GPG agents automatically, but there was [a bug](https://github.com/git-for-windows/git/issues/4172) that prevented that from working, which [has been fixed](https://github.com/git-for-windows/build-extra/pull/453).
+
 ## Changes since Git for Windows v2.38.1 (October 18th 2022)
 
 ### New Features
