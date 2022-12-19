@@ -510,6 +510,7 @@ var
     AppList:array of RM_PROCESS_INFO;
     ReasonList:IdList;
     Success:DWORD;
+    ProcessName:String;
 begin
     SetArrayLength(Processes,0);
     Result:=0;
@@ -537,7 +538,8 @@ begin
                 Processes[Have].ID:=AppList[i].Process.dwProcessId;
                 Processes[Have].Name:=ArrayToString(AppList[i].strAppName);
                 Processes[Have].Restartable:=AppList[i].bRestartable;
-                if ('ssh-add'=Processes[Have].Name) or ('ssh-agent'=Processes[Have].Name) or ('ssh-pageant'=Processes[Have].Name) or ('gpg-agent'=Processes[Have].Name) or ('scdaemon'=Processes[Have].Name) then
+                ProcessName:=ChangeFileExt(Processes[Have].Name, '');
+                if ('ssh-add'=ProcessName) or ('ssh-agent'=ProcessName) or ('ssh-pageant'=ProcessName) or ('gpg-agent'=ProcessName) or ('scdaemon'=ProcessName) then
                     Processes[Have].ToTerminate:=True;
             end;
             Result:=Handle;
