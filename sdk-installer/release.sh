@@ -7,6 +7,21 @@ die () {
 	exit 1
 }
 
+output_directory="$HOME"
+while case "$1" in
+--output=*)
+	output_directory="$(cd "${1#*=}" && pwd)" ||
+	die "Directory inaccessible: '${1#*=}'"
+	;;
+--output)
+	shift
+	output_directory="$(cd "$1" && pwd)" ||
+	die "Directory inaccessible: '$1'"
+	;;
+-*) die "Unknown option: %s\n" "$1";;
+*) break;;
+esac; do shift; done
+
 test "$#" = 1 ||
 die "Usage: $0 <version>"
 
@@ -32,7 +47,7 @@ MSYSTEM_LOWER=${MSYSTEM,,}
 GIT_SDK_URL=https://github.com/git-for-windows/git-sdk-$SDK_ARCH 
 
 FAKEROOTDIR="$(cd "$(dirname "$0")" && pwd)/root"
-TARGET="$HOME"/git-sdk-installer-"$1"-$SDK_ARCH.7z.exe
+TARGET="$output_directory"/git-sdk-installer-"$1"-$SDK_ARCH.7z.exe
 OPTS7="-m0=lzma -mx=9 -md=64M"
 TMPPACK=/tmp.7z
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
