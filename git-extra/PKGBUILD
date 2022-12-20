@@ -1,11 +1,15 @@
 # Maintainer: nalla <nalla@hamal.uberspace.de>
 
-pkgname=('git-extra')
+_realname="git-extra"
+pkgbase="mingw-w64-${_realname}"
+pkgname=($_realname
+        "${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
-pkgver=1.1.614.d551cf0cc
+pkgver=1.1.616.e442fe2d7
 pkgrel=1
 pkgdesc="Git for Windows extra files"
-arch=('i686' 'x86_64')
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'clangarm64')
 url="https://github.com/git-for-windows/build-extra"
 license=('GPL')
 groups=('VCS')
@@ -92,14 +96,14 @@ sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             '0dd30dc3acd406e70b5ff08fb0bf180ec3782119455989af18c05cf59d09df64')
 
 prepare() {
-  test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
-  test $startdir/$pkgname.install -nt $startdir/gitconfig &&
-  test $startdir/$pkgname.install -nt $startdir/gitattributes ||
+  test $startdir/$_realname.install -nt $startdir/$_realname.install.in &&
+  test $startdir/$_realname.install -nt $startdir/gitconfig &&
+  test $startdir/$_realname.install -nt $startdir/gitattributes ||
   sed -e "/^@@GITCONFIG@@$/r $startdir/gitconfig" \
         -e "/^@@GITCONFIG@@$/d" \
         -e "/^@@GITATTRIBUTES@@$/r $startdir/gitattributes" \
         -e "/^@@GITATTRIBUTES@@$/d" \
-        <$startdir/$pkgname.install.in >$startdir/$pkgname.install
+        <$startdir/$_realname.install.in >$startdir/$_realname.install
 }
 
 build() {
@@ -152,4 +156,34 @@ package() {
   install -m755 git-update $pkgdir${MINGW_PREFIX}/libexec/git-core
   install -m755 update-via-pacman.bat $pkgdir
   install -m755 zzz_rm_stackdumps.sh $pkgdir/usr/share/makepkg/lint_package
+}
+
+# The old package name, git-extra, was causing problems as it's _actually_ a MINGW-package.
+# The old and new package name can't be installed simultaneously, as it installs things like
+# /etc/profile.d/git-sdk.sh which aren't specific to MINGW prefixes like /mingw64 or /mingw32.
+# Therefore, we need to mark it as conflicting.
+package_git-extra() {
+  # As we publish to two separate repositories (git-for-windows and git-for-windows-mingw32), we need
+  # to specifically specify the architecture for both on the legacy package.
+  arch=('i686' 'x86_64')
+  conflicts=('mingw-w64-clang-aarch64-git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-i686-git-extra')
+  package
+}
+
+package_mingw-w64-x86_64-git-extra() {
+  conflicts=('git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-i686-git-extra')
+  provides=('git-extra')
+  package
+}
+
+package_mingw-w64-i686-git-extra() {
+  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-clang-aarch64-git-extra')
+  provides=('git-extra')
+  package
+}
+
+package_mingw-w64-clang-aarch64-git-extra() {
+  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-i686-git-extra')
+  provides=('git-extra')
+  package
 }
