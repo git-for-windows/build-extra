@@ -2,13 +2,13 @@
 
 # Recreate git-sdk-$VERSION.exe
 
-test -z "$1" && {
-	echo "Usage: $0 <version>"
+die () {
+	echo "$*" >&2
 	exit 1
 }
 
-die () {
-	echo "$*" >&2
+test -z "$1" && {
+	echo "Usage: $0 <version>"
 	exit 1
 }
 
