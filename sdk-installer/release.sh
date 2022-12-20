@@ -7,10 +7,8 @@ die () {
 	exit 1
 }
 
-test -z "$1" && {
-	echo "Usage: $0 <version>"
-	exit 1
-}
+test "$#" = 1 ||
+die "Usage: $0 <version>"
 
 case "$MSYSTEM" in
 MINGW32)
