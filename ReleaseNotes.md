@@ -52,6 +52,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * The installer is expected to stop GPG agents automatically, but there was [a bug](https://github.com/git-for-windows/git/issues/4172) that prevented that from working, which [has been fixed](https://github.com/git-for-windows/build-extra/pull/453).
+* A [regression](https://github.com/git-for-windows/git/issues/4171) that caused `no_proxy` to be ignored was fixed by [upgrading libcurl](https://github.com/git-for-windows/git/issues/4191).
 
 ## Changes since Git for Windows v2.38.1 (October 18th 2022)
 
