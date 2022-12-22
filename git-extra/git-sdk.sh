@@ -366,7 +366,7 @@ sdk () {
 			then
 				case "$MSYSTEM" in
 				MSYS) sdk makepkg -f;;
-				MINGW*) MINGW_ARCH=${MSYSTEM,,} sdk makepkg-mingw -f;;
+				CLANGARM*|MINGW*) MINGW_ARCH=${MSYSTEM,,} sdk makepkg-mingw -f;;
 				esac
 				return $?
 			fi
