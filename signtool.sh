@@ -7,7 +7,10 @@
 # the corresponding password in ~/.sig/codesign.pass.
 
 type osslsigncode >/dev/null 2>&1 || {
-	if test -x /mingw64/bin/osslsigncode.exe
+	if test -x /clangarm64/bin/osslsigncode.exe
+	then
+		PATH=/clangarm64/bin:$PATH
+	elif test -x /mingw64/bin/osslsigncode.exe
 	then
 		PATH=/mingw64/bin:$PATH
 	elif test -x /mingw32/bin/osslsigncode.exe
