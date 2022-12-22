@@ -604,6 +604,11 @@ quick_add () { # <file>...
 		eval "mingw=\$${arch}_mingw"
 		test -n "$msys$mingw" || continue
 
+		case "$(test aarch64 = $arch && curl -sI "$(arch_url $arch)/git-for-windows.db")" in
+		*404*) initialize_fresh_pacman_repository=t;; # this one is new
+		*) initialize_fresh_pacman_repository=;;
+		esac
+
 		case "$arch,$mingw" in
 		*,) db2=;;
 		i686,*) db2=mingw32;;
@@ -615,20 +620,31 @@ quick_add () { # <file>...
 			for infix in db files
 			do
 				file=$db.$infix.tar.xz
-				echo "Downloading current $arch/$file..." >&2
-				curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$file" || return 1
+				if test -n "$initialize_fresh_pacman_repository"
+				then
+					echo "Will initialize new $arch/$file..." >&2
+				else
+					echo "Downloading current $arch/$file..." >&2
+					curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$file" || return 1
+				fi
 				dbs="$dbs $arch/$file $arch/${file%.tar.xz}"
 				if test -n "$sign_option"
 				then
-					curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$file.sig" ||
-					return 1
-					gpg --verify "$dir/$arch/$file.sig" ||
-					die "Could not verify GPG signature: $dir/$arch/$file"
+					if test -z "$initialize_fresh_pacman_repository"
+					then
+						curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$file.sig" ||
+						return 1
+						gpg --verify "$dir/$arch/$file.sig" ||
+						die "Could not verify GPG signature: $dir/$arch/$file"
+					fi
 					dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
 				fi
-				sanitize_db "$dir/$arch/$file" || return 1
-				test ! -f "$dir/$arch/${file%.tar.xz}" ||
-				sanitize_db "$dir/$arch/${file%.tar.xz}" || return 1
+				if test -z "$initialize_fresh_pacman_repository"
+				then
+					sanitize_db "$dir/$arch/$file" || return 1
+					test ! -f "$dir/$arch/${file%.tar.xz}" ||
+					sanitize_db "$dir/$arch/${file%.tar.xz}" || return 1
+				fi
 			done
 		done
 		(cd "$dir/$arch" &&
