@@ -61,7 +61,7 @@ this_script_dir="$(cygpath -am "${0%/*}")"
 base_url=https://wingit.blob.core.windows.net
 mirror=/var/local/pacman-mirror
 
-architectures="i686 x86_64"
+architectures="i686 x86_64 aarch64"
 
 arch_dir () { # <architecture>
 	echo "$mirror/$1"
@@ -71,6 +71,7 @@ map_arch () { # <architecture>
 	# Azure Blobs does not allow underlines, but dashes in container names
 	case "$1" in
 	x86_64) echo "x86-64";;
+	clang-aarch64) echo "aarch64";;
 	*) echo "$1";;
 	esac
 }
@@ -80,12 +81,11 @@ arch_url () { # <architecture>
 }
 
 arch_to_mingw () { # <arch>
-	if test i686 = "$arch"
-	then
-		echo mingw32
-	else
-		echo mingw64
-	fi
+	case "$arch" in
+	i686) echo mingw32;;
+	aarch64) echo aarch64;;
+	*) echo mingw64;;
+	esac
 }
 
 fetch () {
@@ -540,11 +540,13 @@ quick_add () { # <file>...
 
 	# Create a temporary directory to work with
 	dir="$(mktemp -d)" &&
-	mkdir "$dir/x86_64" "$dir/i686" "$dir/sources" ||
+	mkdir "$dir/x86_64" "$dir/aarch64" "$dir/i686" "$dir/sources" ||
 	die "Could not create temporary directory"
 
 	i686_mingw=
 	i686_msys=
+	aarch64_mingw=
+	aarch64_msys=
 	x86_64_mingw=
 	x86_64_msys=
 	all_files=
@@ -555,7 +557,7 @@ quick_add () { # <file>...
 		file="${path##*/}"
 		mingw=
 		case "${path##*/}" in
-		mingw-w64-*.pkg.tar.xz) arch=${file##mingw-w64-}; arch=${arch%%-*}; key=${arch}_mingw;;
+		mingw-w64-*.pkg.tar.xz) arch=${file##mingw-w64-}; arch=${arch#clang-}; arch=${arch%%-*}; key=${arch}_mingw;;
 		git-extra-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; key=${arch}_mingw;;
 		*-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; test any != "$arch" || arch="$FALLBACK_ARCHITECTURE"; key=${arch}_msys;;
 		*.src.tar.gz) arch=sources; key= ;;
@@ -602,7 +604,12 @@ quick_add () { # <file>...
 		eval "mingw=\$${arch}_mingw"
 		test -n "$msys$mingw" || continue
 
-		case "$arch,$mingw" in *,) db2=;; i686,*) db2=mingw32;; *) db2=mingw64;; esac
+		case "$arch,$mingw" in
+		*,) db2=;;
+		i686,*) db2=mingw32;;
+		*aarch64*) db2=aarch64;;
+		*) db2=mingw64;;
+		esac
 		for db in git-for-windows ${db2:+git-for-windows-$db2}
 		do
 			for infix in db files
