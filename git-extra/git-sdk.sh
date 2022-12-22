@@ -206,11 +206,17 @@ sdk () {
 			MINGW_MOUNT_POINT=/mingw32
 			;;
 		x86_64)
-			MSYSTEM=MINGW64
-			MINGW_MOUNT_POINT=/mingw64
+			if test -d /clangarm64
+			then
+				MSYSTEM=CLANGARM64
+				MINGW_MOUNT_POINT=/clangarm64
+			else
+				MSYSTEM=MINGW64
+				MINGW_MOUNT_POINT=/mingw64
+			fi
 			;;
 		*)
-			sdk die "Could not determine bitness"
+			sdk die "Could not determine CPU architecture"
 			return 1
 			;;
 		esac
