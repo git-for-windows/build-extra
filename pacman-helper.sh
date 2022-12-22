@@ -436,14 +436,6 @@ push () {
 			for arch in $architectures sources
 			do
 				case "$name,$arch" in
-				mingw-w64-i686,x86_64|mingw-w64-x86_64,i686)
-					# wrong architecture
-					continue
-					;;
-				mingw-w64-i686-*,sources)
-					# sources are "included" in x86_64
-					continue
-					;;
 				mingw-w64-x86_64-*,sources)
 					# sources are "included" in x86_64
 					filename=mingw-w64${name#*_64}.src.tar.gz
@@ -451,8 +443,12 @@ push () {
 				*,sources)
 					filename=$name.src.tar.gz
 					;;
-				mingw-w64-*)
+				mingw-w64-$arch,$arch)
 					filename=$name-any.pkg.tar.xz
+					;;
+				mingw-w64-*)
+					# wrong architecture
+					continue
 					;;
 				*)
 					filename=$name-$arch.pkg.tar.xz
@@ -741,14 +737,6 @@ push_missing_signatures () {
 		for arch in $architectures sources
 		do
 			case "$name,$arch" in
-			mingw-w64-i686-*,x86_64|mingw-w64-x86_64-*,i686)
-				# wrong architecture
-				continue
-				;;
-			mingw-w64-i686-*,sources)
-				# sources are "included" in x86_64
-				continue
-				;;
 			libcurl*,sources|mingw-w64-*-git-doc*,sources|msys2-runtime-devel*,sources)
 				# extra package's source included elsewhere
 				continue
@@ -760,8 +748,12 @@ push_missing_signatures () {
 			*,sources)
 				filename=$name.src.tar.gz
 				;;
-			mingw-w64-*)
+			mingw-w64-$arch,$arch)
 				filename=$name-any.pkg.tar.xz
+				;;
+			mingw-w64-*)
+				# wrong architecture
+				continue
 				;;
 			*)
 				filename=$name-$arch.pkg.tar.xz
@@ -810,11 +802,7 @@ push_missing_signatures () {
 
 		for name in $list
 		do
-			case "$name,$arch" in
-			mingw-w64-i686*,x86_64|mingw-w64-x86_64*,i686)
-				# wrong architecture; skip
-				continue
-				;;
+			case "$name" in
 			mingw-w64-$arch-*)
 				filename=$name-any.pkg.tar.xz
 				s=$(arch_to_mingw $arch)
@@ -827,6 +815,10 @@ push_missing_signatures () {
 					repo_add $sign_option $db_name $filename ||
 					die "Could not add $name in $arch/mingw"
 				}
+				;;
+			mingw-w64-*)
+				# wrong architecture; skip
+				continue
 				;;
 			*)
 				filename=$name-$arch.pkg.tar.xz
