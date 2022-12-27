@@ -53,7 +53,7 @@ source=('inputrc'
         'zzz_rm_stackdumps.sh'
         'proxy-lookup.c'
         'git-askyesno.c'
-        'update-via-pacman.bat'
+        'update-via-pacman.bat.in'
         'git-credential-helper-selector.c'
         'git-credential-helper-selector.manifest'
         'git-credential-helper-selector.rc'
@@ -87,7 +87,7 @@ sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             '97e89689d91747ddb5ee873ae864aebcbb8d0364a52fa198db1e439ee2965b9b'
             '9371263a66afaee79d3b7362b2bd455af8faa860230491e21df7f9fbe25bbe9b'
             '0e3af7dacb665306076590ce9aec935929c198cec1bf9c5e161dfe285502ba67'
-            '1a37c34382f759ba4ed22df78dfe568d9508ec403e278f7941968854abb6d9e6'
+            'cb27fa8fd043ebe282ee96771de7e3d02af619542a60b54bddfabcd685c1ae0d'
             '32c834074aa725627f4b86db2aa3cb2ed1556cdc7b0256748ed4b700d1a61490'
             '247dc84535c89d2e00c6a741d4317cd76ae5958c91ac867e2e74d4e73bc3c998'
             '78307cd6c04a16240f68197e9155697bc75d5df8e4c8514ff67712bb93a1cd4a'
@@ -112,6 +112,8 @@ build() {
   export SRCDIR=$srcdir
   export BUILDDIR=build-${MINGW_CHOST}
   mkdir -p ${BUILDDIR}
+  sed -e "s|@@GIT_EXTRA_PACKAGE_NAME@@|${MINGW_PACKAGE_PREFIX}-${_realname}|g" \
+        <$startdir/update-via-pacman.bat.in >$BUILDDIR/update-via-pacman.bat
   make -f Makefile
 }
 
@@ -154,7 +156,7 @@ package() {
   install -m755 astextplain $pkgdir/usr/bin
   install -m755 git-update-git-for-windows $pkgdir${MINGW_PREFIX}/bin
   install -m755 git-update $pkgdir${MINGW_PREFIX}/libexec/git-core
-  install -m755 update-via-pacman.bat $pkgdir
+  install -m755 $builddir/update-via-pacman.bat $pkgdir
   install -m755 zzz_rm_stackdumps.sh $pkgdir/usr/share/makepkg/lint_package
 }
 
