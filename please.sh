@@ -210,6 +210,18 @@ sync () { # [--force]
 		test "$only" = "$sdk" ||
 		continue
 
+		case "$sdk" in
+			"$sdk32")
+				PACMAN_ARCH=i686
+				;;
+			"$sdk64")
+				PACMAN_ARCH=x86_64
+				;;
+			*)
+				die "Invalid SDK $sdk"
+				;;
+		esac
+
 		mkdir -p "$sdk/var/log" ||
 		die "Could not ensure %s/var/log/ exists\n" "$sdk"
 
@@ -282,11 +294,11 @@ sync () { # [--force]
 			 gem install asciidoctor' ||
 		die "Could not re-install asciidoctor in %s\n" "$sdk"
 
-		# git-extra rewrites some files owned by other packages,
+		# mingw-w64-git-extra rewrites some files owned by other packages,
 		# therefore it has to be (re-)installed now
 		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c \
-			'pacman -S '$force' --noconfirm git-extra' ||
-		die "Cannot update git-extra in %s\n" "$sdk"
+			'pacman -S '$force' --noconfirm mingw-w64-'$PACMAN_ARCH'-git-extra' ||
+		die "Cannot update mingw-w64-'$PACMAN_ARCH'-git-extra in %s\n" "$sdk"
 
 		pacnew="$(sed -ne '/starting core system upgrade/{
 			:1;
@@ -302,15 +314,15 @@ sync () { # [--force]
 		die "Could not get list of .pacnew files\n"
 		if test -n "$pacnew"
 		then
-			# Make sure we have the git-extra package locally, as
+			# Make sure we have the mingw-w64-git-extra package locally, as
 			# one of the .pacnew files could be pacman.conf, and
 			# replacing it removes the link to Git for Windows'
 			# Pacman repository
 			"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c \
-			   'pkg=/var/cache/pacman/pkg/$(pacman -Q git-extra |
+			   'pkg=/var/cache/pacman/pkg/$(pacman -Q mingw-w64-'$PACMAN_ARCH'-git-extra |
 				tr \  -)*.pkg.tar.xz
 			    test -f $pkg || {
-				pacman -Sw --noconfirm git-extra &&
+				pacman -Sw --noconfirm mingw-w64-'$PACMAN_ARCH'-git-extra &&
 				test -f $pkg || {
 					echo "Could not cache $pkg" >&2
 					exit 1
@@ -344,9 +356,11 @@ set_package () {
 	extra_packages=
 	extra_makepkg_opts=
 	case "$package" in
-	git-extra)
+	git-extra|mingw-w64-git-extra)
+		package=mingw-w64-git-extra
 		type=MINGW
-		pkgpath=/usr/src/build-extra/$package
+		# This will need to be replaced with mingw-w64-git-extra once the folder has been renamed
+		pkgpath=/usr/src/build-extra/git-extra
 		;;
 	git-for-windows-keyring)
 		type=MSYS
@@ -3752,7 +3766,7 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--ve
 
 	test -z "$install_package" || {
 		eval pacman -U --noconfirm --overwrite=\\\* $install_package &&
-		(. /var/lib/pacman/local/git-extra-*/install && post_install)
+		(. /var/lib/pacman/local/*-git-extra-*/install && post_install)
 	} ||
 	die "Could not install packages: %s\n" "$install_package"
 
