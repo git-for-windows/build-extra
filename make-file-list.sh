@@ -162,7 +162,7 @@ test -z "$required" || {
 }
 
 packages="mingw-w64-$PACMAN_ARCH-git mingw-w64-$PACMAN_ARCH-git-credential-manager
-git-extra openssh $UTIL_PACKAGES"
+mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$PACMAN_ARCH-git-doc-html ncurses mintty vim nano
