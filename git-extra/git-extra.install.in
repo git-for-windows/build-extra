@@ -260,32 +260,6 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	# As we no longer need it, delete it.
 	test ! -h /ssl || rm /ssl
 
-	# Allow an i686 version of Git for Windows, augmented by `/arm64/*`, to serve
-	# as sort of an ARM64 version of Git for Windows (because Windows/ARM64 can run
-	# i686 executables via a built-in emulator).
-	test i686 != "$arch" ||
-	grep -q '^ARM64)$' /etc/profile ||
-	sed -i '/^MINGW64)/{
-		# read entire `case` arm until `;;`
-		:1;N;/[^;]$/b1;
-
-		# print out the MINGW64 `case` arm unchanged
-		p;
-
-		# now, transmogrify it into the ARM64 `case` arm:
-		s|^MINGW|ARM|;
-		# change the MINGW_PREFIX
-		s|\${MINGW_PREFIX}|/arm64|;
-		# add the /mingw32/bin fall-back to the PATH
-		s| PATH=[^:]*|&:/mingw32/bin|;
-		# adjust the pkgconfig path
-		s|/share/pkgconfig|&:/mingw32/lib/pkgconfig:/mingw32/share/pkgconfig|;
-		# adjust autoconf path
-		s|:/usr/share/aclocal|:/mingw32/share/aclocal&|;
-		# add the /mingw32 fall-back paths to MANPATH
-		s|:\${MANPATH}|:/mingw32/local/man:/mingw32/share/man&|
-	}' /etc/profile
-
 	# Work around /etc/xml/catalog being updated using the MINGW version of xmlcatalog
 	! grep -q '"[CD]:/' /etc/xml/catalog ||
 	sed -i -e 's|"[CD]:/[^"]*/usr/|"/usr/|g' /etc/xml/catalog
