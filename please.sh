@@ -3091,11 +3091,12 @@ publish_sdk () { #
 	git --git-dir="$sdk64"/usr/src/build-extra/.git push origin "$tag"
 }
 
-create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitness=(32|64|auto)] [--force] <name>
+create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--architecture=(x86_64|i686|aarch64)] [--bitness=(32|64)] [--force] <name>
 	git_sdk_path=/
 	output_path=
 	force=
-	bitness=auto
+	architecture=
+	bitness=
 	keep_worktree=
 	while case "$1" in
 	--out|-o)
@@ -3124,9 +3125,17 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		;;
 	--bitness=*|-b=*)
 		bitness="${1#*=}"
+		echo "WARNING: using --bitness or -b is deprecated. Please use --architecture instead."
 		;;
 	-b*)
 		bitness="${1#-?}"
+		echo "WARNING: using --bitness or -b is deprecated. Please use --architecture instead."
+		;;
+	--architecture=*|-a=*)
+		architecture="${1#*=}"
+		;;
+	-a*)
+		architecture="${1#-?}"
 		;;
 	--force|-f)
 		force=t
@@ -3146,11 +3155,43 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	test -n "$output_path" ||
 	output_path="$(cygpath -am "$1")"
 
-	case "$bitness" in
-	32|64|auto) ;; # okay
-	*) die "Unhandled bitness: %s\n" "$bitness";;
-	esac
+	if test -n "$bitness"
+	then
+		case "$bitness" in
+		32)
+			architecture=i686
+			;;
+		64)
+			architecture=x86_64
+			;;
+		*) die "Unhandled bitness: %s\n" "$bitness";;
+		esac
+	elif test -z "$architecture"
+	then
+		die "Either --architecture or --bitness must be provided for this function to work."
+	fi
 
+	case "$architecture" in
+	x86_64)
+		MSYSTEM=MINGW64
+		PREFIX="/mingw64"
+		# TODO update to git-sdk-amd64 after the repo has been updated
+		SDK_REPO="git-sdk-64"
+		;;
+	i686)
+		MSYSTEM=MINGW32
+		PREFIX="/mingw32"
+		# TODO update to git-sdk-x86 after the repo has been updated
+		SDK_REPO="git-sdk-32"
+		;;
+	aarch64)
+		MSYSTEM=CLANGARM64
+		PREFIX="/clangarm64"
+		SDK_REPO="git-sdk-arm64"
+		;;
+	*) die "Unhandled architecture: %s\n" "$architecture";;
+	esac
+	
 	mode=
 	case "$1" in
 	minimal|git-sdk-minimal) mode=minimal-sdk;;
@@ -3179,32 +3220,21 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		git_sdk_path="${git_sdk_path%/}/.git"
 		test true = "$(git -C "$git_sdk_path" rev-parse --is-inside-git-dir)" ||
 		die "Not a Git repository: '%s'\n" "$git_sdk_path"
-
-		test auto != "$bitness" ||
-		if git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-msys 2>/dev/null
-		then
-			bitness=32
-		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/x86_64-pc-msys 2>/dev/null
-		then
-			bitness=64
-		else
-			die "'%s' is neither 32-bit nor 64-bit SDK?!?" "$git_sdk_path"
-		fi
 	else
-		test auto != "$bitness" ||
-		die "No SDK found at '%s'; Please use \`--bitness=<n>\` to indicate which SDK to use" "$git_sdk_path"
+		test -z "$architecture" ||
+		die "No SDK found at '%s'; Please use \`--architecture=<a>\` to indicate which SDK to use" "$git_sdk_path"
 
 		test "z$git_sdk_path" != "z${git_sdk_path%.git}" ||
 		git_sdk_path="$git_sdk_path.git"
-		git clone --depth 1 --bare https://github.com/git-for-windows/git-sdk-$bitness "$git_sdk_path"
+		git clone --depth 1 --bare https://github.com/git-for-windows/$SDK_REPO "$git_sdk_path"
 	fi
 
 	test full-sdk != "$mode" || {
 		mkdir -p "$output_path" &&
 		git -C "$git_sdk_path" archive --format=tar HEAD -- ':(exclude)ssl' |
-		xz -9 >"$output_path"/git-sdk-$bitness.tar.xz &&
-		echo "git-sdk-$bitness.tar.xz written to '$output_path'" >&2 ||
-		die "Could not write git-sdk-$bitness.tar.xz to '%s'\n" "$output_path"
+		xz -9 >"$output_path"/$SDK_REPO.tar.xz &&
+		echo "$SDK_REPO.tar.xz written to '$output_path'" >&2 ||
+		die "Could not write $SDK_REPO.tar.xz to '%s'\n" "$output_path"
 		return 0
 	}
 
@@ -3261,14 +3291,14 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		EOF
 		git -C "$output_path" checkout -- &&
 		mkdir -p "$output_path/tmp" &&
-		printf 'export MSYSTEM=MINGW%s\nexport PATH=/mingw%s/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' "$bitness" "$bitness" >"$output_path/etc/profile" &&
-		mkdir -p "$output_path/mingw$bitness/bin" &&
-		case $bitness in
-		32)
+		printf 'export MSYSTEM=%s\nexport PATH=%s/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' "$MSYSTEM" "$PREFIX" >"$output_path/etc/profile" &&
+		mkdir -p "${output_path}${PREFIX}/bin" &&
+		case $architecture in
+		i686)
 			# copy git.exe, for the libssp test
 			git -C "$output_path" show HEAD:mingw32/bin/git.exe \
 				>"$output_path/mingw32/bin/git.exe" &&
-			BITNESS=32 ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -lx \
+			ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -lx \
 			"${this_script_path%/*}/make-file-list.sh" |
 			# escape the `[` in `[.exe`
 			sed -e 's|[][]|\\&|g' >>"$sparse_checkout_file" &&
@@ -3296,10 +3326,13 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
-			printf '\n' >>"$sparse_checkout_file" &&
-			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file" &&
+			if test x86_64 = $architecture
+			then
+				printf '\n' >>"$sparse_checkout_file" &&
+				git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file"
+			fi &&
 			printf '\n# markdown, to render the release notes\n/usr/bin/markdown\n\n' >>"$sparse_checkout_file" &&
-			BITNESS=64 ARCH=x86_64 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
+			ARCH=$architecture "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
 			"${this_script_path%/*}/make-file-list.sh" | sed -e 's|[][]|\\&|g' -e 's|^|/|' >>"$sparse_checkout_file"
 			;;
 		esac &&
@@ -3312,10 +3345,10 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		/usr/bin/msys-stdc++-*.dll
 
 		# WinToast
-		/mingw$bitness/bin/wintoast.exe
+		$PREFIX/bin/wintoast.exe
 
 		# BusyBox
-		/mingw$bitness/bin/busybox.exe
+		$PREFIX/bin/busybox.exe
 		EOF
 		mkdir -p "$output_path/.sparse" &&
 		cp "$sparse_checkout_file" "$output_path/.sparse/build-installers"
@@ -3326,8 +3359,11 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		then
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/$mode >>"$sparse_checkout_file" &&
-			printf '\n' >>"$sparse_checkout_file" &&
-			git -C "$git_sdk_path" show HEAD:.sparse/$mode-i686 >>"$sparse_checkout_file"
+			if test x86_64 = $architecture
+			then
+				printf '\n' >>"$sparse_checkout_file" &&
+				git -C "$git_sdk_path" show HEAD:.sparse/$mode-i686 >>"$sparse_checkout_file"
+			fi
 		fi
 		;;
 	esac &&
@@ -3336,7 +3372,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	then
 		if test minimal-sdk = $mode
 		then
-			printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' >"$output_path/etc/profile"
+			printf 'export MSYSTEM=%s\nexport PATH=%s/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' "$MSYSTEM" "$PREFIX" >"$output_path/etc/profile"
 		elif test makepkg-git = $mode
 		then
 			cat >"$output_path/etc/profile" <<-\EOF
@@ -3353,6 +3389,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			if test MSYS = "$MSYSTEM"
 			then
 					PATH=/usr/bin:/usr/bin/core_perl:$SYSTEMROOT_MSYS/system32:$SYSTEMROOT_MSYS
+			elif test CLANGARM64 = "$MSYSTEM"
+			then
+					PATH=/clangarm64/bin:/usr/bin:/usr/bin/core_perl:$SYSTEMROOT_MSYS/system32:$SYSTEMROOT_MSYS
 			elif test MINGW32 = "$MSYSTEM"
 			then
 					PATH=/mingw32/bin:/mingw64/bin:/usr/bin:/usr/bin/core_perl:$SYSTEMROOT_MSYS/system32:$SYSTEMROOT_MSYS
