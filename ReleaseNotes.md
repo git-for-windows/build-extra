@@ -44,6 +44,11 @@ This package contains software from a number of other projects including Bash, z
 
 This is a security release, addressing [CVE-2022-41903](https://github.com/git/git/security/advisories/GHSA-475x-2q3q-hvwq), [CVE-2022-23521](https://github.com/git/git/security/advisories/GHSA-c738-c5qq-xg89) and [CVE-2022-41953](https://github.com/git-for-windows/git/security/advisories/GHSA-v4px-mx59-w99c).
 
+### New Features
+
+* Comes with [Git v2.39.1](https://github.com/git/git/blob/v2.39.1/Documentation/RelNotes/2.39.1.txt).
+
+
 ### Bug Fixes
 
 * Addresses [CVE-2022-23521](https://github.com/git/git/security/advisories/GHSA-c738-c5qq-xg89), a critical vulnerability in the `.gitattributes` parsing that potentially allows malicious code to be executed while cloning.
