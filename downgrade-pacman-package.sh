@@ -42,7 +42,12 @@ do
 	die "pre_upgrade failed with code $?"
 
 	# `sed` script to extract the actual list of files from `/var/lib/<package>/files`
-	files_sed_script='/^%FILES%$/,/^$/{/^%FILES%$/d;/^$/d;/\/$/d;p}'
+	files_sed_script='/^%FILES%$/,/^$/{
+		/^%FILES%$/d
+		/^$/d
+		/\/$/d
+		p
+	}'
 
 	echo "Removing files of $package-$current_version" >&2
 	sed -n "$file_sed_script" <"$dir/files" |
