@@ -43,9 +43,9 @@ do
 
 	# `sed` script to extract the actual list of files from `/var/lib/<package>/files`
 	files_sed_script='/^%FILES%$/,/^$/{
-		/^%FILES%$/d
-		/^$/d
-		/\/$/d
+		/^%FILES%$/d # ignore the section header
+		/^$/d        # ignore empty lines
+		/\/$/d       # ignore directories
 		p
 	}'
 
