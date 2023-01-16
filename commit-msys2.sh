@@ -145,7 +145,14 @@ add|remove)
 	 fi &&
 	 packages="$(for package; do
 		case "$package" in
-		mingw-w64-*) echo mingw-w64-$(uname -m)${package#mingw-w64};;
+		mingw-w64-i686-*|mingw-w64-x86_64-*) echo "$package";;
+		mingw-w64-*)
+			(
+				cd /var/lib/pacman/local &&
+				ls -d mingw-w64-*-"${package#mingw-w64-}"-[0-9]* |
+				sed 's|-[0-9].*||'
+			)
+			;;
 		*) echo "$package";;
 		esac; done)" &&
 	 pacman $pacman_option --noconfirm $packages &&
