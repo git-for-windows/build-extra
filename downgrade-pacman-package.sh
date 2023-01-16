@@ -46,6 +46,8 @@ do
 		/^%FILES%$/d # ignore the section header
 		/^$/d        # ignore empty lines
 		/\/$/d       # ignore directories
+		/\.pyc/d     # compiled Python files are ignored via `/.gitignore`
+		/^mingw.*\/bin\/.*\.bat/d # .bat files in /mingw*/bin/ are removed by `git-extra.install`
 		p
 	}'
 
