@@ -75,4 +75,6 @@ eval "$test" ||
 die "test failed with code $?"
 
 git -C / add etc/pacman.conf &&
-git -C / commit -m "Downgrade $# packages" -m "$msg"
+git -C / commit \
+	-m "$(test $# -gt 1 && echo "Downgrade $# packages" || echo "Downgrade $1")" \
+	-m "$msg"
