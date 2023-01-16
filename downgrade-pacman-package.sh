@@ -41,8 +41,18 @@ do
 	) ||
 	die "pre_upgrade failed with code $?"
 
+	# `sed` script to extract the actual list of files from `/var/lib/<package>/files`
+	files_sed_script='/^%FILES%$/,/^$/{
+		/^%FILES%$/d # ignore the section header
+		/^$/d        # ignore empty lines
+		/\/$/d       # ignore directories
+		/\.pyc/d     # compiled Python files are ignored via `/.gitignore`
+		/^mingw.*\/bin\/.*\.bat/d # .bat files in /mingw*/bin/ are removed by `git-extra.install`
+		p
+	}'
+
 	echo "Removing files of $package-$current_version" >&2
-	sed -n '/^%FILES%$/,/^$/{/^%FILES%$/d;/^$/d;/\/$/d;p}' <"$dir/files" |
+	sed -n "$file_sed_script" <"$dir/files" |
 	xargs -rd '\n' git -C / rm &&
 	git -C / rm -r "$dir" ||
 	die "Could not remove files of '$package'"
@@ -50,7 +60,7 @@ do
 	echo "Adding files of $package-$previous_version" >&2
 	dir=/var/lib/pacman/local/$package-$previous_version &&
 	git -C / checkout $sdk_commit^ $dir/ &&
-	sed -n '/^%FILES%$/,/^$/{/^%FILES%$/d;/^$/d;/\/$/d;p}' <"$dir/files" |
+	sed -n "$files_sed_script" <"$dir/files" |
 	xargs -rd '\n' git -C / checkout $sdk_commit^ -- ||
 	die "Could not add files of '$package'"
 	test ! -f "$dir/install" || (
@@ -75,4 +85,6 @@ eval "$test" ||
 die "test failed with code $?"
 
 git -C / add etc/pacman.conf &&
-git -C / commit -m "Downgrade $# packages" -m "$msg"
+git -C / commit \
+	-m "$(test $# -gt 1 && echo "Downgrade $# packages" || echo "Downgrade $1")" \
+	-m "$msg"
