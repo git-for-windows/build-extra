@@ -1,5 +1,5 @@
-# Git for Windows v2.39.0(2) Release Notes
-Latest update: December 21st 2022
+# Git for Windows v2.39.1 Release Notes
+Latest update: January 17th 2023
 
 ## Introduction
 
@@ -42,8 +42,18 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.39.0(2) (December 21st 2022)
 
+This is a security release, addressing [CVE-2022-41903](https://github.com/git/git/security/advisories/GHSA-475x-2q3q-hvwq), [CVE-2022-23521](https://github.com/git/git/security/advisories/GHSA-c738-c5qq-xg89) and [CVE-2022-41953](https://github.com/git-for-windows/git/security/advisories/GHSA-v4px-mx59-w99c).
+
+### New Features
+
+* Comes with [Git v2.39.1](https://github.com/git/git/blob/v2.39.1/Documentation/RelNotes/2.39.1.txt).
+
+
 ### Bug Fixes
 
+* Addresses [CVE-2022-23521](https://github.com/git/git/security/advisories/GHSA-c738-c5qq-xg89), a critical vulnerability in the `.gitattributes` parsing that potentially allows malicious code to be executed while cloning.
+* Addresses [CVE-2022-41953](https://github.com/git-for-windows/git/security/advisories/GHSA-v4px-mx59-w99c), a vulnerability that makes Git GUI's `Clone` function susceptible to Remote Code Execution attacks.
+* Addresses [CVE-2022-41903](https://github.com/git/git/security/advisories/GHSA-475x-2q3q-hvwq), a vulnerability that may allow heap overflows and code to be executed inadvertently during a `git archive` invocation.
 * A [regression introduced in Git for Windows v2.39.0(2)](https://github.com/git-for-windows/git/issues/4194) that prevented cloning from Bitbucket [was fixed](https://github.com/git-for-windows/MINGW-packages/pull/64).
 
 ## Changes since Git for Windows v2.39.0 (December 12th 2022)
