@@ -38,6 +38,7 @@ jobs:
           define_matrix artifacts releaseable.txt touched.txt artifacts.txt
 
           test -z "$(git log -L :create_sdk_artifact:please.sh ${{github.event.pull_request.base.sha}}.. -- )" &&
+          test 200 -gt $(git diff --numstat ${{github.event.pull_request.base.sha}}.. -- please.sh | cut -f 2) &&
           test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- make-file-list.sh)" ||
           echo "test-sdk-artifacts=true" >>$GITHUB_OUTPUT
 
