@@ -3075,7 +3075,9 @@ begin
         GitSystemConfigSet('http.sslBackend','openssl');
 
     if not RdbCurlVariant[GC_WinSSL].Checked then begin
-        Cmd:=AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt';
+        Cmd:=AppDir+'/{#MINGW_BITNESS}/etc/ssl/certs/ca-bundle.crt';
+        if not FileExists(Cmd) then
+            Cmd:=AppDir+'/{#MINGW_BITNESS}/ssl/certs/ca-bundle.crt';
         StringChangeEx(Cmd,'\','/',True);
         GitSystemConfigSet('http.sslCAInfo',Cmd);
     end else
