@@ -25,9 +25,6 @@ while case "$1" in
 --include-pdbs)
 	include_pdbs=t
 	;;
---include-arm64-artifacts=*)
-	arm64_artifacts_directory="${1#*=}"
-	;;
 -*) die "Unknown option: %s\n" "$1";;
 *) break;;
 esac; do shift; done
@@ -44,6 +41,11 @@ MINGW64)
 	ARCH=x86_64
 	ARTIFACT_SUFFIX="64-bit"
 	PACMAN_ARCH=x86_64
+	;;
+CLANGARM64)
+	ARCH=aarch64
+	ARTIFACT_SUFFIX=arm64
+	PACMAN_ARCH=clang-aarch64
 	;;
 *)
 	die "Unhandled MSYSTEM: $MSYSTEM"
@@ -109,16 +111,6 @@ $(cat "/$original_etc_gitconfig")
 	path = C:/Program Files/Git/etc/gitconfig
 EOF
 die "Could not generate system config"
-
-# ARM64 Windows handling
-if test -n "$arm64_artifacts_directory"
-then
-	echo "Including ARM64 artifacts from $arm64_artifacts_directory" &&
-	TARGET="$output_directory"/MinGit-"$VERSION"-arm64.zip &&
-	rm -rf "$SCRIPT_PATH/root/arm64" &&
-	cp -ar "$arm64_artifacts_directory" "$SCRIPT_PATH/root/arm64" ||
-	die "Could not copy ARM64 artifacts from $arm64_artifacts_directory"
-fi
 
 # Make the archive
 
