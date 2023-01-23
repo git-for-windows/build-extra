@@ -3574,18 +3574,22 @@ find_mspdb_dll () { #
 	return 1
 }
 
-build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifacts] [--skip-doc-man] [--skip-doc-html] [--force] [<revision>]
+build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--skip-test-artifacts] [--skip-doc-man] [--skip-doc-html] [--force] [<revision>]
 	output_path=
 	sed_makepkg_e=
 	force=
 	src_pkg=
 	while case "$1" in
-	--only-32-bit)
+	--only-i686|--only-32-bit)
 		MINGW_ARCH=mingw32
 		export MINGW_ARCH
 		;;
-	--only-64-bit)
+	--only-x86_64|--only-64-bit)
 		MINGW_ARCH=mingw64
+		export MINGW_ARCH
+		;;
+	--only-aarch64)
+		MINGW_ARCH=clangarm64
 		export MINGW_ARCH
 		;;
 	--skip-test-artifacts)
@@ -3665,6 +3669,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 
 	test true = "$GITHUB_ACTIONS" || # GitHub Actions' agents have the mspdb.dll, and cv2pdb finds it
 	test -n "$SYSTEM_COLLECTIONURI$SYSTEM_TASKDEFINITIONSURI" || # Same for Azure Pipelines
+	test "$MINGW_ARCH" = "clangarm64" || # We don't need cv2pdb when compiling using Clang/LLVM
 	find_mspdb_dll >/dev/null || {
 		WITHOUT_PDBS=1
 		export WITHOUT_PDBS

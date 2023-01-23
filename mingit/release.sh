@@ -25,30 +25,36 @@ while case "$1" in
 --include-pdbs)
 	include_pdbs=t
 	;;
---include-arm64-artifacts=*)
-	arm64_artifacts_directory="${1#*=}"
-	;;
 -*) die "Unknown option: %s\n" "$1";;
 *) break;;
 esac; do shift; done
 test $# = 1 ||
 die "Expect a version, got $# arguments"
 
-ARCH="$(uname -m)"
-case "$ARCH" in
-i686)
-	BITNESS=32
+case "$MSYSTEM" in
+MINGW32)
+	ARCH=i686
+	ARTIFACT_SUFFIX="32-bit"
+	PACMAN_ARCH=i686
 	;;
-x86_64)
-	BITNESS=64
+MINGW64)
+	ARCH=x86_64
+	ARTIFACT_SUFFIX="64-bit"
+	PACMAN_ARCH=x86_64
+	;;
+CLANGARM64)
+	ARCH=aarch64
+	ARTIFACT_SUFFIX=arm64
+	PACMAN_ARCH=clang-aarch64
 	;;
 *)
-	die "Unhandled architecture: $ARCH"
+	die "Unhandled MSYSTEM: $MSYSTEM"
 	;;
 esac
+MSYSTEM_LOWER=${MSYSTEM,,}
 VERSION=$1
 shift
-TARGET="$output_directory"/MinGit-"$VERSION"-"$BITNESS"-bit.zip
+TARGET="$output_directory"/MinGit-"$VERSION"-"$ARTIFACT_SUFFIX".zip
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
 case "$SCRIPT_PATH" in
@@ -80,7 +86,7 @@ test -z "$include_pdbs" || {
 die "Could not unpack .pdb files"
 
 # Make a list of files to include
-LIST="$(ARCH=$ARCH BITNESS=$BITNESS MINIMAL_GIT=1 ETC_GITCONFIG="$etc_gitconfig" \
+LIST="$(ARCH=$ARCH MINIMAL_GIT=1 ETC_GITCONFIG="$etc_gitconfig" \
 	PACKAGE_VERSIONS_FILE="$SCRIPT_PATH"/root/etc/package-versions.txt \
 	sh "$SCRIPT_PATH"/../make-file-list.sh "$@")" ||
 die "Could not generate file list"
@@ -88,7 +94,7 @@ die "Could not generate file list"
 # For compatibility with core Git's branches
 original_etc_gitconfig="$etc_gitconfig"
 case "$etc_gitconfig" in
-mingw$BITNESS/etc/gitconfig)
+$MSYSTEM_LOWER/etc/gitconfig)
 	mkdir -p "$SCRIPT_PATH"/root/"${etc_gitconfig%/*}" &&
 	test -f /"$etc_gitconfig" ||
 	test ! -f /etc/gitconfig ||
@@ -106,16 +112,6 @@ $(cat "/$original_etc_gitconfig")
 EOF
 die "Could not generate system config"
 
-# ARM64 Windows handling
-if test -n "$arm64_artifacts_directory"
-then
-	echo "Including ARM64 artifacts from $arm64_artifacts_directory" &&
-	TARGET="$output_directory"/MinGit-"$VERSION"-arm64.zip &&
-	rm -rf "$SCRIPT_PATH/root/arm64" &&
-	cp -ar "$arm64_artifacts_directory" "$SCRIPT_PATH/root/arm64" ||
-	die "Could not copy ARM64 artifacts from $arm64_artifacts_directory"
-fi
-
 # Make the archive
 
 type 7za ||
@@ -123,9 +119,9 @@ pacman -Sy --noconfirm p7zip ||
 die "Could not install 7-Zip"
 
 echo "$LIST" | sort >"$SCRIPT_PATH"/sorted-all &&
-pacman -Ql mingw-w64-$ARCH-git |
+pacman -Ql mingw-w64-$PACMAN_ARCH-git |
 sed 's|^[^ ]* /||' |
-grep "^mingw$BITNESS/libexec/git-core/.*\.exe$" |
+grep "^$MSYSTEM_LOWER/libexec/git-core/.*\.exe$" |
 sort >"$SCRIPT_PATH"/sorted-libexec-exes &&
 MOVED_FILE=etc/libexec-moved.txt &&
 comm -12 "$SCRIPT_PATH"/sorted-all "$SCRIPT_PATH"/sorted-libexec-exes \
@@ -134,7 +130,7 @@ if test ! -s "$SCRIPT_PATH"/root/$MOVED_FILE
 then
 	die "Could not find any .exe files in libexec/git-core/"
 fi &&
-BIN_DIR=mingw$BITNESS/bin &&
+BIN_DIR=$MSYSTEM_LOWER/bin &&
 mkdir -p "$SCRIPT_PATH"/root/$BIN_DIR &&
 (cd / &&
  cp $(cat "$SCRIPT_PATH"/root/$MOVED_FILE) "$SCRIPT_PATH"/root/$BIN_DIR/) &&
@@ -148,7 +144,7 @@ die "Could not copy libexec/git-core/*.exe"
 if cmp "$SCRIPT_PATH/root/$BIN_DIR"/git-remote-http{,s}.exe
 then
 	# verify that the Git wrapper works
-	cp "/mingw$BITNESS/share/git/git-wrapper.exe" "$SCRIPT_PATH/root/$BIN_DIR"/git-remote-http.exe
+	cp "/$MSYSTEM_LOWER/share/git/git-wrapper.exe" "$SCRIPT_PATH/root/$BIN_DIR"/git-remote-http.exe
 	usage="$($SCRIPT_PATH/root/$BIN_DIR/git-remote-http.exe 2>&1)"
 	case "$?,$usage" in
 	1,*remote-curl*) ;; # okay, let's use the Git wrapper
@@ -164,7 +160,7 @@ $BIN_DIR/busybox.exe
 	die "Could not copy busybox.exe"
 
 	# verify that the Git wrapper works
-	cp "/mingw$BITNESS/share/git/git-wrapper.exe" "$SCRIPT_PATH/root/$BIN_DIR"/ash.exe
+	cp "/$MSYSTEM_LOWER/share/git/git-wrapper.exe" "$SCRIPT_PATH/root/$BIN_DIR"/ash.exe
 	uname="$($SCRIPT_PATH/root/$BIN_DIR/ash.exe -c uname 2>&1)"
 	case "$?,$uname" in
 	0,*BusyBox*) ;; # okay, let's use the Git wrapper
