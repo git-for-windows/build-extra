@@ -211,7 +211,7 @@ do
 	then
 
 		case "$name" in
-		git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|msys2-runtime|mingw-w64-x86_64-git-credential-manager|mingw-w64-i686-git-credential-manager|mingw-w64-x86_64-git-credential-manager-core|mingw-w64-i686-git-credential-manager-core|mingw-w64-i686-git-lfs|mingw-w64-x86_64-git-lfs|curl|mingw-w64-i686-curl|mingw-w64-x86_64-curl|mingw-w64-i686-wintoast|mingw-w64-x86_64-wintoast|bash|heimdal|perl|openssh)
+		git-extra|mingw-w64-x86_64-git-extra|mingw-w64-i686-git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|msys2-runtime|mingw-w64-x86_64-git-credential-manager|mingw-w64-i686-git-credential-manager|mingw-w64-x86_64-git-credential-manager-core|mingw-w64-i686-git-credential-manager-core|mingw-w64-i686-git-lfs|mingw-w64-x86_64-git-lfs|curl|mingw-w64-i686-curl|mingw-w64-x86_64-curl|mingw-w64-i686-wintoast|mingw-w64-x86_64-wintoast|bash|heimdal|perl|openssh)
 			url="$azure_blobs_source_url/$filename"
 			sf1_url=
 			sf2_url=
