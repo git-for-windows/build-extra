@@ -33,7 +33,7 @@ EXTRA_FILE_EXCLUDES=
 UTIL_PACKAGES="sed awk grep findutils coreutils"
 if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
 then
-	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES bash coreutils mingw-w64-busybox
+	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES bash sh coreutils mingw-w64-busybox
 		libiconv libintl libreadline ncurses openssl
 		mingw-w64-libmetalink mingw-w64-spdylay diffutils"
 
