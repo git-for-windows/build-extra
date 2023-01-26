@@ -557,12 +557,40 @@ quick_add () { # <file>...
 		file="${path##*/}"
 		mingw=
 		case "${path##*/}" in
-		mingw-w64-*.pkg.tar.xz) arch=${file##mingw-w64-}; arch=${arch#clang-}; arch=${arch%%-*}; key=${arch}_mingw;;
-		git-extra-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; key=${arch}_mingw;;
-		*-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; test any != "$arch" || arch="$FALLBACK_ARCHITECTURE"; key=${arch}_msys;;
-		*.src.tar.gz) arch=sources; key= ;;
-		*.sig) continue;; # skip explicit signatures; we copy them automatically
-		*) echo "Skipping unknown file: $file" >&2; continue;;
+		mingw-w64-*.pkg.tar.xz|mingw-w64-*.pkg.tar.zst)
+			arch=${file##mingw-w64-}
+			arch=${arch#clang-}
+			arch=${arch%%-*}
+			key=${arch}_mingw
+			;;
+		git-extra-*.pkg.tar.xz|git-extra-*.pkg.tar.zst)
+			arch=${file%.pkg.tar.*}
+			arch=${arch##*-}
+			key=${arch}_mingw
+			;;
+		*-*.pkg.tar.xz|*-*.pkg.tar.zst)
+			arch=${file%.pkg.tar.*}
+			arch=${arch##*-}
+			test any != "$arch" || {
+				arch="$(tar Oxf "$path" .BUILDINFO |
+					sed -n 's/^installed = msys2-runtime-[0-9].*-\(.*\)/\1/p')"
+				test -n "$arch" ||
+				die "Could not determine architecture of '$path'"
+			}
+			key=${arch}_msys
+			;;
+		*.src.tar.gz|*.src.tar.xz|*.src.tar.zst)
+			arch=sources
+			key=
+			;;
+		*.sig)
+			# skip explicit signatures; we copy them automatically
+			continue
+			;;
+		*)
+			echo "Skipping unknown file: $file" >&2
+			continue
+			;;
 		esac
 		test -n "$arch" || die "Could not determine architecture for $path"
 		case " $architectures sources " in
