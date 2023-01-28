@@ -56,6 +56,12 @@ This is a security release, addressing [CVE-2022-41903](https://github.com/git/g
 * Addresses [CVE-2022-41903](https://github.com/git/git/security/advisories/GHSA-475x-2q3q-hvwq), a vulnerability that may allow heap overflows and code to be executed inadvertently during a `git archive` invocation.
 * A [regression introduced in Git for Windows v2.39.0(2)](https://github.com/git-for-windows/git/issues/4194) that prevented cloning from Bitbucket [was fixed](https://github.com/git-for-windows/MINGW-packages/pull/64).
 
+## Changes since Git for Windows v2.39.1 (January 17th 2023)
+
+### Bug Fixes
+
+* Some commands mishandled absolute paths near the drive root (e.g. [`scalar unregister C:/foo`](https://github.com/git-for-windows/git/issues/4200)), which has been [fixed](https://github.com/git-for-windows/git/pull/4253).
+
 ## Changes since Git for Windows v2.39.0 (December 12th 2022)
 
 ### New Features
