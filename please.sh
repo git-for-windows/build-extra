@@ -3405,6 +3405,8 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		# Pacman
 		/usr/bin/pacman.exe
 		/usr/bin/pactree.exe
+		/usr/bin/makepkg
+		/usr/bin/makepkg-mingw
 		/usr/bin/msys-gpg*.dll
 		/usr/bin/gpg.exe
 		/usr/bin/gpgconf.exe
@@ -3416,6 +3418,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		/etc/pacman*
 		/usr/ssl/certs/ca-bundle.crt
 		/usr/share/pacman/
+		/usr/share/makepkg/
 		/var/lib/pacman/local/
 
 		# Some other utilities required by `make-file-list.sh`
