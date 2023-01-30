@@ -3447,19 +3447,25 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			"${this_script_path%/*}/make-file-list.sh" |
 			# escape the `[` in `[.exe`
 			sed -e 's|[][]|\\&|g' >>"$sparse_checkout_file" &&
-			cat <<-EOF >>"$sparse_checkout_file"
+			if git -C "$git_sdk_path" rev-parse -q --verify HEAD:.sparse/makepkg-git >/dev/null
+			then
+				printf '\n' >>"$sparse_checkout_file" &&
+				git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file"
+			else
+				cat <<-EOF >>"$sparse_checkout_file"
 
-			# For code-signing
-			/mingw32/bin/osslsigncode.exe
-			/mingw32/bin/libgsf-[0-9]*.dll
-			/mingw32/bin/libglib-[0-9]*.dll
-			/mingw32/bin/libgobject-[0-9]*.dll
-			/mingw32/bin/libgio-[0-9]*.dll
-			/mingw32/bin/libxml2-[0-9]*.dll
-			/mingw32/bin/libgmodule-[0-9]*.dll
-			/mingw32/bin/libzstd*.dll
-			/mingw32/bin/libffi-[0-9]*.dll
-			EOF
+				# For code-signing
+				/mingw32/bin/osslsigncode.exe
+				/mingw32/bin/libgsf-[0-9]*.dll
+				/mingw32/bin/libglib-[0-9]*.dll
+				/mingw32/bin/libgobject-[0-9]*.dll
+				/mingw32/bin/libgio-[0-9]*.dll
+				/mingw32/bin/libxml2-[0-9]*.dll
+				/mingw32/bin/libgmodule-[0-9]*.dll
+				/mingw32/bin/libzstd*.dll
+				/mingw32/bin/libffi-[0-9]*.dll
+				EOF
+			fi
 			;;
 		*)
 			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
