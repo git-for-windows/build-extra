@@ -3443,7 +3443,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		mkdir -p "$output_path/mingw$bitness/bin" &&
 		case $bitness in
 		32)
-			BITNESS=32 ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
+			BITNESS=32 ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -lx \
 			"${this_script_path%/*}/make-file-list.sh" |
 			# escape the `[` in `[.exe`
 			sed -e 's|[][]|\\&|g' >>"$sparse_checkout_file" &&
