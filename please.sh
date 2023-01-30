@@ -3443,23 +3443,32 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		mkdir -p "$output_path/mingw$bitness/bin" &&
 		case $bitness in
 		32)
-			BITNESS=32 ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
+			# copy git.exe, for the libssp test
+			git -C "$output_path" show HEAD:mingw32/bin/git.exe \
+				>"$output_path/mingw32/bin/git.exe" &&
+			BITNESS=32 ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -lx \
 			"${this_script_path%/*}/make-file-list.sh" |
 			# escape the `[` in `[.exe`
 			sed -e 's|[][]|\\&|g' >>"$sparse_checkout_file" &&
-			cat <<-EOF >>"$sparse_checkout_file"
+			if git -C "$git_sdk_path" rev-parse -q --verify HEAD:.sparse/makepkg-git >/dev/null
+			then
+				printf '\n' >>"$sparse_checkout_file" &&
+				git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file"
+			else
+				cat <<-EOF >>"$sparse_checkout_file"
 
-			# For code-signing
-			/mingw32/bin/osslsigncode.exe
-			/mingw32/bin/libgsf-[0-9]*.dll
-			/mingw32/bin/libglib-[0-9]*.dll
-			/mingw32/bin/libgobject-[0-9]*.dll
-			/mingw32/bin/libgio-[0-9]*.dll
-			/mingw32/bin/libxml2-[0-9]*.dll
-			/mingw32/bin/libgmodule-[0-9]*.dll
-			/mingw32/bin/libzstd*.dll
-			/mingw32/bin/libffi-[0-9]*.dll
-			EOF
+				# For code-signing
+				/mingw32/bin/osslsigncode.exe
+				/mingw32/bin/libgsf-[0-9]*.dll
+				/mingw32/bin/libglib-[0-9]*.dll
+				/mingw32/bin/libgobject-[0-9]*.dll
+				/mingw32/bin/libgio-[0-9]*.dll
+				/mingw32/bin/libxml2-[0-9]*.dll
+				/mingw32/bin/libgmodule-[0-9]*.dll
+				/mingw32/bin/libzstd*.dll
+				/mingw32/bin/libffi-[0-9]*.dll
+				EOF
+			fi
 			;;
 		*)
 			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
@@ -3543,7 +3552,8 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	fi &&
 	if test makepkg-git = $mode && test ! -x "$output_path/usr/bin/git"
 	then
-		printf '#!/bin/sh\n\nexec /mingw64/bin/git.exe "$@"\n' >"$output_path/usr/bin/git"
+		printf '#!/bin/sh\n\nexec %s/bin/git.exe "$@"\n' \
+			"/mingw$bitness" >"$output_path/usr/bin/git"
 	fi &&
 	if test makepkg-git = $mode && ! grep -q http://docbook.sourceforge.net/release/xsl-ns/current "$output_path/etc/xml/catalog"
 	then
