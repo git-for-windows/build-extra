@@ -3443,6 +3443,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		mkdir -p "$output_path/mingw$bitness/bin" &&
 		case $bitness in
 		32)
+			# copy git.exe, for the libssp test
+			git -C "$output_path" show HEAD:mingw32/bin/git.exe \
+				>"$output_path/mingw32/bin/git.exe" &&
 			BITNESS=32 ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -lx \
 			"${this_script_path%/*}/make-file-list.sh" |
 			# escape the `[` in `[.exe`
