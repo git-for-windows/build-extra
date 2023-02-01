@@ -25,7 +25,7 @@ const addReleaseNote = (type, message) => {
   const path = `${__dirname}/ReleaseNotes.md`
   const contents = fs.readFileSync(path)
 
-  const entries = contents.toString().split(/(\n## Changes since Git for Windows v)(\d+(?:\.\d+)*)( \()([A-Z][a-z]+ \d+[a-z]* \d{4})(\))/g)
+  const entries = contents.toString().split(/(\n## Changes since Git for Windows v)(\d+(?:\.\d+)*(?:\(\d+\))?)( \()([A-Z][a-z]+ \d+[a-z]* \d{4})(\))/g)
   const [, currentVersion, currentDate ] = entries[0].match(/^# Git for Windows v(\d+(?:\.\d+)*(?:\(\d+\))?) Release Notes\nLatest update: ([A-Z][a-z]+ \d+[a-z]* \d{4})/)
   const latestVersion = entries[2]
   const latestDate = entries[4]
