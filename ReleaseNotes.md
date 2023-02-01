@@ -58,6 +58,10 @@ This is a security release, addressing [CVE-2022-41903](https://github.com/git/g
 
 ## Changes since Git for Windows v2.39.1 (January 17th 2023)
 
+### New Features
+
+* In the olden Git days, there were "dashed" Git commands (e.g. `git-commit` instead of `git commit`). These haven't been supported for interactive use in a really, really long time. But they still worked in Git aliases and hooks ("scripts"). Since Git v1.5.4 (released on February 2nd, 2008), it was discouraged/deprecated to use dashed Git commands even in scripts. As of this version, Git for Windows [no longer supports these dashed commands](https://github.com/git-for-windows/git/pull/4252).
+
 ### Bug Fixes
 
 * Some commands mishandled absolute paths near the drive root (e.g. [`scalar unregister C:/foo`](https://github.com/git-for-windows/git/issues/4200)), which has been [fixed](https://github.com/git-for-windows/git/pull/4253).
