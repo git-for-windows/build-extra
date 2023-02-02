@@ -40,6 +40,17 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+## Changes since Git for Windows v2.39.1 (January 17th 2023)
+
+This is a security release, addressing [CVE-2023-22490](https://github.com/git/git/security/advisories/GHSA-gw92-x3fm-3g3q), [CVE-2023-22743](https://github.com/git-for-windows/git/security/advisories/GHSA-p2x9-prp4-8gvq), [CVE-2023-23618](https://github.com/git-for-windows/git/security/advisories/GHSA-wxwv-49qw-35pm) and [CVE-2023-23946](https://github.com/git/git/security/advisories/GHSA-r87m-v37r-cwfh).
+
+### Bug Fixes
+
+* Addresses [CVE-2023-22743](https://github.com/git-for-windows/git/security/advisories/GHSA-p2x9-prp4-8gvq), a vulnerability rated "high" making the Git for Windows' installer susceptible to DLL side-loading attacks.
+* Addresses [CVE-2023-23618](https://github.com/git-for-windows/git/security/advisories/GHSA-wxwv-49qw-35pm), a vulnerability rated "high" where `gitk` would inadvertently execute programs placed in the worktree.
+* Addresses [CVE-2023-22490](https://github.com/git/git/security/advisories/GHSA-gw92-x3fm-3g3q), a moderate vulnerability allowing for data exfiltration in local clones.
+* Addresses [CVE-2023-23946](https://github.com/git/git/security/advisories/GHSA-r87m-v37r-cwfh), a moderate vulnerability that would allow crafted patches to trick `git apply` into writing into files outside the current directory.
+
 ## Changes since Git for Windows v2.39.0(2) (December 21st 2022)
 
 This is a security release, addressing [CVE-2022-41903](https://github.com/git/git/security/advisories/GHSA-475x-2q3q-hvwq), [CVE-2022-23521](https://github.com/git/git/security/advisories/GHSA-c738-c5qq-xg89) and [CVE-2022-41953](https://github.com/git-for-windows/git/security/advisories/GHSA-v4px-mx59-w99c).
