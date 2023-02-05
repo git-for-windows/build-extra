@@ -365,6 +365,10 @@ const
     GC_OpenSSL        = 1;
     GC_WinSSL         = 2;
 
+    // Git GPG options.
+    GG_GPG            = 1;
+    GG_ExternalGPG    = 2;
+
     // Git line ending conversion options.
     GC_LFOnly         = 1;
     GC_CRLFAlways     = 2;
@@ -475,6 +479,10 @@ var
     // Wizard page and variables for the HTTPS implementation (cURL) settings.
     CurlVariantPage:TWizardPage;
     RdbCurlVariant:array[GC_OpenSSL..GC_WinSSL] of TRadioButton;
+
+    // Wizard page and variables for the GPG options.
+    GPGChoicePage:TWizardPage;
+    RdbGPG:array[GG_GPG..GG_ExternalGPG] of TRadioButton;
 
     // Wizard page and variables for the line ending conversion options.
     CRLFPage:TWizardPage;
@@ -2212,6 +2220,34 @@ begin
     end;
 
     (*
+     * Create a custom page for using self-supplied GPG instead of bundled GPG
+     * if an GPG binary is found on the PATH.
+     *)
+
+    if (FileSearch('gpg.exe', GetEnv('PATH')) <> '') then begin
+        GPGChoicePage:=CreatePage(PrevPageID,'Choosing the GPG executable','Which GnuPG program would you like Git to use?',TabOrder,Top,Left);
+
+        // 1st choice
+        RdbGPG[GG_GPG]:=CreateRadioButton(GPGChoicePage,'Use bundled GPG','This uses gpg.exe that comes with Git.',TabOrder,Top,Left);
+
+        // 2nd choice
+        RdbGPG[GG_ExternalGPG]:=CreateRadioButton(GPGChoicePage,'Use external GPG',
+            '<RED>NEW!</RED> This uses an external gpg.exe. Git will not install its own GnuPG'+#13+
+            '(and related) binaries but use them as found on the PATH.',
+            TabOrder,Top,Left);
+
+        // Restore the setting chosen during a previous install.
+        case ReplayChoice('GPG Option','GPG') of
+            'GPG': RdbGPG[GG_GPG].Checked:=True;
+            'ExternalGPG': RdbGPG[GG_ExternalGPG].Checked:=True;
+        else
+            RdbGPG[GG_GPG].Checked:=True;
+        end;
+    end else begin
+        GPGChoicePage:=NIL;
+    end;
+
+    (*
      * Create a custom page for the core.autocrlf setting.
      *)
 
@@ -3382,6 +3418,14 @@ begin
         WizardForm.StatusLabel.Caption:='Removing bundled Git OpenSSH binaries';
         if not DeleteOpenSSHFiles() then
             LogError('Failed to remove OpenSSH file(s)');
+    end;
+#endif
+
+#ifdef DELETE_GPG_FILES
+    if (GPGChoicePage<>NIL) and (RdbGPG[GG_ExternalGPG].Checked) then begin
+        WizardForm.StatusLabel.Caption:='Removing bundled Git GPG binaries';
+        if not DeleteGPGFiles() then
+            LogError('Failed to remove GPG file(s)');
     end;
 #endif
 

@@ -296,6 +296,18 @@ openssh_deletes="$(comm -12 sorted-file-list.txt sorted-openssh-file-list.txt |
 inno_defines="$inno_defines$LF[Code]${LF}function DeleteOpenSSHFiles():Boolean;${LF}var$LF    AppDir:String;${LF}begin$LF    AppDir:=ExpandConstant('{app}');$LF    Result:=True;"
 inno_defines="$inno_defines$LF$openssh_deletes${LF}end;$LF#define DELETE_OPENSSH_FILES 1"
 
+# 1. Collect all GPG related files from $LIST and pacman, sort each and then return the overlap
+# 2. Convert paths to Windows filesystem compatible ones and construct the function body for the DeleteGPGFiles function; one DeleteFile operation per file found
+# 3. Construct DeleteGPGFiles function signature to be used in install.iss
+# 4. Assemble function body and compile flag to be used as guard in install.iss
+echo "$LIST" | sort >sorted-file-list.txt
+pacman -Ql gnupg 2>pacman.stderr | sed -n 's|^gnupg /\(.*[^/]\)$|\1|p' | sort >sorted-gnupg-file-list.txt
+grep -v 'database file for .* does not exist' <pacman.stderr >&2
+gpg_deletes="$(comm -12 sorted-file-list.txt sorted-gnupg-file-list.txt |
+	sed -e 'y/\//\\/' -e "s|.*|    if not DeleteFile(AppDir+'\\\\&') then\n        Result:=False;|")"
+inno_defines="$inno_defines$LF[Code]${LF}function DeleteGPGFiles():Boolean;${LF}var$LF    AppDir:String;${LF}begin$LF    AppDir:=ExpandConstant('{app}');$LF    Result:=True;"
+inno_defines="$inno_defines$LF$gpg_deletes${LF}end;$LF#define DELETE_GPG_FILES 1"
+
 test -z "$LIST" ||
 echo "$LIST" |
 sed -e 's|/|\\|g' \
