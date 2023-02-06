@@ -3091,11 +3091,11 @@ publish_sdk () { #
 	git --git-dir="$sdk64"/usr/src/build-extra/.git push origin "$tag"
 }
 
-create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--architecture=(x86_64|i686|aarch64)] [--bitness=(32|64)] [--force] <name>
+create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--architecture=(x86_64|i686|aarch64|auto)] [--bitness=(32|64)] [--force] <name>
 	git_sdk_path=/
 	output_path=
 	force=
-	architecture=
+	architecture=auto
 	bitness=
 	keep_worktree=
 	while case "$1" in
@@ -3166,6 +3166,20 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 			;;
 		*) die "Unhandled bitness: %s\n" "$bitness";;
 		esac
+	elif test auto = "$architecture"
+	then
+		if git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:clangarm64 2>/dev/null
+		then
+			architecture=aarch64
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-msys 2>/dev/null
+		then
+			architecture=i686
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/x86_64-pc-msys 2>/dev/null
+		then
+			architecture=x86_64
+		else
+			die "'%s' is neither 32-bit nor 64-bit SDK?!?" "$git_sdk_path"
+		fi
 	elif test -z "$architecture"
 	then
 		die "Either --architecture or --bitness must be provided for this function to work."
@@ -3191,7 +3205,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		;;
 	*) die "Unhandled architecture: %s\n" "$architecture";;
 	esac
-	
+
 	mode=
 	case "$1" in
 	minimal|git-sdk-minimal) mode=minimal-sdk;;
