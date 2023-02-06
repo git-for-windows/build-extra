@@ -3191,7 +3191,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		;;
 	*) die "Unhandled architecture: %s\n" "$architecture";;
 	esac
-	
+
 	mode=
 	case "$1" in
 	minimal|git-sdk-minimal) mode=minimal-sdk;;
