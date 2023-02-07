@@ -677,13 +677,23 @@ quick_add () { # <file>...
 		done
 		(cd "$dir/$arch" &&
 		 repo_add $sign_option git-for-windows.db.tar.xz $msys $mingw &&
-		 cp git-for-windows.db.tar.xz git-for-windows.db &&
-		 { test -z "$sign_option" || cp git-for-windows.db.tar.xz.sig git-for-windows.db.sig; } &&
+		 { test ! -h git-for-windows.db || rm git-for-windows.db; } &&
+		 cp git-for-windows.db.tar.xz git-for-windows.db && {
+			test -z "$sign_option" || {
+				{ test ! -h git-for-windows.db.sig || rm git-for-windows.db.sig; } &&
+				cp git-for-windows.db.tar.xz.sig git-for-windows.db.sig
+			}
+		 } &&
 		 if test -n "$db2"
 		 then
 			repo_add $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
-			cp git-for-windows-$db2.db.tar.xz git-for-windows-$db2.db &&
-			{ test -z "$sign_option" || cp git-for-windows-$db2.db.tar.xz.sig git-for-windows-$db2.db.sig; }
+			{ test ! -h git-for-windows-$db2.db || rm git-for-windows-$db2.db; } &&
+			cp git-for-windows-$db2.db.tar.xz git-for-windows-$db2.db && {
+				test -z "$sign_option" || {
+					{ test ! -h git-for-windows-$db2.db.sig || rm git-for-windows-$db2.db.sig; } &&
+					cp git-for-windows-$db2.db.tar.xz.sig git-for-windows-$db2.db.sig
+				}
+			}
 		 fi) ||
 		die "Could not add $msys $mingw to db in $arch"
 	done
