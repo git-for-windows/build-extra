@@ -91,7 +91,7 @@ summarize_commit () {
 		git show "$1" --format=%H \
 			-M15 --raw -- var/lib/pacman/local/\*/desc
 	fi |
-	sed -ne '/.* M\tvar\/lib\/pacman\/local\/git-extra-[1-9].*\/desc$/d' \
+	sed -ne '/.* M\tvar\/lib\/pacman\/local\/\(mingw-w64-.*-\)\?git-extra-[1-9].*\/desc$/d' \
 	 -e '/ R[0-9]*\t/{s/-\([0-9]\)/ (\1/;h;s|-\([0-9][^/]*\)/desc$|\t\1)|;s|.*\t| -> |;x;s|/desc\t.*||;s|.*\t[^\t]*/||;G;s|\n||g;p}' \
 	 -e '/ A\t/{s|.*local/\([^/]*\)/desc|\1|;s|-\([0-9].*\)| (new: \1)|p}' \
 	 -e '/ D\t/{s|.*local/\([^/]*\)/desc|\1|;s|-\([0-9].*\)| (removed)|p}'
@@ -145,7 +145,14 @@ add|remove)
 	 fi &&
 	 packages="$(for package; do
 		case "$package" in
-		mingw-w64-*) echo mingw-w64-$(uname -m)${package#mingw-w64};;
+		mingw-w64-i686-*|mingw-w64-x86_64-*) echo "$package";;
+		mingw-w64-*)
+			(
+				cd /var/lib/pacman/local &&
+				ls -d mingw-w64-*-"${package#mingw-w64-}"-[0-9]* |
+				sed 's|-[0-9].*||'
+			)
+			;;
 		*) echo "$package";;
 		esac; done)" &&
 	 pacman $pacman_option --noconfirm $packages &&
@@ -171,6 +178,7 @@ commit)
 	 if git diff-index --exit-code --cached HEAD -- \
 		':(exclude)var/lib/pacman/sync/' \
 		':(exclude)var/lib/pacman/local/git-extra-*/desc' \
+		':(exclude)var/lib/pacman/local/mingw-w64-*-git-extra-*/desc' \
 		':(exclude)etc/rebase.db*'
 	 then
 		# No changes, really, but maybe a new Pacman db

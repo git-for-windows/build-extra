@@ -33,7 +33,7 @@ EXTRA_FILE_EXCLUDES=
 UTIL_PACKAGES="sed awk grep findutils coreutils"
 if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
 then
-	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES bash coreutils mingw-w64-busybox
+	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES bash sh coreutils mingw-w64-busybox
 		libiconv libintl libreadline ncurses openssl
 		mingw-w64-libmetalink mingw-w64-spdylay diffutils"
 
@@ -162,7 +162,7 @@ test -z "$required" || {
 }
 
 packages="mingw-w64-$PACMAN_ARCH-git mingw-w64-$PACMAN_ARCH-git-credential-manager
-git-extra openssh $UTIL_PACKAGES"
+mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$PACMAN_ARCH-git-doc-html ncurses mintty vim nano
@@ -220,8 +220,8 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
 	-e '^/usr/bin/msys-\('$(if test i686 = "$ARCH"
 	    then
-		echo 'uuid\|'
-	    fi)'lzma\|fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
+		echo 'uuid\|lzma\|'
+	    fi)'fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(hdb\|history8\|kadm5\|kdc\|otp\|sl\).*\.dll$' \
 	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|ssh2\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(ncurses++w6\|asprintf-[0-9]*\|\)\.dll$' \
@@ -330,7 +330,7 @@ else
 		-e "^\\($(echo $EXTRA_FILE_EXCLUDES |
 			sed 's/ /\\|/g')\\)\$"
 fi |
-LC_CTYPE=C.UTF-8 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|screen.*|xterm.*)$)' |
+LC_CTYPE=C.UTF-8 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|ms-terminal|screen.*|xterm.*)$)' |
 sed 's/^\///' | sort | uniq
 
 test -z "$PACKAGE_VERSIONS_FILE" || {

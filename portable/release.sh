@@ -41,19 +41,19 @@ case "$MSYSTEM" in
 MINGW32)
 	BITNESS=32
 	ARCH=i686
-	ARTIFACT_SUFFIX=32
+	ARTIFACT_SUFFIX="32-bit"
 	MD_ARG=128M
 	;;
 MINGW64)
 	BITNESS=64
 	ARCH=x86_64
-	ARTIFACT_SUFFIX=64
+	ARTIFACT_SUFFIX="64-bit"
 	MD_ARG=256M
 	;;
 CLANGARM64)
 	BITNESS=64
 	ARCH=aarch64
-	ARTIFACT_SUFFIX=ARM64
+	ARTIFACT_SUFFIX=arm64
 	MD_ARG=256M
 	;;
 *)
@@ -63,7 +63,7 @@ esac
 MSYSTEM_LOWER=${MSYSTEM,,}
 VERSION=$1
 shift
-TARGET="$output_directory"/PortableGit-"$VERSION"-"$ARTIFACT_SUFFIX"-bit.7z.exe
+TARGET="$output_directory"/PortableGit-"$VERSION"-"$ARTIFACT_SUFFIX".7z.exe
 OPTS7="-m0=lzma -mx=9 -md=$MD_ARG -mfb=273 -ms=256M "
 TMPPACK=/tmp.7z
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"

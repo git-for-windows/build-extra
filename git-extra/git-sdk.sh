@@ -72,12 +72,27 @@ sdk () {
 		'') break;;
 		-*) sdk die "Unknown option: %s\n" "$1"; return 1;;
 		esac; do shift; done &&
-		case "$(uname -m)" in
-		i686) bitness=" 32-bit";;
-		x86_64) bitness=" 64-bit";;
-		*) bitness=;;
+		case "$MSYSTEM" in
+		MINGW32) shortcut_suffix=" 32-bit";;
+		MINGW64) shortcut_suffix=" 64-bit";;
+		CLANGARM64) shortcut_suffix=" arm64";;
+		MSYS)
+			case "$(uname -m)" in
+			i686) shortcut_suffix=" 32-bit";;
+			x86_64)
+				if test -d /clangarm64
+				then
+					shortcut_suffix=" arm64"
+				else
+					shortcut_suffix=" 64-bit"
+				fi
+				;;
+			*) shortcut_suffix=;;
+			esac
+			;;
+		*) shortcut_suffix=;;
 		esac &&
-		desktop_icon_path="Git SDK$bitness.lnk" &&
+		desktop_icon_path="Git SDK$shortcut_suffix.lnk" &&
 		desktop_icon_path="$(create-shortcut.exe -n --desktop-shortcut /git-bash.exe "$desktop_icon_path" |
 			sed -n 's/^destination: //p')" &&
 		if test -n "$force" || test ! -f "$desktop_icon_path"
@@ -206,11 +221,17 @@ sdk () {
 			MINGW_MOUNT_POINT=/mingw32
 			;;
 		x86_64)
-			MSYSTEM=MINGW64
-			MINGW_MOUNT_POINT=/mingw64
+			if test -d /clangarm64
+			then
+				MSYSTEM=CLANGARM64
+				MINGW_MOUNT_POINT=/clangarm64
+			else
+				MSYSTEM=MINGW64
+				MINGW_MOUNT_POINT=/mingw64
+			fi
 			;;
 		*)
-			sdk die "Could not determine bitness"
+			sdk die "Could not determine CPU architecture"
 			return 1
 			;;
 		esac
@@ -360,7 +381,7 @@ sdk () {
 			then
 				case "$MSYSTEM" in
 				MSYS) sdk makepkg -f;;
-				MINGW*) MINGW_ARCH=${MSYSTEM,,} sdk makepkg-mingw -f;;
+				CLANGARM*|MINGW*) MINGW_ARCH=${MSYSTEM,,} sdk makepkg-mingw -f;;
 				esac
 				return $?
 			fi

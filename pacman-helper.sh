@@ -61,7 +61,7 @@ this_script_dir="$(cygpath -am "${0%/*}")"
 base_url=https://wingit.blob.core.windows.net
 mirror=/var/local/pacman-mirror
 
-architectures="i686 x86_64"
+architectures="i686 x86_64 aarch64"
 
 arch_dir () { # <architecture>
 	echo "$mirror/$1"
@@ -71,6 +71,7 @@ map_arch () { # <architecture>
 	# Azure Blobs does not allow underlines, but dashes in container names
 	case "$1" in
 	x86_64) echo "x86-64";;
+	clang-aarch64) echo "aarch64";;
 	*) echo "$1";;
 	esac
 }
@@ -80,12 +81,11 @@ arch_url () { # <architecture>
 }
 
 arch_to_mingw () { # <arch>
-	if test i686 = "$arch"
-	then
-		echo mingw32
-	else
-		echo mingw64
-	fi
+	case "$arch" in
+	i686) echo mingw32;;
+	aarch64) echo aarch64;;
+	*) echo mingw64;;
+	esac
 }
 
 fetch () {
@@ -436,14 +436,6 @@ push () {
 			for arch in $architectures sources
 			do
 				case "$name,$arch" in
-				mingw-w64-i686,x86_64|mingw-w64-x86_64,i686)
-					# wrong architecture
-					continue
-					;;
-				mingw-w64-i686-*,sources)
-					# sources are "included" in x86_64
-					continue
-					;;
 				mingw-w64-x86_64-*,sources)
 					# sources are "included" in x86_64
 					filename=mingw-w64${name#*_64}.src.tar.gz
@@ -451,8 +443,12 @@ push () {
 				*,sources)
 					filename=$name.src.tar.gz
 					;;
-				mingw-w64-*)
+				mingw-w64-$arch,$arch)
 					filename=$name-any.pkg.tar.xz
+					;;
+				mingw-w64-*)
+					# wrong architecture
+					continue
 					;;
 				*)
 					filename=$name-$arch.pkg.tar.xz
@@ -544,11 +540,13 @@ quick_add () { # <file>...
 
 	# Create a temporary directory to work with
 	dir="$(mktemp -d)" &&
-	mkdir "$dir/x86_64" "$dir/i686" "$dir/sources" ||
+	mkdir "$dir/x86_64" "$dir/aarch64" "$dir/i686" "$dir/sources" ||
 	die "Could not create temporary directory"
 
 	i686_mingw=
 	i686_msys=
+	aarch64_mingw=
+	aarch64_msys=
 	x86_64_mingw=
 	x86_64_msys=
 	all_files=
@@ -559,12 +557,40 @@ quick_add () { # <file>...
 		file="${path##*/}"
 		mingw=
 		case "${path##*/}" in
-		mingw-w64-*.pkg.tar.xz) arch=${file##mingw-w64-}; arch=${arch%%-*}; key=${arch}_mingw;;
-		git-extra-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; key=${arch}_mingw;;
-		*-*.pkg.tar.xz) arch=${file%.pkg.tar.xz}; arch=${arch##*-}; test any != "$arch" || arch="$FALLBACK_ARCHITECTURE"; key=${arch}_msys;;
-		*.src.tar.gz) arch=sources; key= ;;
-		*.sig) continue;; # skip explicit signatures; we copy them automatically
-		*) echo "Skipping unknown file: $file" >&2; continue;;
+		mingw-w64-*.pkg.tar.xz|mingw-w64-*.pkg.tar.zst)
+			arch=${file##mingw-w64-}
+			arch=${arch#clang-}
+			arch=${arch%%-*}
+			key=${arch}_mingw
+			;;
+		git-extra-*.pkg.tar.xz|git-extra-*.pkg.tar.zst)
+			arch=${file%.pkg.tar.*}
+			arch=${arch##*-}
+			key=${arch}_mingw
+			;;
+		*-*.pkg.tar.xz|*-*.pkg.tar.zst)
+			arch=${file%.pkg.tar.*}
+			arch=${arch##*-}
+			test any != "$arch" || {
+				arch="$(tar Oxf "$path" .BUILDINFO |
+					sed -n 's/^installed = msys2-runtime-[0-9].*-\(.*\)/\1/p')"
+				test -n "$arch" ||
+				die "Could not determine architecture of '$path'"
+			}
+			key=${arch}_msys
+			;;
+		*.src.tar.gz|*.src.tar.xz|*.src.tar.zst)
+			arch=sources
+			key=
+			;;
+		*.sig)
+			# skip explicit signatures; we copy them automatically
+			continue
+			;;
+		*)
+			echo "Skipping unknown file: $file" >&2
+			continue
+			;;
 		esac
 		test -n "$arch" || die "Could not determine architecture for $path"
 		case " $architectures sources " in
@@ -606,26 +632,47 @@ quick_add () { # <file>...
 		eval "mingw=\$${arch}_mingw"
 		test -n "$msys$mingw" || continue
 
-		case "$arch,$mingw" in *,) db2=;; i686,*) db2=mingw32;; *) db2=mingw64;; esac
+		case "$(test aarch64 = $arch && curl -sI "$(arch_url $arch)/git-for-windows.db")" in
+		*404*) initialize_fresh_pacman_repository=t;; # this one is new
+		*) initialize_fresh_pacman_repository=;;
+		esac
+
+		case "$arch,$mingw" in
+		*,) db2=;;
+		i686,*) db2=mingw32;;
+		*aarch64*) db2=aarch64;;
+		*) db2=mingw64;;
+		esac
 		for db in git-for-windows ${db2:+git-for-windows-$db2}
 		do
 			for infix in db files
 			do
 				file=$db.$infix.tar.xz
-				echo "Downloading current $arch/$file..." >&2
-				curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$file" || return 1
+				if test -n "$initialize_fresh_pacman_repository"
+				then
+					echo "Will initialize new $arch/$file..." >&2
+				else
+					echo "Downloading current $arch/$file..." >&2
+					curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$file" || return 1
+				fi
 				dbs="$dbs $arch/$file $arch/${file%.tar.xz}"
 				if test -n "$sign_option"
 				then
-					curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$file.sig" ||
-					return 1
-					gpg --verify "$dir/$arch/$file.sig" ||
-					die "Could not verify GPG signature: $dir/$arch/$file"
+					if test -z "$initialize_fresh_pacman_repository"
+					then
+						curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$file.sig" ||
+						return 1
+						gpg --verify "$dir/$arch/$file.sig" ||
+						die "Could not verify GPG signature: $dir/$arch/$file"
+					fi
 					dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
 				fi
-				sanitize_db "$dir/$arch/$file" || return 1
-				test ! -f "$dir/$arch/${file%.tar.xz}" ||
-				sanitize_db "$dir/$arch/${file%.tar.xz}" || return 1
+				if test -z "$initialize_fresh_pacman_repository"
+				then
+					sanitize_db "$dir/$arch/$file" || return 1
+					test ! -f "$dir/$arch/${file%.tar.xz}" ||
+					sanitize_db "$dir/$arch/${file%.tar.xz}" || return 1
+				fi
 			done
 		done
 		(cd "$dir/$arch" &&
@@ -741,14 +788,6 @@ push_missing_signatures () {
 		for arch in $architectures sources
 		do
 			case "$name,$arch" in
-			mingw-w64-i686-*,x86_64|mingw-w64-x86_64-*,i686)
-				# wrong architecture
-				continue
-				;;
-			mingw-w64-i686-*,sources)
-				# sources are "included" in x86_64
-				continue
-				;;
 			libcurl*,sources|mingw-w64-*-git-doc*,sources|msys2-runtime-devel*,sources)
 				# extra package's source included elsewhere
 				continue
@@ -760,8 +799,12 @@ push_missing_signatures () {
 			*,sources)
 				filename=$name.src.tar.gz
 				;;
-			mingw-w64-*)
+			mingw-w64-$arch,$arch)
 				filename=$name-any.pkg.tar.xz
+				;;
+			mingw-w64-*)
+				# wrong architecture
+				continue
 				;;
 			*)
 				filename=$name-$arch.pkg.tar.xz
@@ -810,11 +853,7 @@ push_missing_signatures () {
 
 		for name in $list
 		do
-			case "$name,$arch" in
-			mingw-w64-i686*,x86_64|mingw-w64-x86_64*,i686)
-				# wrong architecture; skip
-				continue
-				;;
+			case "$name" in
 			mingw-w64-$arch-*)
 				filename=$name-any.pkg.tar.xz
 				s=$(arch_to_mingw $arch)
@@ -827,6 +866,10 @@ push_missing_signatures () {
 					repo_add $sign_option $db_name $filename ||
 					die "Could not add $name in $arch/mingw"
 				}
+				;;
+			mingw-w64-*)
+				# wrong architecture; skip
+				continue
 				;;
 			*)
 				filename=$name-$arch.pkg.tar.xz

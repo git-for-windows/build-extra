@@ -11,7 +11,7 @@
 @IF ERRORLEVEL 1 GOTO DIE
 
 @REM set PATH
-@set PATH=%cwd%\mini\mingw@@BITNESS@@\bin;%PATH%
+@set PATH=%cwd%\mini\@@MSYSTEM_LOWER@@\bin;%PATH%
 
 @ECHO Cloning the Git for Windows SDK...
 @git init
@@ -30,7 +30,7 @@
 @IF ERRORLEVEL 1 GOTO DIE
 
 @REM Avoid overlapping address ranges
-@IF 32 == @@BITNESS@@ @(
+@IF 32 == @@SDK_ARCH@@ @(
 	ECHO Auto-rebasing .dll files
 	CALL autorebase.bat
 )

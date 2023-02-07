@@ -3,34 +3,8 @@
 # This script is meant to help maintain Git for Windows. It automates large
 # parts of the release engineering.
 #
-# The major trick is to be able to update and build 32-bit as well as 64-bit
-# packages. This is particularly problematic when trying to update files that
-# are in use, such as msys-2.0.dll or bash.exe. To that end, this script is
-# intended to run from a *separate* Bash, such as Git Bash.
-#
-# Common workflows:
-#
-# 1) release a new Git version
-#
-#	<make sure that Git for Windows' main branch reflects the new version>
-#	./please.sh sync
-#	./please.sh finalize release-notes
-#	./please.sh tag_git
-#	./please.sh build git
-#	./please.sh install git
-#	./please.sh test_git 64
-#	./please.sh upload git
-#	./please.sh release
-#	./please.sh publish
-#
-# 2) release a new Pacman package, e.g. git-extra or msys2-runtime
-#
-#	./please.sh sync
-#	<make sure that the main branch reflects the new version>
-#	./please.sh build git-extra
-#	./please.sh install git-extra
-#	<verify that everything's alright>
-#	./please.sh upload git-extra
+# Most of these functions are called from automation, i.e. from Azure Pipelines
+# and from GitHub workflows
 
 # Note: functions whose arguments are documented on the function name's own
 # line are actually subcommands, and running this script without any argument
@@ -173,16 +147,6 @@ is_independent_shell () { #
 	test t = "$independent_shell"
 }
 
-info () { #
-	is_independent_shell && warning= ||
-	warning="WARNING: Current shell is not independent"
-
-	printf "%s\n%s\n%s" \
-		"Git for Windows 64-bit SDK: $sdk64" \
-		"Git for Windows 32-bit SDK: $sdk32" \
-		"$warning"
-}
-
 prepare_keep_despite_upgrade () { # <sdk-path>
 	keep_despite_upgrade="$(cat "${this_script_path%/*}/keep-despite-upgrade.txt")" ||
 	die 'Could not read keep-despite-upgrade.txt\n'
@@ -217,183 +181,6 @@ process_keep_despite_upgrade () { # [--keep] <sdk-path>
 	rm -rf "$1/.keep"
 }
 
-sync () { # [--force]
-	force=
-	y_opt=y
-	only=
-	while case "$1" in
-	--force)
-		force='--overwrite=\*'
-		y_opt=yy
-		;;
-	--only-i686|--only-32-bit)
-		only="$sdk32"
-		;;
-	--only-x86_64|--only-64-bit)
-		only="$sdk64"
-		;;
-	-*) die "Unknown option: %s\n" "$1";;
-	*) break;;
-	esac; do shift; done
-	test $# = 0 ||
-	die "Expected no argument, got $#: %s\n" "$*"
-
-	export MSYSTEM=msys
-	export MSYS2_PATH_TYPE=minimal
-	for sdk in "$sdk32" "$sdk64"
-	do
-		test -z "$only" ||
-		test "$only" = "$sdk" ||
-		continue
-
-		mkdir -p "$sdk/var/log" ||
-		die "Could not ensure %s/var/log/ exists\n" "$sdk"
-
-		remove_obsolete_packages ||
-		die "Could not remove obsolete packages\n"
-
-		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -lc \
-			"for key in 4A6129F4E4B84AE46ED7F635628F528CF3053E04 \
-				5F944B027F7FE2091985AA2EFA11531AA0AA7F57
-			 do
-				pacman-key --list-keys \$key >/dev/null 2>&1 || {
-					pacman-key --recv-keys \$key &&
-					pacman-key --lsign-key \$key;
-				} || exit 1
-			 done
-			 pacman.exe -S$y_opt" ||
-		die "Cannot run pacman in %s\n" "$sdk"
-
-		prepare_keep_despite_upgrade "$sdk" ||
-		die 'Could not keep files as planned\n'
-
-		"$sdk/git-cmd.exe" --cd="$sdk" --command=usr\\bin\\bash.exe \
-			-lc 'pacman.exe -Su '$force' --noconfirm' ||
-		die "Could not update packages in %s\n" "$sdk"
-
-		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
-			pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
-			pacman-key --populate git-for-windows' ||
-		die "Could not re-populate git-for-windows-keyring\n"
-
-		process_keep_despite_upgrade --keep "$sdk" ||
-		die 'Could not copy back files-to-keep\n'
-
-		case "$(tail -c 16384 "$sdk/var/log/pacman.log" |
-			grep '\[PACMAN\] starting .* system upgrade' |
-			tail -n 1)" in
-		*"full system upgrade")
-			;; # okay
-		*)
-			# only "core" packages were updated, update again
-			"$sdk/git-cmd.exe" --cd="$sdk" \
-				--command=usr\\bin\\bash.exe -l \
-				-c 'pacman -Su '$force' --noconfirm' ||
-			die "Cannot update packages in %s\n" "$sdk"
-
-			process_keep_despite_upgrade --keep "$sdk" ||
-			die 'Could not copy back files-to-keep\n'
-
-			"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c '
-				pacman-key --list-keys BB3AA74136C569BB \
-					>/dev/null ||
-				pacman-key --populate git-for-windows' ||
-			die "Could not re-populate git-for-windows-keyring\n"
-			;;
-		esac
-
-		process_keep_despite_upgrade "$sdk" ||
-		die 'Could not copy back files-to-keep\n'
-
-		# A ruby upgrade (or something else) may require a re-install
-		# of the `asciidoctor` gem. We only do this for the 64-bit
-		# SDK, though, as we require asciidoctor only when building
-		# Git, whose 32-bit packages are cross-compiled in from 64-bit.
-		test "$sdk64" != "$sdk" ||
-		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c \
-			'test -n "$(gem list --local | grep "^asciidoctor ")" ||
-			 gem install asciidoctor || exit;
-			 export PATH=/mingw32/bin:$PATH;
-			 test -n "$(gem list --local | grep "^asciidoctor ")" ||
-			 gem install asciidoctor' ||
-		die "Could not re-install asciidoctor in %s\n" "$sdk"
-
-		# git-extra rewrites some files owned by other packages,
-		# therefore it has to be (re-)installed now
-		"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c \
-			'pacman -S '$force' --noconfirm git-extra' ||
-		die "Cannot update git-extra in %s\n" "$sdk"
-
-		pacnew="$(sed -ne '/starting core system upgrade/{
-			:1;
-			s/.*/WAIT/;x
-			:2;
-			n;
-			/warning:.*installed as .*\.pacnew$/{s/.* as //;H;b2}
-			/starting full system upgrade/{x;s/WAIT//;x;b2}
-			/starting core system upgrade/{x;/WAIT/{x;b2};b1}
-			${x;s/WAIT//;s/^\n//;/./p}
-			b2;
-			}' <"$sdk"/var/log/pacman.log)" ||
-		die "Could not get list of .pacnew files\n"
-		if test -n "$pacnew"
-		then
-			# Make sure we have the git-extra package locally, as
-			# one of the .pacnew files could be pacman.conf, and
-			# replacing it removes the link to Git for Windows'
-			# Pacman repository
-			"$sdk/git-cmd.exe" --command=usr\\bin\\bash.exe -l -c \
-			   'pkg=/var/cache/pacman/pkg/$(pacman -Q git-extra |
-				tr \  -)*.pkg.tar.xz
-			    test -f $pkg || {
-				pacman -Sw --noconfirm git-extra &&
-				test -f $pkg || {
-					echo "Could not cache $pkg" >&2
-					exit 1
-				}
-			    }
-			    for f in '"$(echo "$pacnew" | tr '\n' ' ')"'
-			    do
-				test ! -f $f ||
-				mv -f $f ${f%.pacnew} || {
-					echo "Could not rename $f" >&2
-					exit 1
-				}
-			    done
-			    pacman -U --noconfirm '$force' $pkg || {
-				echo "Could not reinstall $pkg" >&2
-				exit 1
-			    }' ||
-			die "Could not handle .pacnew files\n"
-		fi
-	done
-}
-
-run () { # <bitness> <command> [<arg>...]
-	test 32 = "$1" || test 64 = "$1" || die "Which bitness?\n"
-
-	sdk="$(eval "echo \$sdk$1")"
-	shift
-
-	cmd_line=eval
-	for arg
-	do
-		cmd_line="$cmd_line '$(echo "$arg" | sed -e "s/'/&\\\\&&/g")'"
-	done
-
-	"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c "$cmd_line"
-}
-
-killall () { # <bitness>
-	sdk="$(eval "echo \$sdk$1")"
-
-	pids="$("$sdk/git-cmd.exe" --command=usr\\bin\\ps.exe -s |
-		grep -v ' /usr/bin/ps$' |
-		sed -n "s/^ *\([0-9][0-9]*\).*/\1/p")"
-	test -z "$pids" ||
-	"$sdk/git-cmd.exe" --command=usr\\bin\\kill.exe $pids
-}
-
 mount_sdks () { #
 	test -d /sdk32 || mount "$sdk32" /sdk32
 	test -d /sdk64 || mount "$sdk64" /sdk64
@@ -405,9 +192,11 @@ set_package () {
 	extra_packages=
 	extra_makepkg_opts=
 	case "$package" in
-	git-extra)
+	git-extra|mingw-w64-git-extra)
+		package=mingw-w64-git-extra
 		type=MINGW
-		pkgpath=/usr/src/build-extra/$package
+		# This will need to be replaced with mingw-w64-git-extra once the folder has been renamed
+		pkgpath=/usr/src/build-extra/git-extra
 		;;
 	git-for-windows-keyring)
 		type=MSYS
@@ -604,24 +393,6 @@ set_package () {
 	esac
 }
 
-# foreach_sdk <function> [<args>]
-foreach_sdk () {
-	# Run function in 32-bit/64-bit SDKs (only 64-bit for MINGW packages)
-	for sdk in "$sdk32" "$sdk64"
-	do
-		# MINGW packages are compiled in the 64-bit SDK only
-		test "a$sdk64" = "a$sdk" ||
-		test MINGW != "$type" ||
-		continue
-
-		(cd "$sdk$pkgpath" ||
-		 die "%s does not exist\n" "$sdk$pkgpath"
-
-		 "$@") ||
-		die "Could not run '%s' in '%s'\n" "$*" "$sdk"
-	done
-}
-
 require_clean_worktree () {
 	git update-index --ignore-submodules --refresh &&
 	git diff-files --ignore-submodules &&
@@ -646,31 +417,6 @@ ff_main_branch () {
 	git pull --ff-only origin HEAD ||
 	test 0 -eq $(git rev-list --count ..FETCH_HEAD) ||
 	die "%s: cannot fast-forward main branch\n" "$sdk$pkgpath"
-}
-
-update () { # <package>
-	if test git != "$1" && test -d "$sdk64"/usr/src/"$1"
-	then
-		pkgpath=/usr/src/"$1"
-	else
-		set_package "$1"
-	fi
-
-	foreach_sdk ff_main_branch
-}
-
-remove_obsolete_packages () {
-	test "a$sdk" = "a$sdk32" &&
-	arch=i686 ||
-	arch=x86_64
-
-	for p in mingw-w64-$arch-curl-winssl-bin
-	do
-		test ! -d "$sdk"/var/lib/pacman/local/$p-[0-9]* ||
-		"$sdk"/git-cmd.exe --command=usr\\bin\\pacman.exe \
-			-R --noconfirm $p ||
-		die "Could not remove %s\n" "$p"
-	done
 }
 
 # require <metapackage> <telltale>
@@ -847,33 +593,6 @@ up_to_date () {
 	fi
 }
 
-build () { # [--force] [--cleanbuild] <package>
-	force=
-	cleanbuild=
-	while case "$1" in
-	-f|--force)
-		force=--force
-		;;
-	--cleanbuild)
-		cleanbuild=--cleanbuild
-		;;
-	-*) die "Unknown option: %s\n" "$1";;
-	*) break;;
-	esac; do shift; done
-	test $# = 1 ||
-	die "Expected 1 argument, got $#: %s\n" "$*"
-
-	set_package "$1"
-	extra_makepkg_opts="$extra_makepkg_opts $force $cleanbuild"
-
-	test MINGW = "$type" ||
-	up_to_date "$pkgpath" ||
-	die "%s: not up-to-date\n" "$pkgpath"
-
-	foreach_sdk pkg_build $force $cleanbuild ||
-	die "Could not build '%s'\n" "$package"
-}
-
 # require_remote <nickname> <url>
 require_remote () {
 	if test -z "$(git config remote."$1".url)"
@@ -923,99 +642,6 @@ is_rebasing () {
 
 has_merge_conflicts () {
 	test -n "$(git ls-files --unmerged)"
-}
-
-record_rerere_train () {
-	conflicts="$(git ls-files --unmerged)" &&
-	test -n "$conflicts" ||
-	die "No merge conflicts?!?\n"
-
-	commit="$(git rev-parse -q --verify refs/heads/rerere-train)" ||
-	commit="$(git rev-parse -q --verify \
-		refs/remotes/git-for-windows/rerere-train)"
-	if test -z "$GIT_INDEX_FILE"
-	then
-		GIT_INDEX_FILE="$(git rev-parse --git-path index)"
-	fi &&
-	orig_index="$GIT_INDEX_FILE" &&
-	(GIT_INDEX_FILE="$orig_index.tmp" &&
-	 export GIT_INDEX_FILE &&
-
-	 for stage in 1 2 3
-	 do
-		cp "$orig_index" "$GIT_INDEX_FILE" &&
-		echo "$conflicts" |
-		sed -n "s/^\\([^ ]* [^ ]* \\)$stage/\\10/p" |
-		git update-index --index-info &&
-		git ls-files --unmerged |
-		sed -n "s/^[^ ]*/0/p" |
-		git update-index --index-info &&
-		eval tree$stage="$(git write-tree)" ||
-		die "Could not write tree %s\n" "$stage"
-	 done &&
-	 cp "$orig_index" "$GIT_INDEX_FILE" &&
-	 git add -u &&
-	 tree4="$(git write-tree)" &&
-	 if ! stopped_sha="$(git rev-parse --git-path \
-			rebase-merge/stopped-sha)" ||
-		! stopped_sha="$(cat "$stopped_sha")"
-	 then
-		stopped_sha="$(git rev-parse -q --verify MERGE_HEAD)"
-	 fi &&
-	 base_msg="$(printf "cherry-pick %s onto %s\n\n%s\n%s\n\n\t%s" \
-		"$(git show -s --pretty=tformat:%h $stopped_sha)" \
-		"$(git show -s --pretty=tformat:%h HEAD)" \
-		"This commit helps to teach \`git rerere\` to resolve merge " \
-		"conflicts when cherry-picking:" \
-		"$(whatis $stopped_sha)")" &&
-	 commit=$(git commit-tree ${commit:+-p} $commit \
-		-m "base: $base_msg" $tree1) &&
-	 commit2=$(git commit-tree -p $commit -m "pick: $base_msg" $tree3) &&
-	 commit=$(git commit-tree -p $commit -m "upstream: $base_msg" $tree2) &&
-	 commit=$(git commit-tree -p $commit -p $commit2 \
-		-m "resolve: $base_msg" $tree4) &&
-	 git update-ref -m "$base_msg" refs/heads/rerere-train $commit) || exit
-
-	git add -u &&
-	git rerere
-}
-
-rerere_train () {
-	git rev-list --reverse --parents "$@" |
-	while read commit parent1 parent2 rest
-	do
-		test -n "$parent2" && test -z "$rest" || continue
-
-		printf "Learning merge conflict resolution from %s\n" \
-			"$(whatis "$commit")" >&2
-
-		(GIT_CONFIG_PARAMETERS="$GIT_CONFIG_PARAMETERS${GIT_CONFIG_PARAMETERS:+ }'rerere.enabled=true'" &&
-		 export GIT_CONFIG_PARAMETERS &&
-		 worktree="$(git rev-parse --git-path train)" &&
-		 if test ! -d "$worktree"
-		 then
-			git worktree add "$worktree" "$parent1" ||
-			die "Could not create worktree %s\n" "$worktree"
-		 fi &&
-		 cd "$worktree" &&
-		 git checkout -f -q "$parent1" &&
-		 git reset -q --hard &&
-		 if git merge "$parent2" >/dev/null 2>&1
-		 then
-			echo "Nothing to be learned: no merge conflicts" >&2
-		 else
-			if ! test -s "$(git rev-parse --git-path MERGE_RR)"
-			then
-				git rerere forget -- . &&
-				test -f "$(git rev-parse --git-path MERGE_RR)" ||
-				die "Could not re-learn from %s\n" "$commit"
-			fi
-
-			git checkout -q "$commit" -- . &&
-			git rerere ||
-			die "Could not learn from %s\n" "$commit"
-		 fi) || exit
-	done
 }
 
 # ensure_valid_login_shell <bitness>
@@ -1196,602 +822,10 @@ build_and_test_64 () {
 		fi'
 }
 
-update_vs_branch () { # [--worktree=<path>] [--remote=<remote>] [--branch=<branch>]
-	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
-	remote=git-for-windows
-	branch=main
-	while case "$1" in
-	--worktree=*)
-		git_src_dir=${1#*=}
-		test -d "$git_src_dir" ||
-		die "Worktree does not exist: %s\n" "$git_src_dir"
-		git rev-parse -q --verify e83c5163316f89bfbde7d ||
-		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
-		;;
-	--remote=*)
-		remote="${1#*=}"
-		;;
-	--branch=*)
-		branch="${1#*=}"
-		branch="${branch#refs/heads/}"
-		;;
-	-*) die "Unknown option: %s\n" "$1";;
-	*) break;;
-	esac; do shift; done
-	test $# = 0 ||
-	die "Expected 0 argument, got $#: %s\n" "$*"
-
-	ensure_valid_login_shell 64 ||
-	die "Could not ensure valid login shell\n"
-
-	sdk="$sdk64"
-
-	build_extra_dir="$sdk64/usr/src/build-extra"
-	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_main_branch) ||
-	die "Could not update build-extra\n"
-
-	require_git_src_dir
-
-	(cd "$git_src_dir" &&
-	 case "$remote" in
-	 git-for-windows)
-		require_remote git-for-windows \
-			https://github.com/git-for-windows/git &&
-		require_push_url git-for-windows
-		;;
-	 *)
-		test -n "$(git config remote."$remote".url)" &&
-		git fetch "$remote" \
-			refs/heads/"$branch":refs/remotes/"$remote/$branch"
-		;;
-	 esac ||
-	 die "Could not update remote\n"
-
-	 if prev=$(git rev-parse -q --verify \
-		refs/remotes/"$remote"/vs/"$branch") &&
-		test 0 = $(git rev-list --count \
-			"$prev"..refs/remotes/"$remote/$branch")
-	 then
-		echo "vs/$branch was already rebased" >&2
-		exit 0
-	 fi &&
-	 git reset --hard &&
-	 git checkout --force refs/remotes/"$remote/$branch"^0 &&
-	 make vcxproj &&
-	 git push "$remote" +HEAD:refs/heads/vs/"$branch" ||
-	 die "Could not push vs/$branch\n") ||
-	exit
-}
-
 needs_upload_permissions () {
 	grep -q '^machine api\.github\.com$' "$HOME"/_netrc &&
 	grep -q '^machine uploads\.github\.com$' "$HOME"/_netrc ||
 	die "Missing GitHub entries in ~/_netrc\n"
-}
-
-# [--include-sha256sums] <tag> <dir-with-files>
-publish_prerelease () {
-	body=
-	include_sha256sums=
-	while case "$1" in
-	--include-sha256sums)
-		include_sha256sums=t
-		;;
-	-*)
-		die "Unhandled option: '%s'\n" "$1"
-		;;
-	*)
-		break
-		;;
-	esac; do shift; done
-	test $# = 2 ||
-	die "Unexpected arguments: '%s'\n" "$*"
-
-	if test -n "$include_sha256sums"
-	then
-		checksums="Filename | SHA-256\\n-------- | -------\\n$(cd "$2" &&
-			sha256sum.exe * |
-			sed -n 's/\([^ ]*\) \*\(.*\)/\2 | \1\\n/p' |
-			tr -d '\012')"
-		body="\"body\":\"Pre-release: Git $1\\n\\n$checksums\","
-	fi
-
-	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
-		--repo=git "$1" \
-		"$2"/* ||
-	die "Could not upload files from %s\n" "$2"
-
-	url=https://api.github.com/repos/git-for-windows/git/releases
-	id="$(curl --netrc -s $url |
-		sed -n '/^    "id":/{:1;N;/"tag_name": *"'"$1"'"/{
-			s/^ *"id": *\([0-9]*\).*/\1/p;q};b1}')"
-	test -n "$id" ||
-	die "Could not determine ID of release for %s\n" "$1"
-
-	out="$(curl --netrc --show-error -s -XPATCH -d \
-		'{"name":"'"$1"'",'"$body"'"draft":false,"prerelease":true}' \
-		$url/$id)" ||
-	die "Could not edit release for %s:\n%s\n" "$1" "$out"
-}
-
-prerelease () { # [--installer | --portable | --mingit | --mingit-busybox] [--only-64-bit] [--clean-output=<directory> | --output=<directory>] [--force-version=<version>] [--skip-prerelease-prefix] <revision>
-	modes=
-	output=
-	output_dir="$HOME"
-	force_tag=
-	force_version=
-	prerelease_prefix=prerelease-
-	only_64_bit=
-	upload=
-	include_sha256sums=
-	include_pdbs=
-	while case "$1" in
-	--force-tag)
-		force_tag=-f
-		;;
-	--force-version)
-		shift
-		force_version="$1"
-		force_tag=-f
-		;;
-	--force-version=*)
-		force_version="${1#*=}"
-		force_tag=-f
-		;;
-	--skip-prerelease-prefix)
-		prerelease_prefix=
-		;;
-	--installer|--portable|--mingit|--mingit-busybox)
-		modes="$modes ${1#--}"
-		;;
-	--only-installer|--only-portable|--only-mingit|--only-mingit-busybox)
-		modes="${1#--only-}"
-		;;
-	--reset-mode)
-		modes=
-		;;
-	--installer+portable)
-		modes="installer portable"
-		;;
-	--only-64-bit)
-		only_64_bit=t
-		;;
-	--output=*)
-		output_dir="$(cygpath -am "${1#*=}")" &&
-		output="--output='$output_dir'" ||
-		die "Directory '%s' inaccessible\n" "${1#*=}"
-		;;
-	--clean-output=*)
-		output_dir="$(cygpath -am "${1#*=}")" &&
-		rm -rf "$output_dir" &&
-		mkdir -p "$output_dir" ||
-		die "Could not make directory '%s'\n" "$output_dir"
-		output="--output='$output_dir'" ||
-		die "Directory '%s' inaccessible\n" "$output_dir"
-		;;
-	--now)
-		output_dir="$(cygpath -am "./prerelease-now")" &&
-		rm -rf "$output_dir" &&
-		mkdir "$output_dir" ||
-		die "Could not make ./prerelease-now/\n"
-		output="--output='$output_dir'" ||
-		die "Directory "$output_dir"/ is inaccessible\n"
-
-		modes="installer portable mingit mingit-busybox"
-		force_version='%(prerelease-tag)'
-		force_tag=-f
-		upload=t
-		;;
-	--no-upload)
-		upload=
-		;;
-	--include-pdbs)
-		include_pdbs=--include-pdbs
-		;;
-	--include-sha256sums)
-		include_sha256sums=--include-sha256sums
-		;;
-	--no-include-sha256sums)
-		include_sha256sums=
-		;;
-	-*) die "Unknown option: %s\n" "$1";;
-	*) break;;
-	esac; do shift; done
-	test $# = 1 ||
-	die "Expected 1 argument, got $#: %s\n" "$*"
-
-	test -z "$include_sha256sums" || test -n "$upload" ||
-	die "%s\n" "--include-sha256sums makes only sense when uploading"
-
-	test -n "$modes" ||
-	modes=installer
-
-	if test -z "$only_64_bit"
-	then
-		ensure_valid_login_shell 32
-	fi &&
-	ensure_valid_login_shell 64 ||
-	die "Could not ensure valid login shell\n"
-
-	sdk="$sdk64"
-
-	portable_root=/usr/src/build-extra/portable/root/
-	rm -rf "$sdk$portable_root"/mingw64/libexec/git-core ||
-	die "Could not ensure that portable Git in '%s' is cleaned\n" "$sdk"
-	rm -rf "$sdk$portable_root"/clangarm64/libexec/git-core ||
-	die "Could not ensure that portable Git in '%s' is cleaned\n" "$sdk"
-	test -n "$only_64_bit" ||
-	rm -rf "$sdk32$portable_root"/mingw32/libexec/git-core ||
-	die "Could not ensure that portable Git in '%s' is cleaned\n" "$sdk32"
-
-	build_extra_dir="$sdk32/usr/src/build-extra"
-	test -n "$only_64_bit" ||
-	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_main_branch) ||
-	die "Could not update 32-bit build-extra\n"
-
-	build_extra_dir="$sdk64/usr/src/build-extra"
-	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_main_branch) ||
-	die "Could not update build-extra\n"
-
-	if test -n "$force_version"
-	then
-		while case "$force_version" in
-		*'%(use-existing-tag)'*)
-			tag_name="$(git for-each-ref --points-at="$1" \
-				--sort=-taggerdate \
-				--format='%(refname:strip=2)' 'refs/tags/*' |
-			    sed -ne '/\.g[0-9a-f]\{7,\}$/d' -e 'p;q')"
-			if test -z "$tag_name"
-			then
-				force_version="$(echo "$force_version" |
-					sed 's/%(use-existing-tag)//g')"
-			else
-				force_version="$tag_name"
-				break
-			fi
-			;;
-		*'%(infix:'*')'*)
-			tag_name="${force_version#*%(infix:}"
-			tag_name="${tag_name%%)*}"
-			match=windows
-			case "$tag_name" in
-			*=*)
-				match="${tag_name%%=*}"
-				tag_name="${tag_name#*=}"
-				;;
-			esac
-			desc="$(git describe --match "v[0-9]*.$match.*" \
-					--abbrev=7 "$1")"
-			while echo "$desc" |
-			grep '\.g[0-9a-f]\{7,\}\(\(\.[0-9]\+\)\?-[0-9]\+[-.]g[0-9a-f]\{7,\}\)\?$'
-			do
-				git tag -d "$desc" ||
-				git tag -d "${desc%-[0-9]*}" ||
-				die "Could not delete tag %s\n" "$desc"
-				desc="$(git describe --match \
-					"v[0-9]*.$match.*" --abbrev=7 "$1")"
-			done
-			tag_name="$(echo "$desc" |
-				sed -e "s|-\(g[0-9a-f]*\)$|.\1|g" -e \
-					"s|\.$match\.|.$tag_name.|g")"
-			force_version="$(echo "$force_version" |
-				sed "s|%(infix:[^)]*)|$tag_name|g")"
-			;;
-		*'%(base-version)'*)
-			tag_name="v$(git describe --match='v[0-9]*.windows.*' \
-				"$1" |
-			  sed -e 's/[A-Za-z]*//g' -e 's/[^.0-9]/./g' \
-			    -e 's/\.\.*/./g' \
-			    -e 's/^\([^.]*\.[^.]*\.[^.]*\.[^.]*\)\..*$/\1/')"
-			force_version="$(echo "$force_version" |
-				sed "s/%(base-version)/$tag_name/g")"
-			;;
-		*'%(counter)')
-			force_version="${force_version%?(counter)}"
-			tag_name=1
-			while git rev-parse --verify -q \
-				"$force_version$tag_name" >/dev/null
-			do
-				tag_name=$(($tag_name+1))
-			done
-			force_version="$force_version$tag_name"
-			;;
-		*'%(counter)'*)
-			die "%(counter) must be last\n"
-			;;
-		*'%(prerelease-tag)'*)
-			tag_name="$(git describe \
-				--match='v[1-9]*.windows.[1-9]*' "$1" |
-			sed -n 's|^\(v[.0-9]*\)\.windows\.[0-9].*|\1|p')"
-			test -n "$tag_name" ||
-			die "Could not describe '%s'\n" "$1"
-			tag_name="${tag_name%.*}.$((${tag_name##*.}+1))"
-			tag_name="$tag_name".windows-prerelease.1
-			while git rev-parse -q --verify "$tag_name"
-			do
-				tag_name="${tag_name%.*}.$((${tag_name##*.}+1))"
-			done
-			force_version="$(echo "$force_version" |
-				sed "s/%(prerelease-tag)/$tag_name/g")"
-			;;
-		*'%'*)
-			die "Unknown placeholder: '%s'\n" \
-				"$(echo "%${force_version#*%}" |
-					sed -e 's/).*/)/')"
-			;;
-		*)
-			break
-			;;
-
-		esac
-		do
-			: go on
-		done
-		echo "Using version $force_version" >&2
-		tag_name="$force_version"
-		pkgver="$(echo "${force_version#v}" | tr +- .)"
-
-		test -n "$pkgver" &&
-		test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
-		die "Unusable version '%s'\n" "$force_version"
-	else
-		pkgver="$(git describe --match 'v[0-9]*' "$1" | tr - .)"
-		tag_name=prerelease-$pkgver
-		test -n "$tag_name" ||
-		die "Could not find revision '%s'\n" "$1"
-
-		test -z "$(echo "$pkgver" | tr -d 'A-Za-z0-9.')" ||
-		die "The revision '%s' yields unusable version '%s'\n" \
-			"$1" "$pkgver"
-	fi
-
-	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
-	require_git_src_dir
-
-	if test -n "$upload"
-	then
-		needs_upload_permissions &&
-		(cd "$git_src_dir" &&
-		 require_remote git-for-windows \
-			https://github.com/git-for-windows/git &&
-		 require_push_url git-for-windows) ||
-		die "Need upload/push permissions\n"
-	fi
-
-	(cd "$git_src_dir/../.." &&
-	 sdk= pkgpath=$PWD ff_main_branch) ||
-	die "Could not update mingw-w64-git\n"
-
-	skip_makepkg=
-	force_makepkg=
-	pkgprefix="$git_src_dir/../../mingw-w64"
-	pkg_suffix="${pkgver#v}-1-any.pkg.tar.xz"
-	case "$modes" in
-	mingit|mingit-busybox|"mingit mingit-busybox"|"mingit-busybox mingit")
-		pkglist="git"
-		;;
-	*)
-		pkglist="git git-doc-html"
-		;;
-	esac
-	if test -n "$only_64_bit" -o \
-			-f "${pkgprefix}-i686-${pkglist##* }-${pkg_suffix}" &&
-		test -f "${pkgprefix}-x86_64-${pkglist##* }-${pkg_suffix}" &&
-		test "$(git rev-parse --verify "$1"^{commit})" = \
-			"$(git -C "$git_src_dir" rev-parse --verify \
-				"$tag_name"^{commit})"
-	then
-		echo "Skipping makepkg: already built packages" >&2
-		skip_makepkg=t
-	elif test -n "$force_tag"
-	then
-		test -n "$force_version" &&
-		test "$(git rev-parse -q --verify "$1"^{commit})" = \
-			"$(git rev-parse -q --verify \
-				"refs/tags/$tag_name"^{commit})" ||
-		git tag -f -a -m "Prerelease of $1" "$tag_name" "$1" ||
-		die "Could not create tag '%s'\n" "$tag_name"
-
-		git push --force "$(cygpath -au "$git_src_dir")" \
-			"refs/tags/$tag_name" ||
-		die "Could not push tag '%s' to '%s'\n" \
-			"$tag_name" "$git_src_dir"
-
-		force_makepkg=--force
-	else
-		! git rev-parse --verify -q "$tag_name" 2>/dev/null ||
-		die "Tag '%s' already exists\n" "$tag_name"
-
-		! git -C "$git_src_dir" rev-parse --verify -q "$tag_name" \
-			2>/dev/null ||
-		die "Tag '%s' already exists in '%s'\n" \
-			"$tag_name" "$git_src_dir"
-
-		git tag -a -m "Prerelease of $1" "$tag_name" "$1" ||
-		die "Could not create tag '%s'\n" "$tag_name"
-
-		git push "$(cygpath -au "$git_src_dir")" \
-			"refs/tags/$tag_name" ||
-		die "Could not push tag '%s' to '%s'\n" \
-			"$tag_name" "$git_src_dir"
-	fi
-
-	sed -e "s/^tag=.*/tag=${tag_name#v}/" \
-		-e "s/^\(source.*tag=\)[^\"]*/\\1$tag_name/" \
-		-e "s/^pkgver=.*/pkgver=${pkgver#v}/" \
-		-e "s/^pkgver *(/disabled_&/" \
-		-e "s/^pkgrel=.*/pkgrel=1/" \
-		<"$git_src_dir/../../PKGBUILD" |
-	case "$modes" in
-	mingit|mingit-busybox)
-		sed -e '/^pkgname=/{N;N;s/"[^"]*-doc[^"]*"//g}'
-		;;
-	*)
-		sed -e '/^pkgname=/{N;N;s/"[^"]*-doc-man[^"]*"//g}'
-		;;
-	esac >"$git_src_dir/../../prerelease-$pkgver.pkgbuild" ||
-	die "Could not generate prerelease-%s.pkgbuild\n" "$pkgver"
-
-	if test -z "$skip_makepkg"
-	then
-		test -n "$only_64_bit" ||
-		install_git_32bit_prereqs
-		test -n "$only_64_bit" ||
-		require mingw-w64-i686-toolchain mingw-w64-i686-make
-		require mingw-w64-x86_64-toolchain mingw-w64-x86_64-make
-		if test -z "$(git --git-dir="$sdk64/usr/src/build-extra/.git" \
-			config alias.signtool)"
-		then
-			extra=
-		else
-			extra="SIGNTOOL=\"git --git-dir=\\\"$sdk64/usr/src"
-			extra="$extra/build-extra/.git\\\" signtool\" "
-		fi
-		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			"cd \"$git_src_dir/../..\" &&"'
-			rm -f src/git/{git-wrapper.o,*.res} &&
-			MAKEFLAGS=-j5 \
-			MINGW_ARCH='"$(test -n "$only_64_bit" ||
-				echo mingw32)"'\ mingw64 \
-			'"$extra"' \
-			makepkg-mingw -s --noconfirm '"$force_tag"' \
-				'"$force_makepkg"' \
-				-p prerelease-'"$pkgver"'.pkgbuild &&
-			MINGW_ARCH=mingw64 makepkg-mingw --allsource \
-				-p prerelease-'"$pkgver".pkgbuild ||
-		die "%s: could not build '%s'\n" "$git_src_dir" "$pkgver"
-
-		pkg_suffix="$(sed -n '/^pkgver=/{N;
-			s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2-any.pkg.tar.xz/p}' \
-			<"$git_src_dir/../../prerelease-$pkgver.pkgbuild")" ||
-		die "Could not determine package suffix\n"
-	fi
-
-	for sdk in "$sdk32" "$sdk64"
-	do
-		test -z "$only_64_bit" ||
-		test a"$sdk" = a"$sdk64" ||
-		continue
-
-		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c '
-			cd "'"$git_src_dir"'/../.." &&
-			mach="$(uname -m)" &&
-			pkgpre=mingw-w64-$mach-git && {
-			'"$(test -z "'"$output_dir"'" || {
-			echo 'file=$pkgpre-pdb-"'"$pkg_suffix"'";
-				test ! -f "$file" ||
-				cp "$file" "'"$output_dir"'"/; } && {
-				file=$pkgpre-test-artifacts-"'"$pkg_suffix"'";
-				test ! -f "$file" ||
-				cp "$file" "'"$output_dir"'"/; }; '
-			src_suffix="${pkg_suffix%-any.pkg.tar.xz}.src.tar.gz"
-			test "a$sdk" != "a$sdk64" ||
-			echo 'file=mingw-w64-git-'"$src_suffix"';
-				test ! -f "$file" ||
-				cp "$file" "'"$output_dir"'"/;'
-			} )"'
-			precmd="pacman --overwrite=\* --noconfirm -U" &&
-			postcmd="pacman --overwrite=\* --noconfirm -U" &&
-			for pkg in '"$pkglist"'
-			do
-				pkg=mingw-w64-$mach-$pkg
-
-				file="$(pacman -Q $pkg)" || {
-					pacman -S --noconfirm $pkg &&
-					file="$(pacman -Q $pkg)" || {
-						echo "$pkg not installed" >&2
-						exit 1
-					}
-				}
-				file="/var/cache/pacman/pkg/$(echo $file |
-					tr \  -)-any.pkg.tar.xz"
-				test -f $file ||
-				cp "${file##*/}" "$file" ||
-				pacman -Sw --noconfirm "$(pacman -Q $pkg |
-						tr " " "=")" || {
-					echo "$file does not exist" >&2
-					exit 1
-				}
-				postcmd="$postcmd $file"
-
-				file=$pkg-'"$pkg_suffix"'
-				test -f $file || {
-					echo "$file was not built" >&2
-					exit 1
-				}
-				test -z "'"$output_dir"'" ||
-				cp "$file" "'"$output_dir"'/" || {
-					echo "$file not copied to output directory" >&2
-					exit 1
-				}
-				precmd="$precmd $file"
-			done || exit
-			eval "$precmd" &&
-			pacman -S --noconfirm git-extra &&
-			sed -i -e "1s/.*/# Pre-release '"$pkgver"'/" \
-				-e "2s/.*/Date: '"$(today)"'/" \
-				/usr/src/build-extra/ReleaseNotes.md &&
-			version='"$prerelease_prefix${pkgver#v}"' &&
-			for m in '"$modes"'
-			do
-				extra=
-				v="$version"
-				test installer != $m ||
-				extra=--window-title-version="$version"
-				test mingit-busybox != $m || {
-					extra="$extra --busybox"
-					v="$v-BusyBox"
-					m=mingit
-				}
-				/usr/src/build-extra/$m/release.sh \
-					'"$include_pdbs"' \
-					'"$output"' $extra "$v" || {
-					postcmd="$postcmd && exit 1"
-					break
-				}
-			done &&
-			(cd /usr/src/build-extra &&
-			 git diff -- ReleaseNotes.md | git apply -R) &&
-			eval "$postcmd" &&
-			pacman -S --noconfirm git-extra' ||
-		die "Could not use package '%s' in '%s'\n" "$pkglist" "$sdk"
-	done
-
-	case " $modes " in
-	*" portable "*)
-		version="$prerelease_prefix${pkgver#v}" &&
-		sign_files "$output_dir"/PortableGit-"$version"-64-bit.7z.exe &&
-		{ test -n "$only_64_bit" || sign_files \
-			"$output_dir"/PortableGit-"$version"-32-bit.7z.exe; } ||
-		die "Could not code-sign portable Git(s)\n"
-		;;
-	esac
-
-	test -z "$upload" || {
-		git -C "$git_src_dir" push git-for-windows "$tag_name" &&
-		publish_prerelease $include_sha256sums "$tag_name" "$output_dir"
-	} ||
-	die "Could not publish %s\n" "$tag_name"
-}
-
-require_commitcomment_credentials () {
-	test -n "$(git config github.commitcomment.credentials)" ||
-	die "Need credentials to publish commit comments\n"
-}
-
-add_commit_comment_on_github () { # <org/repo> <commit> <message>
-	credentials="$(git config github.commitcomment.credentials)"
-	test -n "$credentials" ||
-	die "Need credentials to publish commit comments\n"
-
-	quoted="$(echo "$3" |
-		sed -e ':1;${s/[\\"]/\\&/g;s/\n/\\n/g;s/\t/\\t/g;s/\x1b/<ESC>/g};N;b1')"
-	url="https://$credentials@api.github.com/repos/$1/commits/$2/comments"
-	curl -X POST --show-error -s -XPOST -d \
-		'{"body":"'"$quoted"'"}' "$url"
 }
 
 # <coverity-token>
@@ -1993,19 +1027,6 @@ tag_git () { # [--force]
 	echo "Created tag $next_version" >&2
 }
 
-test_git () { # <bitness>
-	sdk="$(eval "echo \$sdk$1")"
-
-	echo "Testing $1-bit $("$sdk/cmd/git.exe" version)"
-
-	(cd "$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git/" &&
-	 "$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-		"make GIT-CFLAGS && if test GIT-CFLAGS -nt git.res; then touch git.rc; fi && make -j5" &&
-	 cd t &&
-	 "$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
-		-c "cd \"\$(cygpath -au .)\" && GIT_TEST_INSTALLED=/mingw$1/bin/ prove --timer --jobs 5 ./t[0-9]*.sh")
-}
-
 version_from_pkgbuild () { # <PKGBUILD>
 	sed -ne \
 		'/^_base_\?ver=/{N;N;s/.*=\([0-9].*\)\n.*\npkgrel=\(.*\)/\1-\2/p}' \
@@ -2123,26 +1144,6 @@ pkg_install () {
 	fi
 }
 
-install () { # <package>
-	set_package "$1"
-
-	case "$package" in
-	msys2-runtime|bash)
-		is_independent_shell ||
-		die "Need to run from a different shell (try Git Bash)\n"
-		;;
-	esac
-
-	foreach_sdk pkg_install
-
-	test mingw-w64-git != "$package" || {
-		"$sdk32/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'pacman -S --noconfirm git-extra' &&
-		"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'pacman -S --noconfirm git-extra'
-	}
-}
-
 # origin HEAD
 really_push () {
 	if ! git push "$@"
@@ -2162,60 +1163,6 @@ really_push () {
 pacman_helper () {
 	"$sdk64/git-cmd.exe" --command=usr\\bin\\bash.exe -l \
 		"$sdk64/usr/src/build-extra/pacman-helper.sh" "$@"
-}
-
-pkg_upload () {
-	require_clean_worktree
-
-	files="$(pkg_files --for-upload)" || exit
-
-	pacman_helper add $files
-}
-
-main () { # <package>
-	test -n "$GPGKEY" ||
-	die "Need GPGKEY to upload packages\n"
-
-	set_package "$1"
-
-	test -s "$HOME"/.azure-blobs-token ||
-	die "Missing token in ~/.azure-blobs-token\n"
-
-	(cd "$sdk64$pkgpath" &&
-	 require_push_url origin) || exit
-
-	PACMAN_DB_LEASE="$(pacman_helper lock)" ||
-	die 'Could not obtain a lock for uploading\n'
-
-	pacman_helper fetch &&
-	foreach_sdk pkg_upload &&
-	PACMAN_DB_LEASE="$PACMAN_DB_LEASE" pacman_helper push ||
-	die "Could not upload %s\n" "$package"
-
-	pacman_helper unlock "$PACMAN_DB_LEASE" ||
-	die 'Could not release lock for uploading\n'
-	PACMAN_DB_LEASE=
-
-	# Here, we exploit the fact that the 64-bit SDK is either the only
-	# SDK where the package was built (MinGW) or it agrees with the 32-bit
-	# SDK's build product (MSYS2).
-	(cd "$sdk64$pkgpath" &&
-	 test -z "$(git rev-list refs/remotes/origin/main..)" ||
-	 if test refs/heads/main = \
-		"$(git rev-parse --symbolic-full-name HEAD)"
-	 then
-		really_push origin HEAD
-	 else
-		printf "The local branch '%s' in '%s' has unpushed changes\n" \
-			"$(git rev-parse --symbolic-full-name HEAD)" \
-			"$sdk64$pkgpath" >&2
-	 fi) ||
-	die "Could not push commits in %s/%s\n" "$sdk64" "$pkgpath"
-}
-
-updpkgsums () {
-	MINGW_ARCH=mingw64 \
-	"$sdk64"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c updpkgsums
 }
 
 maybe_init_repository () {
@@ -2247,19 +1194,6 @@ maybe_init_repository () {
 		die "Cannot initialize '%s'\n" "$1"
 		;;
 	esac
-}
-
-# <key-id>
-ensure_gpg_key () {
-	for sdk in "$sdk32" "$sdk64"
-	do
-		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			'gpg --list-key '"$1"' >/dev/null 2>&1 || {
-			 gpg --recv-keys '"$1"' &&
-			 gpg --lsign-key '"$1; }" ||
-		die "Could not ensure key '%s' to be installed into '%s'\n" \
-			"$1" "$sdk"
-	done
 }
 
 create_bundle_artifact () {
@@ -3628,25 +2562,9 @@ set_version_from_tag_name () {
 	esac
 }
 
-set_version_from_sdks_git () {
-	version="$("$sdk64/cmd/git.exe" version)"
-	version32="$("$sdk32/cmd/git.exe" version)"
-	test -n "$version" &&
-	test "a$version" = "a$version32" ||
-	die "Version mismatch in 32/64-bit: %s vs %s\n" "$version32" "$version"
-
-	version="${version#git version }"
-	set_version_from_tag_name "$version"
-}
-
 version_from_release_notes () {
 	sed -e '1s/^# Git for Windows v\(.*\) Release Notes$/\1/' -e 1q \
 		"$sdk64/usr/src/build-extra/ReleaseNotes.md"
-}
-
-previous_version_from_release_notes () {
-	sed -n "/^## Changes since/{s/## .* v\([^ ]*\) (.*/\1/p;q}" \
-		<"$sdk64"/usr/src/build-extra/ReleaseNotes.md
 }
 
 today () {
@@ -4027,164 +2945,6 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	done
 }
 
-release () { # [--directory=<artifacts-directory>] [--release-date=*]
-	artifactsdir=
-	release_date=
-	while case "$1" in
-	--directory=*)
-		artifactsdir="$(cygpath -am "${1#*=}")" || exit
-		test -d "$artifactsdir" ||
-		mkdir "$artifactsdir" ||
-		die "Could not create artifacts directory: %s\n" "$artifactsdir"
-		;;
-	--directory)
-		shift
-		artifactsdir="$(cygpath -am "$1")" || exit
-		test -d "$artifactsdir" ||
-		mkdir "$artifactsdir" ||
-		die "Could not create artifacts directory: %s\n" "$artifactsdir"
-		;;
-	--release-date=*)
-		release_date="$(echo "${1#*=}" | tr +_ ' ')"
-		;;
-	-*) die "Unknown option: %s\n" "$1";;
-	*) break;;
-	esac; do shift; done
-	test $# = 0 ||
-	die "Expected no argument, got $#: %s\n" "$*"
-
-	up_to_date /usr/src/build-extra ||
-	die "build-extra is not up-to-date\n"
-
-	set_version_from_sdks_git
-
-	# if built-ins are still original hard-links, reinstall git-extra
-	cmp "$sdk32"/mingw32/bin/git-receive-pack.exe \
-		"$sdk32"/mingw32/bin/git.exe 2>/dev/null &&
-	"$sdk32/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-		'pacman -S --noconfirm git-extra'
-	cmp "$sdk64"/mingw64/bin/git-receive-pack.exe \
-		"$sdk64"/mingw64/bin/git.exe 2>/dev/null &&
-	"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-		'pacman -S --noconfirm git-extra'
-
-	echo "Releasing Git for Windows $display_version" >&2
-
-	test "$display_version" = "$(version_from_release_notes)" ||
-	die "Incorrect version in the release notes\n"
-
-	test -n "$release_date" ||
-	release_date="$(today)"
-
-	test "Latest update: $release_date" = "$(sed -n 2p \
-		<"$sdk64/usr/src/build-extra/ReleaseNotes.md")" ||
-	die "Incorrect release date in the release notes\n"
-
-	for sdk in "$sdk32" "$sdk64"
-	do
-		for dir in installer portable archive mingit
-		do
-			"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-				"/usr/src/build-extra/$dir/release.sh '$ver'" ||
-			die "Could not make %s in %s\n" "$dir" "$sdk"
-		done
-		test "$sdk64" != "$sdk" ||
-		(cd "$sdk/usr/src/build-extra" &&
-		 cp installer/package-versions.txt \
-		    versions/package-versions-$ver.txt &&
-		 cp mingit/root/etc/package-versions.txt \
-		    versions/package-versions-$ver-MinGit.txt &&
-		 git add versions/package-versions-$ver.txt \
-			versions/package-versions-$ver-MinGit.txt &&
-		 git commit -s -m "versions: add v$ver" \
-			versions/package-versions-$ver.txt \
-			versions/package-versions-$ver-MinGit.txt &&
-		 if test -n "$artifactsdir"
-		 then
-			git -C "$sdk64/usr/src/build-extra" bundle create \
-				"$artifactsdir/build-extra.bundle" \
-				-9 main &&
-			cp versions/package-versions-$ver-MinGit.txt \
-				versions/package-versions-$ver.txt \
-				"$artifactsdir/"
-		 fi) ||
-		die "Could not add the package-versions for %s\n" "$ver"
-
-		"$sdk/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			"/usr/src/build-extra/mingit/release.sh \
-				--busybox '$ver-busybox'" ||
-		die "Could not make BusyBox-based MinGit in %s\n" "$sdk"
-	done
-
-	sign_files "$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
-		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe
-
-	"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-		"/usr/src/build-extra/nuget/release.sh '$ver'" &&
-	"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-		"/usr/src/build-extra/nuget/release.sh --mingit '$ver'" ||
-	die "Could not make NuGet packages\n"
-
-	if test -n "$artifactsdir"
-	then
-		(cd "$USERPROFILE" && cp \
-			Git-"$ver"-64-bit.exe \
-			Git-"$ver"-32-bit.exe \
-			"$artifactsdir/") &&
-		(cd "$HOME" && cp \
-			PortableGit-"$ver"-64-bit.7z.exe \
-			PortableGit-"$ver"-32-bit.7z.exe \
-			MinGit-"$ver"-64-bit.zip \
-			MinGit-"$ver"-32-bit.zip \
-			MinGit-"$ver"-busybox-64-bit.zip \
-			MinGit-"$ver"-busybox-32-bit.zip \
-			Git-"$ver"-64-bit.tar.bz2 \
-			Git-"$ver"-32-bit.tar.bz2 \
-			GitForWindows.$ver.nupkg \
-			Git-Windows-Minimal.$ver.nupkg \
-			"$artifactsdir/") ||
-		die "Could not copy artifacts to '%s'\n" "$artifactsdir"
-
-		(cd "$sdk64/usr/src/build-extra" &&
-		 bundle_pdbs --directory="$artifactsdir" \
-			installer/package-versions.txt) ||
-		die 'Could not generate .pdb bundles\n'
-	fi
-}
-
-virus_check () { #
-	set_version_from_sdks_git
-
-	grep -q '^machine api\.virustotal\.com$' "$HOME"/_netrc ||
-	die "Missing VirusTotal entries in ~/_netrc\n"
-
-	for file in \
-		"$HOME"/Git-"$ver"-64-bit.exe \
-		"$HOME"/Git-"$ver"-32-bit.exe \
-		"$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
-		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe
-	do
-		"$sdk64/usr/src/build-extra/send-to-virus-total.sh" \
-			"$file" || exit
-	done
-}
-
-require_3rdparty_directory () {
-	test -d "$sdk64/usr/src/git" || {
-		mkdir -p "$sdk64/usr/src/git" &&
-		git init "$sdk64/usr/src/git" &&
-		git -C "$sdk64/usr/src/git" remote add origin \
-			https://github.com/git-for-windows/git
-	} ||
-	die 'Could not initialize /usr/src/git in SDK-64\n'
-
-	test -d "$sdk64/usr/src/git/3rdparty" || {
-		mkdir "$sdk64/usr/src/git/3rdparty" &&
-		echo "/3rdparty/" >> "$sdk64/usr/src/git/.git/info/exclude"
-	} ||
-	die "Could not make /usr/src/3rdparty in SDK-64\n"
-}
-
 render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256>...]
 	test -d "$1" || mkdir "$1" || die "Could not create '%s'\n" "$1"
 	case "$2" in
@@ -4279,145 +3039,6 @@ render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256
 	echo "Announcement saved as $1/announcement-$ver" >&2
 }
 
-publish () { #
-	set_version_from_sdks_git
-
-	git_pkgver="$("$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-		'pacman -Q mingw-w64-x86_64-git | sed "s/.* //"')"
-
-	needs_upload_permissions || exit
-
-	grep -q '<apikeys>' "$HOME"/AppData/Roaming/NuGet/NuGet.Config ||
-	die "Need to call \`%s setApiKey Your-API-Key\`\n" \
-		"$sdk64/usr/src/build-extra/nuget/nuget.exe"
-
-	require_3rdparty_directory
-
-	www_directory="$sdk64/usr/src/git/3rdparty/git-for-windows.github.io"
-	if test ! -d "$www_directory"
-	then
-		git clone https://github.com/git-for-windows/${www_directory##*/} \
-			"$www_directory"
-	fi &&
-	(cd "$www_directory" &&
-	 sdk= pkgpath=$PWD ff_main_branch &&
-	 require_push_url &&
-	 if ! type node.exe
-	 then
-		sdk="$sdk64" require mingw-w64-x86_64-nodejs
-	 fi) ||
-	die "Could not prepare website clone for update\n"
-
-	(cd "$sdk64/usr/src/build-extra" &&
-	 require_push_url &&
-	 sdk= pkgpath=$PWD ff_main_branch) ||
-	die "Could not prepare build-extra for download-stats update\n"
-
-	test ! -x "$sdk64/mingw64/bin/node.exe" ||
-	"$sdk64/mingw64/bin/node.exe" -v || {
-		if test -f "$sdk64/mingw64/bin/libcares-3.dll" &&
-			test ! -f "$sdk64/mingw64/bin/libcares-2.dll"
-		then
-			ln "$sdk64/mingw64/bin/libcares-3.dll" \
-				"$sdk64/mingw64/bin/libcares-2.dll"
-		fi
-		"$sdk64/mingw64/bin/node.exe" -v
-	} ||
-	die "Could not execute node.exe\n"
-
-	echo "Preparing release message"
-	render_release_notes_and_mail "$HOME" "$version" \
-		$(cd "$HOME" && sha256sum.exe \
-			Git-"$ver"-64-bit.exe \
-			Git-"$ver"-32-bit.exe \
-			PortableGit-"$ver"-64-bit.7z.exe \
-			PortableGit-"$ver"-32-bit.7z.exe \
-			MinGit-"$ver"-64-bit.zip \
-			MinGit-"$ver"-32-bit.zip \
-			MinGit-"$ver"-busybox-64-bit.zip \
-			MinGit-"$ver"-busybox-32-bit.zip \
-			Git-"$ver"-64-bit.tar.bz2 \
-			Git-"$ver"-32-bit.tar.bz2 \
-			pdbs-for-git-64-bit-$git_pkgver.zip \
-			pdbs-for-git-32-bit-$git_pkgver.zip |
-		 sed -n 's/\([^ ]*\) \*\(.*\)/\1/p')
-	quoted="$(echo "$body" |
-		sed -e ':1;${s/[\\"]/\\&/g;s/\n/\\n/g};N;b1')"
-
-	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
-		--gentle --repo=git "v$version" \
-		"$HOME"/Git-"$ver"-64-bit.exe \
-		"$HOME"/Git-"$ver"-32-bit.exe \
-		"$HOME"/PortableGit-"$ver"-64-bit.7z.exe \
-		"$HOME"/PortableGit-"$ver"-32-bit.7z.exe \
-		"$HOME"/MinGit-"$ver"-64-bit.zip \
-		"$HOME"/MinGit-"$ver"-32-bit.zip \
-		"$HOME"/MinGit-"$ver"-busybox-64-bit.zip \
-		"$HOME"/MinGit-"$ver"-busybox-32-bit.zip \
-		"$HOME"/Git-"$ver"-64-bit.tar.bz2 \
-		"$HOME"/Git-"$ver"-32-bit.tar.bz2 \
-		"$HOME"/pdbs-for-git-64-bit-$git_pkgver.zip \
-		"$HOME"/pdbs-for-git-32-bit-$git_pkgver.zip ||
-	die "Could not upload files\n"
-
-	for nupkg in GitForWindows Git-Windows-Minimal
-	do
-		test "$nupkg $ver" != \
-			"$("$sdk64/usr/src/build-extra/nuget/nuget.exe" \
-				list "$nupkg")" ||
-		continue
-
-		count=0
-		while test $count -lt 5
-		do
-			"$sdk64/usr/src/build-extra/nuget/nuget.exe" \
-				push -NonInteractive -Verbosity detailed \
-				-Source https://www.nuget.org/api/v2/package \
-				-Timeout 3000 "$HOME"/$nupkg.$ver.nupkg && break
-			count=$(($count+1))
-		done
-		test $count -lt 5 ||
-		die "Could not upload %s\n" "$HOME"/$nupkg.$ver.nupkg
-	done
-
-	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git" &&
-	next_version=v"$version" &&
-	git -C "$git_src_dir" push git-for-windows "$next_version" ||
-	die "Could not push tag %s in %s\n" "$next_version" "$git_src_dir"
-
-	url=https://api.github.com/repos/git-for-windows/git/releases
-	id="$(curl --netrc -s $url |
-		sed -n '/^    "id":/{:1;N;/"tag_name": *"v'"$version"'"/{
-			s/^ *"id": *\([0-9]*\).*/\1/p;q};b1}')"
-	test -n "$id" ||
-	die "Could not determine ID of release for %s\n" "$version"
-
-	out="$(curl --netrc --show-error -s -XPATCH -d \
-		'{"name":"'"$name"'","body":"'"$quoted"'",
-		 "draft":false,"prerelease":false}' \
-		$url/$id)" ||
-	die "Could not edit release for %s:\n%s\n" "$version" "$out"
-
-	echo "Updating website..." >&2
-	(cd "$www_directory" &&
-	 PATH="$sdk64/mingw64/bin/:$PATH" node.exe bump-version.js --auto &&
-	 git commit -a -s -m "New Git for Windows version" &&
-	 really_push origin HEAD) ||
-	die "Could not update website\n"
-
-	echo "Updating download-stats.sh..." >&2
-	(cd "$sdk64/usr/src/build-extra" &&
-	 ./download-stats.sh --update &&
-	 git commit -s -m "download-stats: new Git for Windows version" \
-		./download-stats.sh &&
-	 really_push origin HEAD) ||
-	die "Could not update download-stats.sh\n"
-
-	test -z "$(git config alias.sendAnnouncementMail)" ||
-	git sendAnnouncementMail "$HOME/announce-$ver" ||
-	echo "error: could not send announcement" >&2
-}
-
 release_sdk () { # <version>
 	version="$1"
 	tag=git-sdk-"$version"
@@ -4470,11 +3091,12 @@ publish_sdk () { #
 	git --git-dir="$sdk64"/usr/src/build-extra/.git push origin "$tag"
 }
 
-create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitness=(32|64|auto)] [--force] <name>
+create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--architecture=(x86_64|i686|aarch64|auto)] [--bitness=(32|64)] [--force] <name>
 	git_sdk_path=/
 	output_path=
 	force=
-	bitness=auto
+	architecture=auto
+	bitness=
 	keep_worktree=
 	while case "$1" in
 	--out|-o)
@@ -4503,9 +3125,17 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		;;
 	--bitness=*|-b=*)
 		bitness="${1#*=}"
+		echo "WARNING: using --bitness or -b is deprecated. Please use --architecture instead."
 		;;
 	-b*)
 		bitness="${1#-?}"
+		echo "WARNING: using --bitness or -b is deprecated. Please use --architecture instead."
+		;;
+	--architecture=*|-a=*)
+		architecture="${1#*=}"
+		;;
+	-a*)
+		architecture="${1#-?}"
 		;;
 	--force|-f)
 		force=t
@@ -4525,9 +3155,55 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	test -n "$output_path" ||
 	output_path="$(cygpath -am "$1")"
 
-	case "$bitness" in
-	32|64|auto) ;; # okay
-	*) die "Unhandled bitness: %s\n" "$bitness";;
+	if test -n "$bitness"
+	then
+		case "$bitness" in
+		32)
+			architecture=i686
+			;;
+		64)
+			architecture=x86_64
+			;;
+		*) die "Unhandled bitness: %s\n" "$bitness";;
+		esac
+	elif test auto = "$architecture"
+	then
+		if git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:clangarm64 2>/dev/null
+		then
+			architecture=aarch64
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-msys 2>/dev/null
+		then
+			architecture=i686
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/x86_64-pc-msys 2>/dev/null
+		then
+			architecture=x86_64
+		else
+			die "'%s' is neither 32-bit nor 64-bit SDK?!?" "$git_sdk_path"
+		fi
+	elif test -z "$architecture"
+	then
+		die "Either --architecture or --bitness must be provided for this function to work."
+	fi
+
+	case "$architecture" in
+	x86_64)
+		MSYSTEM=MINGW64
+		PREFIX="/mingw64"
+		# TODO update to git-sdk-amd64 after the repo has been updated
+		SDK_REPO="git-sdk-64"
+		;;
+	i686)
+		MSYSTEM=MINGW32
+		PREFIX="/mingw32"
+		# TODO update to git-sdk-x86 after the repo has been updated
+		SDK_REPO="git-sdk-32"
+		;;
+	aarch64)
+		MSYSTEM=CLANGARM64
+		PREFIX="/clangarm64"
+		SDK_REPO="git-sdk-arm64"
+		;;
+	*) die "Unhandled architecture: %s\n" "$architecture";;
 	esac
 
 	mode=
@@ -4558,32 +3234,21 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		git_sdk_path="${git_sdk_path%/}/.git"
 		test true = "$(git -C "$git_sdk_path" rev-parse --is-inside-git-dir)" ||
 		die "Not a Git repository: '%s'\n" "$git_sdk_path"
-
-		test auto != "$bitness" ||
-		if git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-msys 2>/dev/null
-		then
-			bitness=32
-		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/x86_64-pc-msys 2>/dev/null
-		then
-			bitness=64
-		else
-			die "'%s' is neither 32-bit nor 64-bit SDK?!?" "$git_sdk_path"
-		fi
 	else
-		test auto != "$bitness" ||
-		die "No SDK found at '%s'; Please use \`--bitness=<n>\` to indicate which SDK to use" "$git_sdk_path"
+		test -z "$architecture" ||
+		die "No SDK found at '%s'; Please use \`--architecture=<a>\` to indicate which SDK to use" "$git_sdk_path"
 
 		test "z$git_sdk_path" != "z${git_sdk_path%.git}" ||
 		git_sdk_path="$git_sdk_path.git"
-		git clone --depth 1 --bare https://github.com/git-for-windows/git-sdk-$bitness "$git_sdk_path"
+		git clone --depth 1 --bare https://github.com/git-for-windows/$SDK_REPO "$git_sdk_path"
 	fi
 
 	test full-sdk != "$mode" || {
 		mkdir -p "$output_path" &&
 		git -C "$git_sdk_path" archive --format=tar HEAD -- ':(exclude)ssl' |
-		xz -9 >"$output_path"/git-sdk-$bitness.tar.xz &&
-		echo "git-sdk-$bitness.tar.xz written to '$output_path'" >&2 ||
-		die "Could not write git-sdk-$bitness.tar.xz to '%s'\n" "$output_path"
+		xz -9 >"$output_path"/$SDK_REPO.tar.xz &&
+		echo "$SDK_REPO.tar.xz written to '$output_path'" >&2 ||
+		die "Could not write $SDK_REPO.tar.xz to '%s'\n" "$output_path"
 		return 0
 	}
 
@@ -4640,36 +3305,48 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		EOF
 		git -C "$output_path" checkout -- &&
 		mkdir -p "$output_path/tmp" &&
-		printf 'export MSYSTEM=MINGW%s\nexport PATH=/mingw%s/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' "$bitness" "$bitness" >"$output_path/etc/profile" &&
-		mkdir -p "$output_path/mingw$bitness/bin" &&
-		case $bitness in
-		32)
-			BITNESS=32 ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
+		printf 'export MSYSTEM=%s\nexport PATH=%s/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' "$MSYSTEM" "$PREFIX" >"$output_path/etc/profile" &&
+		mkdir -p "${output_path}${PREFIX}/bin" &&
+		case $architecture in
+		i686)
+			# copy git.exe, for the libssp test
+			git -C "$output_path" show HEAD:mingw32/bin/git.exe \
+				>"$output_path/mingw32/bin/git.exe" &&
+			ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -lx \
 			"${this_script_path%/*}/make-file-list.sh" |
 			# escape the `[` in `[.exe`
 			sed -e 's|[][]|\\&|g' >>"$sparse_checkout_file" &&
-			cat <<-EOF >>"$sparse_checkout_file"
+			if git -C "$git_sdk_path" rev-parse -q --verify HEAD:.sparse/makepkg-git >/dev/null
+			then
+				printf '\n' >>"$sparse_checkout_file" &&
+				git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file"
+			else
+				cat <<-EOF >>"$sparse_checkout_file"
 
-			# For code-signing
-			/mingw32/bin/osslsigncode.exe
-			/mingw32/bin/libgsf-[0-9]*.dll
-			/mingw32/bin/libglib-[0-9]*.dll
-			/mingw32/bin/libgobject-[0-9]*.dll
-			/mingw32/bin/libgio-[0-9]*.dll
-			/mingw32/bin/libxml2-[0-9]*.dll
-			/mingw32/bin/libgmodule-[0-9]*.dll
-			/mingw32/bin/libzstd*.dll
-			/mingw32/bin/libffi-[0-9]*.dll
-			EOF
+				# For code-signing
+				/mingw32/bin/osslsigncode.exe
+				/mingw32/bin/libgsf-[0-9]*.dll
+				/mingw32/bin/libglib-[0-9]*.dll
+				/mingw32/bin/libgobject-[0-9]*.dll
+				/mingw32/bin/libgio-[0-9]*.dll
+				/mingw32/bin/libxml2-[0-9]*.dll
+				/mingw32/bin/libgmodule-[0-9]*.dll
+				/mingw32/bin/libzstd*.dll
+				/mingw32/bin/libffi-[0-9]*.dll
+				EOF
+			fi
 			;;
 		*)
 			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
-			printf '\n' >>"$sparse_checkout_file" &&
-			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file" &&
+			if test x86_64 = $architecture
+			then
+				printf '\n' >>"$sparse_checkout_file" &&
+				git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file"
+			fi &&
 			printf '\n# markdown, to render the release notes\n/usr/bin/markdown\n\n' >>"$sparse_checkout_file" &&
-			BITNESS=64 ARCH=x86_64 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
+			ARCH=$architecture "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
 			"${this_script_path%/*}/make-file-list.sh" | sed -e 's|[][]|\\&|g' -e 's|^|/|' >>"$sparse_checkout_file"
 			;;
 		esac &&
@@ -4682,10 +3359,10 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		/usr/bin/msys-stdc++-*.dll
 
 		# WinToast
-		/mingw$bitness/bin/wintoast.exe
+		$PREFIX/bin/wintoast.exe
 
 		# BusyBox
-		/mingw$bitness/bin/busybox.exe
+		$PREFIX/bin/busybox.exe
 		EOF
 		mkdir -p "$output_path/.sparse" &&
 		cp "$sparse_checkout_file" "$output_path/.sparse/build-installers"
@@ -4696,8 +3373,11 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 		then
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/$mode >>"$sparse_checkout_file" &&
-			printf '\n' >>"$sparse_checkout_file" &&
-			git -C "$git_sdk_path" show HEAD:.sparse/$mode-i686 >>"$sparse_checkout_file"
+			if test x86_64 = $architecture
+			then
+				printf '\n' >>"$sparse_checkout_file" &&
+				git -C "$git_sdk_path" show HEAD:.sparse/$mode-i686 >>"$sparse_checkout_file"
+			fi
 		fi
 		;;
 	esac &&
@@ -4706,7 +3386,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	then
 		if test minimal-sdk = $mode
 		then
-			printf 'export MSYSTEM=MINGW64\nexport PATH=/mingw64/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' >"$output_path/etc/profile"
+			printf 'export MSYSTEM=%s\nexport PATH=%s/bin:/usr/bin/:/usr/bin/core_perl:/c/WINDOWS/system32:/c/WINDOWS:/c/WINDOWS/System32/Wbem\n' "$MSYSTEM" "$PREFIX" >"$output_path/etc/profile"
 		elif test makepkg-git = $mode
 		then
 			cat >"$output_path/etc/profile" <<-\EOF
@@ -4723,6 +3403,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 			if test MSYS = "$MSYSTEM"
 			then
 					PATH=/usr/bin:/usr/bin/core_perl:$SYSTEMROOT_MSYS/system32:$SYSTEMROOT_MSYS
+			elif test CLANGARM64 = "$MSYSTEM"
+			then
+					PATH=/clangarm64/bin:/usr/bin:/usr/bin/core_perl:$SYSTEMROOT_MSYS/system32:$SYSTEMROOT_MSYS
 			elif test MINGW32 = "$MSYSTEM"
 			then
 					PATH=/mingw32/bin:/mingw64/bin:/usr/bin:/usr/bin/core_perl:$SYSTEMROOT_MSYS/system32:$SYSTEMROOT_MSYS
@@ -4744,7 +3427,8 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--bitnes
 	fi &&
 	if test makepkg-git = $mode && test ! -x "$output_path/usr/bin/git"
 	then
-		printf '#!/bin/sh\n\nexec /mingw64/bin/git.exe "$@"\n' >"$output_path/usr/bin/git"
+		printf '#!/bin/sh\n\nexec %s/bin/git.exe "$@"\n' \
+			"/mingw$bitness" >"$output_path/usr/bin/git"
 	fi &&
 	if test makepkg-git = $mode && ! grep -q http://docbook.sourceforge.net/release/xsl-ns/current "$output_path/etc/xml/catalog"
 	then
@@ -4775,18 +3459,22 @@ find_mspdb_dll () { #
 	return 1
 }
 
-build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifacts] [--skip-doc-man] [--skip-doc-html] [--force] [<revision>]
+build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--skip-test-artifacts] [--skip-doc-man] [--skip-doc-html] [--force] [<revision>]
 	output_path=
 	sed_makepkg_e=
 	force=
 	src_pkg=
 	while case "$1" in
-	--only-32-bit)
+	--only-i686|--only-32-bit)
 		MINGW_ARCH=mingw32
 		export MINGW_ARCH
 		;;
-	--only-64-bit)
+	--only-x86_64|--only-64-bit)
 		MINGW_ARCH=mingw64
+		export MINGW_ARCH
+		;;
+	--only-aarch64)
+		MINGW_ARCH=clangarm64
 		export MINGW_ARCH
 		;;
 	--skip-test-artifacts)
@@ -4866,6 +3554,7 @@ build_mingw_w64_git () { # [--only-32-bit] [--only-64-bit] [--skip-test-artifact
 
 	test true = "$GITHUB_ACTIONS" || # GitHub Actions' agents have the mspdb.dll, and cv2pdb finds it
 	test -n "$SYSTEM_COLLECTIONURI$SYSTEM_TASKDEFINITIONSURI" || # Same for Azure Pipelines
+	test "$MINGW_ARCH" = "clangarm64" || # We don't need cv2pdb when compiling using Clang/LLVM
 	find_mspdb_dll >/dev/null || {
 		WITHOUT_PDBS=1
 		export WITHOUT_PDBS
@@ -4967,7 +3656,7 @@ make_installers_from_mingw_w64_git () { # [--pkg=<package>[,<package>...]] [--ve
 
 	test -z "$install_package" || {
 		eval pacman -U --noconfirm --overwrite=\\\* $install_package &&
-		(. /var/lib/pacman/local/git-extra-*/install && post_install)
+		(. /var/lib/pacman/local/*-git-extra-*/install && post_install)
 	} ||
 	die "Could not install packages: %s\n" "$install_package"
 

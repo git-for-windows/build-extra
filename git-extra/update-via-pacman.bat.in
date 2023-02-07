@@ -85,9 +85,9 @@
 @IF ERRORLEVEL 1 GOTO DIE
 
 :FINISH
-@ECHO Wrapping up: re-install git-extra
-@pacman -S --noconfirm git-extra
-@ECHO End of re-install of git-extra
+@ECHO Wrapping up: re-install @@GIT_EXTRA_PACKAGE_NAME@@
+@pacman -S --noconfirm @@GIT_EXTRA_PACKAGE_NAME@@
+@ECHO End of re-install of @@GIT_EXTRA_PACKAGE_NAME@@
 @ECHO ==
 @IF ERRORLEVEL 1 GOTO DIE
 
