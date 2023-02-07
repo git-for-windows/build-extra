@@ -9,8 +9,19 @@
 # using secret variables, of course).
 
 case "$1" in
+--status-fd=*)
+	status_fd="$1"
+	arg1="$2"
+	;;
+*)
+	status_fd=
+	arg1="$1"
+	;;
+esac
+
+case "$arg1" in
 -bsau)
-	eval gpg --batch --yes --no-tty --pinentry-mode loopback -bsau $GPGKEY
+	eval gpg --batch --yes --no-tty --pinentry-mode loopback $status_fd -bsau $GPGKEY
 	;;
 --detach-sign)
 	case "$*" in
