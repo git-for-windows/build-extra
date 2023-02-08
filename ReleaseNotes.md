@@ -48,6 +48,7 @@ As announced previously, Git for Windows will drop support for Windows 7 and for
 
 * In the olden Git days, there were "dashed" Git commands (e.g. `git-commit` instead of `git commit`). These haven't been supported for interactive use in a really, really long time. But they still worked in Git aliases and hooks ("scripts"). Since Git v1.5.4 (released on February 2nd, 2008), it was discouraged/deprecated to use dashed Git commands even in scripts. As of this version, Git for Windows [no longer supports these dashed commands](https://github.com/git-for-windows/git/pull/4252).
 * Comes with [tig v2.5.8](https://github.com/jonas/tig/releases/tag/tig-2.5.8).
+* Comes with [Bash v5.2 patchlevel 15](https://tiswww.case.edu/php/chet/bash/NEWS).
 
 ### Bug Fixes
 
