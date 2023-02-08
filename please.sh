@@ -2848,14 +2848,17 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	artifactsdir="$(cygpath -am "$HOME")" || exit
 
 	test -n "$architectures" ||
-	architectures="i686 x86_64"
+	architectures="i686 x86_64 aarch64"
 
 	versions="$(case $# in 0) pacman -Q;; 1) cat "$1";; esac |
-		sed 's/^\(mingw-w64\)\(-[^-]*\)/\1/' | sort | uniq)"
+		sed 's/^\(mingw-w64\)\(-clang-[^-]*\|-[^-]*\)/\1/' | sort | uniq)"
 	test -n "$versions" ||
 	die 'Could not obtain package versions\n'
 
 	git_version="$(echo "$versions" | sed -n 's/^mingw-w64-git //p')"
+
+	test -n "$git_version" ||
+		die "Could not determine Git version"
 
 	dir="${this_script_path:+$(cygpath -au \
 		"${this_script_path%/*}")/}"cached-source-packages
@@ -2868,15 +2871,28 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 
 	for arch in $architectures
 	do
-		test i686 = $arch &&
-		bitness=32-bit ||
-		bitness=64-bit
+		echo "Unpacking .pdb files for $arch..." >&2
 
-		echo "Unpacking .pdb files for $bitness..." >&2
-
-		test x86_64 = $arch &&
-		oarch=x86-64 ||
-		oarch=$arch
+		case $arch in
+			x86_64)
+				oarch=x86-64
+				pacman_arch=x86_64
+				artifact_suffix=64-bit
+				;;
+			i686)
+				oarch=i686
+				pacman_arch=i686
+				artifact_suffix=32-bit
+				;;
+			aarch64)
+				oarch=aarch64
+				pacman_arch=clang-aarch64
+				artifact_suffix=arm64
+				;;
+			*)
+				die "Unhandled architecture: $arch"
+				;;
+		esac
 
 		test -z "$artifactsdir" ||
 		test ! -d $unpack ||
@@ -2891,8 +2907,8 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 			version=$(echo "$versions" | sed -n "s/^$name //p")
 			case "$package" in
 			mingw-w64-*)
-				tar=mingw-w64-$arch-${package#mingw-w64-}-$version-any.pkg.tar.xz
-				dir2="$sdk64/usr/src/MINGW-packages/$name"
+				tar=mingw-w64-$pacman_arch-${package#mingw-w64-}-$version-any.pkg.tar.xz
+				dir2="/usr/src/MINGW-packages/$name"
 				;;
 			*)
 				tar=$package-$version-$arch.pkg.tar.xz
@@ -2928,17 +2944,17 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 			fi
 
 			(cd "$unpack" &&
-			 "$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+			 "/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 				"tar --wildcards -xf \"$dir/$tar\" \\*.pdb") ||
 			die 'Could not unpack .pdb files from %s\n' "$tar"
 		done
 
 		test -n "$artifactsdir" || continue
 
-		zip=pdbs-for-git-$bitness-$git_version.zip &&
-		echo "Bundling .pdb files for $bitness..." >&2
+		zip=pdbs-for-git-$artifact_suffix-$git_version.zip &&
+		echo "Bundling .pdb files for $artifact_suffix..." >&2
 		(cd "$unpack" &&
-		 "$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
+		 "/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
 			"7za a -mx9 \"$artifactsdir/$zip\" *") &&
 		echo "Created $artifactsdir/$zip" >&2 ||
 		die 'Could not create %s for %s\n' "$zip" "$arch"
