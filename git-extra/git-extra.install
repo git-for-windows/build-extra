@@ -120,8 +120,8 @@ GITATTRIBUTES
 	grep -q "$otherpacman" etc/pacman.conf ||
 	sed -i -e '/^\[mingw32\]/i['$otherpacman']\nServer = https://wingit.blob.core.windows.net/'$otherarch'\n' etc/pacman.conf
 
-	test ! -d /clangarm64 ||
-	grep -q "git-for-windows-aarch64" etc/pacman.conf ||
+	test -z "$(find /clangarm64 -type f -print -quit) || # if /clangarm64 exists and contains at least one file
+	grep -q "git-for-windows-aarch64" etc/pacman.conf || # then add Git for Windows' aarch64 repository (unless it's already added)
 	sed -i -e '/^\[clangarm64]/i[git-for-windows-aarch64]\nServer = https://wingit.blob.core.windows.net/aarch64\n' etc/pacman.conf
 
 	! grep -q 'https://dl.bintray.com/\$repo/pacman/\$arch' etc/pacman.conf ||
