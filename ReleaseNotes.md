@@ -50,6 +50,7 @@ As announced previously, Git for Windows will drop support for Windows 7 and for
 * Comes with [tig v2.5.8](https://github.com/jonas/tig/releases/tag/tig-2.5.8).
 * Comes with [Bash v5.2 patchlevel 15](https://tiswww.case.edu/php/chet/bash/NEWS).
 * Comes with [OpenSSL v1.1.1t](https://github.com/openssl/openssl/releases/tag/OpenSSL_1_1_1t).
+* Comes with [GNU TLS v3.8.0](https://lists.gnupg.org/pipermail/gnutls-help/2023-February/004816.html).
 
 ### Bug Fixes
 
