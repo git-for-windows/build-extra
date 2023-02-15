@@ -21,16 +21,22 @@
 
 <div class="bluehead"><span class="head1">Inno Setup 6</span><br /><span class="head2">Revision History</span></div>
 
-<p>Copyright &copy; 1997-2022 <a href="https://jrsoftware.org/">Jordan Russell</a>. All rights reserved.<br />
-Portions Copyright &copy; 2000-2022 Martijn Laan. All rights reserved.<br />
+<p>Copyright &copy; 1997-2023 <a href="https://jrsoftware.org/">Jordan Russell</a>. All rights reserved.<br />
+Portions Copyright &copy; 2000-2023 Martijn Laan. All rights reserved.<br />
 For conditions of distribution and use, see <a href="https://jrsoftware.org/files/is/license.txt">LICENSE.TXT</a>.
 </p>
 
 <p><b>Want to be notified by e-mail of new Inno Setup releases?</b> <a href="https://jrsoftware.org/ismail.php">Subscribe</a> to the Inno Setup Mailing List!</p>
 
-<p><a name="6.2.2"></a><span class="ver">6.2.2 </span><span class="date">(?)</span></p>
+<p><a name="6.2.2"></a><span class="ver">6.2.2 </span><span class="date">(2023-02-15)</span></p>
 <ul>
-    <li>Added official Hungarian translation.</li>
+  <li>Changes to further help protect against potential DLL preloading attacks, contributed by Johannes Schindelin from the Git for Windows team.</li>
+  <li>Pascal Scripting changes: Improved support for downloads using basic authentication, contributed by Christian Beck.
+  <ul>
+    <li>Added new <tt>AddEx</tt> function to the <tt>TDownloadWizardPage</tt> support class.</li>
+    <li>Added new <tt>SetDownloadCredentials</tt> support function.</li>
+  </ul>
+  <li>Added official Hungarian translation.</li>
 </ul>
 
 <p><a name="6.2.1"></a><span class="ver">6.2.1 </span><span class="date">(2022-04-14)</span></p>
