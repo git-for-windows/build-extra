@@ -51,6 +51,7 @@ As announced previously, Git for Windows will drop support for Windows 7 and for
 * Comes with [Bash v5.2 patchlevel 15](https://tiswww.case.edu/php/chet/bash/NEWS).
 * Comes with [OpenSSL v1.1.1t](https://github.com/openssl/openssl/releases/tag/OpenSSL_1_1_1t).
 * Comes with [GNU TLS v3.8.0](https://lists.gnupg.org/pipermail/gnutls-help/2023-February/004816.html).
+* Comes with [cURL v7.88.0](https://github.com/curl/curl/releases/tag/curl-7_88_0).
 
 ### Bug Fixes
 
