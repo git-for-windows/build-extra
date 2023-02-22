@@ -58,6 +58,7 @@ Also following the footsteps of the MSYS2 and Cygwin projects on which Git for W
 ### Bug Fixes
 
 * Some commands mishandled absolute paths near the drive root (e.g. [`scalar unregister C:/foo`](https://github.com/git-for-windows/git/issues/4200)), which has been [fixed](https://github.com/git-for-windows/git/pull/4253).
+* When trying to call Cygwin (or for that matter, MSYS2) programs from Git Bash, users would frequently be greeted with [cryptic error messages about a "cygheap"](https://github.com/git-for-windows/git/issues/4255) or even just an even more puzzling exit code 127. Many of these calls [now](https://github.com/git-for-windows/msys2-runtime/pull/48) [succeed](https://github.com/git-for-windows/msys2-runtime/pull/49), allowing basic interactions. While it is still not possible for, say, Cygwin's `vim.exe` to interact with the Git Bash's terminal window, it _is_ now possible for Cygwin's `zstd.exe` in conjuction with Git for Windows' `tar.exe` to handle `.tar.zst` archives. 
 
 ## Changes since Git for Windows v2.39.1 (January 17th 2023)
 
