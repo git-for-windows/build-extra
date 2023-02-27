@@ -75,8 +75,15 @@ const wrap = (text, columns) => text
 
 const main = async () => {
   let doCommit = false
-  if (process.argv.length > 4 && process.argv[2] === '--commit') {
-    doCommit = true
+  let mayBeAlreadyThere = false
+  while (process.argv.length > 2 && process.argv[2].startsWith('--')) {
+    if (process.argv[2] === '--commit') {
+     doCommit = true
+    } else if (process.argv[2] == '--may-be-already-there') {
+      mayBeAlreadyThere = true
+    } else {
+      throw new Error(`Unhandled argument '${process.argv[2]}`)
+    }
     process.argv.splice(2, 1)
   }
 
@@ -87,6 +94,15 @@ const main = async () => {
   addReleaseNote(type, message)
 
   if (doCommit) {
+      if (mayBeAlreadyThere) {
+        try {
+          execFileSync('git', ['--no-pager', 'diff', '--exit-code', '--', 'ReleaseNotes.md'])
+          return // no differences, exit
+        } catch (e) {
+          // There were differences, commit them
+        }
+      }
+
       const subject = `Add a release note${type !== 'blurb' ? ` (${type})` : ''}`
       const body = wrap(message, 72)
       console.log(execFileSync('git', [
