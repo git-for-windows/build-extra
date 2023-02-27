@@ -2588,9 +2588,6 @@ mention () { # [--may-be-already-there] <what, e.g. bug-fix, new-feature> <relea
 
 	quoted="* $(echo "$*" | sed "s/[\\\/\"'&]/\\\\&/g")"
 
-	if test ! -d "$sdk32$pkgpath"; then
-		(cd "$sdk64$pkgpath" && require_clean_worktree)
-	fi ||
 	up_to_date /usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
@@ -2650,11 +2647,6 @@ mention () { # [--may-be-already-there] <what, e.g. bug-fix, new-feature> <relea
 	 git commit -s -m "Mention $what_singular in release notes" \
 		-m "$(echo "$*" | fmt -72)" ReleaseNotes.md) ||
 	die "Could not commit release note edits\n"
-
-	test ! -d "$sdk32"/usr/src/build-extra ||
-	(cd "$sdk32"/usr/src/build-extra &&
-	 git pull --ff-only "$sdk64"/usr/src/build-extra main) ||
-	die "Could not synchronize release note edits to 32-bit SDK\n"
 }
 
 finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
