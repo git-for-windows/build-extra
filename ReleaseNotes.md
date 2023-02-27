@@ -55,6 +55,7 @@ Also following the footsteps of the MSYS2 and Cygwin projects on which Git for W
 * Comes with [GNU TLS v3.8.0](https://lists.gnupg.org/pipermail/gnutls-help/2023-February/004816.html).
 * Comes with [cURL v7.88.1](https://github.com/curl/curl/releases/tag/curl-7_88_1).
 * Comes with [libfido2 v1.13.0](https://github.com/Yubico/libfido2/releases/tag/1.13.0).
+* Comes with [Git Credential Manager v2.0.931](https://github.com/GitCredentialManager/git-credential-manager/releases/tag/v2.0.931).
 
 ### Bug Fixes
 
