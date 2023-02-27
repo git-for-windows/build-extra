@@ -2574,79 +2574,10 @@ today () {
 }
 
 mention () { # [--may-be-already-there] <what, e.g. bug-fix, new-feature> <release-notes-item>
-	may_be_already_there=
-	test --may-be-already-there != "$1" || {
-		may_be_already_there=t
-		shift
-	}
-	case "$1" in
-	bug|bugfix|bug-fix) what="Bug Fixes";;
-	new|feature|new-feature) what="New Features";;
-	*) die "Don't know how to mention %s\n" "$1";;
-	esac
-	shift
-
-	quoted="* $(echo "$*" | sed "s/[\\\/\"'&]/\\\\&/g")"
-
 	up_to_date /usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
-	release_notes="$sdk64"/usr/src/build-extra/ReleaseNotes.md
-	latest="$(version_from_release_notes)"
-	if test "$latest" != "$(previous_version_from_release_notes)"
-	then
-		# insert whole "Changes since" section
-		date="$(sed -n -e '2s/Latest update: //p' -e 2q \
-			<"$release_notes")"
-		quoted="v$latest ($date)\\n\\n### $what\\n\\n$quoted"
-		quoted="## Changes since Git for Windows $quoted"
-		sed -i -e "/^## Changes since/{s/^/$quoted\n\n/;:1;n;b1}" \
-			"$release_notes"
-	else
-		search=$(echo "$quoted" | sed -r -e 's#.*Comes with \[(.* v|patch level).*#\1#' -e 's#[][]#\\&#g')
-		sed -i -e '/^## Changes since/{
-			:1;n;
-			/^### '"$what"'/b3;
-			/^### Bug Fixes/b2;
-			/^## Changes since/b2;
-			b1;
-
-			:2;s/^/### '"$what"'\n\n'"$quoted"'\n\n/;b7;
-
-			:3;/^\*/b4;n;b3;
-
-			:4;/'"$search"'/b5;n;b6;:5;N;s/^.*\n//;:6;/^\*/b4;
-
-			s/^/'"$quoted"'\n/;
-
-			:7;n;b7}' "$release_notes"
-	fi ||
-	die "Could not edit release notes\n"
-
-	# make sure that the Git version is always reported first
-	case "$*" in
-	'Comes with [Git v'*)
-		sed -i -ne '/^### New Features/{
-			p;n;
-			/^$/{p;n};
-			:1;
-			/^\* Comes with \[Git v/{G;:2;p;n;b2};
-			x;/./{G;x};n;b1;
-			}' -e p "$release_notes"
-		;;
-	esac
-
-	test -z "$may_be_already_there" ||
-	! git -C "$sdk64"/usr/src/build-extra --no-pager \
-		diff --exit-code --quiet HEAD ||
-	return 0 # already added; nothing to be done anymore
-
-	(cd "$sdk64"/usr/src/build-extra &&
-	 what_singular="$(echo "$what" |
-		 sed -e 's/Fixes/Fix/' -e 's/Features/Feature/')" &&
-	 git commit -s -m "Mention $what_singular in release notes" \
-		-m "$(echo "$*" | fmt -72)" ReleaseNotes.md) ||
-	die "Could not commit release note edits\n"
+	node ./add-release-note.js --commit "$@"
 }
 
 finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
