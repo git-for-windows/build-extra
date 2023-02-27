@@ -578,7 +578,7 @@ up_to_date () {
 	# test that repos at <path> are up-to-date in both 64-bit and 32-bit
 	pkgpath="$1"
 
-	sdk= require_clean_worktree
+	(cd "$pkgpath" && sdk= && require_clean_worktree)
 
 	commit32="$(cd "$sdk32$pkgpath" && git rev-parse --verify HEAD)" &&
 	commit64="$(cd "$sdk64$pkgpath" && git rev-parse --verify HEAD)" ||
@@ -2527,7 +2527,7 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 	if { test -z "$only_mingw" || test MINGW = $type; } && test -z "$skip_build"
 	then
 		build $force $cleanbuild "$package" &&
-		sdk= pkg_copy_artifacts &&
+		(cd "$pkgpath" && sdk= && pkg_copy_artifacts) &&
 		install "$package" &&
 		if test -z "$skip_upload"; then upload "$package"; fi
 	fi &&
