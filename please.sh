@@ -2676,7 +2676,6 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 	up_to_date /usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
-	update git &&
 	git_src_dir="$sdk64$pkgpath"/src/git &&
 	require_git_src_dir &&
 	(cd "$git_src_dir"/.git &&
