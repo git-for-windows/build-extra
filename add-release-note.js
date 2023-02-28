@@ -69,7 +69,7 @@ const addReleaseNote = (type, message) => {
 }
 
 const wrap = (text, columns) => text
-  .split(new RegExp(`(.{0,${columns}}|\\S{${columns + 1},})(\\s+)`))
+  .split(new RegExp(`(.{0,${columns}}|\\S{${columns + 1},})(?:\\s+|$)`))
   .filter((_, i) => (i % 2) === 1)
   .join('\n')
 
