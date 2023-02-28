@@ -2577,7 +2577,7 @@ mention () { # [--may-be-already-there] <what, e.g. bug-fix, new-feature> <relea
 	up_to_date /usr/src/build-extra ||
 	die "build-extra is not up-to-date\n"
 
-	node ./add-release-note.js --commit "$@"
+	(cd /usr/src/build-extra && node ./add-release-note.js --commit "$@")
 }
 
 finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
