@@ -3508,8 +3508,14 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag &&
 	 if test -n "$src_pkg"
 	 then
-		git -C git repack -adf &&
-		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_ARCH=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.$tag
+		git --git-dir src/git/.git archive --prefix git/ -o git-$tag.tar.gz $tag &&
+		pkgver="$(bash -c ". ./PKGBUILD.$tag  && pkgver")" &&
+		oid="$(git --git-dir src/git/.git rev-parse $tag^0)" &&
+		sed -e 's/^pkgver=.*/pkgver='$pkgver'/' \
+		    -e 's/^source.*git+https.*/source=("git-'$tag'.tar.gz"/' \
+		    -e '/^prepare /{N;s/$/&& sed -i s\/GIT_BUILT_FROM_COMMIT\/\\\"'$oid'\\\"\/ version.c \&\&/}' \
+			<PKGBUILD.$tag >PKGBUILD.src &&
+		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_ARCH=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.src
 	 fi) ||
 	die "Could not build mingw-w64-git\n"
 
