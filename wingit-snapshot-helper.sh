@@ -6,7 +6,7 @@ die () {
 }
 
 test $# -ge 4 ||
-die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>... | upload-with-lease <lease-id> <file> | remove <file>[,<filesize>]... | lock <file> | unlock <lease-id> <file> | add-snapshot <version>)"
+die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>... | upload-with-lease <lease-id> <file> | remove <file>[,<filesize>]... | lock <file> | unlock <lease-id> <file> | break-lock <file> | add-snapshot <version>)"
 
 storage_account="$1"; shift
 container_name="$1"; shift
@@ -108,6 +108,17 @@ req () {
 		string_to_sign_extra="\ncomp:lease"
 		x_ms_lease_id="x-ms-lease-id:$lease_id"
 		x_ms_lease_action="x-ms-lease-action:release"
+		content_length_header="Content-Length: $content_length"
+		;;
+	break-lock)
+		file="$2"
+		content_length=0
+		resource_extra=/"${file##*/}"
+
+		request_method="PUT"
+		get_parameters="?comp=lease"
+		string_to_sign_extra="\ncomp:lease"
+		x_ms_lease_action="x-ms-lease-action:break"
 		content_length_header="Content-Length: $content_length"
 		;;
 	list)
@@ -308,6 +319,10 @@ lock)
 	;;
 unlock)
 	test $# = 2 || die "'unlock' requires two parameters: <leaseID> <file>"
+	req "$action" "$@"
+	;;
+break-lock)
+	test $# = 1 || die "'break-lock' requires one parameter: <file>"
 	req "$action" "$@"
 	;;
 add-snapshot)
