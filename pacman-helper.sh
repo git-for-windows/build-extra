@@ -38,7 +38,7 @@ export CURL_CA_BUNDLE
 
 mode=
 case "$1" in
-fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists|lock|unlock|quick_add|sanitize_db)
+fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists|lock|unlock|break_lock|quick_add|sanitize_db)
 	mode="$1"
 	shift
 	;;
@@ -52,7 +52,7 @@ upload)
 *)
 	die "Usage:\n%s\n%s\n%s\n" \
 		" $0 ( fetch | push | ( add | remove ) <package>... )" \
-		" $0 ( lock | unlock <id> )" \
+		" $0 ( lock | unlock <id> | break_lock )" \
 		" $0 ( files | dirs | orphans )"
 	;;
 esac
@@ -773,6 +773,22 @@ unlock () { # <lease-ID>
 
 	"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
 		"$azure_blobs_token" unlock "$1" git-for-windows.db
+}
+
+break_lock () { #
+	test -z "$PACMANDRYRUN" || {
+		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> break-lock git-for-windows.db" >&2
+		return
+	}
+
+	test -n "$azure_blobs_token" || {
+		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
+		test -n "$azure_blobs_token" ||
+		die "Could not read token from ~/.azure-blobs-token"
+	}
+
+	"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
+		"$azure_blobs_token" break-lock git-for-windows.db
 }
 
 file_exists () { # arch filename
