@@ -871,8 +871,8 @@ submit_build_to_coverity () { # [--worktree=<dir>] <upstream-branch-or-tag>
 		git_src_dir=${1#*=}
 		test -d "$git_src_dir" ||
 		die "Worktree does not exist: %s\n" "$git_src_dir"
-		git rev-parse -q --verify e83c5163316f89bfbde7d ||
-		die "Does not appear to be a Git checkout: %s\n" "$git_src_dir"
+		test -f "$git_src_dir/GIT-VERSION-GEN" ||
+		die "Does not appear to contain Git's source code: %s\n" "$git_src_dir"
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
