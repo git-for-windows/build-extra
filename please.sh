@@ -849,10 +849,11 @@ init_or_update_coverity_tool () {
 		https://scan.coverity.com/download/win64 &&
 	test -f .git/coverity_tool.zip.new || {
 		echo "Nothing downloaded; will try again in another week" >&2
+		test -d "$coverity_tool" || mkdir $coverity_tool
 		touch $coverity_tool
 		return
 	}
-											mv -f .git/coverity_tool.zip.new .git/coverity_tool.zip ||
+	mv -f .git/coverity_tool.zip.new .git/coverity_tool.zip ||
 	die "Could not overwrite coverity_tool.zip"
 
 	mkdir $coverity_tool.new &&
