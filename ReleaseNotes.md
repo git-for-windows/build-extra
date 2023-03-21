@@ -47,6 +47,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSH v9.3p1](https://www.openssh.com/txt/release-9.3)
 * Comes with [cURL v8.0.1](https://github.com/curl/curl/releases/tag/curl-8_0_1).
 
+### Bug Fixes
+
+* Git GUI's `Repository>Explore Working Copy` [was broken since v2.39.1](https://github.com/git-for-windows/git/issues/4356), which has been fixed.
+
 ## Changes since Git for Windows v2.39.2 (February 14th 2023)
 
 As announced previously, Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
