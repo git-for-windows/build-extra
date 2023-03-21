@@ -45,7 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [OpenSSH v9.3p1](https://www.openssh.com/txt/release-9.3)
-* Comes with [cURL v8.0.0](https://github.com/curl/curl/releases/tag/curl-8_0_0).
+* Comes with [cURL v8.0.1](https://github.com/curl/curl/releases/tag/curl-8_0_1).
 
 ## Changes since Git for Windows v2.39.2 (February 14th 2023)
 
