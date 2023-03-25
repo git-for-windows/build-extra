@@ -1,6 +1,6 @@
 # Build environment for Git for Windows
 
-This is Git for Windows SDK, the build environment for [Git for Windows](https://gitforwindows.org/).
+This build-extra repository is a core part of the Git for Windows SDK, the build environment for [Git for Windows](https://gitforwindows.org/). Any issues should be reported using the project's main [Git fork](https://github.com/git-for-windows/git).
 
 The easiest way to install Git for Windows SDK is via the [Git SDK installer](https://github.com/git-for-windows/build-extra/releases/latest). This installer will clone our [repositories](http://github.com/git-for-windows/), including all the necessary components to build Git for Windows, and perform an initial build. It will also install a shortcut to the Git SDK Bash on the desktop.
 
