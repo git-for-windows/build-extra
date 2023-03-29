@@ -48,10 +48,10 @@ package() {
   install -m755 $srcdir/$folder/git-lfs$exesuffix.exe $pkgdir/$MINGW_PREFIX/bin/git-lfs.exe
   install -d -m755 $pkgdir/$MINGW_PREFIX/share/doc/git-lfs
   install -m755 $srcdir/$folder/README.md $pkgdir/$MINGW_PREFIX/share/doc/git-lfs/README.md
-  install -d -m755 $pkgdir/$MINGW_PREFIX/share/doc/git-core
+  install -d -m755 $pkgdir/$MINGW_PREFIX/share/doc/git-doc
   for f in $srcdir/$folder/man/html/git-lfs*.1.html
   do
     ff=${f##*/}
-    install -m755 $f $pkgdir/$MINGW_PREFIX/share/doc/git-core/${ff%.1.html}.html
+    install -m755 $f $pkgdir/$MINGW_PREFIX/share/doc/git-doc/${ff%.1.html}.html
   done
 }
