@@ -387,6 +387,10 @@ set_package () {
 		extra_packages="$package-devel"
 		pkgpath=/usr/src/MSYS2-packages/$package
 		;;
+	mingw-w64-connect)
+		type=MINGW
+		pkgpath=/usr/src/MINGW-packages/$package
+		;;
 	*)
 		die "Unknown package: %s\n" "$package"
 		;;
