@@ -48,6 +48,10 @@ As announced previously, Git for Windows will drop support for Windows 7 and for
 
 Also following the footsteps of the MSYS2 and Cygwin projects on which Git for Windows depends, the 32-bit variant of Git for Windows [is nearing its end of support](https://gitforwindows.org/32-bit.html).
 
+### New Features
+
+* Comes with [Git v2.40.1](https://github.com/git/git/blob/v2.40.1/Documentation/RelNotes/2.40.1.txt).
+
 ### Bug Fixes
 
 * Addresses [CVE-2023-29012](https://github.com/git-for-windows/git/security/advisories/GHSA-gq5x-v87v-8f7g), a vulnerability where starting Git CMD would execute `doskey.exe` in the current directory, if it exists.
