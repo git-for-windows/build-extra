@@ -52,6 +52,7 @@ Also following the footsteps of the MSYS2 and Cygwin projects on which Git for W
 * Comes with [cURL v8.0.1](https://github.com/curl/curl/releases/tag/curl-8_0_1).
 * Comes with [MinTTY v3.6.4](https://github.com/mintty/mintty/releases/tag/3.6.4).
 * The Git for Windows installer now [also includes](https://github.com/git-for-windows/build-extra/pull/491) the Git LFS documentation (i.e. `git help git-lfs` now works).
+* Comes with [Perl v5.36.1](http://search.cpan.org/dist/perl-5.36.1/pod/perldelta.pod).
 
 ### Bug Fixes
 
