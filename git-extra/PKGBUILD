@@ -5,7 +5,7 @@ pkgbase="mingw-w64-${_realname}"
 pkgname=($_realname
         "${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
-pkgver=1.1.634.5b4d8fffc
+pkgver=1.1.636.2db97b993
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('any')
@@ -51,6 +51,7 @@ source=('inputrc'
         'git-update'
         'blocked-file-util.c'
         'zzz_rm_stackdumps.sh'
+	'cyg-dlls.sh'
         'proxy-lookup.c'
         'git-askyesno.c'
         'update-via-pacman.bat.in'
@@ -85,6 +86,7 @@ sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             '15b40ab72dea884f659cfbe441e9a40b2d8d63e490a3c14824a55607368e476d'
             'ebd1d20aa94be11c6b9bec7d33614d32016343d282c4716d0561ab41407c99bf'
             '97e89689d91747ddb5ee873ae864aebcbb8d0364a52fa198db1e439ee2965b9b'
+            'b2fb7a3894f126c039a5b6916dee3e1741fe7062fdeba7e80889a329fe292852'
             '9371263a66afaee79d3b7362b2bd455af8faa860230491e21df7f9fbe25bbe9b'
             '0e3af7dacb665306076590ce9aec935929c198cec1bf9c5e161dfe285502ba67'
             'cb27fa8fd043ebe282ee96771de7e3d02af619542a60b54bddfabcd685c1ae0d'
@@ -158,6 +160,7 @@ package() {
   install -m755 git-update $pkgdir${MINGW_PREFIX}/libexec/git-core
   install -m755 $builddir/update-via-pacman.bat $pkgdir
   install -m755 zzz_rm_stackdumps.sh $pkgdir/usr/share/makepkg/lint_package
+  install -m755 cyg-dlls.sh $pkgdir/usr/share/makepkg/lint_package
 }
 
 # The old package name, git-extra, was causing problems as it's _actually_ a MINGW-package.
