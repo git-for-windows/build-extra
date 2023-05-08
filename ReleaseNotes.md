@@ -54,7 +54,7 @@ Also following the footsteps of the MSYS2 and Cygwin projects on which Git for W
 * The Git for Windows installer now [also includes](https://github.com/git-for-windows/build-extra/pull/491) the Git LFS documentation (i.e. `git help git-lfs` now works).
 * Comes with [Perl v5.36.1](http://search.cpan.org/dist/perl-5.36.1/pod/perldelta.pod).
 * Comes with [GNU Privacy Guard v2.2.41](https://dev.gnupg.org/source/gnupg/browse/STABLE-BRANCH-2-2/NEWS;gnupg-2.2.41?blame=off).
-* Comes with [Git Credential Manager v2.1.0](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.1.0).
+* Comes with [Git Credential Manager v2.1.1](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.1.1).
 
 ### Bug Fixes
 
