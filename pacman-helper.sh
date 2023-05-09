@@ -291,10 +291,18 @@ add () { # <file>
 		if test -d "$dir"
 		then
 			prefix="${path##*/}"
-			prefix="${prefix%%-[0-9][0-9.]*}"
+			prefix="${prefix%-*-*}"
 			(cd "$dir" &&
 			 for file in "$prefix"-[0-9][0-9.]*
 			 do
+				# Be careful: package names might contain `-<digit>`!
+				if test sources = "$arch"
+				then
+					test "$prefix" != "${file%-*-*}" || continue
+				else
+					test "$prefix" != "${file%-*-*-*}" || continue
+				fi
+
 				test ! -f "$file" ||
 				rm -v "$file"
 			 done)
@@ -426,12 +434,12 @@ push () {
 
 	test -z "$to_upload" || {
 		to_upload_base_names="$(echo "$to_upload" |
-			sed 's/-[0-9].*//' |
+			sed 's/-[0-9][^-]*-[0-9][0-9]*$//' |
 			sort | uniq)"
 
 		for name in $to_upload
 		do
-			basename=${name%%-[0-9]*}
+			basename=${name%-*-*}
 			version=${name#$basename-}
 			for arch in $architectures sources
 			do
@@ -482,7 +490,7 @@ sanitize_db () { # <file>...
 			while (<$fh>) {
 				# parse lines like this:
 				# drwxr-xr-x root/root         0 2019-02-17 21:45 bash -4.4.023-1 /
-				if (/(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+?)(-\d.*?)\/$/) {
+				if (/(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)\s+(.+)(-\d[^-]*-\d+)\/$/) {
 					my $date = $4 . " " . $5;
 					my $prefix = $6;
 					my $full_name = $6 . $7;
@@ -809,7 +817,7 @@ push_missing_signatures () {
 	for name in $list
 	do
 		count=0
-		basename=${name%%-[0-9]*}
+		basename=${name%-*-*}
 		version=${name#$basename-}
 		for arch in $architectures sources
 		do
@@ -870,7 +878,7 @@ push_missing_signatures () {
 			*" $name "*) ;; # okay, it's also in the full db
 			*)
 				repo-remove $sign_option $mingw_db_name \
-					${name%%-[0-9]*} ||
+					${name%-*-*} ||
 				die "Could not remove $name from $mingw_db_name"
 				count=$(($count+1))
 				;;
