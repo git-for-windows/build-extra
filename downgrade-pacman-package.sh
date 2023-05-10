@@ -15,10 +15,22 @@ git -C / diff-files --ignore-submodules &&
 git -C / diff-index --cached --ignore-submodules HEAD ||
 die "Uncommitted changes"
 
+get_package_dir () {
+	for dir in /var/lib/pacman/local/$1-[0-9]*
+	do
+		# Be careful in case a package name contains `-<digit>`
+		test /var/lib/pacman/local/$1 = ${dir%-*-*} ||
+		continue
+		echo $dir
+		return 0
+	done
+	return 1
+}
+
 msg=
 for package
 do
-	dir="$(ls -d /var/lib/pacman/local/$package-[0-9]*)" ||
+	dir="$(get_package_dir $1)" ||
 	die "Package '$package' not installed?"
 
 	current_version=${dir#*/$package-}

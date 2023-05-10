@@ -140,6 +140,16 @@ mingw-w64-$PACMAN_ARCH-zstd"
 	return $res
 }
 
+has_pacman_package () {
+	for dir in /var/lib/pacman/local/$1-[0-9]*
+	do
+		# Be careful in case a package name contains `-<digit>`
+		test /var/lib/pacman/local/$1 = ${dir%-*-*} &&
+		return 0
+	done
+	return 1
+}
+
 # Packages that have been added after Git SDK 1.0.0 was released...
 required=
 for req in mingw-w64-$PACMAN_ARCH-git-credential-manager $SH_FOR_REBASE \
@@ -149,8 +159,8 @@ for req in mingw-w64-$PACMAN_ARCH-git-credential-manager $SH_FOR_REBASE \
 		mingw-w64-$PACMAN_ARCH-xpdf-tools ssh-pageant mingw-w64-$PACMAN_ARCH-git-lfs \
 		tig nano perl-JSON libpcre2_8 libpcre2posix $GIT_UPDATE_EXTRA_PACKAGES)
 do
-	test -d /var/lib/pacman/local/$req-[0-9]* ||
-	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
+	has_pacman_package $req ||
+	has_pacman_package $req-git ||
 	required="$required $req"
 done
 test -z "$required" || {
