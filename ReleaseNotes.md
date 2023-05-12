@@ -44,7 +44,7 @@ This package contains software from a number of other projects including Bash, z
 
 As announced previously, Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
 
-Also following the footsteps of the MSYS2 and Cygwin projects on which Git for Windows depends, the 32-bit variant of Git for Windows [is nearing its end of support](https://gitforwindows.org/32-bit.html).
+Following the footsteps of the MSYS2 and Cygwin projects on which Git for Windows depends, the 32-bit variant of Git for Windows [is being phased out](https://gitforwindows.org/32-bit.html). As of Git for Windows v2.41.0, the 32-bit variant of the POSIX emulation layer (known as "MSYS2 runtime", powering Git Bash among other components shipped with Git for Windows) is in maintenance mode and will only see security bug fixes (if any). Users relying on 32-bit Git for Windows are highly encouraged to switch to the 64-bit version whenever possible.
 
 ### New Features
 
@@ -55,6 +55,7 @@ Also following the footsteps of the MSYS2 and Cygwin projects on which Git for W
 * Comes with [Perl v5.36.1](http://search.cpan.org/dist/perl-5.36.1/pod/perldelta.pod).
 * Comes with [GNU Privacy Guard v2.2.41](https://dev.gnupg.org/source/gnupg/browse/STABLE-BRANCH-2-2/NEWS;gnupg-2.2.41?blame=off).
 * Comes with [Git Credential Manager v2.1.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.1.2).
+* Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.4.6](https://inbox.sourceware.org/cygwin-announce/20230214142733.1052688-1-corinna-cygwin@cygwin.com/). (This does not extend to 32-bit Git for Windows, which [is stuck with v3.3.* of the MSYS2 runtime forever](https://github.com/git-for-windows/git/issues/4279).)
 
 ### Bug Fixes
 
