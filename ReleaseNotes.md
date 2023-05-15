@@ -56,6 +56,7 @@ Following the footsteps of the MSYS2 and Cygwin projects on which Git for Window
 * Comes with [GNU Privacy Guard v2.2.41](https://dev.gnupg.org/source/gnupg/browse/STABLE-BRANCH-2-2/NEWS;gnupg-2.2.41?blame=off).
 * Comes with [Git Credential Manager v2.1.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.1.2).
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.4.6](https://inbox.sourceware.org/cygwin-announce/20230214142733.1052688-1-corinna-cygwin@cygwin.com/). (This does not extend to 32-bit Git for Windows, which [is stuck with v3.3.* of the MSYS2 runtime forever](https://github.com/git-for-windows/git/issues/4279).)
+* To help with Git for Windows' release mechanics, Git for Windows now ships [with two variants of `libcurl`](https://github.com/git-for-windows/git/pull/4410).
 
 ### Bug Fixes
 
