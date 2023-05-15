@@ -2833,6 +2833,18 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 		do
 			name=${package%-*}
 			version=$(echo "$versions" | sed -n "s/^$name //p")
+			if test -z "$version"
+			then
+				# Fall back to mingw-w64-curl-winssl if mingw-w64-curl is not installed
+				if test mingw-w64-curl = "$name"
+				then
+					name=mingw-w64-curl-winssl
+					package=$name-pdb
+					version=$(echo "$versions" | sed -n "s/^$name //p")
+				fi
+				test -n "$version" ||
+				die "Package $name not installed?!?"
+			fi
 			case "$package" in
 			mingw-w64-*)
 				tar=mingw-w64-$pacman_arch-${package#mingw-w64-}-$version-any.pkg.tar.xz
