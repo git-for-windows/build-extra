@@ -150,9 +150,13 @@ has_pacman_package () {
 	return 1
 }
 
+has_pacman_package mingw-w64-$PACMAN_ARCH-curl-winssl &&
+LIBCURL_EXTRA=mingw-w64-$PACMAN_ARCH-curl-openssl-alternate ||
+LIBCURL_EXTRA=
+
 # Packages that have been added after Git SDK 1.0.0 was released...
 required=
-for req in mingw-w64-$PACMAN_ARCH-git-credential-manager $SH_FOR_REBASE \
+for req in mingw-w64-$PACMAN_ARCH-git-credential-manager $SH_FOR_REBASE $LIBCURL_EXTRA \
 	$(test -n "$MINIMAL_GIT" || echo \
 		mingw-w64-$PACMAN_ARCH-connect git-flow unzip docx2txt \
 		mingw-w64-$PACMAN_ARCH-antiword mingw-w64-$PACMAN_ARCH-odt2txt \
@@ -172,7 +176,7 @@ test -z "$required" || {
 }
 
 packages="mingw-w64-$PACMAN_ARCH-git mingw-w64-$PACMAN_ARCH-git-credential-manager
-mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES"
+mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES $LIBCURL_EXTRA"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$PACMAN_ARCH-git-doc-html ncurses mintty vim nano
