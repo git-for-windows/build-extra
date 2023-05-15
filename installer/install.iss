@@ -2212,7 +2212,7 @@ begin
         'OpenSSL': RdbCurlVariant[GC_OpenSSL].Checked:=True;
         'WinSSL': RdbCurlVariant[GC_WinSSL].Checked:=True;
     else
-        RdbCurlVariant[GC_OpenSSL].Checked:=True;
+        RdbCurlVariant[GC_WinSSL].Checked:=True;
     end;
 
     (*
@@ -3536,9 +3536,9 @@ begin
     RecordChoice(PreviousDataKey,'Tortoise Option',Data2);
 
     // HTTPS implementation (cURL) options.
-    Data:='OpenSSL';
-    if RdbCurlVariant[GC_WinSSL].Checked then begin
-        Data:='WinSSL';
+    Data:='WinSSL';
+    if RdbCurlVariant[GC_OpenSSL].Checked then begin
+        Data:='OpenSSL';
     end;
     RecordChoice(PreviousDataKey,'CURL Option',Data);
 
