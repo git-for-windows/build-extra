@@ -3184,9 +3184,15 @@ begin
 #endif
 
 #ifdef WITH_EXPERIMENTAL_PCON
-    if RdbExperimentalOptions[GP_EnablePCon].checked and
-       not SaveStringToFile(ExpandConstant('{app}\etc\git-bash.config'),'MSYS=enable_pcon',False) then
-        LogError('Could not write to '+ExpandConstant('{app}\etc\git-bash.config'));
+    if RdbExperimentalOptions[GP_EnablePCon].checked then begin
+        if not SaveStringToFile(ExpandConstant('{app}\etc\git-bash.config'),'MSYS=enable_pcon',False) then begin
+            LogError('Could not write to '+ExpandConstant('{app}\etc\git-bash.config'))
+        end
+    else
+        if not SaveStringToFile(ExpandConstant('{app}\etc\git-bash.config'),'MSYS=disable_pcon',False) then begin
+            LogError('Could not write to '+ExpandConstant('{app}\etc\git-bash.config'))
+        end
+    end;
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
