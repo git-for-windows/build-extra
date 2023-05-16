@@ -2375,7 +2375,7 @@ begin
 #endif
 
 #ifdef WITH_EXPERIMENTAL_PCON
-    RdbExperimentalOptions[GP_EnablePCon]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental support for pseudo consoles.','<RED>(NEW!)</RED> This allows running native console programs like Node or Python in a'+#13+'Git Bash window without using winpty, but it still has known bugs.',TabOrder,Top,Left);
+    RdbExperimentalOptions[GP_EnablePCon]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental support for pseudo consoles.','This allows running native console programs like Node or Python in a'+#13+'Git Bash window without using winpty, but is unfortunately not quite stable yet.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
     RdbExperimentalOptions[GP_EnablePCon].Checked:=ReplayChoice('Enable Pseudo Console Support','Auto')='Enabled';
@@ -3184,9 +3184,15 @@ begin
 #endif
 
 #ifdef WITH_EXPERIMENTAL_PCON
-    if RdbExperimentalOptions[GP_EnablePCon].checked and
-       not SaveStringToFile(ExpandConstant('{app}\etc\git-bash.config'),'MSYS=enable_pcon',False) then
-        LogError('Could not write to '+ExpandConstant('{app}\etc\git-bash.config'));
+    if RdbExperimentalOptions[GP_EnablePCon].checked then begin
+        if not SaveStringToFile(ExpandConstant('{app}\etc\git-bash.config'),'MSYS=enable_pcon',False) then begin
+            LogError('Could not write to '+ExpandConstant('{app}\etc\git-bash.config'))
+        end
+    else
+        if not SaveStringToFile(ExpandConstant('{app}\etc\git-bash.config'),'MSYS=disable_pcon',False) then begin
+            LogError('Could not write to '+ExpandConstant('{app}\etc\git-bash.config'))
+        end
+    end;
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
