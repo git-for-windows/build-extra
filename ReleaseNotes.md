@@ -46,6 +46,8 @@ As announced previously, Git for Windows will drop support for Windows 7 and for
 
 Following the footsteps of the MSYS2 and Cygwin projects on which Git for Windows depends, the 32-bit variant of Git for Windows [is being phased out](https://gitforwindows.org/32-bit.html). As of Git for Windows v2.41.0, the 32-bit variant of the POSIX emulation layer (known as "MSYS2 runtime", powering Git Bash among other components shipped with Git for Windows) is in maintenance mode and will only see security bug fixes (if any). Users relying on 32-bit Git for Windows are highly encouraged to switch to the 64-bit version whenever possible.
 
+Please also note that the code-signing certificate used to sign Git for Windows' executables was renewed and may cause Smart Screen to show a warning until the certificate has gained a certain minimum reputation.
+
 ### New Features
 
 * Comes with [OpenSSH v9.3p1](https://www.openssh.com/txt/release-9.3)
