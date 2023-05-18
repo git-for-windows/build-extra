@@ -63,6 +63,7 @@ Please also note that the code-signing certificate used to sign Git for Windows'
 ### Bug Fixes
 
 * Git GUI's `Repository>Explore Working Copy` [was broken since v2.39.1](https://github.com/git-for-windows/git/issues/4356), which has been fixed.
+* The MSYS2 runtime was adjusted to [prepare for an upcoming Windows version](https://github.com/git-for-windows/git/issues/4429).
 
 ## Changes since Git for Windows v2.40.0 (March 14th 2023)
 
