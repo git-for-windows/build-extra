@@ -59,6 +59,7 @@ Please also note that the code-signing certificate used to sign Git for Windows'
 * Comes with MSYS2 runtime (Git for Windows flavor) based on [Cygwin 3.4.6](https://inbox.sourceware.org/cygwin-announce/20230214142733.1052688-1-corinna-cygwin@cygwin.com/). (This does not extend to 32-bit Git for Windows, which [is stuck with v3.3.* of the MSYS2 runtime forever](https://github.com/git-for-windows/git/issues/4279).)
 * To help with Git for Windows' release mechanics, Git for Windows now ships [with two variants of `libcurl`](https://github.com/git-for-windows/git/pull/4410).
 * Comes with [cURL v8.1.2](https://curl.se/changes.html#8_1_2).
+* Comes with [OpenSSL v1.1.1u](https://www.openssl.org/news/openssl-1.1.1-notes.html).
 
 ### Bug Fixes
 
