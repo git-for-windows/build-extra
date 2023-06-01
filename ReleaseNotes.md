@@ -50,6 +50,7 @@ Please also note that the code-signing certificate used to sign Git for Windows'
 
 ### New Features
 
+* Comes with [Git v2.41.0](https://github.com/git/git/blob/v2.41.0/Documentation/RelNotes/2.41.0.txt).
 * Comes with [OpenSSH v9.3p1](https://www.openssh.com/txt/release-9.3)
 * Comes with [MinTTY v3.6.4](https://github.com/mintty/mintty/releases/tag/3.6.4).
 * The Git for Windows installer now [also includes](https://github.com/git-for-windows/build-extra/pull/491) the Git LFS documentation (i.e. `git help git-lfs` now works).
