@@ -3310,7 +3310,7 @@ begin
     end;
 
     if IsComponentSelected('ext\shellhere') then begin
-        Msg:='Git Ba&sh Here';
+        Msg:='Open Git Ba&sh here';
         Cmd:='"'+AppDir+'\git-bash.exe" "--cd=%1"';
         Ico:=AppDir+'\git-bash.exe';
         if (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_shell','',Msg)) or
@@ -3327,7 +3327,7 @@ begin
     end;
 
     if IsComponentSelected('ext\guihere') then begin
-        Msg:='Git &GUI Here';
+        Msg:='Open Git &GUI here';
         Cmd:='"'+AppDir+'\cmd\git-gui.exe" "--working-dir" "%1"';
         Ico:=AppDir+'\cmd\git-gui.exe';
         if (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_gui','',Msg)) or
