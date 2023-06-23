@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [MSYS2 runtime v3.4.7](https://github.com/cygwin/cygwin/releases/tag/cygwin-3.4.7).
+* Comes with [OpenSSL v3.1.1](https://www.openssl.org/news/openssl-3.1-notes.html).
 
 ### Bug Fixes
 
