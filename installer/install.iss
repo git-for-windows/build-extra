@@ -105,8 +105,8 @@ Name: icons; Description: Additional icons
 Name: icons\quicklaunch; Description: In the Quick Launch; Check: not IsAdminLoggedOn
 Name: icons\desktop; Description: On the Desktop
 Name: ext; Description: Windows Explorer integration; Types: default
-Name: ext\shellhere; Description: Git Bash Here; Types: default
-Name: ext\guihere; Description: Git GUI Here; Types: default
+Name: ext\shellhere; Description: Open Git Bash here; Types: default
+Name: ext\guihere; Description: Open Git GUI here; Types: default
 Name: gitlfs; Description: Git LFS (Large File Support); Types: default; Flags: disablenouninstallwarning
 Name: assoc; Description: Associate .git* configuration files with the default text editor; Types: default
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
