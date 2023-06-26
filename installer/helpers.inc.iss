@@ -208,10 +208,12 @@ var
 begin
     OutPath:=ExpandConstant('{tmp}\')+LogKey+'.out';
     ErrPath:=ExpandConstant('{tmp}\')+LogKey+'.err';
-    if ExecAsOriginalUser(ExpandConstant('{sys}\cmd.exe'),'/D /C "'+Cmd+' >"'+OutPath+'" 2>"'+ErrPath+'""','',SW_HIDE,ewWaitUntilTerminated,Res) and (Res=0) then
-        Result:=True
-    else begin
-        LogError(ErrorMessage+' (output: '+ReadFileAsString(OutPath)+', errors: '+ReadFileAsString(ErrPath)+').');
+    if not ExecAsOriginalUser(ExpandConstant('{sys}\cmd.exe'),'/D /C "'+Cmd+' >"'+OutPath+'" 2>"'+ErrPath+'""','',SW_HIDE,ewWaitUntilTerminated,Res) then begin
+        LogError(ErrorMessage+' (sys error: '+SysErrorMessage(Res)+').');
         Result:=False;
-    end;
+    end else if (Res<>0) then begin
+        LogError(ErrorMessage+' (output: '+ReadFileAsString(OutPath)+', errors: '+ReadFileAsString(ErrPath)+', exit code: '+IntToStr(Res)+').');
+        Result:=False;
+    end else
+        Result:=True;
 end;
