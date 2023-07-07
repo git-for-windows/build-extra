@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [MSYS2 runtime v3.4.7](https://github.com/cygwin/cygwin/releases/tag/cygwin-3.4.7).
 * Comes with [OpenSSL v3.1.1](https://www.openssl.org/news/openssl-3.1-notes.html).
+* To support interoperability with Windows Subsystem for Linux (WSL) better, it [is now possible to let Git set](https://github.com/git-for-windows/git/pull/4438) e.g. the executable bits of files (this needs `core.WSLCompat` to be set, and [the NTFS volume needs to be mounted in WSL using the appropriate options](https://devblogs.microsoft.com/commandline/chmod-chown-wsl-improvements/)).
 
 ### Bug Fixes
 
