@@ -105,8 +105,8 @@ Name: icons; Description: Additional icons
 Name: icons\quicklaunch; Description: In the Quick Launch; Check: not IsAdminLoggedOn
 Name: icons\desktop; Description: On the Desktop
 Name: ext; Description: Windows Explorer integration; Types: default
-Name: ext\shellhere; Description: Git Bash Here; Types: default
-Name: ext\guihere; Description: Git GUI Here; Types: default
+Name: ext\shellhere; Description: Open Git Bash here; Types: default
+Name: ext\guihere; Description: Open Git GUI here; Types: default
 Name: gitlfs; Description: Git LFS (Large File Support); Types: default; Flags: disablenouninstallwarning
 Name: assoc; Description: Associate .git* configuration files with the default text editor; Types: default
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
@@ -3310,7 +3310,7 @@ begin
     end;
 
     if IsComponentSelected('ext\shellhere') then begin
-        Msg:='Git Ba&sh Here';
+        Msg:='Open Git Ba&sh here';
         Cmd:='"'+AppDir+'\git-bash.exe" "--cd=%1"';
         Ico:=AppDir+'\git-bash.exe';
         if (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_shell','',Msg)) or
@@ -3327,7 +3327,7 @@ begin
     end;
 
     if IsComponentSelected('ext\guihere') then begin
-        Msg:='Git &GUI Here';
+        Msg:='Open Git &GUI here';
         Cmd:='"'+AppDir+'\cmd\git-gui.exe" "--working-dir" "%1"';
         Ico:=AppDir+'\cmd\git-gui.exe';
         if (not RegWriteStringValue(RootKey,'SOFTWARE\Classes\Directory\shell\git_gui','',Msg)) or
