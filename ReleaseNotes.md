@@ -55,7 +55,7 @@ Following the footsteps of the MSYS2 and Cygwin projects on which Git for Window
 ### Bug Fixes
 
 * Portable Git: The Windows version is now parsed [more robustly](https://github.com/git-for-windows/build-extra/pull/506) in the post-install script.
-* The labels of the File Explorer menu items installed by the Git for Windows installer [have been aligned](https://github.com/git-for-windows/build-extra/pull/507) with what is customary ("Git Bash Here" instead of "Open Git Bash Here").
+* The labels of the File Explorer menu items installed by the Git for Windows installer [have been aligned](https://github.com/git-for-windows/build-extra/pull/507) with what is customary ("Open Git Bash Here" instead of "Git Bash Here").
 
 ## Changes since Git for Windows v2.40.1 (April 25th 2023)
 
