@@ -42,10 +42,14 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.41.0 (June 1st 2023)
 
+As announced previously, Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+Following the footsteps of the MSYS2 and Cygwin projects on which Git for Windows depends, the 32-bit variant of Git for Windows [is being phased out](https://gitforwindows.org/32-bit.html). As of Git for Windows v2.41.0, the 32-bit variant of the POSIX emulation layer (known as "MSYS2 runtime", powering Git Bash among other components shipped with Git for Windows) is in maintenance mode and will only see security bug fixes (if any). Users relying on 32-bit Git for Windows are highly encouraged to switch to the 64-bit version whenever possible.
+
 ### New Features
 
 * Comes with [MSYS2 runtime v3.4.7](https://github.com/cygwin/cygwin/releases/tag/cygwin-3.4.7).
-* Comes with [OpenSSL v3.1.1](https://www.openssl.org/news/openssl-3.1-notes.html).
+* Comes with [OpenSSL v3.1.1](https://www.openssl.org/news/openssl-3.1-notes.html), a major version upgrade (previously Git for Windows distributed OpenSSL v1.1.\*).
 * To support interoperability with Windows Subsystem for Linux (WSL) better, it [is now possible to let Git set](https://github.com/git-for-windows/git/pull/4438) e.g. the executable bits of files (this needs `core.WSLCompat` to be set, and [the NTFS volume needs to be mounted in WSL using the appropriate options](https://devblogs.microsoft.com/commandline/chmod-chown-wsl-improvements/)).
 
 ### Bug Fixes
