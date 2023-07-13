@@ -42,6 +42,12 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.41.0(2) (July 7th 2023)
 
+As announced previously, Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+Following the footsteps of the MSYS2 and Cygwin projects on which Git for Windows depends, the 32-bit variant of Git for Windows [is being phased out](https://gitforwindows.org/32-bit.html). As of Git for Windows v2.41.0, the 32-bit variant of the POSIX emulation layer (known as "MSYS2 runtime", powering Git Bash among other components shipped with Git for Windows) is in maintenance mode and will only see security bug fixes (if any). Users relying on 32-bit Git for Windows are highly encouraged to switch to the 64-bit version whenever possible.
+
+This release is a hot-fix release to incorporate a new Git Credential Manager version that addresses several issues present in the previous verison. There are no other changes.
+
 ### New Features
 
 * Comes with [Git Credential Manager v2.2.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.2.2).
