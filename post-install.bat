@@ -42,6 +42,47 @@
 	usr\bin\dash.exe -c '/usr/bin/dash usr/bin/rebaseall -p'
 )
 
+@REM Checks if this script is running with administrative privileges and if not ask the user if they wish to attempt privilege escalation using a message box.
+@REM This is required in case this script was called by the portable installer.
+@REM
+@REM Then if running with administrative privileges adds mandatory ASLR security exceptions for the executables in the "usr/bin" directory.
+@REM This is required for Git Bash to work when running on a Windows system with mandatory ASLR enabled.
+@REM
+@REM Mandatory ASLR is a Windows security feature that is disabled by default.
+@REM https://learn.microsoft.com/microsoft-365/security/defender-endpoint/exploit-protection-reference?view=o365-worldwide#force-randomization-for-images-mandatory-aslr
+@REM
+@REM Doing this significantly slows down the load time of the program settings list in the exploit protection section of the Windows security application but it will load eventually.
+@REM
+@REM This is all done with PowerShell because Batch doesn't have native message box or exploit protection management functionality.
+@SET commands=Add-Type -AssemblyName PresentationFramework,System.Windows.Forms;^
+function Main()^
+{^
+	while (!(New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))^
+	{^
+    	$title = 'Git Installer';^
+    	$icon = [System.Windows.Forms.MessageBoxIcon]::Question;^
+    	$body =  \"Administrative privileges are required to add mandatory ASLR security exceptions for the executables in the `\"usr/bin`\" directory.`n`nThis is required for Git Bash to work when running on a Windows system with mandatory ASLR enabled.`n`nMandatory ASLR is a Windows security feature that is disabled by default.`n`nDoing this significantly slows down the load time of the program settings list in the exploit protection section of the Windows security application but it will load eventually.`n`nWould you like to attempt privilege escalation to add these exceptions?\";^
+    	$buttons = 'YesNo';^
+    	$response = [System.Windows.MessageBox]::Show($body, $title, $buttons, $icon);^
+    	if ($response -eq 'Yes')^
+    	{^
+			break;^
+		}^
+		else^
+		{^
+			exit;^
+		}^
+	}^
+	$process = Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -PassThru -Wait -ArgumentList '-Command \"cd ''%cd%''; Get-ChildItem -Path usr/bin -Filter *.exe -File | ForEach-Object { Set-ProcessMitigation -Name $_.FullName -Disable ForceRelocateImages }\"';^
+	if ($process.ExitCode -ne 0)^
+	{^
+    	Main;^
+	}^
+}^
+Main
+
+powershell.exe -command %commands%
+
 @echo "running post-install"
 @REM Run the post-install scripts
 @usr\bin\bash.exe --norc -c "export PATH=/usr/bin:$PATH; export SYSCONFDIR=/etc; for p in $(export LC_COLLATE=C; echo /etc/post-install/*.post); do test -e \"$p\" && . \"$p\"; done"
