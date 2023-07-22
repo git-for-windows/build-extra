@@ -59,13 +59,13 @@ function Main()^
 {^
 	while (!(New-Object Security.Principal.WindowsPrincipal([Security.Principal.WindowsIdentity]::GetCurrent())).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator))^
 	{^
-    	$title = 'Git Installer';^
-    	$icon = [System.Windows.Forms.MessageBoxIcon]::Question;^
-    	$body =  \"Administrative privileges are required to add mandatory ASLR security exceptions for the executables in the `\"usr/bin`\" directory.`n`nThis is required for Git Bash to work when running on a Windows system with mandatory ASLR enabled.`n`nMandatory ASLR is a Windows security feature that is disabled by default.`n`nDoing this significantly slows down the load time of the program settings list in the exploit protection section of the Windows security application but it will load eventually.`n`nWould you like to attempt privilege escalation to add these exceptions?\";^
-    	$buttons = 'YesNo';^
-    	$response = [System.Windows.MessageBox]::Show($body, $title, $buttons, $icon);^
-    	if ($response -eq 'Yes')^
-    	{^
+		$title = 'Git Installer';^
+		$icon = [System.Windows.Forms.MessageBoxIcon]::Question;^
+		$body =  \"Administrative privileges are required to add mandatory ASLR security exceptions for the executables in the `\"usr/bin`\" directory.`n`nThis is required for Git Bash to work when running on a Windows system with mandatory ASLR enabled.`n`nMandatory ASLR is a Windows security feature that is disabled by default.`n`nDoing this significantly slows down the load time of the program settings list in the exploit protection section of the Windows security application but it will load eventually.`n`nWould you like to attempt privilege escalation to add these exceptions?\";^
+		$buttons = 'YesNo';^
+		$response = [System.Windows.MessageBox]::Show($body, $title, $buttons, $icon);^
+		if ($response -eq 'Yes')^
+		{^
 			break;^
 		}^
 		else^
@@ -76,7 +76,7 @@ function Main()^
 	$process = Start-Process powershell.exe -Verb RunAs -WindowStyle Hidden -PassThru -Wait -ArgumentList '-Command \"cd ''%cd%''; Get-ChildItem -Path usr/bin -Filter *.exe -File | ForEach-Object { Set-ProcessMitigation -Name $_.FullName -Disable ForceRelocateImages }\"';^
 	if ($process.ExitCode -ne 0)^
 	{^
-    	Main;^
+		Main;^
 	}^
 }^
 Main
