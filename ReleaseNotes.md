@@ -44,8 +44,8 @@ This package contains software from a number of other projects including Bash, z
 
 ### New Features
 
-* Comes with [cURL v8.2.0](https://github.com/curl/curl/releases/tag/curl-8_2_0).
 * Comes with [OpenSSH v9.3.P2](https://github.com/openssh/openssh-portable/releases/tag/V_9_3_P2).
+* Comes with [cURL v8.2.1](https://curl.se/changes.html#8_2_1).
 
 ## Changes since Git for Windows v2.41.0(2) (July 7th 2023)
 
