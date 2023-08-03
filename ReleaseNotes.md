@@ -47,6 +47,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSH v9.3.P2](https://github.com/openssh/openssh-portable/releases/tag/V_9_3_P2).
 * Comes with [cURL v8.2.1](https://curl.se/changes.html#8_2_1).
 * Comes with [Git LFS v3.4.0](https://github.com/git-lfs/git-lfs/releases/tag/3.4.0).
+* Comes with [OpenSSL v3.1.2](https://github.com/openssl/openssl/releases/tag/openssl-3.1.2).
 
 ## Changes since Git for Windows v2.41.0(2) (July 7th 2023)
 
