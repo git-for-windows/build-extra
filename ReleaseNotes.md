@@ -53,6 +53,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * When `init.defaultBranch` is changed manually in the system config, subsequent Git for Windows upgrades [would overwrite that change](https://github.com/git-for-windows/git/issues/4525). This has been [fixed](https://github.com/git-for-windows/build-extra/pull/515).
+* When running on a remote APFS share, Git [would fail](https://github.com/git-for-windows/git/issues/4482), which [has been fixed](https://github.com/git-for-windows/git/pull/4527).
 
 ## Changes since Git for Windows v2.41.0(2) (July 7th 2023)
 
