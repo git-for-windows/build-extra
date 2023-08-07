@@ -50,6 +50,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSL v3.1.2](https://github.com/openssl/openssl/releases/tag/openssl-3.1.2).
 * Comes with [Git Credential Manager v2.3.0](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.3.0).
 
+### Bug Fixes
+
+* When `init.defaultBranch` is changed manually in the system config, subsequent Git for Windows upgrades [would overwrite that change](https://github.com/git-for-windows/git/issues/4525). This has been [fixed](https://github.com/git-for-windows/build-extra/pull/515).
+
 ## Changes since Git for Windows v2.41.0(2) (July 7th 2023)
 
 As announced previously, Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
