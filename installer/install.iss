@@ -874,6 +874,11 @@ begin
                             'true': RecordInferredDefault('Git Pull Behavior Option','Rebase');
                             'false': RecordInferredDefault('Git Pull Behavior Option','Merge');
                         end;
+                    'init.defaultbranch':
+                        if Value='master' then
+                            RecordInferredDefault('Default Branch Option', ' ')
+                        else
+                            RecordInferredDefault('Default Branch Option', Value)
                 end;
             end;
             i:=j+1;
