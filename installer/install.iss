@@ -2566,30 +2566,25 @@ begin
                         Log(Msg);
                     ExitEarlyWithSuccess();
                 end;
-                if WizardSilent() then
-                    while True do begin
-                        Msg:='';
-                        for j:=i to GetArrayLength(Processes)-1 do
-                            if not Processes[j].Restartable then
-                                Msg:=Msg+#13+#10+Processes[j].Name+' (PID '+IntToStr(Processes[j].ID)+')'
-                            else if (Processes[j].ToTerminate) and (not TerminateProcessByID(Processes[i].ID)) then
-                                Msg:=Msg+#13+#10+Processes[j].Name+' (PID '+IntToStr(Processes[j].ID)+')';
+                if WizardSilent() then begin
+                    Msg:='';
+                    for j:=i to GetArrayLength(Processes)-1 do
+                        if not Processes[j].Restartable then
+                            Msg:=Msg+#13+#10+Processes[j].Name+' (PID '+IntToStr(Processes[j].ID)+')'
+                        else if (Processes[j].ToTerminate) and (not TerminateProcessByID(Processes[i].ID)) then
+                            Msg:=Msg+#13+#10+Processes[j].Name+' (PID '+IntToStr(Processes[j].ID)+')';
 
-                        if Msg='' then begin
-                            Result:=True;
-                            Exit;
-                        end;
+                    if Msg='' then begin
+                        Result:=True;
+                        Exit;
+                    end;
 
-                        Msg:='The following process(es) use Git for Windows:'+#13+#10+Msg+#13+#10+#13+#10+'Please terminate those processes and retry.'+#13+#10+'Alternatively, cancel to abandon setup altogether.';
-                        if SuppressibleMsgBox(Msg, mbCriticalError, MB_RETRYCANCEL, IDCANCEL) = IDCANCEL then begin
-                            Result:=False;
-                            Exit;
-                        end;
+                    Msg:='The following process(es) use Git for Windows:'+#13+#10+Msg+#13+#10+#13+#10+'Please terminate those processes and retry.';
+                    LogError(Msg);
 
-                        RefreshProcessList(NIL);
-                        i:=0;
-                    end
-                else begin
+                    Result:=False;
+                    Exit;
+                end else begin
                     Msg:='Setup cannot continue until you close at least those applications in the list that are marked as "closing is required".';
                     SuppressibleMsgBox(Msg, mbCriticalError, MB_OK, IDOK);
                 end;
