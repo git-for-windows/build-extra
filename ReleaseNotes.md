@@ -47,8 +47,8 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v8.2.1](https://curl.se/changes.html#8_2_1).
 * Comes with [Git LFS v3.4.0](https://github.com/git-lfs/git-lfs/releases/tag/3.4.0).
 * Comes with [OpenSSL v3.1.2](https://github.com/openssl/openssl/releases/tag/openssl-3.1.2).
-* Comes with [Git Credential Manager v2.3.0](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.3.0).
 * Comes with [OpenSSH v9.4.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_4_P1).
+* Comes with [Git Credential Manager v2.3.1](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.3.1).
 
 ### Bug Fixes
 
