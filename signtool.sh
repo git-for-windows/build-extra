@@ -26,6 +26,7 @@ type osslsigncode >/dev/null 2>&1 || {
 
 s () {
 	osslsigncode.exe sign \
+		-verbose \
 		-pkcs12 "$HOME/.sig/codesign.p12" \
 		-readpass "$HOME/.sig/codesign.pass" \
 		-ts http://timestamp.comodoca.com?td=sha256 \
