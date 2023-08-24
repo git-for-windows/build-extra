@@ -1098,7 +1098,7 @@ begin
     Result:=True;
     if not IsX64 then
         SuppressibleMsgBox('Git for Windows (32-bit) is nearing its end of support.'+#13+'More information at https://gitforwindows.org/32-bit.html',mbError,MB_OK or MB_DEFBUTTON1,IDOK)
-    else if SuppressibleMsgBox('Git for Windows (32-bit) is nearing its end of support. It is recommended to install the 64-bit variant of Git for Windows instead.'+#13+'More information at https://gitforwindows.org/32-bit.html'+#13+'Continue to install the 32-bit variant?',mbError,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO then
+    else if not ParamIsSet('ALLOWINSTALLING32ON64') and (SuppressibleMsgBox('Git for Windows (32-bit) is nearing its end of support. It is recommended to install the 64-bit variant of Git for Windows instead.'+#13+'More information at https://gitforwindows.org/32-bit.html'+#13+'Continue to install the 32-bit variant?',mbError,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO) then
         Result:=False;
 #else
     if not IsWin64 then begin

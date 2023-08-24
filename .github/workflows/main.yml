@@ -186,7 +186,7 @@ jobs:
         shell: pwsh
         run: |
           $exePath = Get-ChildItem -Path installer-${{ matrix.bitness }}/*.exe | %{$_.FullName}
-          Start-Process -Wait -FilePath "$exePath" -ArgumentList "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /ALLOWDOWNGRADE=1 /LOG=installer.log"
+          Start-Process -Wait -FilePath "$exePath" -ArgumentList "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /ALLOWDOWNGRADE=1 /ALLOWINSTALLING32ON64=1 /LOG=installer.log"
           "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
           "$env:ProgramFiles\Git\mingw${{env.ARCH_BITNESS}}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
       - name: validate
