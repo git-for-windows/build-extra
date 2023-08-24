@@ -193,6 +193,10 @@ jobs:
         if: matrix.artifact == 'build-installers'
         shell: bash
         run: |
+          echo '::group::installer.log'
+          cat installer.log
+          echo '::endgroup'
+
           set -x &&
           cygpath -aw / &&
           git.exe version --build-options >version &&
