@@ -152,6 +152,7 @@ jobs:
           git clone --bare --depth=1 --single-branch --branch=main $partial \
             https://github.com/git-for-windows/git-sdk-${{ matrix.bitness }} .sdk
       - name: build ${{ matrix.artifact }} artifact
+        id: build-artifact
         shell: bash
         run: |
           case "${{ matrix.artifact }}" in
@@ -166,6 +167,7 @@ jobs:
               ${{ matrix.artifact }}
             ;;
           esac &&
+          echo "git-version=$(sdk-artifact/cmd/git.exe version)" >>$GITHUB_OUTPUT &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/mingw${{ matrix.bitness }}/bin" >>$GITHUB_PATH &&
@@ -195,7 +197,7 @@ jobs:
           cygpath -aw / &&
           git.exe version --build-options >version &&
           cat version &&
-          grep "$(sed -e 's|^v||' -e 's|-|.|g' <bundle-artifacts/next_version)" version &&
+          grep "${{ steps.build-artifact.outputs.git-version }}" version &&
           checklist=installer/run-checklist.sh &&
           # cannot test SSH keys in read-only mode, skip test for now
           sed -i 's|git@ssh.dev.azure.com:v3/git-for-windows/git/git|https://github.com/git/git|' $checklist &&
