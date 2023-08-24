@@ -203,6 +203,7 @@ jobs:
           echo '::endgroup'
 
           set -x &&
+          grep 'Installation process succeeded' installer.log &&
           cygpath -aw / &&
           git.exe version --build-options >version &&
           cat version &&
