@@ -204,6 +204,7 @@ jobs:
 
           set -x &&
           grep 'Installation process succeeded' installer.log &&
+          ! grep -iw failed installer.log &&
           cygpath -aw / &&
           git.exe version --build-options >version &&
           cat version &&
