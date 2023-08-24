@@ -1272,7 +1272,7 @@ begin
 
     if IsOriginalUserAdmin then begin
         // detection only works when we're not running as admin
-        Log('Symbolic link permission detection failed: running as admin');
+        Log('Skipping symbolic link permission detection: running as admin');
         Result:=False;
     end else begin
         // maybe rights assigned through group policy without enabling developer mode?
