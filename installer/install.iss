@@ -1098,7 +1098,7 @@ begin
     Result:=True;
     if not IsX64 then
         SuppressibleMsgBox('Git for Windows (32-bit) is nearing its end of support.'+#13+'More information at https://gitforwindows.org/32-bit.html',mbError,MB_OK or MB_DEFBUTTON1,IDOK)
-    else if SuppressibleMsgBox('Git for Windows (32-bit) is nearing its end of support. It is recommended to install the 64-bit variant of Git for Windows instead.'+#13+'More information at https://gitforwindows.org/32-bit.html'+#13+'Continue to install the 32-bit variant?',mbError,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO then
+    else if not ParamIsSet('ALLOWINSTALLING32ON64') and (SuppressibleMsgBox('Git for Windows (32-bit) is nearing its end of support. It is recommended to install the 64-bit variant of Git for Windows instead.'+#13+'More information at https://gitforwindows.org/32-bit.html'+#13+'Continue to install the 32-bit variant?',mbError,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO) then
         Result:=False;
 #else
     if not IsWin64 then begin
@@ -1272,7 +1272,7 @@ begin
 
     if IsOriginalUserAdmin then begin
         // detection only works when we're not running as admin
-        Log('Symbolic link permission detection failed: running as admin');
+        Log('Skipping symbolic link permission detection: running as admin');
         Result:=False;
     end else begin
         // maybe rights assigned through group policy without enabling developer mode?
@@ -2639,7 +2639,7 @@ begin
     end;
 
     if not LinkCreated then begin
-        if not FileCopy(AppDir+'\tmp\git-wrapper.exe',FileName,False) then begin
+        if not FileCopy(AppDir+'\{#MINGW_BITNESS}\share\git\git-wrapper.exe',FileName,False) then begin
             Log('Line {#__LINE__}: Creating copy "'+FileName+'" failed.');
             // This is not a critical error, Git could basically be used without the
             // aliases for built-ins, so we continue.
@@ -3024,11 +3024,6 @@ begin
             end;
         end;
 
-        // Copy git-wrapper to the temp directory.
-        if not FileCopy(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-log.exe',AppDir+'\tmp\git-wrapper.exe',False) then begin
-            Log('Line {#__LINE__}: Creating copy "'+AppDir+'\tmp\git-wrapper.exe" failed.');
-        end;
-
         // Create built-ins as aliases for git.exe.
         for i:=0 to Count do begin
             FileName:=AppDir+'\{#MINGW_BITNESS}\bin\'+BuiltIns[i];
@@ -3048,10 +3043,6 @@ begin
             HardlinkOrCopyGit(AppDir+'\cmd\git-lfs.exe',False);
         end;
 
-        // Delete git-wrapper from the temp directory.
-        if not DeleteFile(AppDir+'\tmp\git-wrapper.exe') then begin
-            Log('Line {#__LINE__}: Deleting temporary "'+AppDir+'\tmp\git-wrapper.exe" failed.');
-        end;
     end else
         LogError('Line {#__LINE__}: Unable to read file "{#MINGW_BITNESS}\{#APP_BUILTINS}".');
 

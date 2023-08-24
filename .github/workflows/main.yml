@@ -152,6 +152,7 @@ jobs:
           git clone --bare --depth=1 --single-branch --branch=main $partial \
             https://github.com/git-for-windows/git-sdk-${{ matrix.bitness }} .sdk
       - name: build ${{ matrix.artifact }} artifact
+        id: build-artifact
         shell: bash
         run: |
           case "${{ matrix.artifact }}" in
@@ -166,6 +167,7 @@ jobs:
               ${{ matrix.artifact }}
             ;;
           esac &&
+          echo "git-version=$(sdk-artifact/cmd/git.exe version)" >>$GITHUB_OUTPUT &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/mingw${{ matrix.bitness }}/bin" >>$GITHUB_PATH &&
@@ -184,18 +186,34 @@ jobs:
         shell: pwsh
         run: |
           $exePath = Get-ChildItem -Path installer-${{ matrix.bitness }}/*.exe | %{$_.FullName}
-          Start-Process -Wait -FilePath "$exePath" -ArgumentList "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /ALLOWDOWNGRADE=1 /LOG=installer.log"
-          "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
-          "$env:ProgramFiles\Git\mingw${{env.ARCH_BITNESS}}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+          $installer = Start-Process -PassThru -Wait -FilePath "$exePath" -ArgumentList "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /ALLOWDOWNGRADE=1 /ALLOWINSTALLING32ON64=1 /LOG=installer.log"
+          $exitCode = $installer.ExitCode
+          if ($exitCode -ne 0) {
+            Write-Host "::error::Installer failed with exit code $exitCode!"
+            exit 1
+          }
+          if ("${{ matrix.bitness }}" -eq 32) {
+            "${env:ProgramFiles(x86)}\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+            "${env:ProgramFiles(x86)}\Git\mingw32\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+          } else {
+            "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+            "$env:ProgramFiles\Git\mingw${{env.ARCH_BITNESS}}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+          }
       - name: validate
         if: matrix.artifact == 'build-installers'
         shell: bash
         run: |
+          echo '::group::installer.log'
+          cat installer.log
+          echo '::endgroup'
+
           set -x &&
+          grep 'Installation process succeeded' installer.log &&
+          ! grep -iw failed installer.log &&
           cygpath -aw / &&
           git.exe version --build-options >version &&
           cat version &&
-          grep "$(sed -e 's|^v||' -e 's|-|.|g' <bundle-artifacts/next_version)" version &&
+          grep "${{ steps.build-artifact.outputs.git-version }}" version &&
           checklist=installer/run-checklist.sh &&
           # cannot test SSH keys in read-only mode, skip test for now
           sed -i 's|git@ssh.dev.azure.com:v3/git-for-windows/git/git|https://github.com/git/git|' $checklist &&
