@@ -3184,7 +3184,7 @@ begin
         if not SaveStringToFile(ExpandConstant('{app}\etc\git-bash.config'),'MSYS=enable_pcon',False) then begin
             LogError('Could not write to '+ExpandConstant('{app}\etc\git-bash.config'))
         end
-    else
+    end else begin
         if not SaveStringToFile(ExpandConstant('{app}\etc\git-bash.config'),'MSYS=disable_pcon',False) then begin
             LogError('Could not write to '+ExpandConstant('{app}\etc\git-bash.config'))
         end
