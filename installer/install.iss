@@ -2639,7 +2639,7 @@ begin
     end;
 
     if not LinkCreated then begin
-        if not FileCopy(AppDir+'\tmp\git-wrapper.exe',FileName,False) then begin
+        if not FileCopy(AppDir+'\{#MINGW_BITNESS}\share\git\git-wrapper.exe',FileName,False) then begin
             Log('Line {#__LINE__}: Creating copy "'+FileName+'" failed.');
             // This is not a critical error, Git could basically be used without the
             // aliases for built-ins, so we continue.
@@ -3024,11 +3024,6 @@ begin
             end;
         end;
 
-        // Copy git-wrapper to the temp directory.
-        if not FileCopy(AppDir+'\{#MINGW_BITNESS}\libexec\git-core\git-log.exe',AppDir+'\tmp\git-wrapper.exe',False) then begin
-            Log('Line {#__LINE__}: Creating copy "'+AppDir+'\tmp\git-wrapper.exe" failed.');
-        end;
-
         // Create built-ins as aliases for git.exe.
         for i:=0 to Count do begin
             FileName:=AppDir+'\{#MINGW_BITNESS}\bin\'+BuiltIns[i];
@@ -3048,10 +3043,6 @@ begin
             HardlinkOrCopyGit(AppDir+'\cmd\git-lfs.exe',False);
         end;
 
-        // Delete git-wrapper from the temp directory.
-        if not DeleteFile(AppDir+'\tmp\git-wrapper.exe') then begin
-            Log('Line {#__LINE__}: Deleting temporary "'+AppDir+'\tmp\git-wrapper.exe" failed.');
-        end;
     end else
         LogError('Line {#__LINE__}: Unable to read file "{#MINGW_BITNESS}\{#APP_BUILTINS}".');
 
