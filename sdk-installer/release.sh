@@ -29,14 +29,17 @@ case "$MSYSTEM" in
 MINGW32)
 	SDK_ARCH=32
 	SDK_TITLE="32-bit"
+	MINGW_PREFIX=mingw-w64-i686-
 	;;
 MINGW64)
 	SDK_ARCH=64
 	SDK_TITLE="64-bit"
+	MINGW_PREFIX=mingw-w64-x86_64-
 	;;
 CLANGARM64)
 	SDK_ARCH=arm64
 	SDK_TITLE=arm64
+	MINGW_PREFIX=mingw-w64-clang-aarch64-
 	;;
 *)
 	die "Unhandled MSYSTEM: $MSYSTEM"
@@ -93,12 +96,12 @@ die "Could not generate setup script"
 (cd $BIN_DIR && cp $exes_and_dlls "$FAKEROOTDIR/mini$BIN_DIR") ||
 die "Could not copy .exe and .dll files into fake root"
 
-type 7za ||
-pacman -Sy --noconfirm p7zip ||
+type 7z ||
+pacman -Sy --noconfirm $MINGW_PREFIX-7zip ||
 die "Could not install 7-Zip"
 
 echo "Creating archive" &&
-(cd "$FAKEROOTDIR" && 7za -x'!var/lib/pacman/*' a $OPTS7 "$TMPPACK" *) &&
+(cd "$FAKEROOTDIR" && 7z -x'!var/lib/pacman/*' a $OPTS7 "$TMPPACK" *) &&
 (cat "$SCRIPT_PATH/../7-Zip/7zS.sfx" &&
  echo ';!@Install@!UTF-8!' &&
  echo 'Title="Git for Windows '$SDK_TITLE' SDK"' &&
