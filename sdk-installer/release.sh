@@ -99,7 +99,7 @@ die "Could not install 7-Zip"
 
 echo "Creating archive" &&
 (cd "$FAKEROOTDIR" && 7za -x'!var/lib/pacman/*' a $OPTS7 "$TMPPACK" *) &&
-(cat "$SCRIPT_PATH/../7-Zip/7zSD.sfx" &&
+(cat "$SCRIPT_PATH/../7-Zip/7zS.sfx" &&
  echo ';!@Install@!UTF-8!' &&
  echo 'Title="Git for Windows '$SDK_TITLE' SDK"' &&
  echo 'BeginPrompt="This archive extracts an SDK to build, test and package Git for Windows '$SDK_TITLE'"' &&
