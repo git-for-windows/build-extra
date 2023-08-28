@@ -197,7 +197,7 @@ jobs:
             "${env:ProgramFiles(x86)}\Git\mingw32\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
           } else {
             "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
-            "$env:ProgramFiles\Git\mingw${{env.ARCH_BITNESS}}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+            "$env:ProgramFiles\Git\mingw${{ matrix.bitness }}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
           }
       - name: validate
         if: matrix.artifact == 'build-installers'
