@@ -84,7 +84,9 @@ fi
 # Newer `git.exe` no longer link to `libssp-0.dll` that has been made obsolete
 # by recent GCC updates
 EXCLUDE_LIBSSP=
-grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" || EXCLUDE_LIBSSP='\|ssp'
+test ! -f "/$MSYSTEM_LOWER/bin/git.exe" ||
+grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" ||
+EXCLUDE_LIBSSP='\|ssp'
 
 this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
