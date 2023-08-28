@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### Bug Fixes
 
 * Git for Windows v2.42.0's release notes claimed that it ships with Git LFS v3.4.0, [which is incorrect](https://github.com/git-for-windows/git/issues/4567) and has been fixed in this release.
+* The installer option to enable support for Pseudo Consoles [has been handled incorrectly](https://github.com/git-for-windows/git/issues/4571) since Git for Windows v2.41.0, which [has been fixed](https://github.com/git-for-windows/build-extra/pull/522).
 
 ## Changes since Git for Windows v2.41.0(3) (July 13th 2023)
 
