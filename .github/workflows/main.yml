@@ -63,6 +63,7 @@ jobs:
         with:
           flavor: full
       - name: build ${{ matrix.directory }}
+        id: build
         shell: bash
         run: |
           top_dir=$PWD &&
@@ -71,11 +72,11 @@ jobs:
           artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
           mkdir -p "$top_dir/$artifacts" &&
           mv *.tar.* "$top_dir/$artifacts"/ &&
-          echo "artifacts=$artifacts" >>$GITHUB_ENV
+          echo "results=$artifacts" >>$GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.artifacts }}
-          path: ${{ env.artifacts }}
+          name: ${{ steps.build.outputs.result }}
+          path: ${{ steps.build.outputs.result }}
       - name: ensure that the Git worktree is still clean
         shell: bash
         run: |
@@ -117,15 +118,16 @@ jobs:
           echo "MSYSTEM=MINGW64" >>$GITHUB_ENV
       - name: build ${{ matrix.directory }}/
         shell: bash
+        id: build
         run: |
           artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
           mkdir -p "$artifacts" &&
           ./"${{ matrix.directory }}"/release.sh --output="$PWD/$artifacts/" 0-test &&
-          echo "artifacts=$artifacts" >>$GITHUB_ENV
+          echo "result=$artifacts" >>$GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.artifacts }}
-          path: ${{ env.artifacts }}
+          name: ${{ steps.build.outputs.result }}
+          path: ${{ steps.build.outputs.result }}
   sdk-artifacts:
     needs: determine-packages
     if: needs.determine-packages.outputs.test-sdk-artifacts == 'true'
