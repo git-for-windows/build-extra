@@ -206,14 +206,15 @@ jobs:
             "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
             "$env:ProgramFiles\Git\mingw${{ matrix.bitness }}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
           }
+      - name: show installer log
+        # run this even if the installation failed (actually, _in particular_ when the installation failed)
+        if: always() && matrix.artifact == 'build-installers'
+        shell: bash
+        run: cat installer.log
       - name: validate
         if: matrix.artifact == 'build-installers'
         shell: bash
         run: |
-          echo '::group::installer.log'
-          cat installer.log
-          echo '::endgroup'
-
           set -x &&
           grep 'Installation process succeeded' installer.log &&
           ! grep -iw failed installer.log &&
