@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Git for Windows v2.42.0's release notes claimed that it ships with Git LFS v3.4.0, [which is incorrect](https://github.com/git-for-windows/git/issues/4567) and has been fixed in this release.
 * The installer option to enable support for Pseudo Consoles [has been handled incorrectly](https://github.com/git-for-windows/git/issues/4571) since Git for Windows v2.41.0, which [has been fixed](https://github.com/git-for-windows/build-extra/pull/522).
+* Some Git commands (those producing paged output, for example) experienced a [significant slow-down](https://github.com/git-for-windows/git/issues/4459) under certain circumstances, when running on a machine joined to a domain controller, which [has been fixed](https://github.com/git-for-windows/MSYS2-packages/pull/124).
 
 ## Changes since Git for Windows v2.41.0(3) (July 13th 2023)
 
