@@ -167,7 +167,7 @@ die "Could not install 7-Zip"
 
 echo "Creating archive" &&
 (cd / && 7za a $OPTS7 $TMPPACK $LIST) &&
-(cat "$SCRIPT_PATH/../7-Zip/7zSD.sfx" &&
+(cat "$SCRIPT_PATH/../7-Zip/7zS.sfx" &&
  echo ';!@Install@!UTF-8!' &&
  echo 'Title="Portable Git for Windows '$TITLE'"' &&
  echo 'BeginPrompt="This archive extracts a complete Git for Windows '$TITLE'"' &&
