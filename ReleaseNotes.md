@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [MinTTY v3.6.5](https://github.com/mintty/mintty/releases/tag/3.6.5).
 * Comes with [MSYS2 runtime v3.4.9](https://github.com/cygwin/cygwin/releases/tag/cygwin-3.4.9).
+* Comes with [GNU TLS v3.8.1](https://lists.gnupg.org/pipermail/gnutls-help/2023-August/004834.html).
 
 ## Changes since Git for Windows v2.42.0 (August 21st 2023)
 
