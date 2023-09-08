@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [MinTTY v3.6.5](https://github.com/mintty/mintty/releases/tag/3.6.5).
+* Comes with [MSYS2 runtime v3.4.9](https://github.com/cygwin/cygwin/releases/tag/cygwin-3.4.9).
 
 ## Changes since Git for Windows v2.42.0 (August 21st 2023)
 
