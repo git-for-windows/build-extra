@@ -2895,7 +2895,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 		echo "Bundling .pdb files for $artifact_suffix..." >&2
 		(cd "$unpack" &&
 		 "/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			"7za a -mx9 \"$artifactsdir/$zip\" *") &&
+			"7z a -mx9 \"$artifactsdir/$zip\" *") &&
 		echo "Created $artifactsdir/$zip" >&2 ||
 		die 'Could not create %s for %s\n' "$zip" "$arch"
 	done
@@ -3310,9 +3310,8 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		cat <<-EOF >>"$sparse_checkout_file" &&
 
 		# 7-Zip
-		/usr/bin/7za
-		/usr/lib/p7zip/7za.exe
-		/usr/bin/msys-stdc++-*.dll
+		$PREFIX/bin/7z.exe
+		$PREFIX/bin/7z.exe
 
 		# WinToast
 		$PREFIX/bin/wintoast.exe
