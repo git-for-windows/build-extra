@@ -3310,7 +3310,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		cat <<-EOF >>"$sparse_checkout_file" &&
 
 		# 7-Zip
-		$PREFIX/bin/7z.exe
+		$PREFIX/bin/7z.dll
 		$PREFIX/bin/7z.exe
 
 		# WinToast
