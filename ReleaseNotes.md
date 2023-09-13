@@ -47,6 +47,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [MinTTY v3.6.5](https://github.com/mintty/mintty/releases/tag/3.6.5).
 * Comes with [MSYS2 runtime v3.4.9](https://github.com/cygwin/cygwin/releases/tag/cygwin-3.4.9).
 * Comes with [GNU TLS v3.8.1](https://lists.gnupg.org/pipermail/gnutls-help/2023-August/004834.html).
+* Comes with [cURL v8.3.0](https://curl.se/changes.html#8_3_0).
 
 ### Bug Fixes
 
