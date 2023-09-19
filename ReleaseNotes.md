@@ -48,6 +48,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [MSYS2 runtime v3.4.9](https://github.com/cygwin/cygwin/releases/tag/cygwin-3.4.9).
 * Comes with [GNU TLS v3.8.1](https://lists.gnupg.org/pipermail/gnutls-help/2023-August/004834.html).
 * Comes with [cURL v8.3.0](https://curl.se/changes.html#8_3_0).
+* Comes with [OpenSSL v3.1.3](https://www.openssl.org/news/openssl-3.1-notes.html).
 
 ### Bug Fixes
 
