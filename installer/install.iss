@@ -1798,6 +1798,8 @@ var
     Data:String;
     LblInfo:TLabel;
 begin
+    SanitizeGitEnvironmentVariables();
+
     InferredDefaultKeys:=TStringList.Create;
     InferredDefaultValues:=TStringList.Create;
     QueryUninstallValues();
