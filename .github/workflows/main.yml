@@ -34,13 +34,18 @@ jobs:
           git ls-files \*/PKGBUILD | sed 's|[^/]*$||' | sort >directories.txt &&
           define_matrix matrix directories.txt touched.txt packages.txt &&
 
-          git ls-files \*/release.sh | sed 's|[^/]*$||' | sort >releaseable.txt &&
-          define_matrix artifacts releaseable.txt touched.txt artifacts.txt
-
           test -z "$(git log -L :create_sdk_artifact:please.sh ${{github.event.pull_request.base.sha}}.. -- )" &&
-          test 200 -gt $(git diff --numstat ${{github.event.pull_request.base.sha}}.. -- please.sh | cut -f 2) &&
+          test 200 -gt $(($(git diff --numstat ${{github.event.pull_request.base.sha}}.. -- please.sh | cut -f 2))) &&
           test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- make-file-list.sh)" ||
           echo "test-sdk-artifacts=true" >>$GITHUB_OUTPUT
+
+          git ls-files \*/release.sh | sed 's|[^/]*$||' | sort >releaseable.txt &&
+          if grep -q test-sdk-artifacts=true $GITHUB_OUTPUT
+          then
+            # These are already tested as part of the `sdk-artifacts` matrix
+            sed -i '/^\(installer\|mingit\)\/$/d' releaseable.txt
+          fi &&
+          define_matrix artifacts releaseable.txt touched.txt artifacts.txt
 
           test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- check-for-missing-dlls.sh)" ||
           echo "check-for-missing-dlls=true" >>$GITHUB_OUTPUT
@@ -63,6 +68,7 @@ jobs:
         with:
           flavor: full
       - name: build ${{ matrix.directory }}
+        id: build
         shell: bash
         run: |
           top_dir=$PWD &&
@@ -71,11 +77,11 @@ jobs:
           artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
           mkdir -p "$top_dir/$artifacts" &&
           mv *.tar.* "$top_dir/$artifacts"/ &&
-          echo "artifacts=$artifacts" >>$GITHUB_ENV
+          echo "results=$artifacts" >>$GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.artifacts }}
-          path: ${{ env.artifacts }}
+          name: ${{ steps.build.outputs.result }}
+          path: ${{ steps.build.outputs.result }}
       - name: ensure that the Git worktree is still clean
         shell: bash
         run: |
@@ -117,15 +123,48 @@ jobs:
           echo "MSYSTEM=MINGW64" >>$GITHUB_ENV
       - name: build ${{ matrix.directory }}/
         shell: bash
+        id: build
         run: |
           artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
           mkdir -p "$artifacts" &&
           ./"${{ matrix.directory }}"/release.sh --output="$PWD/$artifacts/" 0-test &&
-          echo "artifacts=$artifacts" >>$GITHUB_ENV
+          echo "result=$artifacts" >>$GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         with:
-          name: ${{ env.artifacts }}
-          path: ${{ env.artifacts }}
+          name: ${{ steps.build.outputs.result }}
+          path: ${{ steps.build.outputs.result }}
+      - name: run the installer
+        if: matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          $exePath = Get-ChildItem -Path ${{ steps.build.outputs.result }}/*.exe | %{$_.FullName}
+          $installer = Start-Process -PassThru -Wait -FilePath "$exePath" -ArgumentList "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /ALLOWDOWNGRADE=1 /ALLOWINSTALLING32ON64=1 /LOG=installer.log"
+          $exitCode = $installer.ExitCode
+          if ($exitCode -ne 0) {
+            Write-Host "::error::Installer failed with exit code $exitCode!"
+            exit 1
+          }
+          "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+          "$env:ProgramFiles\Git\mingw64\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+      - name: show installer log
+        # run this even if the installation failed (actually, _in particular_ when the installation failed)
+        if: always() && matrix.directory == 'installer'
+        shell: bash
+        run: cat installer.log
+      - name: validate
+        if: matrix.directory == 'installer'
+        shell: bash
+        run: |
+          set -x &&
+          grep 'Installation process succeeded' installer.log &&
+          ! grep -iw failed installer.log &&
+          cygpath -aw / &&
+          git.exe version --build-options >version &&
+          cat version &&
+          checklist=installer/run-checklist.sh &&
+          # cannot test SSH keys in read-only mode, skip test for now
+          sed -i 's|git@ssh.dev.azure.com:v3/git-for-windows/git/git|https://github.com/git/git|' $checklist &&
+          sh -x $checklist
   sdk-artifacts:
     needs: determine-packages
     if: needs.determine-packages.outputs.test-sdk-artifacts == 'true'
@@ -197,16 +236,17 @@ jobs:
             "${env:ProgramFiles(x86)}\Git\mingw32\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
           } else {
             "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
-            "$env:ProgramFiles\Git\mingw${{env.ARCH_BITNESS}}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+            "$env:ProgramFiles\Git\mingw${{ matrix.bitness }}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
           }
+      - name: show installer log
+        # run this even if the installation failed (actually, _in particular_ when the installation failed)
+        if: always() && matrix.artifact == 'build-installers'
+        shell: bash
+        run: cat installer.log
       - name: validate
         if: matrix.artifact == 'build-installers'
         shell: bash
         run: |
-          echo '::group::installer.log'
-          cat installer.log
-          echo '::endgroup'
-
           set -x &&
           grep 'Installation process succeeded' installer.log &&
           ! grep -iw failed installer.log &&

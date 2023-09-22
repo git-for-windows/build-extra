@@ -131,6 +131,7 @@ Source: {#SourcePath}\NOTICE.txt; DestDir: {app}; Flags: replacesameversion; Aft
 #ifdef INCLUDE_EDIT_GIT_BASH
 Source: {#SourcePath}\..\edit-git-bash.exe; Flags: dontcopy
 #endif
+Source: "{#SourcePath}\..\aslr-manager.ps1"; DestName: aslr-manager.ps1; DestDir: {app}\cmd; Flags: replacesameversion restartreplace
 
 [Dirs]
 Name: "{app}\dev"
@@ -387,6 +388,9 @@ const
     GP_FSCache        = 1;
     GP_Symlinks       = 2;
 
+    // Security options
+    SO_MandatoryASLR = 1;
+
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
 #define HAVE_EXPERIMENTAL_OPTIONS 1
 #endif
@@ -495,6 +499,9 @@ var
     // Wizard page and variables for the extra options.
     ExtraOptionsPage:TWizardPage;
     RdbExtraOptions:array[GP_FSCache..GP_Symlinks] of TCheckBox;
+
+    SecurityOptionsPage:TWizardPage;
+    RdbSecurityOptions:array[SO_MandatoryASLR..SO_MandatoryASLR] of TCheckBox;
 
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Wizard page and variables for the experimental options.
@@ -1797,6 +1804,7 @@ var
     BtnPlink:TButton;
     Data:String;
     LblInfo:TLabel;
+    AslrSetting: AnsiString;
 begin
     SanitizeGitEnvironmentVariables();
 
@@ -2345,6 +2353,17 @@ begin
     end;
 
     RdbExtraOptions[GP_Symlinks].Checked:=Data<>'Disabled';
+
+#ifdef DEBUG_WIZARD_PAGE
+    if ('{#DEBUG_WIZARD_PAGE}'='SecurityOptionsPage.ID') then begin
+#else
+    if RegQueryBinaryValue(HKEY_LOCAL_MACHINE, 'SYSTEM\CurrentControlSet\Control\Session Manager\kernel', 'MitigationOptions', AslrSetting) and
+        (Length(AslrSetting)>1) and (AslrSetting[2]=AnsiChar(#01)) then begin
+#endif
+        SecurityOptionsPage:=CreatePage(PrevPageID,'Security options','Add mandatory ASLR security exceptions?',TabOrder,Top,Left);
+        RdbSecurityOptions[SO_MandatoryASLR]:=CreateCheckBox(SecurityOptionsPage, 'Add mandatory ASLR security exceptions','Add mandatory ASLR security exceptions for the executables in the "usr/bin"'+#13+'directory and Git Bash to function correctly on Windows systems with'+#13+'mandatory ASLR enabled which is a Windows security feature that is'+#13+'disabled by default but appears to be enabled on your system.'+#13++#13+'<RED>WARNING</RED>: If you have installed Git to a path modifiable by an unprivileged user'+#13+'or an external drive this will add mandatory ASLR security exceptions for'+#13+'those paths on which could introduce a security vulnerability!'+#13++#13+'<RED>WARNING</RED>: Doing this significantly slows down the load time of the program'+#13+'settings list in the exploit protection section of the Windows security application'+#13+'but it will load eventually!',TabOrder,Top,Left);
+        RdbSecurityOptions[SO_MandatoryASLR].Checked:=ReplayChoice('Add mandatory ASLR security exceptions','Auto')='Enabled';
+    end;
 
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
     (*
@@ -3152,6 +3171,12 @@ begin
         Configure experimental options
     }
 
+    if (SecurityOptionsPage<>Nil) then begin
+        WizardForm.StatusLabel.Caption:='Configuring security'
+        if RdbSecurityOptions[SO_MandatoryASLR].checked then
+            Exec('powershell.exe', ExpandConstant('-ExecutionPolicy Bypass -File "{app}/cmd/aslr-manager.ps1" -Action Disable "usr/bin"'), ExpandConstant('{app}'), SW_HIDE, ewWaitUntilTerminated, i);
+    end;
+
     WizardForm.StatusLabel.Caption:='Configuring experimental options';
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
     if RdbExperimentalOptions[GP_BuiltinDifftool].checked then
@@ -3591,6 +3616,15 @@ begin
         Data:='Enabled';
     end;
     RecordChoice(PreviousDataKey,'Enable Symlinks',Data);
+
+    // Security options.
+    if (SecurityOptionsPage<>Nil) then begin
+        Data:='Disabled';
+        if RdbSecurityOptions[SO_MandatoryASLR].Checked then begin
+            Data:='Enabled';
+        end;
+        RecordChoice(PreviousDataKey,'Add Mandatory ASLR security exceptions',Data);
+    end;
 
     // Experimental options.
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
