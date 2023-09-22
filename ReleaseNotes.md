@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [GNU TLS v3.8.1](https://lists.gnupg.org/pipermail/gnutls-help/2023-August/004834.html).
 * Comes with [cURL v8.3.0](https://curl.se/changes.html#8_3_0).
 * Comes with [OpenSSL v3.1.3](https://www.openssl.org/news/openssl-3.1-notes.html).
+* When installing into a Windows setup with Mandatory Address Space Layout Randomization (ASLR) enabled, which is incompatible with the MSYS2 runtime powering Git Bash, SSH and some other programs distributed with Git for Windows, [the Git for Windows installer now offers to add exceptions](https://github.com/git-for-windows/build-extra/pull/513) that will allow those programs to work as expected.
 
 ### Bug Fixes
 
