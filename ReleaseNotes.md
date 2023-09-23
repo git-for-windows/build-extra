@@ -55,6 +55,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Symbolic links whose target is an absolute path _without_ the drive prefix [accidentally had a drive prefix added when checked out](https://github.com/git-for-windows/git/issues/4586), rendering them "eternally modified". This bug [has been fixed](https://github.com/git-for-windows/git/pull/4592).
 * Git for Windows's installer [is no longer confused by global `GIT_*` environment variables](https://github.com/git-for-windows/build-extra/pull/529).
+* The installer [no longer claims that "fast-forward or merge" is the default `git pull` behavior](https://github.com/git-for-windows/build-extra/pull/498): The default behavior has changed in Git a while ago, to "fast-forward only".
 
 ## Changes since Git for Windows v2.42.0 (August 21st 2023)
 
