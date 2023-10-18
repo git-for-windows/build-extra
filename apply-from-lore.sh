@@ -89,8 +89,7 @@ do
 					s/^href="\.\.\/\([^"]*\).*/\1/p;q
 				}' <"$OUT2")"
 			test -n "$URL3" || break
-			curl -f https://lore.kernel.org/git/${URL3%/}/raw \
-				>>"$OUT3" ||
+			curl -f "${URL%/*/raw}/${URL3%/}/raw" >>"$OUT3" ||
 			die "Could not retrieve $URL3" >&2
 			NO=$(($NO+1))
 		done
