@@ -47,10 +47,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [MinTTY v3.6.5](https://github.com/mintty/mintty/releases/tag/3.6.5).
 * Comes with [MSYS2 runtime v3.4.9](https://github.com/cygwin/cygwin/releases/tag/cygwin-3.4.9).
 * Comes with [GNU TLS v3.8.1](https://lists.gnupg.org/pipermail/gnutls-help/2023-August/004834.html).
-* Comes with [OpenSSL v3.1.3](https://www.openssl.org/news/openssl-3.1-notes.html).
 * When installing into a Windows setup with Mandatory Address Space Layout Randomization (ASLR) enabled, which is incompatible with the MSYS2 runtime powering Git Bash, SSH and some other programs distributed with Git for Windows, [the Git for Windows installer now offers to add exceptions](https://github.com/git-for-windows/build-extra/pull/513) that will allow those programs to work as expected.
 * Comes with [OpenSSH v9.5.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_5_P1).
 * Comes with [cURL v8.4.0](https://github.com/curl/curl/releases/tag/curl-8_4_0).
+* Comes with [OpenSSL v3.1.4](https://github.com/openssl/openssl/releases/tag/openssl-3.1.4).
 
 ### Bug Fixes
 
