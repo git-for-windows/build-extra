@@ -52,6 +52,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [cURL v8.4.0](https://github.com/curl/curl/releases/tag/curl-8_4_0).
 * Comes with [OpenSSL v3.1.4](https://github.com/openssl/openssl/releases/tag/openssl-3.1.4).
 * Comes with [Git Credential Manager v2.4.1](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.4.1).
+* Comes with [Bash v5.2.21](https://git.savannah.gnu.org/cgit/bash.git/commit/?id=2bb3cbefdb8fd019765b1a9cc42ecf37ff22fec6).
 
 ### Bug Fixes
 
