@@ -3441,6 +3441,9 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 	--skip-doc-html)
 		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-doc-html"//'
 		;;
+        --reset-pkgrel)
+                sed_makepkg_e="$sed_makepkg_e"' -e s/^pkgrel=[0-9][0-9]*$/pkgrel=1/'
+                ;;
 	--build-src-pkg)
 		src_pkg=t
 		;;
