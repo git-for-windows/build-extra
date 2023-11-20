@@ -48,6 +48,7 @@ Following the footsteps of the MSYS2 and Cygwin projects on which Git for Window
 
 ### New Features
 
+* Comes with [Git v2.43.0](https://github.com/git/git/blob/v2.43.0/Documentation/RelNotes/2.43.0.txt).
 * Comes with [MSYS2 runtime v3.4.9](https://github.com/cygwin/cygwin/releases/tag/cygwin-3.4.9).
 * Comes with [GNU TLS v3.8.1](https://lists.gnupg.org/pipermail/gnutls-help/2023-August/004834.html).
 * When installing into a Windows setup with Mandatory Address Space Layout Randomization (ASLR) enabled, which is incompatible with the MSYS2 runtime powering Git Bash, SSH and some other programs distributed with Git for Windows, [the Git for Windows installer now offers to add exceptions](https://github.com/git-for-windows/build-extra/pull/513) that will allow those programs to work as expected.
