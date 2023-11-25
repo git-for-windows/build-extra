@@ -50,6 +50,10 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 
 * Comes with [GNU TLS v3.8.2](https://lists.gnupg.org/pipermail/gnutls-help/2023-November/004837.html).
 
+### Bug Fixes
+
+* The 32-bit variant of Git for Windows was missing some MSYS2 runtime updates, [which was addressed](https://github.com/git-for-windows/MSYS2-packages/pull/138); Do note [32-bit support is phased out](https://gitforwindows.org/32-bit.html).
+
 ## Changes since Git for Windows v2.42.0(2) (August 30th 2023)
 
 As announced previously, Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
