@@ -49,6 +49,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 ### New Features
 
 * Comes with [GNU TLS v3.8.2](https://lists.gnupg.org/pipermail/gnutls-help/2023-November/004837.html).
+* Comes with [Perl v5.38.1](http://search.cpan.org/dist/perl-5.38.1/pod/perldelta.pod).
 
 ### Bug Fixes
 
