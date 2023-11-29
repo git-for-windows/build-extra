@@ -51,6 +51,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * Comes with [GNU TLS v3.8.2](https://lists.gnupg.org/pipermail/gnutls-help/2023-November/004837.html).
 * Comes with [Perl v5.38.1](http://search.cpan.org/dist/perl-5.38.1/pod/perldelta.pod).
 * Comes with [gnupg v2.2.42](https://github.com/gpg/gnupg/releases/tag/gnupg-2.2.42).
+* Comes with [libfido2 v1.14.0](https://github.com/Yubico/libfido2/releases/tag/1.14.0).
 
 ### Bug Fixes
 
