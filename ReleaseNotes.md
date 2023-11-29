@@ -52,6 +52,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * Comes with [Perl v5.38.1](http://search.cpan.org/dist/perl-5.38.1/pod/perldelta.pod).
 * Comes with [gnupg v2.2.42](https://github.com/gpg/gnupg/releases/tag/gnupg-2.2.42).
 * Comes with [libfido2 v1.14.0](https://github.com/Yubico/libfido2/releases/tag/1.14.0).
+* Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.4.10](https://inbox.sourceware.org/cygwin-announce/20231129150845.713029-1-corinna-cygwin@cygwin.com/).
 
 ### Bug Fixes
 
