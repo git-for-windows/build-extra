@@ -54,6 +54,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.4.10](https://inbox.sourceware.org/cygwin-announce/20231129150845.713029-1-corinna-cygwin@cygwin.com/).
 * Comes with [Perl v5.38.2](http://search.cpan.org/dist/perl-5.38.2/pod/perldelta.pod).
 * Git for Windows [learned to detect and use native Windows support for ANSI sequences](https://github.com/git-for-windows/git/pull/4700), which allows using 24-bit colors in terminal windows.
+* Comes with [cURL v8.5.0](https://github.com/curl/curl/releases/tag/curl-8_5_0).
 
 ### Bug Fixes
 
