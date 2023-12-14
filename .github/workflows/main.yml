@@ -45,7 +45,8 @@ jobs:
             # These are already tested as part of the `sdk-artifacts` matrix
             sed -i '/^\(installer\|mingit\)\/$/d' releaseable.txt
           fi &&
-          define_matrix artifacts releaseable.txt touched.txt artifacts.txt
+          define_matrix artifacts releaseable.txt touched.txt artifacts.txt ||
+          exit $?
 
           test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- check-for-missing-dlls.sh)" ||
           echo "check-for-missing-dlls=true" >>$GITHUB_OUTPUT
