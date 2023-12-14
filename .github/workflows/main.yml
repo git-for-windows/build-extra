@@ -77,7 +77,7 @@ jobs:
           artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
           mkdir -p "$top_dir/$artifacts" &&
           mv *.tar.* "$top_dir/$artifacts"/ &&
-          echo "results=$artifacts" >>$GITHUB_OUTPUT
+          echo "result=$artifacts" >>$GITHUB_OUTPUT
       - uses: actions/upload-artifact@v3
         with:
           name: ${{ steps.build.outputs.result }}
