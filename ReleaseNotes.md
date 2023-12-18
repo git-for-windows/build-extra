@@ -56,6 +56,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * Git for Windows [learned to detect and use native Windows support for ANSI sequences](https://github.com/git-for-windows/git/pull/4700), which allows using 24-bit colors in terminal windows.
 * Comes with [cURL v8.5.0](https://github.com/curl/curl/releases/tag/curl-8_5_0).
 * Comes with [Git LFS v3.4.1](https://github.com/git-lfs/git-lfs/releases/tag/3.4.1).
+* The repository viewer [Tig](https://jonas.github.io/tig/) that is included in Git for Windows [can now be called also directly from PowerShell/CMD](https://github.com/git-for-windows/MINGW-packages/pull/104).
 
 ### Bug Fixes
 
