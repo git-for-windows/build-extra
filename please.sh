@@ -3239,6 +3239,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		/usr/ssl/certs/ca-bundle.crt
 		/usr/share/pacman/
 		/var/lib/pacman/local/
+		/update-via-pacman.ps1
 
 		# Some other utilities required by `make-file-list.sh`
 		/usr/bin/cat.exe
