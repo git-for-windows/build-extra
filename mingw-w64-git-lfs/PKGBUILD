@@ -1,0 +1,57 @@
+# Maintainer: Brendan Forster <brendan@github.com>
+
+_realname="git-lfs"
+pkgbase="mingw-w64-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=3.4.1
+pkgrel=1
+pkgdesc="An open source Git extension for versioning large files"
+install=git-lfs.install
+arch=('any')
+url="https://github.com/git-lfs/git-lfs"
+src_zip_url="${url}/archive/v${pkgver}.zip"
+license=('MIT')
+groups=('VCS')
+
+case "$CARCH" in
+i686)
+  zipname="git-lfs-windows-386-v$pkgver.zip"
+  folder=git-lfs-$pkgver/
+  sha256sum=b518b470071bd1465ee6468ba43701fc2b04495501b4bc533c593c426b6d14a7
+  exesuffix=
+  ;;
+x86_64)
+  zipname="git-lfs-windows-amd64-v$pkgver.zip"
+  folder=git-lfs-$pkgver/
+  sha256sum=a6f9fda2792bc441c0ec5df8c1d64274bddfac09fb702e78d839cb1cf0a13d8f
+  exesuffix=
+  ;;
+aarch64)
+  zipname="git-lfs-windows-arm64-v$pkgver.zip"
+  folder=git-lfs-$pkgver/
+  sha256sum=0ab256f3d395f95190e5448de16ae3173a462cfe13df761417b6489f326210e5
+  exesuffix=
+  ;;
+esac
+
+source=("https://github.com/github/git-lfs/releases/download/v$pkgver/$zipname"
+	"$src_zip_url")
+
+# Git LFS' source .zip now contains symbolic links that bsdtar does not like...
+noextract=("${src_zip_url##*/}")
+
+sha256sums=("$sha256sum" SKIP)
+options=('!strip')
+
+package() {
+  install -d -m755 $pkgdir/$MINGW_PREFIX/bin
+  install -m755 $srcdir/$folder/git-lfs$exesuffix.exe $pkgdir/$MINGW_PREFIX/bin/git-lfs.exe
+  install -d -m755 $pkgdir/$MINGW_PREFIX/share/doc/git-lfs
+  install -m755 $srcdir/$folder/README.md $pkgdir/$MINGW_PREFIX/share/doc/git-lfs/README.md
+  install -d -m755 $pkgdir/$MINGW_PREFIX/share/doc/git-doc
+  for f in $srcdir/$folder/man/html/git-lfs*.1.html
+  do
+    ff=${f##*/}
+    install -m755 $f $pkgdir/$MINGW_PREFIX/share/doc/git-doc/${ff%.1.html}.html
+  done
+}

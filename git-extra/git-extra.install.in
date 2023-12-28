@@ -1,19 +1,42 @@
 export LC_ALL=C
 
 post_install () {
-	for dir in mingw32 mingw64
-	do
-		test ! -d /$dir ||
-		test -f /$dir/etc/gitconfig ||
-		cat > /$dir/etc/gitconfig <<\GITCONFIG
+	ETC_GITCONFIG="$(git -c core.editor=echo config --system -e 2>/dev/null)"
+	test -f "$ETC_GITCONFIG" ||
+	cat > "$ETC_GITCONFIG" <<\GITCONFIG
 @@GITCONFIG@@
 GITCONFIG
-		test ! -d /$dir ||
-		test -f /$dir/etc/gitattributes ||
-		cat > /$dir/etc/gitattributes <<\GITATTRIBUTES
+	ETC_GITATTRIBUTES="${ETC_GITCONFIG%/*}/gitattributes"
+	test -f "$ETC_GITATTRIBUTES" ||
+	cat > "$ETC_GITATTRIBUTES" <<\GITATTRIBUTES
 @@GITATTRIBUTES@@
 
 GITATTRIBUTES
+
+	grep -q '^\*\.docm' "$ETC_GITATTRIBUTES" ||
+	sed -i -e 's/^\*\.DOCX\(.*\)/&\n*.docm\1\n*.DOCM\1/' \
+		-e 's/^\*\.DOT\(.*\)/&\n*.dotm\1\n*.DOTM\1/' \
+		"$ETC_GITATTRIBUTES"
+
+	for dir in mingw32 mingw64 clangarm64
+	do
+		# Drop git-wrapper in place of builtins "to save space"
+		git_wrapper=/$dir/share/git/git-wrapper.exe
+		if test -f $git_wrapper &&
+			! cmp -s $git_wrapper /$dir/bin/git-receive-pack.exe
+		then
+			for b in $(cat /$dir/share/git/builtins.txt)
+			do
+				rm /$dir/libexec/git-core/$b &&
+				ln $git_wrapper /$dir/libexec/git-core/$b
+
+				if test -x /$dir/bin/$b
+				then
+					rm /$dir/bin/$b &&
+					ln $git_wrapper /$dir/bin/$b
+				fi
+			done
+		fi
 	done
 
 	grep -q '^db_home: env windows' /etc/nsswitch.conf ||
@@ -38,10 +61,45 @@ GITATTRIBUTES
 	grep -q '^# Fixup git-bash in non login env' /etc/bash.bashrc ||
 	printf "\n# Fixup git-bash in non login env\nshopt -q login_shell || . /etc/profile.d/git-prompt.sh\n" >> /etc/bash.bashrc
 
-	grep -q git-for-windows etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://dl.bintray.com/$repo/pacman/$arch\nSigLevel = Optional\n' etc/pacman.conf
+	uname_m="$(uname -m)"
+	case "$uname_m" in
+	i686)
+		arch=i686
+		otherarch=x86-64
+		otherpacman=git-for-windows-mingw64
+		;;
+	x86_64)
+		arch=x86-64
+		otherarch=i686
+		otherpacman=git-for-windows-mingw32
+		;;
+	esac
 
-	test i686 != $(uname -m) ||
+	grep -q git-for-windows[^-] etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://wingit.blob.core.windows.net/'$arch'\n' etc/pacman.conf
+
+	! grep -A2 git-for-windows[^-] etc/pacman.conf |
+	grep -q '^SigLevel = Optional' ||
+	sed -i -e '/\[git-for-windows\]/{N;N;s/\nSigLevel = Optional//}' \
+		etc/pacman.conf
+
+	grep -q "$otherpacman" etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i['$otherpacman']\nServer = https://wingit.blob.core.windows.net/'$otherarch'\n' etc/pacman.conf
+
+	test -z "$(find /clangarm64 -type f -print -quit)" || # if /clangarm64 exists and contains at least one file
+	grep -q "git-for-windows-aarch64" etc/pacman.conf || # then add Git for Windows' aarch64 repository (unless it's already added)
+	sed -i -e '/^\[clangarm64]/i[git-for-windows-aarch64]\nServer = https://wingit.blob.core.windows.net/aarch64\n' etc/pacman.conf
+
+	! grep -q 'https://dl.bintray.com/\$repo/pacman/\$arch' etc/pacman.conf ||
+	sed -i -e 's/https:\/\/dl\.bintray\.com\/\$repo\/pacman\/\$arch/https:\/\/wingit.blob.core.windows.net\/'$arch'/g' etc/pacman.conf
+
+	! grep -q 'https://dl.bintray.com/git-for-windows/pacman/i686' etc/pacman.conf ||
+	sed -i -e 's/https:\/\/dl\.bintray\.com\/git-for-windows\/pacman\/i686/https:\/\/wingit.blob.core.windows.net\/i686/g' etc/pacman.conf
+
+	! grep -q 'https://dl.bintray.com/git-for-windows/pacman/x86_64' etc/pacman.conf ||
+	sed -i -e 's/https:\/\/dl\.bintray\.com\/git-for-windows\/pacman\/x86_64/https:\/\/wingit.blob.core.windows.net\/x86-64/g' etc/pacman.conf
+
+	test i686 != $"uname -m" ||
 	case "$(md5sum.exe < /msys2.ico)" in
 	292ad5cd*) cp /usr/share/git/msys2-32.ico /msys2.ico;;
 	esac
@@ -82,6 +140,129 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 }\
 ' /etc/profile
 	}
+
+	grep -q 'case "\${MSYS2_PATH_TYPE:-inherit}"' /etc/profile ||
+	sed -i 's/{MSYS2_PATH_TYPE:-[^}]*}/{MSYS2_PATH_TYPE:-inherit}/g' \
+		/etc/profile
+
+	! grep -qw PERL_PATH /etc/profile.d/perlbin.sh 2>/dev/null ||
+	sed -i 's/PERL_PATH/PERL_PATH_EXTRA/g' /etc/profile.d/perlbin.sh
+
+	! grep -q '^# Define default printer' /etc/profile ||
+	sed -i -e '/^# Define default printer/,/^$/d' \
+		-e 's/^\(export .* \)PRINTER /\1/' /etc/profile
+
+	test ! -f /usr/share/vim/vim81/defaults.vim ||
+	! grep -A3 '^ *autocmd BufReadPost \*' \
+		/usr/share/vim/vim81/defaults.vim |
+	grep -q ' exe "normal! g`\\""' ||
+	sed -i -e '/^ *autocmd BufReadPost \*/,/\\ \(| \)\?endif$/s/^/"/' \
+		/usr/share/vim/vim81/defaults.vim
+
+	test ! -f /usr/share/vim/vim80/defaults.vim ||
+	! grep -q '^"  augroup END$' /usr/share/vim/vim80/defaults.vim ||
+	sed -i -e '/^"  augroup END$/,$s/^"//' \
+		/usr/share/vim/vim80/defaults.vim
+
+	! grep -q '^if .*command -v getent' /etc/bash.bashrc ||
+	sed -i '/^if .*command -v getent/,/^fi/s/^/#/' /etc/bash.bashrc
+
+	# Ensure that Git for Windows' GPG keyring is still imported
+	pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
+	pacman-key --populate git-for-windows
+
+	# .bat files in /mingw{32,64}/bin are non-portable because they
+	# typically contain absolute paths
+	find /mingw*/bin/ -name \*.bat -exec rm {} \;
+
+	# absolute paths in the she-bang lines must be POSIX paths, not
+	# Windows paths, otherwise the SDK won't be portable
+	root="$(cygpath -am / | sed 's/\/$//')" &&
+	rootw="$(echo "$root" | sed "s/\//\\\\&/g")" &&
+	for s in $(grep -l "#\!$root/" $(find /mingw*/bin/ -size -17k -type f))
+	do
+		sed -i "1s/#\!$rootw/#\!/" $s || break
+	done
+
+	# Re-enable ssh-rsa and at least AES256-cbc and AES128-cbc, as they are
+	# still used e.g. in Azure Repos
+	test ! -f /etc/ssh/ssh_config || {
+		# Revert change by prior versions of git-extra.
+		! grep -q '^Ciphers [a-z].*cbc' /etc/ssh/ssh_config ||
+		sed -i -e 's/^Ciphers [a-z].*cbc/#   &/' /etc/ssh/ssh_config
+
+		# Revert change by prior versions of git-extra.
+		! grep -q '^Ciphers\s\++' /etc/ssh/ssh_config ||
+		sed -i -e '/^# Added by git-extra/{N;/^\(.*\n\)\?Ciphers +[a-z].*cbc/d}' /etc/ssh/ssh_config
+
+		grep -q '^Host\s\+ssh\.dev\.azure\.com' /etc/ssh/ssh_config ||
+		printf '%s\n%s\n\t%s\n\t%s\n' \
+			'# Added by git-extra' \
+			'Host ssh.dev.azure.com' \
+			'HostkeyAlgorithms +ssh-rsa' \
+			'PubkeyAcceptedAlgorithms +ssh-rsa' \
+			>>/etc/ssh/ssh_config
+
+		grep -q '^Host\s\+\*\.visualstudio\.com' /etc/ssh/ssh_config ||
+		printf '%s\n%s\n\t%s\n\t%s\n' \
+			'# Added by git-extra' \
+			'Host *.visualstudio.com' \
+			'HostkeyAlgorithms +ssh-rsa' \
+			'PubkeyAcceptedAlgorithms +ssh-rsa' \
+			>>/etc/ssh/ssh_config
+	}
+
+	# Enable color and syntax-highlighting in GNU nano
+	test ! -f /etc/nanorc ||
+	grep -q '^set titlecolor' /etc/nanorc ||
+	sed -i -e '/Paint the interface elements/,/root.s .nanorc/s/^# //' \
+		-e 's/^# \(include .*nanorc"\)$/\1/' /etc/nanorc
+
+	# Do not require /usr/bin/cmd in /usr/bin/start
+	grep -q '^"\$COMSPEC" ' /usr/bin/start ||
+	sed -i 's/^cmd /"$COMSPEC" /' /usr/bin/start
+
+	# Undo the damage of
+	# https://github.com/mirror/mingw-w64/commit/69effce76945e
+	for dir in mingw32 mingw64
+	do
+		case "$dir" in
+		*32) header=/$dir/i686-w64-mingw32/include/pthread_unistd.h;;
+		*64) header=/$dir/x86_64-w64-mingw32/include/pthread_unistd.h;;
+		esac
+		test ! -e $header ||
+		grep -q '^#define _POSIX_THREAD_SAFE_FUNCTIONS' $header ||
+		sed -i '$i#undef _POSIX_THREAD_SAFE_FUNCTIONS\n#define _POSIX_THREAD_SAFE_FUNCTIONS 200112L\n' $header
+	done
+
+	# We do not actually need the http.sslCAInfo setting anymore, as the
+	# cURL we ship with Git for Windows was patched to find the location of
+	# the TLS/SSL certificates.
+	test ! -f /etc/gitconfig || # just a little defensive programming
+	! grep -q '^	sslCAinfo = /ssl/certs/ca-bundle.crt$' /etc/gitconfig ||
+	sed -i -e 's/^	sslCAinfo = \/ssl\/certs\/ca-bundle\.crt$/#&/' /etc/gitconfig
+
+	# We no longer want to configure `color.diff`, `color.status` and `color.branch`
+	# by default.
+	test ! -f /etc/gitconfig || # just a little defensive programming
+	test -z "$(sed -n '/^\[color\]/{N;/\(diff\|status\|branch\) = auto/p}' </etc/gitconfig)" || {
+		git config -f /etc/gitconfig color.ui auto &&
+		for key in diff status branch
+		do
+			git config -f /etc/gitconfig --unset color.$key # ignore errors, e.g. if already unset
+		done
+	}
+
+	# Previously, we made sure that `/ssl` is a symbolic link pointing to
+	# `/usr/ssl` so that the http.sslCAInfo setting could be shared between
+	# the MSYS and the MINGW variants of `git.exe`.
+	#
+	# As we no longer need it, delete it.
+	test ! -h /ssl || rm /ssl
+
+	# Work around /etc/xml/catalog being updated using the MINGW version of xmlcatalog
+	! grep -q '"[CD]:/' /etc/xml/catalog ||
+	sed -i -e 's|"[CD]:/[^"]*/usr/|"/usr/|g' /etc/xml/catalog
 }
 
 post_upgrade () {

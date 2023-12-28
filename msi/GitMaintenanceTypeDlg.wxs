@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <UI>
+      <Dialog Id="GitMaintenanceTypeDlg" Width="370" Height="270" Title="!(loc.GitMaintenanceTypeDlg_Title)" X="50" Y="50">
+        <Control Type="Text" Id="ChangeLabel" Width="100" Height="10" X="105" Y="65" Text="!(loc.GitMaintenanceTypeDlg_ChangeLabel)" TabSkip="no" />
+        <Control Type="Text" Id="ChangeText" Width="230" Height="20" X="105" Y="78" Text="!(loc.GitMaintenanceTypeDlg_ChangeText)" TabSkip="no" />
+        <Control Type="PushButton" Id="ChangeButton" Width="38" Height="38" X="50" Y="65" FixedSize="yes" Icon="yes" IconSize="32" Text="!(loc.GitMaintenanceTypeDlg_ChangeButtonIcon)" ToolTip="!(loc.GitMaintenanceTypeDlg_ChangeButton_Tooltip)" Default="yes">
+          <Publish Order="1" Property="WixUI_InstallMode" Value="Change">1</Publish>
+          <Publish Order="2" Property="Progress1" Value="Changing">1</Publish>
+          <Publish Order="3" Property="Progress2" Value="changes">1</Publish>
+          <Condition Action="disable">ARPNOMODIFY</Condition>
+        </Control>
+        <Control Type="Text" Id="RepairLabel" Width="100" Height="10" X="105" Y="114" Text="!(loc.GitMaintenanceTypeDlg_RepairLabel)" TabSkip="no"/>
+        <Control Type="Text" Id="RepairText" Width="230" Height="30" X="105" Y="127" Text="!(loc.GitMaintenanceTypeDlg_RepairText)" TabSkip="no" />
+        <Control Type="PushButton" Id="RepairButton" Width="38" Height="38" X="50" Y="114" FixedSize="yes" Icon="yes" IconSize="32" Text="!(loc.GitMaintenanceTypeDlg_RepairButtonIcon)" ToolTip="!(loc.GitMaintenanceTypeDlg_RepairButton_Tooltip)">
+          <Publish Order="1" Property="WixUI_InstallMode" Value="Repair">1</Publish>
+          <Publish Order="2" Property="Progress1" Value="Repairing">1</Publish>
+          <Publish Order="3" Property="Progress2" Value="repairs">1</Publish>
+          <Condition Action="disable">ARPNOREPAIR</Condition>
+        </Control>
+        <Control Type="Text" Id="RemoveLabel" Width="100" Height="10" X="105" Y="163" Text="!(loc.GitMaintenanceTypeDlg_RemoveLabel)" TabSkip="no"/>
+        <Control Type="Text" Id="RemoveText" Width="230" Height="20" X="105" Y="176" Text="!(loc.GitMaintenanceTypeDlg_RemoveText)" TabSkip="no"/>
+        <Control Type="PushButton" Id="RemoveButton" Width="38" Height="38" X="50" Y="163" FixedSize="yes" Icon="yes" IconSize="32" Text="!(loc.GitMaintenanceTypeDlg_RemoveButtonIcon)" ToolTip="!(loc.GitMaintenanceTypeDlg_RemoveButton_Tooltip)">
+          <Publish Order="1" Property="WixUI_InstallMode" Value="Remove">1</Publish>
+          <Publish Order="2" Property="Progress1" Value="Removing">1</Publish>
+          <Publish Order="3" Property="Progress2" Value="removes">1</Publish>
+          <Condition Action="disable">ARPNOREMOVE</Condition>
+        </Control>
+        <Control Type="PushButton" Id="Back" Width="56" Height="17" X="180" Y="243" Text="!(loc.WixUIBack)" />
+        <Control Type="PushButton" Id="Next" Width="56" Height="17" X="236" Y="243" Text="!(loc.WixUINext)" Disabled="yes" />
+        <Control Type="PushButton" Id="Cancel" Width="56" Height="17" X="304" Y="243" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Type="Bitmap" Id="BannerBitmap" Width="370" Height="44" X="0" Y="0" Text="!(loc.GitMaintenanceTypeDlgBannerBitmap)" TabSkip="no"/>
+        <Control Type="Line" Id="BannerLine" Width="370" Height="0" X="0" Y="44" />
+        <Control Type="Line" Id="BottomLine" Width="370" Height="0" X="0" Y="234" />
+        <Control Type="Text" Id="Description" Width="280" Height="20" X="25" Y="23" Text="!(loc.GitMaintenanceTypeDlg_Description)" NoPrefix="yes" Transparent="yes" />
+        <Control Type="Text" Id="Title" Width="240" Height="15" X="15" Y="6" Text="!(loc.GitMaintenanceTypeDlg_Title)" NoPrefix="yes" Transparent="yes" />
+      </Dialog>
+    </UI>
+  </Fragment>
+</Wix>

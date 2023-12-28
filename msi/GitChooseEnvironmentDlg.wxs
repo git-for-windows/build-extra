@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <UI>
+      <Dialog Id="GitChooseEnvironmentDlg" Width="370" Height="270" Title="!(loc.GitChooseEnvironmentDlg_Title)" X="50" Y="50">
+        <Control Type="RadioButtonGroup" Property="CLIENVIRONMENT" Id="RadioButtonGroup" Width="310" Height="55" X="30" Y="87">
+          <RadioButtonGroup Property="CLIENVIRONMENT">
+            <RadioButton Text="!(loc.GitChooseEnvironmentDlg_RbBash)" Height="15" Value="Bash" Width="310" X="0" Y="0" />
+            <RadioButton Text="!(loc.GitChooseEnvironmentDlg_RbCmd)" Height="15" Value="Cmd" Width="310" X="0" Y="20" />
+            <RadioButton Text="!(loc.GitChooseEnvironmentDlg_RbCmdTools)" Height="15" Value="CmdTools" Width="310" X="0" Y="40" />
+          </RadioButtonGroup>
+        </Control>
+        <Control Type="PushButton" Id="Back" Width="56" Height="17" X="180" Y="243" Text="!(loc.WixUIBack)" />
+        <Control Type="PushButton" Id="Next" Width="56" Height="17" X="236" Y="243" Default="yes" Text="!(loc.WixUINext)" />
+        <Control Type="PushButton" Id="Cancel" Width="56" Height="17" X="304" Y="243" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Type="Bitmap" Id="BannerBitmap" Width="370" Height="44" X="0" Y="0" Text="!(loc.GitChooseEnvironmentDlgBannerBitmap)" TabSkip="no" />
+        <Control Type="Line" Id="BannerLine" Width="370" Height="0" X="0" Y="44" />
+        <Control Type="Line" Id="BottomLine" Width="370" Height="0" X="0" Y="234" />
+        <Control Type="Text" Id="Description" Width="280" Height="20" X="25" Y="23" Text="!(loc.GitChooseEnvironmentDlgDescription)" Transparent="yes" NoPrefix="yes" />
+        <Control Type="Text" Id="Title" Width="200" Height="15" X="15" Y="6" Text="!(loc.GitChooseEnvironmentDlgTitle)" Transparent="yes" NoPrefix="yes" />
+        <Control Type="Text" Id="Text" Width="340" Height="20" X="15" Y="53" Text="!(loc.GitChooseEnvironmentDlg_Text)" />
+        <Control Type="Text" Id="OptionDescriptionText" Width="340" Height="10" X="15" Y="155" Text="!(loc.GitChooseEnvironmentDlg_OptionDescription)" />
+        <Control Type="Text" Id="BashText" Width="324" Height="30" X="23" Y="171" Text="!(loc.GitChooseEnvironmentDlg_BashText)">
+          <Condition Action="show">CLIENVIRONMENT = "Bash"</Condition>
+          <Condition Action="hide"><![CDATA[CLIENVIRONMENT <> "Bash"]]></Condition>
+        </Control>
+        <Control Type="Text" Id="CmdText" Width="324" Height="30" X="23" Y="171" Text="!(loc.GitChooseEnvironmentDlg_CmdText)">
+          <Condition Action="show">CLIENVIRONMENT = "Cmd"</Condition>
+          <Condition Action="hide"><![CDATA[CLIENVIRONMENT <> "Cmd"]]></Condition>
+        </Control>
+        <Control Type="Text" Id="CmdToolsText" Width="324" Height="30" X="23" Y="171" Text="!(loc.GitChooseEnvironmentDlg_CmdToolsText)">
+          <Condition Action="show">CLIENVIRONMENT = "CmdTools"</Condition>
+          <Condition Action="hide"><![CDATA[CLIENVIRONMENT <> "CmdTools"]]></Condition>
+        </Control>
+      </Dialog>
+    </UI>
+  </Fragment>
+</Wix>

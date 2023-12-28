@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Download the most recent Inno Setup version.
-installer="is-unicode.exe"
+installer="is.exe"
 url="http://www.jrsoftware.org/download.php/$installer"
 
 die () {
@@ -30,6 +30,3 @@ else
 		//noicons //tasks= //portable=1
 fi ||
 die "Could not install InnoSetup"
-
-# Remove unneeded files from the installation.
-rm -r InnoSetup/Examples/ InnoSetup/Compil32.exe InnoSetup/isscint.dll

@@ -1,60 +1,194 @@
 # Maintainer: nalla <nalla@hamal.uberspace.de>
 
-pkgname=('git-extra')
+_realname="git-extra"
+pkgbase="mingw-w64-${_realname}"
+pkgname=($_realname
+        "${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
-pkgver=1.1.94.589bdab
+pkgver=1.1.636.2db97b993
 pkgrel=1
 pkgdesc="Git for Windows extra files"
-arch=('i686' 'x86_64')
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'clangarm64')
 url="https://github.com/git-for-windows/build-extra"
 license=('GPL')
 groups=('VCS')
+depends=('git-for-windows-keyring' 'diffutils')
 optdepends=('vim' 'filesystem')
 install='git-extra.install'
 pkgver() {
-  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count HEAD -- "$startdir")" "$(git rev-parse --short HEAD)"
+  cd "$startdir"
+  test ! -f "$(git rev-parse --git-path shallow)" || git -c http.sslbackend fetch --unshallow
+  rev="$(git rev-list -1 HEAD -- .)"
+  test -n "$(git show . |
+    sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]/p')" ||
+  rev="$(git rev-list -1 $rev^ -- .)"
+  printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $rev -- .)" \
+    "$(git rev-parse --short=9 $rev)"
 }
+source=('inputrc'
+        'vimrc'
+        'vi'
+        'git.nanorc'
+        'notepad'
+        'wordpad'
+        'create-shortcut.c'
+        'Makefile'
+        'SystemInfo.cpp'
+        'SystemInfo.h'
+        'WhoUses.cpp'
+        'git-prompt.sh'
+        'aliases.sh'
+        'env.sh'
+        'bash_profile.sh'
+        'msys2-32.ico'
+        '99-post-install-cleanup.post'
+        'gitattributes'
+        'astextplain'
+        'git-sdk.sh'
+        'sdk.completion'
+        'git-update-git-for-windows'
+        'git-update'
+        'blocked-file-util.c'
+        'zzz_rm_stackdumps.sh'
+	'cyg-dlls.sh'
+        'proxy-lookup.c'
+        'git-askyesno.c'
+        'update-via-pacman.bat.in'
+        'git-credential-helper-selector.c'
+        'git-credential-helper-selector.manifest'
+        'git-credential-helper-selector.rc'
+        'git-askpass.c'
+        'git-askpass.h'
+        'git-askpass.rc')
+sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
+            'e36a3b93b8a33b0a74619f2449ed6d56ed54e4e2938b97070bce4926f1f44054'
+            '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
+            '17c90698d4dd52dd9f383e72aee54ecea0f62520baf56722de5c83285507c0d9'
+            '3cd83627f1d20e1108533419fcf33c657cbcf777c3dc39fa7f13748b7d63858a'
+            'd51229e5ec3653782a2c09aa5ad9af8f159aba94bc28498d7f358c33399b313d'
+            '4716d520e7e6e0a1281bad1ae4c21e3e6442127c3030d27681162b9c40aa6b9d'
+            '937e25c096e0fa91f86f689a00a5bf5442c2333fbedab30239a935e682ae2e80'
+            'd212e1bbe75a9f81443126701324c9c44c3ed5750dd9822eba754a1799ed13b3'
+            '402c51eba82453a76f5110f4754bb1005df507a6e4532574c2b9627ff4e1dc81'
+            '8433a9e72b3bc9c3bc7903b54b868399bdb17a6c8de4af4dd5450dd42859c898'
+            '0a4d04eb5ce035f9b94ebad51f0fc366ffda1f384fa6e586e8eef140440fb012'
+            '8056f48ae61f2cba668c07b31c56229914912444ca6656205aaffce59b8e6b11'
+            '32c9a549ecb1c9e06622221dae98a000ac2ce9c2be97d5d0c4f80610af3dc55c'
+            '02d38e480a1ec4227e94a5aa073945901680aa3387e3386f8b77f10426ebbc75'
+            'dcbd1b981d5b899afe30151a5f5a27ea52025ff1335f131af1b5891f62ddd55b'
+            '683ab066be19cb4defec470ebd53f165ca5dbf761fd40c13aee8abe31ba42803'
+            '1cf2c13fb97c51375a76ed479362c3cbcdb51ab4d3a745e8d2c3a780badd8d46'
+            '201fc40c1aadadceccc617511a4add05536b3638bff34456cc334e3b21c130e7'
+            '180e05c1b8afa34d59cb2f6635bc75fece10474f37e164ea5916a6b3b56e20dd'
+            '22f41610dea842890955032af30efdb60e80f310e95a04e57ab36b10e0376923'
+            '38c0cf57e03d275cdd42984f102bee8352fac672f875ab23c46b9625eefc49f3'
+            '15b40ab72dea884f659cfbe441e9a40b2d8d63e490a3c14824a55607368e476d'
+            'ebd1d20aa94be11c6b9bec7d33614d32016343d282c4716d0561ab41407c99bf'
+            '97e89689d91747ddb5ee873ae864aebcbb8d0364a52fa198db1e439ee2965b9b'
+            'b2fb7a3894f126c039a5b6916dee3e1741fe7062fdeba7e80889a329fe292852'
+            '9371263a66afaee79d3b7362b2bd455af8faa860230491e21df7f9fbe25bbe9b'
+            '0e3af7dacb665306076590ce9aec935929c198cec1bf9c5e161dfe285502ba67'
+            'cb27fa8fd043ebe282ee96771de7e3d02af619542a60b54bddfabcd685c1ae0d'
+            '32c834074aa725627f4b86db2aa3cb2ed1556cdc7b0256748ed4b700d1a61490'
+            '247dc84535c89d2e00c6a741d4317cd76ae5958c91ac867e2e74d4e73bc3c998'
+            '78307cd6c04a16240f68197e9155697bc75d5df8e4c8514ff67712bb93a1cd4a'
+            '0b4ffbfcf0ab30e0cbcd03507439e468e4ce6d1ccfd6b8f0b3ce3ab2146dc8ee'
+            '51e31c6ce824f66b9a8310f1ac10ccdc06b60967a557c996868bc0d9c9866ccf'
+            '0dd30dc3acd406e70b5ff08fb0bf180ec3782119455989af18c05cf59d09df64')
 
 prepare() {
-  test $startdir/$pkgname.install -nt $startdir/$pkgname.install.in &&
-  test $startdir/$pkgname.install -nt $startdir/resources/gitconfig &&
-  test $startdir/$pkgname.install -nt $startdir/resources/gitattributes ||
-  sed -e "/^@@GITCONFIG@@$/r $startdir/resources/gitconfig" \
-	-e "/^@@GITCONFIG@@$/d" \
-	-e "/^@@GITATTRIBUTES@@$/r $startdir/resources/gitattributes" \
-	-e "/^@@GITATTRIBUTES@@$/d" \
-	<$startdir/$pkgname.install.in >$startdir/$pkgname.install
+  test $startdir/$_realname.install -nt $startdir/$_realname.install.in &&
+  test $startdir/$_realname.install -nt $startdir/gitconfig &&
+  test $startdir/$_realname.install -nt $startdir/gitattributes ||
+  sed -e "/^@@GITCONFIG@@$/r $startdir/gitconfig" \
+        -e "/^@@GITCONFIG@@$/d" \
+        -e "/^@@GITATTRIBUTES@@$/r $startdir/gitattributes" \
+        -e "/^@@GITATTRIBUTES@@$/d" \
+        <$startdir/$_realname.install.in >$startdir/$_realname.install
 }
 
 build() {
   export CC=${MINGW_CHOST}-gcc
   export CXX=${MINGW_CHOST}-g++
-  export SRCDIR=$startdir/sources
+  export SRCDIR=$srcdir
   export BUILDDIR=build-${MINGW_CHOST}
   mkdir -p ${BUILDDIR}
-  make -f $startdir/sources/Makefile
+  sed -e "s|@@GIT_EXTRA_PACKAGE_NAME@@|${MINGW_PACKAGE_PREFIX}-${_realname}|g" \
+        <$startdir/update-via-pacman.bat.in >$BUILDDIR/update-via-pacman.bat
+  make -f Makefile
+}
+
+check() {
+  ./git-update-git-for-windows --test-version-compare
 }
 
 package() {
   builddir=build-${MINGW_CHOST}
   install -d -m755 $pkgdir/etc/profile.d
+  install -d -m755 $pkgdir/usr/share/bash-completion/completions
   install -d -m755 $pkgdir/etc/post-install
   install -d -m755 $pkgdir/usr/bin
   install -d -m755 $pkgdir/usr/share/git
-  install -d -m755 $pkgdir/${MINGW_PREFIX}/bin
-  install -m644 $startdir/resources/inputrc $pkgdir/etc
-  install -m644 $startdir/resources/vimrc $pkgdir/etc
-  install -m755 $startdir/scripts/vi $pkgdir/usr/bin
-  install -m755 $startdir/scripts/notepad $pkgdir/usr/bin
-  install -m755 $startdir/scripts/wordpad $pkgdir/usr/bin
-  install -m755 $builddir/create-shortcut.exe $pkgdir/${MINGW_PREFIX}/bin
-  install -m755 $builddir/WhoUses.exe $pkgdir/${MINGW_PREFIX}/bin
-  install -m755 $startdir/profile.d/git-prompt.sh $pkgdir/etc/profile.d
-  install -m755 $startdir/profile.d/aliases.sh $pkgdir/etc/profile.d
-  install -m755 $startdir/profile.d/env.sh $pkgdir/etc/profile.d
-  install -m755 $startdir/profile.d/bash_profile.sh $pkgdir/etc/profile.d
-  install -m644 $startdir/resources/msys2-32.ico $pkgdir/usr/share/git
-  install -m644 $startdir/scripts/99-post-install-cleanup.post \
-	$pkgdir/etc/post-install
-  install -m755 $startdir/scripts/astextplain $pkgdir/usr/bin
+  install -d -m755 $pkgdir/usr/share/nano
+  install -d -m755 $pkgdir${MINGW_PREFIX}/bin
+  install -d -m755 $pkgdir${MINGW_PREFIX}/libexec/git-core
+  install -d -m755 $pkgdir/usr/share/makepkg/lint_package
+  install -m644 inputrc $pkgdir/etc
+  install -m644 vimrc $pkgdir/etc
+  install -m644 git.nanorc $pkgdir/usr/share/nano
+  install -m755 vi $pkgdir/usr/bin
+  install -m755 notepad $pkgdir/usr/bin
+  install -m755 wordpad $pkgdir/usr/bin
+  install -m755 $builddir/create-shortcut.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/WhoUses.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/blocked-file-util.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/proxy-lookup.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/git-askyesno.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/git-credential-helper-selector.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 $builddir/git-askpass.exe $pkgdir${MINGW_PREFIX}/bin
+  install -m755 git-prompt.sh $pkgdir/etc/profile.d
+  install -m755 aliases.sh $pkgdir/etc/profile.d
+  install -m755 env.sh $pkgdir/etc/profile.d
+  install -m755 bash_profile.sh $pkgdir/etc/profile.d
+  install -m755 git-sdk.sh $pkgdir/etc/profile.d
+  install -m755 sdk.completion $pkgdir/usr/share/bash-completion/completions/sdk
+  install -m644 msys2-32.ico $pkgdir/usr/share/git
+  install -m644 99-post-install-cleanup.post $pkgdir/etc/post-install
+  install -m755 astextplain $pkgdir/usr/bin
+  install -m755 git-update-git-for-windows $pkgdir${MINGW_PREFIX}/bin
+  install -m755 git-update $pkgdir${MINGW_PREFIX}/libexec/git-core
+  install -m755 $builddir/update-via-pacman.bat $pkgdir
+  install -m755 zzz_rm_stackdumps.sh $pkgdir/usr/share/makepkg/lint_package
+  install -m755 cyg-dlls.sh $pkgdir/usr/share/makepkg/lint_package
+}
+
+# The old package name, git-extra, was causing problems as it's _actually_ a MINGW-package.
+# The old and new package name can't be installed simultaneously, as it installs things like
+# /etc/profile.d/git-sdk.sh which aren't specific to MINGW prefixes like /mingw64 or /mingw32.
+# Therefore, we need to mark it as conflicting.
+package_git-extra() {
+  # As we publish to two separate repositories (git-for-windows and git-for-windows-mingw32), we need
+  # to specifically specify the architecture for both on the legacy package.
+  arch=('i686' 'x86_64')
+  conflicts=('mingw-w64-clang-aarch64-git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-i686-git-extra')
+  package
+}
+
+package_mingw-w64-x86_64-git-extra() {
+  conflicts=('git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-i686-git-extra')
+  provides=('git-extra')
+  package
+}
+
+package_mingw-w64-i686-git-extra() {
+  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-clang-aarch64-git-extra')
+  provides=('git-extra')
+  package
+}
+
+package_mingw-w64-clang-aarch64-git-extra() {
+  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-i686-git-extra')
+  provides=('git-extra')
+  package
 }

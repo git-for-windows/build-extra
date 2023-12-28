@@ -1,0 +1,277 @@
+#! /bin/bash
+
+function usage(){
+    echo ""
+    echo "Usage:"
+    echo "  gitupdate [options]"
+	echo ""
+	echo "This script would download and copy all necessary files to an already "
+	echo "existing Msys2 or Cygwin system while keeping the original environment"
+	echo "intact."
+	echo ""
+    echo "Options:"
+    echo "  -k                   keep all downloaded, extracted files in \"/tmp\""
+    echo "  -s                   skip downloading"
+    echo "  -f                   forcibly update no matter what version it is"
+    echo "  -h                   this prints me..."
+    exit
+}
+
+# backup the given directory
+function backup(){
+    if [[ ! -e "$1" ]]; then
+        echo "* nothing to backup, skip" >&2
+        return 0
+    fi
+    
+    local b="$1.backup"
+    if [[ -e "$b" ]]; then
+        echo the backup exists, removing is needed >&2
+        echo -n \* removing...... >&2
+        rm -rf "$b" > /dev/null
+        echo done >&2
+    fi
+    
+    echo -n \* backing up ... >&2
+    mv "$1" "$b" > /dev/null && mkdir "$1" > /dev/null
+    echo done >&2
+    echo "$b"
+}
+
+# update 
+function update(){
+    mkdir -p "$2"
+    echo -n \* upating.......
+    \cp -rlf "$1" "$2" > /dev/null 2>&1 || \cp -rf "$1" "$2"
+    echo done
+}
+
+# restore
+function restore(){
+    if [[ ! -e "$1" ]]; then
+        echo "Seems that the given backup folder \"$1\" does not exist"
+        return 1
+    fi
+    if [[ -d "$2" ]]; then
+        rm -rf "$2" > /dev/null
+    fi
+    echo -n \* restoring .... >&2
+    mv "$1" "$2" > /dev/null
+    echo done >&2
+}
+
+# cleanup
+function cleanup(){
+    if [[ -e "$1" ]]; then
+        echo -n \* cleaning up... >&2
+        # rm -rf "$1"
+        mv -f "$1" "/tmp/${1//\//.}$(date +%Y%m%d%H%M%S)"
+        echo done >&2
+	else
+		echo "* nothing to cleanup, skip" >&2
+    fi
+}
+
+# processing files, if the option -f is not given, this process would
+# backup the existing target folder, do the update, and finally remove
+# the backup folder if succeeded, or restoring the backup folder if 
+# updating failed
+function process(){
+    until [ $# -eq 0 ]; do
+        case "$1" in
+            -f) local f=1; shift;;
+            *) local target="$1"; local files="$2"; shift; shift;;
+        esac    
+    done
+
+    if [[ "$files" == "" ]]; then
+        files="$gitupk/$target/."
+    fi
+    
+    echo "processing $target"
+    if [[ x$f == x1 ]]; then
+        update "$files" "$target"
+    else
+        local b=$(backup "$target")
+        update "$files" "$target" && cleanup "$b" || restore "$b" "$target"
+    fi
+    
+    echo "done"
+}
+
+unset keep_tmp force_update skip_download
+until [ $# -eq 0 ]; do
+    case "$1" in
+        -k) 
+            keep_tmp=1; shift;;
+        -f)
+            force_update=1; shift;;
+        -s)    
+            skip_download=1; shift;;
+        -h)
+            usage; shift;;    
+        *) 
+            echo Unknown option \"$1\"
+            usage
+        ;;
+    esac
+done
+
+gh_tags=https://gitforwindows.org/latest-tag.txt
+[[ -e /cmd ]] || mkdir /cmd
+[[ -e /tmp ]] || mkdir /tmp
+
+echo ""
+# Gathering
+echo "Gathering information..."
+[[ "$(uname -m)" == "i686" ]] && bit=32 || bit=64
+system=$(uname -o)
+if [[ "$system" == "Msys" ]]; then
+    bin="/usr/bin"
+elif [[ "$system" == "Cygwin" ]]; then
+    bin="/bin"
+else
+    echo "System [ $system ] is not supported" >&2; exit 1
+fi
+latest=$(curl $gh_tags)
+version=$(echo $latest | grep -Po "\d+\.\d+.\d+")
+patch=$(echo $latest | grep -Po "windows\.\K\d")
+echo "Gathered { system: \"$system\", bit: \"$bit\", latest: \"$latest\", version: \"$version\", patch: \"$patch\" }"
+# I think there's no chance that the local version is greater than the latest released version
+if [[ x$force_update != x1 && "$latest" == "v$(git --version 2>/dev/null | grep -Po "\d+\.\d+.\d+\.windows\.\d")" ]]; then
+    echo There is no need to update git 
+    echo ""
+    echo "[ git --version ]" 
+    echo "-----------------"
+    git --version
+    exit
+fi
+
+echo ""
+# Downloading
+[[ "$patch" != "" && $patch -gt 1 ]] && n=".$patch"
+filename=PortableGit-$version$n-$bit-bit.7z.exe
+download_href="https://github.com/git-for-windows/git/releases/download/$latest/$filename"
+if [[ ! x$skip_download == x1 ]]; then
+    downloader=`type wget > /dev/null 2>&1 && echo "wget -c -O" \
+                || ( type curl > /dev/null 2>&1 && echo "curl -L -C - -o" || echo "")`
+    if [[ "$downloader" == "" && "$system" == "Msys" ]]; then
+		echo "Try to download wget"
+        echo Y|pacman -S wget 2>/dev/null && downloader="wget -c -O"
+    fi
+    if [[ "$downloader" != "" ]]; then
+        echo "Downloading file from $download_href via $downloader..."
+        $downloader "$(cygpath -w /tmp/$filename)" $download_href \
+            || { echo "Could not download $download_href" >&2; exit 1; }
+    else
+        echo "Could not prepare a proper downloader" >&2; exit 1;
+    fi
+else
+    echo Downloading skipped
+fi
+
+echo ""
+# Unpacking
+echo -n "Unpacking $filename..."
+if [[ ! -e /tmp/gitupk ]]; then
+    /tmp/$filename -y -o $(cygpath -w /tmp/gitupk) 2>&1 && echo "done" || { echo "canceled" >&2; exit 1; }
+fi
+
+echo ""
+gitupk="/tmp/gitupk"
+# Updating
+process -f "/mingw$bit/bin"
+process -f "/mingw$bit/lib"
+process "/mingw$bit/libexec/git-core"
+process "/mingw$bit/share/git"
+process "/mingw$bit/share/git-core"
+process "/mingw$bit/share/git-gui"
+process -f "/mingw$bit/share/perl5"
+process -f "/mingw$bit/ssl"
+process "/cmd"
+process -f "/etc/profile.d"
+cp -f $gitupk/usr/bin/git* $bin
+
+echo ""
+# Generating scripts
+ctxmenu=/cmd/ctxmenu.bat
+echo '@echo off' > $ctxmenu
+echo '' >> $ctxmenu
+echo 'set /p=Adding "Git GUI Here" ... <nul' >> $ctxmenu
+echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui" /f /ve /d "Git &GUI Here"' >> $ctxmenu
+echo 'set /p=Adding icon for "Git GUI Here" ... <nul' >> $ctxmenu
+echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui" /f /v Icon /d "%~dp0\git-gui.exe"' >> $ctxmenu
+echo 'set /p=Adding command for "Git GUI Here" ... <nul' >> $ctxmenu
+if [[ "$system" == "Msys" ]]; then
+	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui\command" '\
+'/f /ve /d "\"%~dp0\git-gui.exe\" \"--working-dir\" \"%%v.\""' >> $ctxmenu
+else # Cygwin 
+	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui\command" '\
+'/f /ve /d "cmd.exe /s /c \"set \"PATH=%~dp0\..\bin\" '\
+'^&^& \"%~dp0\git-gui.exe\" \"--working-dir\" \"%%v.\"\""' >> $ctxmenu
+fi
+echo '' >> $ctxmenu
+echo 'set /p=Adding "Git Bash Here" ... <nul' >> $ctxmenu
+echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell" /f /ve /d "Git Ba&sh Here"' >> $ctxmenu
+echo 'set /p=Adding icon for "Git Bash Here" ... <nul' >> $ctxmenu
+echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell" /f /v Icon /d "%~dp0\git-gui.exe"' >> $ctxmenu
+echo 'set /p=Adding command for "Git Bash Here" ... <nul' >> $ctxmenu
+if [[ "$system" == "Msys" ]]; then
+	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell\command" '\
+'/f /ve /d "\"%~dp0..\usr\bin\mintty.exe\" -i /cmd/git-gui.exe /usr/bin/bash -c '\
+'\"cd '"'%%v'; export CHERE_INVOKING=1; export MSYSTEM=MINGW$bit; exec /usr/bin/bash --login -i"'\""' >> $ctxmenu
+else # Cygwin
+	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell\command" '\
+'/f /ve /d "\"%~dp0..\bin\mintty.exe\" -i /cmd/git-gui.exe /bin/bash -c '\
+'\"cd '"'%%v'; export CHERE_INVOKING=1; export PATH=/mingw$bit/bin:\$PATH; exec /bin/bash --login -i"'\""' >> $ctxmenu
+fi
+echo '' >> $ctxmenu
+echo 'pause' >> $ctxmenu
+chmod +x $ctxmenu
+echo "A batch script by which the \"Git GUI Here\" and \"Git Bash Here\" could "
+echo "be added to the context menu is available as $ctxmenu "
+
+echo ""
+rm_ctxmenu=/cmd/rm-ctxmenu.bat
+echo '@echo off' > $rm_ctxmenu
+echo '' >> $rm_ctxmenu
+echo 'set /p=Deleting "Git GUI Here" ... <nul' >> $rm_ctxmenu
+echo 'reg delete "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui" /f' >> $rm_ctxmenu
+echo 'set /p=Deleting "Git Bash Here" ... <nul' >> $rm_ctxmenu
+echo 'reg delete "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell" /f' >> $rm_ctxmenu
+echo 'pause' >> $rm_ctxmenu
+echo '' >> $rm_ctxmenu
+chmod +x $rm_ctxmenu
+echo "A batch script by which the \"Git GUI Here\" and \"Git Bash Here\" could "
+echo "be removed from the context menu is available as $rm_ctxmenu "
+
+echo ""
+# Setting ENV
+echo -n "Setting env ..."
+userpath=$(reg query "HKEY_CURRENT_USER\Environment" //v Path 2>/dev/null | awk 'NR==3 {print $NF}')
+if [[ "$userpath" == "" ]]; then
+    setx PATH "$(cygpath -m /cmd)" > /dev/null 2>&1
+elif [[ "$userpath" != *"$(cygpath -m /cmd)"* ]]; then
+    setx PATH "$(cygpath -m /cmd);$userpath" > /dev/null 2>&1
+fi
+echo done
+
+echo ""
+# Cleaning up
+if [[ x$keep_tmp != x1 ]]; then
+    echo -n "Cleaing up downloaded and extracted files..."
+    rm -rf /tmp/$filename
+    rm -rf /tmp/gitupk
+    echo done
+fi
+
+echo ""
+if [[ "$system" == "Msys" ]]; then
+    install_via_this="pacman"
+else
+    install_via_this="setup.exe"
+fi
+echo "Git is now available! If you want to add \"Git GUI Here\" and \"Git Bash"
+echo "Here\" to the context menu, please help yourself with it using the "
+echo "$ctxmenu script. If you want to use \"git svn\", please install"
+echo "perl and subversion via $install_via_this"

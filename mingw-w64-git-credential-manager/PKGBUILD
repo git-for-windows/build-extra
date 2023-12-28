@@ -1,0 +1,34 @@
+# Maintainer: Johannes Schindelin/Matthew J Cheetham
+
+_realname="git-credential-manager"
+pkgbase="mingw-w64-${_realname}"
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+conflicts=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
+replaces=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
+pkgver=2.4.1
+pkgrel=1
+_realver=$pkgver
+_realtag=v${pkgver}
+pkgdesc="Credential Manager for Git"
+install=git-credential-manager.install
+arch=('any')
+project_url="https://github.com/git-ecosystem/git-credential-manager"
+zip_url="${project_url}/releases/download/${_realtag}/gcm-win-x86-${_realver}.zip"
+src_zip_url="${project_url}/archive/${_realtag}.zip"
+license=('MIT')
+groups=('VCS')
+options=('!strip')
+
+source=("${zip_url}" "$src_zip_url")
+
+sha256sums=('771d67d11eeb6104062a7647ff99f51a27bdbbeea3489077c0696cfea8a0a0d0'
+            'feda8f47db50739c9421b10c915060cf97674ee9aaef5312983895b39b270010')
+
+package() {
+  prefix="$pkgdir/${MINGW_PREFIX}"
+  srcdir2="${srcdir}/"
+  install -d -m755 "${prefix}"/bin
+  install -m755 "$srcdir2"/*.{dll,exe,config} "${prefix}"/bin
+  install -d -m755 "${prefix}"/doc/git-credential-manager
+  install -m644 "$srcdir2"/git-credential-manager-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager
+}

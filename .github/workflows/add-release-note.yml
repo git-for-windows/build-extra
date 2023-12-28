@@ -1,0 +1,47 @@
+name: Add Release Note
+run-name: 'Add Release Note (${{ inputs.type }}): ${{ inputs.message }}'
+
+on:
+  workflow_dispatch:
+    inputs:
+      type:
+        description: The type of release note (must be blurb, feature or bug)
+        required: true
+        type: string
+      message:
+        description: The release note
+        required: true
+        type: string
+
+jobs:
+  add-release-note:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Configure Git author
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const username = '${{ github.triggering_actor }}'
+            const fallBackEmail = `${username.replace('[bot]', '-bot')}@users.noreply.github.com`
+            const { data: { name, email } } = await github.rest.users.getByUsername({ username })
+            core.exportVariable('GIT_AUTHOR_NAME', name || username)
+            core.exportVariable('GIT_AUTHOR_EMAIL', email || fallBackEmail)
+            core.exportVariable('GIT_COMMITTER_NAME', name || username)
+            core.exportVariable('GIT_COMMITTER_EMAIL', email || fallBackEmail)
+      - name: Partial & sparse clone
+        run: |
+          git clone --depth=1 --filter=blob:none --no-checkout --single-branch \
+            -b ${{ github.ref_name }} https://github.com/${{ github.repository }} . &&
+          # need only `add-release-notes.js` and `ReleaseNotes.md`, really
+          git sparse-checkout set . &&
+          git checkout
+      - name: Add release note
+        env:
+          TYPE: ${{ github.event.inputs.type }}
+          MESSAGE: ${{ github.event.inputs.message }}
+        run: node ./add-release-note.js --commit "$TYPE" "$MESSAGE"
+      - name: Push updates
+        run: |
+          git -c http.extraHeader="Authorization: Basic $(printf 'x-access-token:${{ secrets.GITHUB_TOKEN }}' | base64 -w 0)" push origin HEAD

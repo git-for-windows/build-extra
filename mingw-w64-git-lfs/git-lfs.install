@@ -1,0 +1,14 @@
+post_install() {
+  git config --system filter.lfs.clean "git-lfs clean -- %f"
+  git config --system filter.lfs.smudge "git-lfs smudge -- %f"
+  git config --system filter.lfs.process "git-lfs filter-process"
+  git config --system filter.lfs.required true
+}
+
+post_upgrade() {
+  post_install
+}
+
+pre_remove() {
+  git config --system --remove-section filter.lfs
+}

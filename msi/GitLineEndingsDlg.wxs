@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs">
+  <Fragment>
+    <UI>
+      <Dialog Id="GitLineEndingsDlg" Width="370" Height="270" Title="!(loc.GitLineEndingsDlg_Title)" X="50" Y="50">
+        <Control Type="RadioButtonGroup" Property="CustomizeLineEndings" Id="RadioButtonGroup" Width="310" Height="45" X="30" Y="80">
+          <RadioButtonGroup Property="CustomizeLineEndings">
+            <RadioButton Text="!(loc.GitLineEndingsDlg_RbUseDefault)" Height="15" Value="No" Width="310" X="0" Y="0" />
+            <RadioButton Text="!(loc.GitLineEndingsDlg_RbCustomize)" Height="30" Value="Yes" Width="310" X="0" Y="15" />
+          </RadioButtonGroup>
+        </Control>
+        <Control Type="PushButton" Id="Back" Width="56" Height="17" X="180" Y="243" Text="!(loc.WixUIBack)" />
+        <Control Type="PushButton" Id="Next" Width="56" Height="17" X="236" Y="243" Default="yes" Text="!(loc.WixUINext)" />
+        <Control Type="PushButton" Id="Cancel" Width="56" Height="17" X="304" Y="243" Cancel="yes" Text="!(loc.WixUICancel)">
+          <Publish Event="SpawnDialog" Value="CancelDlg">1</Publish>
+        </Control>
+        <Control Type="Bitmap" Id="BannerBitmap" Width="370" Height="44" X="0" Y="0" Text="!(loc.GitLineEndingsDlgBannerBitmap)" />
+        <Control Type="Line" Id="BannerLine" Width="370" Height="0" X="0" Y="44" />
+        <Control Type="Line" Id="BottomLine" Width="370" Height="0" X="0" Y="234" />
+        <Control Type="Text" Id="Description" Width="280" Height="15" X="23" Y="25" Text="!(loc.GitLineEndingsDlgDescription)" Transparent="yes" NoPrefix="yes" />
+        <Control Type="Text" Id="Title" Width="200" Height="15" X="15" Y="6" Text="!(loc.GitLineEndingsDlgTitle)" Transparent="yes" NoPrefix="yes" />
+        <Control Type="Text" Id="Text1" Width="340" Height="20" X="15" Y="53" NoPrefix="yes" TabSkip="no" Text="!(loc.GitLineEndingsDlg_Text1)" />
+        <Control Type="Text" Id="Text2" Width="340" Height="40" X="15" Y="135" NoPrefix="yes" TabSkip="no" Text="!(loc.GitLineEndingsDlg_Text2)" />
+        <Control Type="Text" Id="Text3" Width="340" Height="40" X="15" Y="181" NoPrefix="yes" TabSkip="no" Text="!(loc.GitLineEndingsDlg_Text3)" />
+      </Dialog>
+
+      <Property Id="CustomizeLineEndings" Value="No" />
+    </UI>
+  </Fragment>
+</Wix>

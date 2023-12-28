@@ -1,0 +1,5 @@
+You may find a copy of the source code, if and as required under the license, at http://3rdpartysource.microsoft.com. You may also obtain a copy of the source code, if and as required under the license, by sending a check or money order for US $5.00 to:
+Source Code Compliance Team
+Microsoft Corporation
+One Microsoft Way
+Redmond, WA 98052 USA

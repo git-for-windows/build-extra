@@ -1,0 +1,295 @@
+name: PR build
+
+on: pull_request
+
+env:
+  GIT_CONFIG_PARAMETERS: "'checkout.workers=56'"
+
+jobs:
+  determine-packages:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - name: determine packages to build
+        id: set-matrix
+        shell: bash
+        run: |
+          define_matrix () {
+            comm -12 "$2" "$3" >"$4" &&
+            cat "$4" &&
+            sed -e 's/\/$//' -e 's/.*/"&", /' -e '$s/, $//' <"$4" >list.txt &&
+            echo "$1=[$(test ! -s list.txt && echo '""' || tr -d '\n' <list.txt)]" >>$GITHUB_OUTPUT
+          }
+
+          git diff ${{github.event.pull_request.base.sha}}... --name-only |
+            sed \
+              -e '/^make-file-list\.sh$/ainstaller/' \
+              -e '/^make-file-list\.sh$/aportable/' \
+              -e '/^make-file-list\.sh$/amingit/' \
+              -e 's|[^/]*$||' |
+            sort -u >touched.txt &&
+
+          git ls-files \*/PKGBUILD | sed 's|[^/]*$||' | sort >directories.txt &&
+          define_matrix matrix directories.txt touched.txt packages.txt &&
+
+          test -z "$(git log -L :create_sdk_artifact:please.sh ${{github.event.pull_request.base.sha}}.. -- )" &&
+          test 200 -gt $(($(git diff --numstat ${{github.event.pull_request.base.sha}}.. -- please.sh | cut -f 2))) &&
+          test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- make-file-list.sh)" ||
+          echo "test-sdk-artifacts=true" >>$GITHUB_OUTPUT
+
+          git ls-files \*/release.sh | sed 's|[^/]*$||' | sort >releaseable.txt &&
+          if grep -q test-sdk-artifacts=true $GITHUB_OUTPUT
+          then
+            # These are already tested as part of the `sdk-artifacts` matrix
+            sed -i '/^\(installer\|mingit\)\/$/d' releaseable.txt
+          fi &&
+          define_matrix artifacts releaseable.txt touched.txt artifacts.txt ||
+          exit $?
+
+          test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- check-for-missing-dlls.sh)" ||
+          echo "check-for-missing-dlls=true" >>$GITHUB_OUTPUT
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+      artifacts: ${{ steps.set-matrix.outputs.artifacts }}
+      test-sdk-artifacts: ${{ steps.set-matrix.outputs.test-sdk-artifacts }}
+      check-for-missing-dlls: ${{ steps.set-matrix.outputs.check-for-missing-dlls }}
+  build-packages:
+    needs: determine-packages
+    runs-on: windows-latest
+    if: needs.determine-packages.outputs.matrix != '[""]'
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJSON(needs.determine-packages.outputs.matrix) }}
+    steps:
+      - uses: actions/checkout@v3
+      - uses: git-for-windows/setup-git-for-windows-sdk@v1
+        with:
+          flavor: full
+      - name: build ${{ matrix.directory }}
+        id: build
+        shell: bash
+        run: |
+          top_dir=$PWD &&
+          cd "${{ matrix.directory }}" &&
+          MAKEFLAGS=-j8 makepkg-mingw -s --noconfirm &&
+          artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
+          mkdir -p "$top_dir/$artifacts" &&
+          mv *.tar.* "$top_dir/$artifacts"/ &&
+          echo "result=$artifacts" >>$GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.build.outputs.result }}
+          path: ${{ steps.build.outputs.result }}
+      - name: ensure that the Git worktree is still clean
+        shell: bash
+        run: |
+          cd "${{ matrix.directory }}" &&
+          if ! git update-index --ignore-submodules --refresh ||
+            ! git diff-files --ignore-submodules ||
+            ! git diff-index --cached --ignore-submodules HEAD
+          then
+            echo "::error::Uncommitted changes after build!" >&2
+            git diff
+            exit 1
+          fi
+  build-artifacts:
+    needs: determine-packages
+    runs-on: windows-latest
+    if: needs.determine-packages.outputs.artifacts != '[""]'
+    strategy:
+      fail-fast: false
+      matrix:
+        directory: ${{ fromJSON(needs.determine-packages.outputs.artifacts) }}
+    steps:
+      - uses: actions/checkout@v3
+      - name: initialize bare SDK clone
+        shell: bash
+        run: |
+          git clone --bare --depth=1 --single-branch --branch=main --filter=blob:none \
+            https://github.com/git-for-windows/git-sdk-64 .sdk
+      - name: build build-installers-64 artifact
+        shell: bash
+        run: |
+          ./please.sh create-sdk-artifact \
+            --bitness=64 \
+            --sdk=.sdk \
+            --out=sdk-artifact \
+            build-installers &&
+          cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
+          cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
+          cygpath -aw "$PWD/sdk-artifact/mingw64/bin" >>$GITHUB_PATH &&
+          echo "MSYSTEM=MINGW64" >>$GITHUB_ENV
+      - name: build ${{ matrix.directory }}/
+        shell: bash
+        id: build
+        run: |
+          artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
+          mkdir -p "$artifacts" &&
+          ./"${{ matrix.directory }}"/release.sh --output="$PWD/$artifacts/" 0-test &&
+          echo "result=$artifacts" >>$GITHUB_OUTPUT
+      - uses: actions/upload-artifact@v3
+        with:
+          name: ${{ steps.build.outputs.result }}
+          path: ${{ steps.build.outputs.result }}
+      - name: run the installer
+        if: matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          $exePath = Get-ChildItem -Path ${{ steps.build.outputs.result }}/*.exe | %{$_.FullName}
+          $installer = Start-Process -PassThru -Wait -FilePath "$exePath" -ArgumentList "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /ALLOWDOWNGRADE=1 /ALLOWINSTALLING32ON64=1 /LOG=installer.log"
+          $exitCode = $installer.ExitCode
+          if ($exitCode -ne 0) {
+            Write-Host "::error::Installer failed with exit code $exitCode!"
+            exit 1
+          }
+          "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+          "$env:ProgramFiles\Git\mingw64\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+      - name: show installer log
+        # run this even if the installation failed (actually, _in particular_ when the installation failed)
+        if: always() && matrix.directory == 'installer'
+        shell: bash
+        run: cat installer.log
+      - name: validate
+        if: matrix.directory == 'installer'
+        shell: bash
+        run: |
+          set -x &&
+          grep 'Installation process succeeded' installer.log &&
+          ! grep -iw failed installer.log &&
+          cygpath -aw / &&
+          git.exe version --build-options >version &&
+          cat version &&
+          checklist=installer/run-checklist.sh &&
+          # cannot test SSH keys in read-only mode, skip test for now
+          sed -i 's|git@ssh.dev.azure.com:v3/git-for-windows/git/git|https://github.com/git/git|' $checklist &&
+          sh -x $checklist
+  sdk-artifacts:
+    needs: determine-packages
+    if: needs.determine-packages.outputs.test-sdk-artifacts == 'true'
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        artifact: ['minimal', 'makepkg-git', 'build-installers', 'full']
+        bitness: ['32', '64']
+        exclude:
+          - artifact: minimal
+            bitness: 32
+          - artifact: makepkg-git
+            bitness: 32
+    steps:
+      - uses: actions/checkout@v3
+      - name: initialize bare SDK clone
+        shell: bash
+        run: |
+          case "${{ matrix.artifact }}" in
+          full) partial=;;
+          *) partial=--filter=blob:none;;
+          esac &&
+          git clone --bare --depth=1 --single-branch --branch=main $partial \
+            https://github.com/git-for-windows/git-sdk-${{ matrix.bitness }} .sdk
+      - name: build ${{ matrix.artifact }} artifact
+        id: build-artifact
+        shell: bash
+        run: |
+          case "${{ matrix.artifact }}" in
+          full)
+            git --git-dir=.sdk worktree add --detach sdk-artifact
+            ;;
+          *)
+            ./please.sh create-sdk-artifact \
+              --bitness=${{ matrix.bitness }} \
+              --sdk=.sdk \
+              --out=sdk-artifact \
+              ${{ matrix.artifact }}
+            ;;
+          esac &&
+          echo "git-version=$(sdk-artifact/cmd/git.exe version)" >>$GITHUB_OUTPUT &&
+          cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
+          cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
+          cygpath -aw "$PWD/sdk-artifact/mingw${{ matrix.bitness }}/bin" >>$GITHUB_PATH &&
+          echo "MSYSTEM=MINGW${{ matrix.bitness }}" >>$GITHUB_ENV
+      - name: build installer
+        if: matrix.artifact == 'build-installers'
+        shell: bash
+        run: ./installer/release.sh --output=$PWD/installer-${{ matrix.bitness }} 0-test
+      - uses: actions/upload-artifact@v3
+        if: matrix.artifact == 'build-installers'
+        with:
+          name: installer-${{ matrix.bitness }}
+          path: installer-${{ matrix.bitness }}
+      - name: run the installer
+        if: matrix.artifact == 'build-installers'
+        shell: pwsh
+        run: |
+          $exePath = Get-ChildItem -Path installer-${{ matrix.bitness }}/*.exe | %{$_.FullName}
+          $installer = Start-Process -PassThru -Wait -FilePath "$exePath" -ArgumentList "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /ALLOWDOWNGRADE=1 /ALLOWINSTALLING32ON64=1 /LOG=installer.log"
+          $exitCode = $installer.ExitCode
+          if ($exitCode -ne 0) {
+            Write-Host "::error::Installer failed with exit code $exitCode!"
+            exit 1
+          }
+          if ("${{ matrix.bitness }}" -eq 32) {
+            "${env:ProgramFiles(x86)}\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+            "${env:ProgramFiles(x86)}\Git\mingw32\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+          } else {
+            "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+            "$env:ProgramFiles\Git\mingw${{ matrix.bitness }}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+          }
+      - name: show installer log
+        # run this even if the installation failed (actually, _in particular_ when the installation failed)
+        if: always() && matrix.artifact == 'build-installers'
+        shell: bash
+        run: cat installer.log
+      - name: validate
+        if: matrix.artifact == 'build-installers'
+        shell: bash
+        run: |
+          set -x &&
+          grep 'Installation process succeeded' installer.log &&
+          ! grep -iw failed installer.log &&
+          cygpath -aw / &&
+          git.exe version --build-options >version &&
+          cat version &&
+          grep "${{ steps.build-artifact.outputs.git-version }}" version &&
+          checklist=installer/run-checklist.sh &&
+          # cannot test SSH keys in read-only mode, skip test for now
+          sed -i 's|git@ssh.dev.azure.com:v3/git-for-windows/git/git|https://github.com/git/git|' $checklist &&
+          sh -x $checklist
+  check-for-missing-dlls:
+    needs: determine-packages
+    if: needs.determine-packages.outputs.test-sdk-artifacts == 'true' || needs.determine-packages.outputs.check-for-missing-dlls == 'true'
+    runs-on: windows-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        bitness: ['32', '64']
+    steps:
+      - uses: actions/checkout@v3
+      - name: initialize bare SDK clone
+        shell: bash
+        run: |
+          git clone --bare --depth=1 --single-branch --branch=main --filter=blob:none \
+            https://github.com/git-for-windows/git-sdk-${{ matrix.bitness }} .sdk
+      - name: build build-installers-${{ matrix.bitness }} artifact
+        shell: bash
+        run: |
+          INCLUDE_OBJDUMP=t \
+          ./please.sh create-sdk-artifact \
+            --bitness=${{ matrix.bitness }} \
+            --sdk=.sdk \
+            --out=sdk-artifact \
+            build-installers &&
+          cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
+          cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
+          cygpath -aw "$PWD/sdk-artifact/mingw${{ matrix.bitness }}/bin" >>$GITHUB_PATH &&
+          echo "MSYSTEM=MINGW${{ matrix.bitness }}" >>$GITHUB_ENV
+      - name: check for missing DLLs
+        shell: bash
+        run: ./check-for-missing-dlls.sh
+      - name: check for missing DLLs (MinGit)
+        shell: bash
+        run: MINIMAL_GIT=1 ./check-for-missing-dlls.sh

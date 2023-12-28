@@ -1,0 +1,14 @@
+[core]
+	symlinks = false
+	autocrlf = true
+[color]
+	ui = auto
+	interactive = true
+[pack]
+	packSizeLimit = 2g
+[help]
+	format = html
+[diff "astextplain"]
+	textconv = astextplain
+[rebase]
+	autosquash = true
