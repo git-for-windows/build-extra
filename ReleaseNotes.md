@@ -40,6 +40,7 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
+<<<<<<< HEAD
 ## Changes since Git for Windows v2.43.0 (November 20th 2023)
 
 Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, see [the announcement of MSYS2](https://www.msys2.org/docs/windows_support/) on which Git for Windows relies for components such as Bash and Perl.
@@ -217,6 +218,8 @@ Also following the footsteps of the MSYS2 and Cygwin projects on which Git for W
 * Some commands mishandled absolute paths near the drive root (e.g. [`scalar unregister C:/foo`](https://github.com/git-for-windows/git/issues/4200)), which has been [fixed](https://github.com/git-for-windows/git/pull/4253).
 * When trying to call Cygwin (or for that matter, MSYS2) programs from Git Bash, users would frequently be greeted with [cryptic error messages about a "cygheap"](https://github.com/git-for-windows/git/issues/4255) or even just an even more puzzling exit code 127. Many of these calls [now](https://github.com/git-for-windows/msys2-runtime/pull/48) [succeed](https://github.com/git-for-windows/msys2-runtime/pull/49), allowing basic interactions. While it is still not possible for, say, Cygwin's `vim.exe` to interact with the Git Bash's terminal window, it _is_ now possible for Cygwin's `zstd.exe` in conjuction with Git for Windows' `tar.exe` to handle `.tar.zst` archives. 
 
+=======
+>>>>>>> origin/for-mingw-w64-clang-aarch64-git-2.39.2
 ## Changes since Git for Windows v2.39.1 (January 17th 2023)
 
 This is a security release, addressing [CVE-2023-22490](https://github.com/git/git/security/advisories/GHSA-gw92-x3fm-3g3q), [CVE-2023-22743](https://github.com/git-for-windows/git/security/advisories/GHSA-p2x9-prp4-8gvq), [CVE-2023-23618](https://github.com/git-for-windows/git/security/advisories/GHSA-wxwv-49qw-35pm) and [CVE-2023-23946](https://github.com/git/git/security/advisories/GHSA-r87m-v37r-cwfh).
