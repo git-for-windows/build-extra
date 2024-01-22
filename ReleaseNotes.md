@@ -48,7 +48,6 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 
 ### New Features
 
-* Comes with [GNU TLS v3.8.2](https://lists.gnupg.org/pipermail/gnutls-help/2023-November/004837.html).
 * Comes with [gnupg v2.2.42](https://github.com/gpg/gnupg/releases/tag/gnupg-2.2.42).
 * Comes with [libfido2 v1.14.0](https://github.com/Yubico/libfido2/releases/tag/1.14.0).
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.4.10](https://inbox.sourceware.org/cygwin-announce/20231129150845.713029-1-corinna-cygwin@cygwin.com/).
@@ -60,6 +59,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * Comes with [OpenSSH v9.6.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_6_P1).
 * Comes with [Bash v5.2.26](https://git.savannah.gnu.org/cgit/bash.git/commit/?id=f3b6bd19457e260b65d11f2712ec3da56cef463f).
 * Comes with [OpenSSL v3.2.0](https://github.com/openssl/openssl/releases/tag/openssl-3.2.0).
+* Comes with [GNU TLS v3.8.3](https://lists.gnupg.org/pipermail/gnutls-help/2024-January/004841.html).
 
 ### Bug Fixes
 
