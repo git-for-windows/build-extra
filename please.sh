@@ -2895,7 +2895,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 		echo "Bundling .pdb files for $artifact_suffix..." >&2
 		(cd "$unpack" &&
 		 "/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-			"7za a -mx9 \"$artifactsdir/$zip\" *") &&
+			"7z a -mx9 \"$artifactsdir/$zip\" *") &&
 		echo "Created $artifactsdir/$zip" >&2 ||
 		die 'Could not create %s for %s\n' "$zip" "$arch"
 	done
@@ -3239,6 +3239,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		/usr/ssl/certs/ca-bundle.crt
 		/usr/share/pacman/
 		/var/lib/pacman/local/
+		/update-via-pacman.ps1
 
 		# Some other utilities required by `make-file-list.sh`
 		/usr/bin/cat.exe
@@ -3310,9 +3311,8 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		cat <<-EOF >>"$sparse_checkout_file" &&
 
 		# 7-Zip
-		/usr/bin/7za
-		/usr/lib/p7zip/7za.exe
-		/usr/bin/msys-stdc++-*.dll
+		$PREFIX/bin/7z.dll
+		$PREFIX/bin/7z.exe
 
 		# WinToast
 		$PREFIX/bin/wintoast.exe
@@ -3442,6 +3442,9 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 	--skip-doc-html)
 		sed_makepkg_e="$sed_makepkg_e"' -e s/"\${MINGW_PACKAGE_PREFIX}-\${_realname}-doc-html"//'
 		;;
+        --reset-pkgrel)
+                sed_makepkg_e="$sed_makepkg_e"' -e s/^pkgrel=[0-9][0-9]*$/pkgrel=1/'
+                ;;
 	--build-src-pkg)
 		src_pkg=t
 		;;

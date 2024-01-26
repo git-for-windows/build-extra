@@ -114,8 +114,8 @@ die "Could not generate system config"
 
 # Make the archive
 
-type 7za ||
-pacman -Sy --noconfirm p7zip ||
+type 7z ||
+pacman -Sy --noconfirm mingw-w64-$PACMAN_ARCH-7zip ||
 die "Could not install 7-Zip"
 
 echo "$LIST" | sort >"$SCRIPT_PATH"/sorted-all &&
@@ -173,5 +173,5 @@ esac
 test ! -f "$TARGET" || rm "$TARGET" || die "Could not remove $TARGET"
 
 echo "Creating .zip archive" &&
-(cd / && 7za a -mx9 "$TARGET" $LIST "$SCRIPT_PATH"/root/*) &&
+(cd / && 7z a -mx9 "$TARGET" $LIST "$SCRIPT_PATH"/root/*) &&
 echo "Success! You will find the new MinGit at \"$TARGET\"."

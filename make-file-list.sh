@@ -84,7 +84,9 @@ fi
 # Newer `git.exe` no longer link to `libssp-0.dll` that has been made obsolete
 # by recent GCC updates
 EXCLUDE_LIBSSP=
-grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" || EXCLUDE_LIBSSP='\|ssp'
+test ! -f "/$MSYSTEM_LOWER/bin/git.exe" ||
+grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" ||
+EXCLUDE_LIBSSP='\|ssp'
 
 this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
@@ -213,7 +215,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/\(mingw\|clang\)[^/]*/itcl/' \
 	-e '^/\(mingw\|clang\)[^/]*/t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(autopoint\|[a-z]*-config\)$' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(asprintf\|brotlienc\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13p]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
+	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(asprintf\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13p]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(atomic\|charset\|gomp\|systre'"$EXCLUDE_LIBSSP"'\)-[0-9]*\.dll$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\|zip\)[^/]*\.exe$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/recode-sr-latin.exe$' \

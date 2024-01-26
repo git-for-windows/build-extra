@@ -1,5 +1,5 @@
-# Git for Windows v2.41.0 Release Notes
-Latest update: June 1st 2023
+# Git for Windows v2.43.0 Release Notes
+Latest update: November 20th 2023
 
 ## Introduction
 
@@ -39,6 +39,115 @@ Git is licensed under the GNU General Public License version 2.
 Git for Windows also contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
+
+## Changes since Git for Windows v2.43.0 (November 20th 2023)
+
+Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, see [the announcement of MSYS2](https://www.msys2.org/docs/windows_support/) on which Git for Windows relies for components such as Bash and Perl.
+
+Please also note that the 32-bit variant of Git for Windows is deprecated; Its last official release [is planned for 2025](https://gitforwindows.org/32-bit.html).
+
+### New Features
+
+* Comes with [gnupg v2.2.42](https://github.com/gpg/gnupg/releases/tag/gnupg-2.2.42).
+* Comes with [libfido2 v1.14.0](https://github.com/Yubico/libfido2/releases/tag/1.14.0).
+* Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.4.10](https://inbox.sourceware.org/cygwin-announce/20231129150845.713029-1-corinna-cygwin@cygwin.com/).
+* Comes with [Perl v5.38.2](http://search.cpan.org/dist/perl-5.38.2/pod/perldelta.pod).
+* Git for Windows [learned to detect and use native Windows support for ANSI sequences](https://github.com/git-for-windows/git/pull/4700), which allows using 24-bit colors in terminal windows.
+* Comes with [cURL v8.5.0](https://github.com/curl/curl/releases/tag/curl-8_5_0).
+* Comes with [Git LFS v3.4.1](https://github.com/git-lfs/git-lfs/releases/tag/3.4.1).
+* The repository viewer [Tig](https://jonas.github.io/tig/) that is included in Git for Windows [can now be called also directly from PowerShell/CMD](https://github.com/git-for-windows/MINGW-packages/pull/104).
+* Comes with [OpenSSH v9.6.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_6_P1).
+* Comes with [Bash v5.2.26](https://git.savannah.gnu.org/cgit/bash.git/commit/?id=f3b6bd19457e260b65d11f2712ec3da56cef463f).
+* Comes with [OpenSSL v3.2.0](https://github.com/openssl/openssl/releases/tag/openssl-3.2.0).
+* Comes with [GNU TLS v3.8.3](https://lists.gnupg.org/pipermail/gnutls-help/2024-January/004841.html).
+
+### Bug Fixes
+
+* The 32-bit variant of Git for Windows was missing some MSYS2 runtime updates, [which was addressed](https://github.com/git-for-windows/MSYS2-packages/pull/138); Do note [32-bit support is phased out](https://gitforwindows.org/32-bit.html).
+* The Git for Windows installer [showed cut-off text in some setups](https://github.com/git-for-windows/git/issues/4727). This [has been fixed](https://github.com/git-for-windows/build-extra/pull/536).
+
+## Changes since Git for Windows v2.42.0(2) (August 30th 2023)
+
+As announced previously, Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+Following the footsteps of the MSYS2 and Cygwin projects on which Git for Windows depends, the 32-bit variant of Git for Windows [is being phased out](https://gitforwindows.org/32-bit.html).
+
+### New Features
+
+* Comes with [Git v2.43.0](https://github.com/git/git/blob/v2.43.0/Documentation/RelNotes/2.43.0.txt).
+* Comes with [MSYS2 runtime v3.4.9](https://github.com/cygwin/cygwin/releases/tag/cygwin-3.4.9).
+* Comes with [GNU TLS v3.8.1](https://lists.gnupg.org/pipermail/gnutls-help/2023-August/004834.html).
+* When installing into a Windows setup with Mandatory Address Space Layout Randomization (ASLR) enabled, which is incompatible with the MSYS2 runtime powering Git Bash, SSH and some other programs distributed with Git for Windows, [the Git for Windows installer now offers to add exceptions](https://github.com/git-for-windows/build-extra/pull/513) that will allow those programs to work as expected.
+* Comes with [OpenSSH v9.5.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_5_P1).
+* Comes with [cURL v8.4.0](https://github.com/curl/curl/releases/tag/curl-8_4_0).
+* Comes with [OpenSSL v3.1.4](https://github.com/openssl/openssl/releases/tag/openssl-3.1.4).
+* Comes with [Git Credential Manager v2.4.1](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.4.1).
+* Comes with [Bash v5.2.21](https://git.savannah.gnu.org/cgit/bash.git/commit/?id=2bb3cbefdb8fd019765b1a9cc42ecf37ff22fec6).
+* Comes with [MinTTY v3.7.0](https://github.com/mintty/mintty/releases/tag/3.7.0).
+
+### Bug Fixes
+
+* Symbolic links whose target is an absolute path _without_ the drive prefix [accidentally had a drive prefix added when checked out](https://github.com/git-for-windows/git/issues/4586), rendering them "eternally modified". This bug [has been fixed](https://github.com/git-for-windows/git/pull/4592).
+* Git for Windows's installer [is no longer confused by global `GIT_*` environment variables](https://github.com/git-for-windows/build-extra/pull/529).
+* The installer [no longer claims that "fast-forward or merge" is the default `git pull` behavior](https://github.com/git-for-windows/build-extra/pull/498): The default behavior has changed in Git a while ago, to "fast-forward only".
+
+## Changes since Git for Windows v2.42.0 (August 21st 2023)
+
+As announced previously, Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+Following the footsteps of the MSYS2 and Cygwin projects on which Git for Windows depends, the 32-bit variant of Git for Windows [is being phased out](https://gitforwindows.org/32-bit.html).
+
+### Bug Fixes
+
+* Git for Windows v2.42.0's release notes claimed that it ships with Git LFS v3.4.0, [which is incorrect](https://github.com/git-for-windows/git/issues/4567) and has been fixed in this release.
+* The installer option to enable support for Pseudo Consoles [has been handled incorrectly](https://github.com/git-for-windows/git/issues/4571) since Git for Windows v2.41.0, which [has been fixed](https://github.com/git-for-windows/build-extra/pull/522).
+* Some Git commands (those producing paged output, for example) experienced a [significant slow-down](https://github.com/git-for-windows/git/issues/4459) under certain circumstances, when running on a machine joined to a domain controller, which [has been fixed](https://github.com/git-for-windows/MSYS2-packages/pull/124).
+* As of Git for Windows v2.41.0, when installed into a location whose path contains non-ASCII characters, [it was no longer possible to fetch from/push to remote repositories via https://](https://github.com/git-for-windows/git/issues/4573), which [has been fixed](https://github.com/git-for-windows/git/pull/4575).
+
+## Changes since Git for Windows v2.41.0(3) (July 13th 2023)
+
+### New Features
+
+* Comes with [Git v2.42.0](https://github.com/git/git/blob/v2.42.0/Documentation/RelNotes/2.42.0.txt).
+* Comes with [cURL v8.2.1](https://curl.se/changes.html#8_2_1).
+* Comes with [Git LFS v3.4.0](https://github.com/git-lfs/git-lfs/releases/tag/3.4.0).
+* Comes with [OpenSSL v3.1.2](https://github.com/openssl/openssl/releases/tag/openssl-3.1.2).
+* Comes with [OpenSSH v9.4.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_4_P1).
+* Comes with [Git Credential Manager v2.3.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.3.2).
+
+### Bug Fixes
+
+* When `init.defaultBranch` is changed manually in the system config, subsequent Git for Windows upgrades [would overwrite that change](https://github.com/git-for-windows/git/issues/4525). This has been [fixed](https://github.com/git-for-windows/build-extra/pull/515).
+* When running on a remote APFS share, Git [would fail](https://github.com/git-for-windows/git/issues/4482), which [has been fixed](https://github.com/git-for-windows/git/pull/4527).
+
+## Changes since Git for Windows v2.41.0(2) (July 7th 2023)
+
+As announced previously, Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+Following the footsteps of the MSYS2 and Cygwin projects on which Git for Windows depends, the 32-bit variant of Git for Windows [is being phased out](https://gitforwindows.org/32-bit.html). As of Git for Windows v2.41.0, the 32-bit variant of the POSIX emulation layer (known as "MSYS2 runtime", powering Git Bash among other components shipped with Git for Windows) is in maintenance mode and will only see security bug fixes (if any). Users relying on 32-bit Git for Windows are highly encouraged to switch to the 64-bit version whenever possible.
+
+This release is a hot-fix release to incorporate a new Git Credential Manager version that addresses several issues present in the previous verison. There are no other changes.
+
+### New Features
+
+* Comes with [Git Credential Manager v2.2.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.2.2).
+
+## Changes since Git for Windows v2.41.0 (June 1st 2023)
+
+As announced previously, Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, following [Cygwin's and MSYS2's lead](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+Following the footsteps of the MSYS2 and Cygwin projects on which Git for Windows depends, the 32-bit variant of Git for Windows [is being phased out](https://gitforwindows.org/32-bit.html). As of Git for Windows v2.41.0, the 32-bit variant of the POSIX emulation layer (known as "MSYS2 runtime", powering Git Bash among other components shipped with Git for Windows) is in maintenance mode and will only see security bug fixes (if any). Users relying on 32-bit Git for Windows are highly encouraged to switch to the 64-bit version whenever possible.
+
+### New Features
+
+* Comes with [MSYS2 runtime v3.4.7](https://github.com/cygwin/cygwin/releases/tag/cygwin-3.4.7).
+* Comes with [OpenSSL v3.1.1](https://www.openssl.org/news/openssl-3.1-notes.html), a major version upgrade (previously Git for Windows distributed OpenSSL v1.1.\*).
+* To support interoperability with Windows Subsystem for Linux (WSL) better, it [is now possible to let Git set](https://github.com/git-for-windows/git/pull/4438) e.g. the executable bits of files (this needs `core.WSLCompat` to be set, and [the NTFS volume needs to be mounted in WSL using the appropriate options](https://devblogs.microsoft.com/commandline/chmod-chown-wsl-improvements/)).
+
+### Bug Fixes
+
+* Portable Git: The Windows version is now parsed [more robustly](https://github.com/git-for-windows/build-extra/pull/506) in the post-install script.
+* The labels of the File Explorer menu items installed by the Git for Windows installer [have been aligned](https://github.com/git-for-windows/build-extra/pull/507) with what is customary ("Open Git Bash Here" instead of "Git Bash Here").
 
 ## Changes since Git for Windows v2.40.1 (April 25th 2023)
 

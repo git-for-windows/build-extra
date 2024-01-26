@@ -20,4 +20,32 @@ case "$(git version)" in *2.40.*|*2.[123][0-9].*) true;; *) exit 123;; esac
 
 git ls-remote git@ssh.dev.azure.com:v3/git-for-windows/git/git main
 
+die () {
+	echo "$*" >&2
+	exit 1
+}
+
+pcon_choice="$(sed -n 's/^Enable Pseudo Console Support: //p' /etc/install-options.txt)" ||
+die 'Could not read /etc/install-options.txt'
+
+if test -n "$pcon_choice"
+then
+	pcon_config="$(cat /etc/git-bash.config)" ||
+	die 'Could not read /etc/git-bash.config'
+
+	case "$pcon_choice" in
+	Enabled)
+		test "MSYS=enable_pcon" = "$pcon_config" ||
+		die "Expected enable_pcon in git-bash.config, but got '$pcon_config'"
+		;;
+	Disabled)
+		test "MSYS=disable_pcon" = "$pcon_config" ||
+		die "Expected disable_pcon in git-bash.config, but got '$pcon_config'"
+		;;
+	*)
+		die "Unexpected Pseudo Console choice: $pcon_choice"
+		;;
+	esac
+fi
+
 echo "All checks passed!" >&2

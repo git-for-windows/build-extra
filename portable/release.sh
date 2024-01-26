@@ -43,18 +43,21 @@ MINGW32)
 	ARCH=i686
 	ARTIFACT_SUFFIX="32-bit"
 	MD_ARG=128M
+	MINGW_PREFIX=mingw-w64-i686-
 	;;
 MINGW64)
 	BITNESS=64
 	ARCH=x86_64
 	ARTIFACT_SUFFIX="64-bit"
 	MD_ARG=256M
+	MINGW_PREFIX=mingw-w64-x86_64-
 	;;
 CLANGARM64)
 	BITNESS=64
 	ARCH=aarch64
 	ARTIFACT_SUFFIX=arm64
 	MD_ARG=256M
+	MINGW_PREFIX=mingw-w64-clang-aarch64-
 	;;
 *)
 	die "Unhandled MSYSTEM: $MSYSTEM"
@@ -153,21 +156,20 @@ die "Could not unpack .pdb files"
 TITLE="$BITNESS-bit"
 test $ARCH == "aarch64" && TITLE="ARM64"
 
-# 7-Zip will strip absolute paths completely... therefore, we can add another
-# root directory like this:
-
-LIST="$LIST $SCRIPT_PATH/root/*"
-
 
 # Make the self-extracting package
 
-type 7za ||
-pacman -Sy --noconfirm p7zip ||
+type 7z ||
+pacman -Sy --noconfirm $MINGW_PREFIX-7zip ||
 die "Could not install 7-Zip"
 
 echo "Creating archive" &&
-(cd / && 7za a $OPTS7 $TMPPACK $LIST) &&
-(cat "$SCRIPT_PATH/../7-Zip/7zSD.sfx" &&
+echo $LIST | tr ' ' '\n' >$TMPPACK.list &&
+# 7-Zip will strip absolute paths completely... therefore, we can add another
+# root directory like this:
+echo "$(cygpath -aw "$SCRIPT_PATH/root")\\*" >>$TMPPACK.list &&
+(cd / && 7z a $OPTS7 $TMPPACK @${TMPPACK#/}.list) &&
+(cat "$SCRIPT_PATH/../7-Zip/7zS.sfx" &&
  echo ';!@Install@!UTF-8!' &&
  echo 'Title="Portable Git for Windows '$TITLE'"' &&
  echo 'BeginPrompt="This archive extracts a complete Git for Windows '$TITLE'"' &&
@@ -184,4 +186,4 @@ echo "Creating archive" &&
  cat "$TMPPACK") > "$TARGET" &&
 echo "Success! You will find the new installer at \"$TARGET\"." &&
 echo "It is a self-extracting .7z archive." &&
-rm $TMPPACK
+rm $TMPPACK $TMPPACK.list
