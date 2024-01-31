@@ -53,13 +53,13 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.4.10](https://inbox.sourceware.org/cygwin-announce/20231129150845.713029-1-corinna-cygwin@cygwin.com/).
 * Comes with [Perl v5.38.2](http://search.cpan.org/dist/perl-5.38.2/pod/perldelta.pod).
 * Git for Windows [learned to detect and use native Windows support for ANSI sequences](https://github.com/git-for-windows/git/pull/4700), which allows using 24-bit colors in terminal windows.
-* Comes with [cURL v8.5.0](https://github.com/curl/curl/releases/tag/curl-8_5_0).
 * Comes with [Git LFS v3.4.1](https://github.com/git-lfs/git-lfs/releases/tag/3.4.1).
 * The repository viewer [Tig](https://jonas.github.io/tig/) that is included in Git for Windows [can now be called also directly from PowerShell/CMD](https://github.com/git-for-windows/MINGW-packages/pull/104).
 * Comes with [OpenSSH v9.6.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_6_P1).
 * Comes with [Bash v5.2.26](https://git.savannah.gnu.org/cgit/bash.git/commit/?id=f3b6bd19457e260b65d11f2712ec3da56cef463f).
 * Comes with [GNU TLS v3.8.3](https://lists.gnupg.org/pipermail/gnutls-help/2024-January/004841.html).
 * Comes with [OpenSSL v3.2.1](https://www.openssl.org/news/openssl-3.2-notes.html).
+* Comes with [cURL v8.6.0](https://curl.se/changes.html#8_6_0).
 
 ### Bug Fixes
 
