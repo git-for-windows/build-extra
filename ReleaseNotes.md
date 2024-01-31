@@ -58,8 +58,8 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * The repository viewer [Tig](https://jonas.github.io/tig/) that is included in Git for Windows [can now be called also directly from PowerShell/CMD](https://github.com/git-for-windows/MINGW-packages/pull/104).
 * Comes with [OpenSSH v9.6.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_6_P1).
 * Comes with [Bash v5.2.26](https://git.savannah.gnu.org/cgit/bash.git/commit/?id=f3b6bd19457e260b65d11f2712ec3da56cef463f).
-* Comes with [OpenSSL v3.2.0](https://github.com/openssl/openssl/releases/tag/openssl-3.2.0).
 * Comes with [GNU TLS v3.8.3](https://lists.gnupg.org/pipermail/gnutls-help/2024-January/004841.html).
+* Comes with [OpenSSL v3.2.1](https://www.openssl.org/news/openssl-3.2-notes.html).
 
 ### Bug Fixes
 
