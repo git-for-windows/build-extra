@@ -60,6 +60,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * Comes with [GNU TLS v3.8.3](https://lists.gnupg.org/pipermail/gnutls-help/2024-January/004841.html).
 * Comes with [OpenSSL v3.2.1](https://www.openssl.org/news/openssl-3.2-notes.html).
 * Comes with [cURL v8.6.0](https://curl.se/changes.html#8_6_0).
+* Comes with [GNU Privacy Guard v2.4.4](https://github.com/gpg/gnupg/releases/tag/gnupg-2.4.4).
 
 ### Bug Fixes
 
