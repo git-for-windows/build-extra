@@ -42,7 +42,7 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.43.0 (November 20th 2023)
 
-Git for Windows will drop support for Windows 7 and for Windows 8 in one of the next versions, see [the announcement of MSYS2](https://www.msys2.org/docs/windows_support/) on which Git for Windows relies for components such as Bash and Perl.
+Git for Windows will drop support for Windows 7 and for Windows 8 in the next versions, see [the announcement of MSYS2](https://www.msys2.org/docs/windows_support/) on which Git for Windows relies for components such as Bash and Perl.
 
 Please also note that the 32-bit variant of Git for Windows is deprecated; Its last official release [is planned for 2025](https://gitforwindows.org/32-bit.html).
 
