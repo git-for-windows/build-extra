@@ -66,6 +66,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * The 32-bit variant of Git for Windows was missing some MSYS2 runtime updates, [which was addressed](https://github.com/git-for-windows/MSYS2-packages/pull/138); Do note [32-bit support is phased out](https://gitforwindows.org/32-bit.html).
 * The Git for Windows installer [showed cut-off text in some setups](https://github.com/git-for-windows/git/issues/4727). This [has been fixed](https://github.com/git-for-windows/build-extra/pull/536).
 * The `git credential-manager --help` command previously would not find a page to display in the web browser, [which has been fixed](https://github.com/git-for-windows/build-extra/pull/542).
+* A couple of bugs that could cause Git Bash to hang in certain scenarios [were fixed](https://github.com/git-for-windows/MSYS2-packages/pull/158).
 
 ## Changes since Git for Windows v2.42.0(2) (August 30th 2023)
 
