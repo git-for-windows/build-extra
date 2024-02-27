@@ -13,6 +13,7 @@ function usage(){
     echo "  -k                   keep all downloaded, extracted files in \"/tmp\""
     echo "  -s                   skip downloading"
     echo "  -f                   forcibly update no matter what version it is"
+    echo "  -e                   don't modify the environment (no /cmd in path, /etc/profile.d)"
     echo "  -h                   this prints me..."
     exit
 }
@@ -108,6 +109,8 @@ until [ $# -eq 0 ]; do
             force_update=1; shift;;
         -s)    
             skip_download=1; shift;;
+        -e)
+            no_env=1; shift;;
         -h)
             usage; shift;;    
         *) 
@@ -188,72 +191,79 @@ process "/mingw$bit/share/git-core"
 process "/mingw$bit/share/git-gui"
 process -f "/mingw$bit/share/perl5"
 process -f "/mingw$bit/ssl"
-process "/cmd"
-process -f "/etc/profile.d"
+if [[ ! x$no_env == x1 ]]; then
+    process "/cmd"
+    process -f "/etc/profile.d"
+else
+    cp -f $gitupk/cmd/* $bin
+fi
 cp -f $gitupk/usr/bin/git* $bin
 
-echo ""
-# Generating scripts
-ctxmenu=/cmd/ctxmenu.bat
-echo '@echo off' > $ctxmenu
-echo '' >> $ctxmenu
-echo 'set /p=Adding "Git GUI Here" ... <nul' >> $ctxmenu
-echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui" /f /ve /d "Git &GUI Here"' >> $ctxmenu
-echo 'set /p=Adding icon for "Git GUI Here" ... <nul' >> $ctxmenu
-echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui" /f /v Icon /d "%~dp0\git-gui.exe"' >> $ctxmenu
-echo 'set /p=Adding command for "Git GUI Here" ... <nul' >> $ctxmenu
-if [[ "$system" == "Msys" ]]; then
-	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui\command" '\
-'/f /ve /d "\"%~dp0\git-gui.exe\" \"--working-dir\" \"%%v.\""' >> $ctxmenu
-else # Cygwin 
-	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui\command" '\
-'/f /ve /d "cmd.exe /s /c \"set \"PATH=%~dp0\..\bin\" '\
-'^&^& \"%~dp0\git-gui.exe\" \"--working-dir\" \"%%v.\"\""' >> $ctxmenu
-fi
-echo '' >> $ctxmenu
-echo 'set /p=Adding "Git Bash Here" ... <nul' >> $ctxmenu
-echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell" /f /ve /d "Git Ba&sh Here"' >> $ctxmenu
-echo 'set /p=Adding icon for "Git Bash Here" ... <nul' >> $ctxmenu
-echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell" /f /v Icon /d "%~dp0\git-gui.exe"' >> $ctxmenu
-echo 'set /p=Adding command for "Git Bash Here" ... <nul' >> $ctxmenu
-if [[ "$system" == "Msys" ]]; then
-	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell\command" '\
-'/f /ve /d "\"%~dp0..\usr\bin\mintty.exe\" -i /cmd/git-gui.exe /usr/bin/bash -c '\
-'\"cd '"'%%v'; export CHERE_INVOKING=1; export MSYSTEM=MINGW$bit; exec /usr/bin/bash --login -i"'\""' >> $ctxmenu
-else # Cygwin
-	echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell\command" '\
-'/f /ve /d "\"%~dp0..\bin\mintty.exe\" -i /cmd/git-gui.exe /bin/bash -c '\
-'\"cd '"'%%v'; export CHERE_INVOKING=1; export PATH=/mingw$bit/bin:\$PATH; exec /bin/bash --login -i"'\""' >> $ctxmenu
-fi
-echo '' >> $ctxmenu
-echo 'pause' >> $ctxmenu
-chmod +x $ctxmenu
-echo "A batch script by which the \"Git GUI Here\" and \"Git Bash Here\" could "
-echo "be added to the context menu is available as $ctxmenu "
+if [[ ! x$no_env == x1 ]]; then
+    echo ""
+    # Generating scripts
+    ctxmenu=/cmd/ctxmenu.bat
+    echo '@echo off' > $ctxmenu
+    echo '' >> $ctxmenu
+    echo 'set /p=Adding "Git GUI Here" ... <nul' >> $ctxmenu
+    echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui" /f /ve /d "Git &GUI Here"' >> $ctxmenu
+    echo 'set /p=Adding icon for "Git GUI Here" ... <nul' >> $ctxmenu
+    echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui" /f /v Icon /d "%~dp0\git-gui.exe"' >> $ctxmenu
+    echo 'set /p=Adding command for "Git GUI Here" ... <nul' >> $ctxmenu
+    if [[ "$system" == "Msys" ]]; then
+	    echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui\command" '\
+        '/f /ve /d "\"%~dp0\git-gui.exe\" \"--working-dir\" \"%%v.\""' >> $ctxmenu
+    else # Cygwin 
+	    echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui\command" '\
+    '/f /ve /d "cmd.exe /s /c \"set \"PATH=%~dp0\..\bin\" '\
+    '^&^& \"%~dp0\git-gui.exe\" \"--working-dir\" \"%%v.\"\""' >> $ctxmenu
+    fi
+    echo '' >> $ctxmenu
+    echo 'set /p=Adding "Git Bash Here" ... <nul' >> $ctxmenu
+    echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell" /f /ve /d "Git Ba&sh Here"' >> $ctxmenu
+    echo 'set /p=Adding icon for "Git Bash Here" ... <nul' >> $ctxmenu
+    echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell" /f /v Icon /d "%~dp0\git-gui.exe"' >> $ctxmenu
+    echo 'set /p=Adding command for "Git Bash Here" ... <nul' >> $ctxmenu
+    if [[ "$system" == "Msys" ]]; then
+	    echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell\command" '\
+    '/f /ve /d "\"%~dp0..\usr\bin\mintty.exe\" -i /cmd/git-gui.exe /usr/bin/bash -c '\
+    '\"cd '"'%%v'; export CHERE_INVOKING=1; export MSYSTEM=MINGW$bit; exec /usr/bin/bash --login -i"'\""' >> $ctxmenu
+    else # Cygwin
+	    echo 'reg add "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell\command" '\
+    '/f /ve /d "\"%~dp0..\bin\mintty.exe\" -i /cmd/git-gui.exe /bin/bash -c '\
+    '\"cd '"'%%v'; export CHERE_INVOKING=1; export PATH=/mingw$bit/bin:\$PATH; exec /bin/bash --login -i"'\""' >> $ctxmenu
+    fi
+    echo '' >> $ctxmenu
+    echo 'pause' >> $ctxmenu
+    chmod +x $ctxmenu
+    echo "A batch script by which the \"Git GUI Here\" and \"Git Bash Here\" could "
+    echo "be added to the context menu is available as $ctxmenu "
 
-echo ""
-rm_ctxmenu=/cmd/rm-ctxmenu.bat
-echo '@echo off' > $rm_ctxmenu
-echo '' >> $rm_ctxmenu
-echo 'set /p=Deleting "Git GUI Here" ... <nul' >> $rm_ctxmenu
-echo 'reg delete "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui" /f' >> $rm_ctxmenu
-echo 'set /p=Deleting "Git Bash Here" ... <nul' >> $rm_ctxmenu
-echo 'reg delete "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell" /f' >> $rm_ctxmenu
-echo 'pause' >> $rm_ctxmenu
-echo '' >> $rm_ctxmenu
-chmod +x $rm_ctxmenu
-echo "A batch script by which the \"Git GUI Here\" and \"Git Bash Here\" could "
-echo "be removed from the context menu is available as $rm_ctxmenu "
+    echo ""
+    rm_ctxmenu=/cmd/rm-ctxmenu.bat
+    echo '@echo off' > $rm_ctxmenu
+    echo '' >> $rm_ctxmenu
+    echo 'set /p=Deleting "Git GUI Here" ... <nul' >> $rm_ctxmenu
+    echo 'reg delete "HKEY_CLASSES_ROOT\Directory\Background\shell\git_gui" /f' >> $rm_ctxmenu
+    echo 'set /p=Deleting "Git Bash Here" ... <nul' >> $rm_ctxmenu
+    echo 'reg delete "HKEY_CLASSES_ROOT\Directory\Background\shell\git_shell" /f' >> $rm_ctxmenu
+    echo 'pause' >> $rm_ctxmenu
+    echo '' >> $rm_ctxmenu
+    chmod +x $rm_ctxmenu
+    echo "A batch script by which the \"Git GUI Here\" and \"Git Bash Here\" could "
+    echo "be removed from the context menu is available as $rm_ctxmenu "
 
-echo ""
-# Setting ENV
-echo -n "Setting env ..."
-userpath=$(reg query "HKEY_CURRENT_USER\Environment" //v Path 2>/dev/null | awk 'NR==3 {print $NF}')
-if [[ "$userpath" == "" ]]; then
-    setx PATH "$(cygpath -m /cmd)" > /dev/null 2>&1
-elif [[ "$userpath" != *"$(cygpath -m /cmd)"* ]]; then
-    setx PATH "$(cygpath -m /cmd);$userpath" > /dev/null 2>&1
+    echo ""
+    # Setting ENV
+    echo -n "Setting env ..."
+    userpath=$(reg query "HKEY_CURRENT_USER\Environment" //v Path 2>/dev/null | awk 'NR==3 {print $NF}')
+    if [[ "$userpath" == "" ]]; then
+        setx PATH "$(cygpath -m /cmd)" > /dev/null 2>&1
+    elif [[ "$userpath" != *"$(cygpath -m /cmd)"* ]]; then
+        setx PATH "$(cygpath -m /cmd);$userpath" > /dev/null 2>&1
+    fi
 fi
+
 echo done
 
 echo ""
