@@ -291,7 +291,7 @@ else
 		-e '^/\(mingw\|clang\)[^/]*/bin/\(WhoUses\|xmlwf\)\.exe$' \
 		-e '^/\(mingw\|clang\)[^/]*/etc/pki' -e '^/\(mingw\|clang\)[^/]*/lib/p11-kit/' \
 		-e '/git-\(add--interactive\|archimport\|citool\|cvs.*\)$' \
-		-e '/git-\(difftool.*\|gui.*\|instaweb\|p4\|relink\)$' \
+		-e '/git-\(gui.*\|instaweb\|p4\|relink\)$' \
 		-e '/git-\(send-email\|svn\)$' \
 		-e '/\(mingw\|clang\)[^/]*/libexec/git-core/git-\(imap-send\|daemon\)\.exe$' \
 		-e '/\(mingw\|clang\)[^/]*/libexec/git-core/git-remote-ftp.*\.exe$' \
