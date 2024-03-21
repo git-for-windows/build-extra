@@ -49,6 +49,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Git LFS v3.5.1](https://github.com/git-lfs/git-lfs/releases/tag/3.5.1).
 * MinGit [now supports running `git difftool`](https://github.com/git-for-windows/build-extra/pull/550).
 * Comes with [OpenSSH v9.7.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_7_P1).
+* Comes with [GNU TLS v3.8.4](https://lists.gnupg.org/pipermail/gnutls-help/2024-March/004845.html).
 
 ## Changes since Git for Windows v2.43.0 (November 20th 2023)
 
