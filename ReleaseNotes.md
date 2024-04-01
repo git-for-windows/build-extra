@@ -52,6 +52,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [GNU TLS v3.8.4](https://lists.gnupg.org/pipermail/gnutls-help/2024-March/004845.html).
 * Comes with [Tig v2.5.9](https://github.com/jonas/tig/releases/tag/tig-2.5.9).
 
+### Bug Fixes
+
+* Since v2.14.0(2), Git for Windows' installer registers the _Open Git Bash here_ and _Open Git GUI here_ context menu items also in the special [Libraries folders](https://msdn.microsoft.com/en-us/library/windows/desktop/dd758096.aspx), but the uninstaller never removed them from those folders, [which was fixed](https://github.com/git-for-windows/build-extra/pull/551).
+
 ## Changes since Git for Windows v2.43.0 (November 20th 2023)
 
 Git for Windows for Windows v2.44 is the last version to support for Windows 7 and for Windows 8, see [MSYS2's corresponding deprecation announcement](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
