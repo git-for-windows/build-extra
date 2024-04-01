@@ -566,11 +566,13 @@ begin
         RootKey:=HKEY_CURRENT_USER;
     end;
 
-    SetArrayLength(Keys,4);
+    SetArrayLength(Keys,6);
     Keys[0]:='SOFTWARE\Classes\Directory\shell\git_shell';
     Keys[1]:='SOFTWARE\Classes\Directory\Background\shell\git_shell';
     Keys[2]:='SOFTWARE\Classes\Directory\shell\git_gui';
     Keys[3]:='SOFTWARE\Classes\Directory\Background\shell\git_gui';
+    Keys[4]:='SOFTWARE\Classes\LibraryFolder\background\shell\git_shell';
+    Keys[5]:='SOFTWARE\Classes\LibraryFolder\background\shell\git_gui';
 
     for i:=0 to Length(Keys)-1 do begin
         Command:='';
