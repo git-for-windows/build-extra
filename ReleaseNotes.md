@@ -51,6 +51,7 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [OpenSSH v9.7.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_7_P1).
 * Comes with [GNU TLS v3.8.4](https://lists.gnupg.org/pipermail/gnutls-help/2024-March/004845.html).
 * Comes with [Tig v2.5.9](https://github.com/jonas/tig/releases/tag/tig-2.5.9).
+* Comes with [cURL v8.7.1](https://curl.se/changes.html#8_7_1).
 
 ### Bug Fixes
 
