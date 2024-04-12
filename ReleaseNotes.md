@@ -57,6 +57,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Since v2.14.0(2), Git for Windows' installer registers the _Open Git Bash here_ and _Open Git GUI here_ context menu items also in the special [Libraries folders](https://msdn.microsoft.com/en-us/library/windows/desktop/dd758096.aspx), but the uninstaller never removed them from those folders, [which was fixed](https://github.com/git-for-windows/build-extra/pull/551).
 * A [regression](https://github.com/git-for-windows/git/issues/4843) where `git clone` no longer worked in the presence of `includeIf.*.onbranch` config settings [has been fixed](https://github.com/git-for-windows/git/commit/199f44cb2ead34486f2588dc32d000d17e30f9cc).
+* Apparently some anti-malware programs fiddle with the mode of `stdout` which [can lead to problems because expected output is missing](https://github.com/git-for-windows/git/issues/4890), which [was fixed](https://github.com/git-for-windows/git/pull/4901).
 
 ## Changes since Git for Windows v2.43.0 (November 20th 2023)
 
