@@ -42,6 +42,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.44.0 (February 23rd 2024)
 
+### New Features
+
+* Comes with [Git v2.44.1](https://github.com/git/git/blob/v2.44.1/Documentation/RelNotes/2.44.1.txt).
+
 ### Bug Fixes
 
 * **CVE-2024-32002**: Recursive clones on case-insensitive filesystems that support
