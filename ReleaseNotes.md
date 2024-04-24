@@ -42,6 +42,10 @@ This package contains software from a number of other projects including Bash, z
 
 ## Changes since Git for Windows v2.44.0 (February 23rd 2024)
 
+Git for Windows for Windows v2.45 is the last version to support for Windows 7 and for Windows 8, see [MSYS2's corresponding deprecation announcement](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+Please also note that the 32-bit variant of Git for Windows is deprecated; Its last official release [is planned for 2025](https://gitforwindows.org/32-bit.html).
+
 ### New Features
 
 * Comes with [PCRE2 v10.43](https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.43).
