@@ -5,11 +5,11 @@
 alias ls='ls -F --color=auto --show-control-chars'
 alias ll='ls -l'
 
-case "$TERM" in
-xterm*)
+case "$MSYS" in
+*disable_pcon*)
 	# The following programs are known to require a Win32 Console
 	# for interactive usage, therefore let's launch them through winpty
-	# when run inside `mintty`.
+	# when disable pseudo console with `disable_pcon`.
 	for name in node ipython php php5 psql python2.7 winget
 	do
 		case "$(type -p "$name".exe 2>/dev/null)" in
