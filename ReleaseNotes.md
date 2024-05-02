@@ -46,6 +46,10 @@ Git for Windows for Windows v2.45 is the last version to support for Windows 7 a
 
 Please also note that the 32-bit variant of Git for Windows is deprecated; Its last official release [is planned for 2025](https://gitforwindows.org/32-bit.html).
 
+### New Features
+
+* Comes with [Git v2.45.1](https://github.com/git/git/blob/v2.45.1/Documentation/RelNotes/2.45.1.txt).
+
 ### Bug Fixes
 
 * **CVE-2024-32002**: Recursive clones on case-insensitive filesystems that support
