@@ -1,5 +1,5 @@
-# Git for Windows v2.45.0 Release Notes
-Latest update: April 29th 2024
+# Git for Windows v2.45.1 Release Notes
+Latest update: May 14th 2024
 
 ## Introduction
 
@@ -40,11 +40,59 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 This package contains software from a number of other projects including Bash, zlib, curl, tcl/tk, perl, MSYS2 and a number of libraries and utilities from the GNU project, licensed under the GNU General Public License. Likewise, it contains Perl which is dual licensed under the GNU General Public License and the Artistic License.
 
-## Changes since Git for Windows v2.45.0 (April 29th 2024)
+## Changes since Git for Windows v2.45.1 (May 14th 2024)
 
 ### New Features
 
 * Comes with [Tig v2.5.10](https://github.com/jonas/tig/releases/tag/tig-2.5.10).
+
+## Changes since Git for Windows v2.45.0 (April 29th 2024)
+
+Git for Windows for Windows v2.45 is the last version to support for Windows 7 and for Windows 8, see [MSYS2's corresponding deprecation announcement](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
+
+Please also note that the 32-bit variant of Git for Windows is deprecated; Its last official release [is planned for 2025](https://gitforwindows.org/32-bit.html).
+
+### New Features
+
+* Comes with [Git v2.45.1](https://github.com/git/git/blob/v2.45.1/Documentation/RelNotes/2.45.1.txt).
+
+### Bug Fixes
+
+* **CVE-2024-32002**: Recursive clones on case-insensitive filesystems that support
+  symbolic links are susceptible to case confusion that can be exploited to
+  execute just-cloned code during the clone operation.
+* **CVE-2024-32004**: Repositories can be configured to execute arbitrary code
+  during local clones. To address this, the ownership checks introduced in
+  v2.30.3 are now extended to cover cloning local repositories.
+* **CVE-2024-32020**: Local clones may end up hardlinking files into the target
+  repository's object database when source and target repository reside on the
+  same disk. If the source repository is owned by a different user, then those
+  hardlinked files may be rewritten at any point in time by the untrusted user.
+* **CVE-2024-32021**: When cloning a local source repository that contains symlinks
+  via the filesystem, Git may create hardlinks to arbitrary user-readable files
+  on the same filesystem as the target repository in the objects/ directory.
+* **CVE-2024-32465**: It is supposed to be safe to clone untrusted repositories,
+  even those unpacked from zip archives or tarballs originating from untrusted
+  sources, but Git can be tricked to run arbitrary code as part of the clone.
+* Defense-in-depth: submodule: require the submodule path to contain
+  directories only.
+* Defense-in-depth: clone: when symbolic links collide with directories, keep
+  the latter.
+* Defense-in-depth: clone: prevent hooks from running during a clone.
+* Defense-in-depth: core.hooksPath: add some protection while cloning.
+* Defense-in-depth: fsck: warn about symlink pointing inside a gitdir.
+* Various fix-ups on HTTP tests.
+* HTTP Header redaction code has been adjusted for a newer version of cURL
+  library that shows its traces differently from earlier versions.
+* Fix was added to work around a regression in libcURL 8.7.0 (which has already
+  been fixed in their tip of the tree).
+* Replace macos-12 used at GitHub CI with macos-13.
+* ci(linux-asan/linux-ubsan): let's save some time
+* Tests with LSan from time to time seem to emit harmless message that makes
+  our tests unnecessarily flakey; we work it around by filtering the
+  uninteresting output.
+* Update GitHub Actions jobs to avoid warnings against using deprecated version
+  of Node.js.
 
 ## Changes since Git for Windows v2.44.0 (February 23rd 2024)
 
