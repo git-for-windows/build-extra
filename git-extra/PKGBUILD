@@ -1,4 +1,4 @@
-# Maintainer: nalla <nalla@hamal.uberspace.de>
+# Maintainer: Johannes Schindelin <johannes.schindelin@gmx.de>
 
 _realname="git-extra"
 pkgbase="mingw-w64-${_realname}"
