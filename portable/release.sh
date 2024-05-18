@@ -169,6 +169,10 @@ echo $LIST | tr ' ' '\n' >$TMPPACK.list &&
 # root directory like this:
 echo "$(cygpath -aw "$SCRIPT_PATH/root")\\*" >>$TMPPACK.list &&
 (cd / && 7z a $OPTS7 $TMPPACK @${TMPPACK#/}.list) &&
+if test -z "$(7z l $TMPPACK etc/package-versions.txt)"
+then
+	die "/etc/package-versions.txt is missing?!?"
+fi &&
 (cat "$SCRIPT_PATH/../7-Zip/7zS.sfx" &&
  echo ';!@Install@!UTF-8!' &&
  echo 'Title="Portable Git for Windows '$TITLE'"' &&
