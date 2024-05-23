@@ -45,6 +45,7 @@ This package contains software from a number of other projects including Bash, z
 ### New Features
 
 * Comes with [Tig v2.5.10](https://github.com/jonas/tig/releases/tag/tig-2.5.10).
+* Comes with [cURL v8.8.0](https://github.com/curl/curl/releases/tag/curl-8_8_0).
 
 ## Changes since Git for Windows v2.45.0 (April 29th 2024)
 
