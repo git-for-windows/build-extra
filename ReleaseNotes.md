@@ -47,6 +47,10 @@ This package contains software from a number of other projects including Bash, z
 * Comes with [Tig v2.5.10](https://github.com/jonas/tig/releases/tag/tig-2.5.10).
 * Comes with [cURL v8.8.0](https://github.com/curl/curl/releases/tag/curl-8_8_0).
 
+### Bug Fixes
+
+* When Git for Windows v2.44.0 introduced the ability [to use native Win32 Console ANSI sequence processing](https://github.com/git-for-windows/git/pull/4700), an inadvertent fallout was that in this instance, [non-ASCII characters were no longer printed correctly unless the current code page was set to 65001](https://github.com/git-for-windows/git/issues/4851). This bug [has been fixed](https://github.com/git-for-windows/git/pull/4968).
+
 ## Changes since Git for Windows v2.45.0 (April 29th 2024)
 
 Git for Windows for Windows v2.45 is the last version to support for Windows 7 and for Windows 8, see [MSYS2's corresponding deprecation announcement](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
