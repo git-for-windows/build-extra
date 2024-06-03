@@ -48,6 +48,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 
 ### New Features
 
+* Comes with [Git v2.45.2](https://github.com/git/git/blob/v2.45.2/Documentation/RelNotes/2.45.2.txt).
 * Comes with [Tig v2.5.10](https://github.com/jonas/tig/releases/tag/tig-2.5.10).
 * Comes with [cURL v8.8.0](https://github.com/curl/curl/releases/tag/curl-8_8_0).
 
