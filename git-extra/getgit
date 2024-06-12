@@ -248,7 +248,7 @@ echo "be removed from the context menu is available as $rm_ctxmenu "
 echo ""
 # Setting ENV
 echo -n "Setting env ..."
-userpath=$(reg query "HKEY_CURRENT_USER\Environment" //v Path 2>/dev/null | awk 'NR==3 {print $NF}')
+userpath="$(powershell -command '(Get-ItemProperty -Path 'HKCU:\Environment' -Name Path).Path')"
 if [[ "$userpath" == "" ]]; then
     setx PATH "$(cygpath -m /cmd)" > /dev/null 2>&1
 elif [[ "$userpath" != *"$(cygpath -m /cmd)"* ]]; then
