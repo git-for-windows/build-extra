@@ -432,7 +432,7 @@ require () {
 }
 
 install_git_32bit_prereqs () {
-	require mingw-w64-i686-asciidoctor-extensions
+	require mingw-w64-i686-asciidoctor
 }
 
 pkg_build () {
@@ -445,7 +445,7 @@ pkg_build () {
 	# Git for Windows' packages are only visible to the SDK of the
 	# matching architecture. However, we want to build Git for both
 	# 32-bit and 64-bit in the 64-bit SDK at the same time, therefore
-	# we need even the prerequisite asciidoctor-extensions for 32-bit.
+	# we need even the prerequisite asciidoctor for 32-bit.
 	# Let's just steal it from the 32-bit SDK
 	test mingw-w64-git != $package ||
 	test x86_64 != $arch ||
