@@ -3263,6 +3263,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		/usr/bin/xgettext.exe
 		/usr/bin/msys-gettext*.dll
 
+		# The `error_highlight` Ruby gem, needed by `asciidoctor`
+		*error_highlight*
+
 		# Files to include into the installer/Portable Git/MinGit
 		EOF
 		git -C "$output_path" checkout -- &&
