@@ -3258,6 +3258,11 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		# markdown, to render the release notes
 		/usr/bin/markdown
 
+		# gettext (for makepkg)
+		/usr/bin/gettext.exe
+		/usr/bin/xgettext.exe
+		/usr/bin/msys-gettext*.dll
+
 		# Files to include into the installer/Portable Git/MinGit
 		EOF
 		git -C "$output_path" checkout -- &&
