@@ -46,6 +46,7 @@ This package contains software from a number of other projects including Bash, z
 
 * Comes with [OpenSSL v3.2.2](https://github.com/openssl/openssl/releases/tag/openssl-3.2.2).
 * Comes with [PCRE2 v10.44](https://github.com/PCRE2Project/pcre2/blob/pcre2-10.44/ChangeLog).
+* Comes with [OpenSSH v9.8.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_8_P1).
 
 ## Changes since Git for Windows v2.45.1 (May 14th 2024)
 
