@@ -36,6 +36,7 @@ jobs:
               -e '/^make-file-list\.sh$/ainstaller/' \
               -e '/^make-file-list\.sh$/aportable/' \
               -e '/^make-file-list\.sh$/amingit/' \
+              -e 's|^\(installer/\).*|\1|' \
               -e 's|[^/]*$||' |
             sort -u >touched.txt &&
           show_files touched.txt &&
