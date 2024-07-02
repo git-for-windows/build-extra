@@ -326,7 +326,7 @@ else
 		-e '^/usr/bin/\(pr\|printenv\|ps\|ptx\|realpath\)\.exe$' \
 		-e '^/usr/bin/\(regtool\|runcon\|scp\|seq\|setfacl\)\.exe$' \
 		-e '^/usr/bin/\(setmetamode\|sftp\|sha.*sum\|shred\)\.exe$' \
-		-e '^/usr/bin/\(shuf\|sleep\|slogin\|split\|sshd\)\.exe$' \
+		-e '^/usr/bin/\(shuf\|sleep\|slogin\|split\|sshd)\.exe$' \
 		-e '^/usr/bin/\(ssh-key.*\|ssp\|stat\|stdbuf\|strace\)\.exe$' \
 		-e '^/usr/bin/\(stty\|sum\|sync\|tac\|tee\|timeout\)\.exe$' \
 		-e '^/usr/bin/\(truncate\|tsort\|tty\|tzset\|umount\)\.exe$' \
@@ -335,7 +335,7 @@ else
 		-e '^/usr/bin/msys-sqlite3[a-z].*\.dll$' \
 		-e '^/usr/bin/msys-\(gomp.*\|vtv.*\)-.*\.dll$' \
 		-e '^/usr/lib/\(awk\|coreutils\|gawk\|openssl\|pkcs11\)/' \
-		-e '^/usr/lib/ssh/sftp' \
+		-e '^/usr/lib/ssh/\(sftp\|sshd\($\|-\)\)' \
 		-e '^/usr/libexec/\(bigram\|code\|frcode\)\.exe$' \
 		-e '^/usr/share/\(cygwin\|git\)/' \
 		-e '^/usr/ssl/misc/' \
