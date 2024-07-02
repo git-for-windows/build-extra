@@ -23,16 +23,28 @@ jobs:
             echo "$1=[$(test ! -s list.txt && echo '""' || tr -d '\n' <list.txt)]" >>$GITHUB_OUTPUT
           }
 
+          show_files () {
+            {
+              echo "::group::$1" &&
+              cat "$1" &&
+              echo "::endgroup::"
+            } >&2
+          }
+
           git diff ${{github.event.pull_request.base.sha}}... --name-only |
             sed \
               -e '/^make-file-list\.sh$/ainstaller/' \
               -e '/^make-file-list\.sh$/aportable/' \
               -e '/^make-file-list\.sh$/amingit/' \
+              -e 's|^\(installer/\).*|\1|' \
               -e 's|[^/]*$||' |
             sort -u >touched.txt &&
+          show_files touched.txt &&
 
           git ls-files \*/PKGBUILD | sed 's|[^/]*$||' | sort >directories.txt &&
+          show_files directories.txt &&
           define_matrix matrix directories.txt touched.txt packages.txt &&
+          show_files packages.txt &&
 
           test -z "$(git log -L :create_sdk_artifact:please.sh ${{github.event.pull_request.base.sha}}.. -- )" &&
           test 200 -gt $(($(git diff --numstat ${{github.event.pull_request.base.sha}}.. -- please.sh | cut -f 2))) &&
@@ -40,12 +52,14 @@ jobs:
           echo "test-sdk-artifacts=true" >>$GITHUB_OUTPUT
 
           git ls-files \*/release.sh | sed 's|[^/]*$||' | sort >releaseable.txt &&
+          show_files releaseable.txt &&
           if grep -q test-sdk-artifacts=true $GITHUB_OUTPUT
           then
             # These are already tested as part of the `sdk-artifacts` matrix
             sed -i '/^\(installer\|mingit\)\/$/d' releaseable.txt
           fi &&
-          define_matrix artifacts releaseable.txt touched.txt artifacts.txt ||
+          define_matrix artifacts releaseable.txt touched.txt artifacts.txt &&
+          show_files artifacts.txt ||
           exit $?
 
           test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- check-for-missing-dlls.sh)" ||
