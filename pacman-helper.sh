@@ -152,21 +152,17 @@ fetch () {
 				;;
 			esac
 			test -f $filename ||
-			curl --cacert /usr/ssl/certs/ca-bundle.crt \
-				-sfLO $(arch_url $arch)/$filename ||
+			curl -sfLO $(arch_url $arch)/$filename ||
 			if test $? = 56
 			then
-				curl --cacert /usr/ssl/certs/ca-bundle.crt \
-					-sfLO $(arch_url $arch)/$filename
+				curl -sfLO $(arch_url $arch)/$filename
 			fi ||
 			die "Could not get $filename ($?)"
 			test -f $filename.sig ||
-			curl --cacert /usr/ssl/certs/ca-bundle.crt \
-				-sfLO $(arch_url $arch)/$filename.sig ||
+			curl -sfLO $(arch_url $arch)/$filename.sig ||
 			if test $? = 56
 			then
-				curl --cacert /usr/ssl/certs/ca-bundle.crt \
-					-sfLO $(arch_url $arch)/$filename.sig
+				curl -sfLO $(arch_url $arch)/$filename.sig
 			fi ||
 			die "Could not get $filename.sig ($?)"
 			test x86_64 = "$arch" || continue
@@ -189,21 +185,17 @@ fetch () {
 				;;
 			 esac
 			 test -f $filename ||
-			 curl --cacert /usr/ssl/certs/ca-bundle.crt \
-				-sfLO $base_url/sources/$filename ||
+			 curl -sfLO $base_url/sources/$filename ||
 			 if test $? = 56
 			 then
-				curl --cacert /usr/ssl/certs/ca-bundle.crt \
-					-sfLO $base_url/sources/$filename
+				curl -sfLO $base_url/sources/$filename
 			 fi ||
 			 die "Could not get $filename ($?)"
 			 test -f $filename.sig ||
-			 curl --cacert /usr/ssl/certs/ca-bundle.crt \
-				-sfLO $base_url/sources/$filename.sig ||
+			 curl -sfLO $base_url/sources/$filename.sig ||
 			 if test $? = 56
 			 then
-				curl --cacert /usr/ssl/certs/ca-bundle.crt \
-					-sfLO $base_url/sources/$filename.sig
+				curl -sfLO $base_url/sources/$filename.sig
 			 fi ||
 			 die "Could not get $filename.sig ($?)")
 		 done
