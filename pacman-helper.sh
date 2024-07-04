@@ -32,10 +32,6 @@ die () {
 fifo_find="/var/tmp/disowned.find"
 fifo_pacman="/var/tmp/disowned.pacman"
 
-# MSYS2's mingw-w64-$arch-ca-certificates seem to lag behind ca-certificates
-CURL_CA_BUNDLE=/usr/ssl/certs/ca-bundle.crt
-export CURL_CA_BUNDLE
-
 mode=
 case "$1" in
 fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists|lock|unlock|break_lock|quick_add|sanitize_db)
@@ -57,7 +53,18 @@ upload)
 	;;
 esac
 
-this_script_dir="$(cygpath -am "${0%/*}")"
+case "$(uname -s)" in
+MSYS|MINGW*)
+	# MSYS2's mingw-w64-$arch-ca-certificates seem to lag behind ca-certificates
+	CURL_CA_BUNDLE=/usr/ssl/certs/ca-bundle.crt
+	export CURL_CA_BUNDLE
+
+	this_script_dir="$(cygpath -am "${0%/*}")"
+	;;
+*)
+	this_script_dir="$(cd "$(dirname "$0")" && pwd -P)"
+	;;
+esac
 base_url=https://wingit.blob.core.windows.net
 mirror=/var/local/pacman-mirror
 
