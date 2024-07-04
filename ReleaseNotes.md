@@ -52,6 +52,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * Comes with [OpenSSH v9.8.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_8_P1).
 * Comes with [Git Credential Manager v2.5.1](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.5.1).
 * Comes with [MinTTY v3.7.4](https://github.com/mintty/mintty/releases/tag/3.7.4).
+* `git config` [respects two user-wide configs](https://git-scm.com/docs/git-config#FILES): `.gitconfig` in the home directory, and `.config/git/config`. Since the latter isn't a Windows-native directory, [Git for Windows now looks for `Git/config` in the `AppData` directory](https://github.com/git-for-windows/git/pull/5030), unless `.config/git/config` exists. 
 
 ## Changes since Git for Windows v2.45.1 (May 14th 2024)
 
