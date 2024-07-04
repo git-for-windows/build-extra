@@ -32,10 +32,6 @@ die () {
 fifo_find="/var/tmp/disowned.find"
 fifo_pacman="/var/tmp/disowned.pacman"
 
-# MSYS2's mingw-w64-$arch-ca-certificates seem to lag behind ca-certificates
-CURL_CA_BUNDLE=/usr/ssl/certs/ca-bundle.crt
-export CURL_CA_BUNDLE
-
 mode=
 case "$1" in
 fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists|lock|unlock|break_lock|quick_add|sanitize_db)
@@ -57,7 +53,18 @@ upload)
 	;;
 esac
 
-this_script_dir="$(cygpath -am "${0%/*}")"
+case "$(uname -s)" in
+MSYS|MINGW*)
+	# MSYS2's mingw-w64-$arch-ca-certificates seem to lag behind ca-certificates
+	CURL_CA_BUNDLE=/usr/ssl/certs/ca-bundle.crt
+	export CURL_CA_BUNDLE
+
+	this_script_dir="$(cygpath -am "${0%/*}")"
+	;;
+*)
+	this_script_dir="$(cd "$(dirname "$0")" && pwd -P)"
+	;;
+esac
 base_url=https://wingit.blob.core.windows.net
 mirror=/var/local/pacman-mirror
 
@@ -152,21 +159,17 @@ fetch () {
 				;;
 			esac
 			test -f $filename ||
-			curl --cacert /usr/ssl/certs/ca-bundle.crt \
-				-sfLO $(arch_url $arch)/$filename ||
+			curl -sfLO $(arch_url $arch)/$filename ||
 			if test $? = 56
 			then
-				curl --cacert /usr/ssl/certs/ca-bundle.crt \
-					-sfLO $(arch_url $arch)/$filename
+				curl -sfLO $(arch_url $arch)/$filename
 			fi ||
 			die "Could not get $filename ($?)"
 			test -f $filename.sig ||
-			curl --cacert /usr/ssl/certs/ca-bundle.crt \
-				-sfLO $(arch_url $arch)/$filename.sig ||
+			curl -sfLO $(arch_url $arch)/$filename.sig ||
 			if test $? = 56
 			then
-				curl --cacert /usr/ssl/certs/ca-bundle.crt \
-					-sfLO $(arch_url $arch)/$filename.sig
+				curl -sfLO $(arch_url $arch)/$filename.sig
 			fi ||
 			die "Could not get $filename.sig ($?)"
 			test x86_64 = "$arch" || continue
@@ -189,21 +192,17 @@ fetch () {
 				;;
 			 esac
 			 test -f $filename ||
-			 curl --cacert /usr/ssl/certs/ca-bundle.crt \
-				-sfLO $base_url/sources/$filename ||
+			 curl -sfLO $base_url/sources/$filename ||
 			 if test $? = 56
 			 then
-				curl --cacert /usr/ssl/certs/ca-bundle.crt \
-					-sfLO $base_url/sources/$filename
+				curl -sfLO $base_url/sources/$filename
 			 fi ||
 			 die "Could not get $filename ($?)"
 			 test -f $filename.sig ||
-			 curl --cacert /usr/ssl/certs/ca-bundle.crt \
-				-sfLO $base_url/sources/$filename.sig ||
+			 curl -sfLO $base_url/sources/$filename.sig ||
 			 if test $? = 56
 			 then
-				curl --cacert /usr/ssl/certs/ca-bundle.crt \
-					-sfLO $base_url/sources/$filename.sig
+				curl -sfLO $base_url/sources/$filename.sig
 			 fi ||
 			 die "Could not get $filename.sig ($?)")
 		 done
@@ -409,14 +408,14 @@ push () {
 		die "Could not get remote index for $arch"
 	done
 
-	old_list="$((for arch in $architectures
+	old_list="$( (for arch in $architectures
 		do
 			dir="$(arch_dir $arch)"
 			test -s "$dir/.remote" &&
 			package_list "$dir/.remote"
 		done) |
 		sort | uniq)"
-	new_list="$((for arch in $architectures
+	new_list="$( (for arch in $architectures
 		do
 			dir="$(arch_dir $arch)"
 			package_list "$dir/git-for-windows.db.tar.xz"
@@ -804,7 +803,7 @@ file_exists () { # arch filename
 }
 
 push_missing_signatures () {
-	list="$((for arch in $architectures
+	list="$( (for arch in $architectures
 		do
 			dir="$(arch_dir $arch)"
 			package_list "$dir/git-for-windows.db.tar.xz"
