@@ -401,14 +401,14 @@ push () {
 		die "Could not get remote index for $arch"
 	done
 
-	old_list="$((for arch in $architectures
+	old_list="$( (for arch in $architectures
 		do
 			dir="$(arch_dir $arch)"
 			test -s "$dir/.remote" &&
 			package_list "$dir/.remote"
 		done) |
 		sort | uniq)"
-	new_list="$((for arch in $architectures
+	new_list="$( (for arch in $architectures
 		do
 			dir="$(arch_dir $arch)"
 			package_list "$dir/git-for-windows.db.tar.xz"
@@ -796,7 +796,7 @@ file_exists () { # arch filename
 }
 
 push_missing_signatures () {
-	list="$((for arch in $architectures
+	list="$( (for arch in $architectures
 		do
 			dir="$(arch_dir $arch)"
 			package_list "$dir/git-for-windows.db.tar.xz"
