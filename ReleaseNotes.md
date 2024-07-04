@@ -22,7 +22,7 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
 * Some commands are not yet supported on Windows and excluded from the installation.
 * As Git for Windows is shipped without Python support, `git p4` (which is backed by a Python script) is not supported.
 * The Quick Launch icon will only be installed for the user running setup (typically the Administrator). This is a technical restriction and will not change.
-* Git command hints are designed for a POSIX shell, this can lead to issues when using them **as is** in non-POSIX shells like PowerShell, [such as this ticket](https://github.com/git-for-windows/git/issues/2785).
+* Git command hints are designed for a POSIX shell, this can lead to issues when using them **as is** in non-POSIX shells like PowerShell, [as is the case in this ticket](https://github.com/git-for-windows/git/issues/2785).
 * When pushing via the `git://` protocol, Git for Windows may hang indefinitely. The last console output in this case is typically `Writing objects: 100%`. Until issue [#907](https://github.com/git-for-windows/git/issues/907) is addressed, run this command once as a work-around: `git config sendpack.sideband false`.
 * Git for Windows executables linked to `msys-2.0.dll` are not compatible with Mandatory ASLR and may crash if system-wide Mandatory ASLR is enabled in Windows Exploit protection. A workaround is to disable ASLR for all executables in `C:\Program Files\Git\usr\bin`, run in administrator powershell (replace `$_.Name` with `$_` to use full path to executable instead of name):
 
