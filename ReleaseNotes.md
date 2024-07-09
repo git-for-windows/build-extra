@@ -54,6 +54,10 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * Comes with [MinTTY v3.7.4](https://github.com/mintty/mintty/releases/tag/3.7.4).
 * `git config` [respects two user-wide configs](https://git-scm.com/docs/git-config#FILES): `.gitconfig` in the home directory, and `.config/git/config`. Since the latter isn't a Windows-native directory, [Git for Windows now looks for `Git/config` in the `AppData` directory](https://github.com/git-for-windows/git/pull/5030), unless `.config/git/config` exists. 
 
+### Bug Fixes
+
+* Git Bash's `ls` command [can now be used in OneDrive-managed folders](https://github.com/git-for-windows/msys2-runtime/pull/69) without having to hydrate all the files.
+
 ## Changes since Git for Windows v2.45.1 (May 14th 2024)
 
 ### New Features
