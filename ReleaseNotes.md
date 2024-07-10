@@ -57,6 +57,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 ### Bug Fixes
 
 * Git Bash's `ls` command [can now be used in OneDrive-managed folders](https://github.com/git-for-windows/msys2-runtime/pull/69) without having to hydrate all the files.
+* Git LFS v3.5.x and newer no longer support Windows 7. Instead of a helpful error message, it now simply [crashes](https://github.com/git-for-windows/git/issues/4996) on that Windows version, leaving the user with the error message "panic before malloc heap initialized". This has been [addressed](https://github.com/git-for-windows/git/pull/5042): In addition to the unhelpful error message, Git is now saying what is going on and how to get out of the situation.
 
 ## Changes since Git for Windows v2.45.1 (May 14th 2024)
 
