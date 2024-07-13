@@ -206,14 +206,21 @@ var
     OutPath,ErrPath:String;
     Res:Longint;
 begin
-    OutPath:=ExpandConstant('{tmp}\')+LogKey+'.out';
-    ErrPath:=ExpandConstant('{tmp}\')+LogKey+'.err';
+    OutPath:=ExpandConstant('{tmp}.')+LogKey+'.out';
+    ErrPath:=ExpandConstant('{tmp}.')+LogKey+'.err';
     if not ExecAsOriginalUser(ExpandConstant('{sys}\cmd.exe'),'/D /C "'+Cmd+' >"'+OutPath+'" 2>"'+ErrPath+'""','',SW_HIDE,ewWaitUntilTerminated,Res) then begin
         LogError(ErrorMessage+' (sys error: '+SysErrorMessage(Res)+').');
         Result:=False;
     end else if (Res<>0) then begin
-        LogError(ErrorMessage+' (output: '+ReadFileAsString(OutPath)+', errors: '+ReadFileAsString(ErrPath)+', exit code: '+IntToStr(Res)+').');
+        if not FileExists(OutPath) then
+            LogError(ErrorMessage+' (output could not be redirected to '+OutPath+')')
+        else if not FileExists(ErrPath) then
+            LogError(ErrorMessage+' (stderr could not be redirected to '+ErrPath+')')
+        else
+            LogError(ErrorMessage+' (output: '+ReadFileAsString(OutPath)+', errors: '+ReadFileAsString(ErrPath)+', exit code: '+IntToStr(Res)+').');
         Result:=False;
     end else
         Result:=True;
+    DeleteFile(OutPath);
+    DeleteFile(ErrPath);
 end;
