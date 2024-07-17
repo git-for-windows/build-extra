@@ -1807,6 +1807,7 @@ var
     Data:String;
     LblInfo:TLabel;
     AslrSetting: AnsiString;
+    WasFSMonitorEnabled:Boolean;
 begin
     SanitizeGitEnvironmentVariables();
 
@@ -2410,12 +2411,19 @@ begin
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
-    RdbExperimentalOptions[GP_EnableFSMonitor]:=CreateCheckBox(ExperimentalOptionsPage,'Built-in file system monitor','<RED>The FSMonitor feature is no longer experimental, and now needs to be'+#13+'configured per repository via the core.fsmonitor config setting.</RED>',TabOrder,Top,Left);
+    WasFSMonitorEnabled:=ReplayChoice('Enable FSMonitor','Auto')='Enabled';
+    Data:='<RED>The FSMonitor feature is no longer experimental, and now needs to be'+#13+'configured per repository via the core.fsmonitor config setting.</RED>';
+    if not WasFSMonitorEnabled then
+        Data:=''; // Avoid rendering in red because we want to hide the option, and the way we render red text, it is added as separate `TLabel` that would _still_ be shown.
+    RdbExperimentalOptions[GP_EnableFSMonitor]:=CreateCheckBox(ExperimentalOptionsPage,'Built-in file system monitor',Data,TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
-    RdbExperimentalOptions[GP_EnableFSMonitor].Checked:=ReplayChoice('Enable FSMonitor','Auto')='Enabled';
+    RdbExperimentalOptions[GP_EnableFSMonitor].Checked:=WasFSMonitorEnabled;
     // FSMonitor is no longer experimental, and it is also no longer supported to be enabled by the installer for all repositories.
     RdbExperimentalOptions[GP_EnableFSMonitor].Enabled:=False;
+    // If the FSMonitor was not enabled previously, do not even bother to show the option.
+    if not WasFSMonitorEnabled then
+        RdbExperimentalOptions[GP_EnableFSMonitor].Visible:=False;
 #endif
 
 #endif
