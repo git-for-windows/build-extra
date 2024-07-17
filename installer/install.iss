@@ -2410,10 +2410,12 @@ begin
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
-    RdbExperimentalOptions[GP_EnableFSMonitor]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental built-in file system monitor','<RED>(NEW!)</RED> Automatically run a <A HREF=https://github.com/git-for-windows/git/discussions/3251>built-in file system watcher</A>, to speed up common'+#13+'operations such as `git status`, `git add`, `git commit`, etc in worktrees'+#13+'containing many files.',TabOrder,Top,Left);
+    RdbExperimentalOptions[GP_EnableFSMonitor]:=CreateCheckBox(ExperimentalOptionsPage,'Built-in file system monitor','<RED>The FSMonitor feature is no longer experimental, and now needs to be'+#13+'configured per repository via the core.fsmonitor config setting.</RED>',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
     RdbExperimentalOptions[GP_EnableFSMonitor].Checked:=ReplayChoice('Enable FSMonitor','Auto')='Enabled';
+    // FSMonitor is no longer experimental, and it is also no longer supported to be enabled by the installer for all repositories.
+    RdbExperimentalOptions[GP_EnableFSMonitor].Enabled:=False;
 #endif
 
 #endif
@@ -3671,9 +3673,6 @@ begin
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
     Data:='Disabled';
-    if RdbExperimentalOptions[GP_EnableFSMonitor].Checked then begin
-        Data:='Enabled';
-    end;
     RecordChoice(PreviousDataKey,'Enable FSMonitor',Data);
 #endif
 
