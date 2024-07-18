@@ -53,6 +53,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * Comes with [Git Credential Manager v2.5.1](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.5.1).
 * Comes with [MinTTY v3.7.4](https://github.com/mintty/mintty/releases/tag/3.7.4).
 * `git config` [respects two user-wide configs](https://git-scm.com/docs/git-config#FILES): `.gitconfig` in the home directory, and `.config/git/config`. Since the latter isn't a Windows-native directory, [Git for Windows now looks for `Git/config` in the `AppData` directory](https://github.com/git-for-windows/git/pull/5030), unless `.config/git/config` exists. 
+* The [FSMonitor feature](https://github.com/git-for-windows/git/discussions/3251) is no longer experimental, and therefore no longer offered as installer option. Users are encouraged to enable this on a per-repository basis, via the config setting `core.fsmonitor=true` (`scalar clone` does this automatically).
 
 ### Bug Fixes
 
