@@ -194,6 +194,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/lib/python' -e '^/usr/lib/ruby' -e '^/\(mingw\|clang\)[^/]*/lib/python' \
 	-e '^/usr/share/subversion' \
 	-e '^/etc/skel/' -e '^/\(mingw\|clang\)[^/]*/etc/skel/' \
+	-e '^/etc/sshd_config' \
 	-e '^/usr/bin/svn' \
 	-e '^/usr/bin/xml.*exe$' \
 	-e '^/usr/bin/xslt.*$' \
@@ -239,13 +240,14 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 		echo 'uuid\|lzma\|'
 	    fi)'fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(hdb\|history8\|kadm5\|kdc\|otp\|sl\).*\.dll$' \
-	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|ssh2\)-.*\.dll$' \
+	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|ssh2\|kafs\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(ncurses++w6\|asprintf-[0-9]*\|\)\.dll$' \
 	-e '^/usr/bin/msys-\(formw6\|menuw6\|panelw6\)\.dll$' \
 	-e '^/usr/bin/msys-svn_swig_\(py\|ruby\)-.*\.dll$' \
-	-e '^/usr/bin/\(dumper\|sasl.*\)\.exe$' \
+	-e '^/usr/bin/\(dumper\|sasl.*\|sshd\)\.exe$' \
 	-e '^/usr/lib/gio/' -e '^/usr/lib/sasl2/msys-sasldb-.*\.dll$' \
 	-e '^/usr/lib/\(itcl\|tdbc\|pkcs11/p11-kit-client\|thread\)' \
+	-e '^/usr/lib/ssh/sshd\($\|-\)' \
 	-e '^/usr/share.*/magic$' \
 	-e '^/usr/share/perl5/core_perl/Unicode/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
@@ -326,16 +328,16 @@ else
 		-e '^/usr/bin/\(pr\|printenv\|ps\|ptx\|realpath\)\.exe$' \
 		-e '^/usr/bin/\(regtool\|runcon\|scp\|seq\|setfacl\)\.exe$' \
 		-e '^/usr/bin/\(setmetamode\|sftp\|sha.*sum\|shred\)\.exe$' \
-		-e '^/usr/bin/\(shuf\|sleep\|slogin\|split\|sshd\)\.exe$' \
+		-e '^/usr/bin/\(shuf\|sleep\|slogin\|split\)\.exe$' \
 		-e '^/usr/bin/\(ssh-key.*\|ssp\|stat\|stdbuf\|strace\)\.exe$' \
 		-e '^/usr/bin/\(stty\|sum\|sync\|tac\|tee\|timeout\)\.exe$' \
 		-e '^/usr/bin/\(truncate\|tsort\|tty\|tzset\|umount\)\.exe$' \
 		-e '^/usr/bin/\(unexpand\|unlink\|users\|vdir\|who.*\)\.exe$' \
-		-e '^/usr/bin/msys-\(cilkrts\|kafs\|ssl\)-.*\.dll$' \
+		-e '^/usr/bin/msys-\(cilkrts\|ssl\)-.*\.dll$' \
 		-e '^/usr/bin/msys-sqlite3[a-z].*\.dll$' \
 		-e '^/usr/bin/msys-\(gomp.*\|vtv.*\)-.*\.dll$' \
 		-e '^/usr/lib/\(awk\|coreutils\|gawk\|openssl\|pkcs11\)/' \
-		-e '^/usr/lib/ssh/\(sftp\|sshd\($\|-\)\)' \
+		-e '^/usr/lib/ssh/sftp\)' \
 		-e '^/usr/libexec/\(bigram\|code\|frcode\)\.exe$' \
 		-e '^/usr/share/\(cygwin\|git\)/' \
 		-e '^/usr/ssl/misc/' \
