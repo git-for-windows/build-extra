@@ -337,7 +337,7 @@ else
 		-e '^/usr/bin/msys-sqlite3[a-z].*\.dll$' \
 		-e '^/usr/bin/msys-\(gomp.*\|vtv.*\)-.*\.dll$' \
 		-e '^/usr/lib/\(awk\|coreutils\|gawk\|openssl\|pkcs11\)/' \
-		-e '^/usr/lib/ssh/sftp\)' \
+		-e '^/usr/lib/ssh/sftp' \
 		-e '^/usr/libexec/\(bigram\|code\|frcode\)\.exe$' \
 		-e '^/usr/share/\(cygwin\|git\)/' \
 		-e '^/usr/ssl/misc/' \
