@@ -55,6 +55,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 * `git config` [respects two user-wide configs](https://git-scm.com/docs/git-config#FILES): `.gitconfig` in the home directory, and `.config/git/config`. Since the latter isn't a Windows-native directory, [Git for Windows now looks for `Git/config` in the `AppData` directory](https://github.com/git-for-windows/git/pull/5030), unless `.config/git/config` exists. 
 * The [FSMonitor feature](https://github.com/git-for-windows/git/discussions/3251) is no longer experimental, and therefore no longer offered as installer option. Users are encouraged to enable this on a per-repository basis, via the config setting `core.fsmonitor=true` (`scalar clone` does this automatically).
 * The server-side component of OpenSSH, which had been shipped with Git for Windows for historical reasons only, is [now no longer distributed with it](https://github.com/git-for-windows/build-extra/pull/571).
+* Comes with [cURL v8.9.0](https://curl.se/changes.html#8_9_0).
 
 ### Bug Fixes
 
