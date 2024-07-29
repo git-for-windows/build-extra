@@ -47,6 +47,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 
 ### New Features
 
+* Comes with [Git v2.46.0](https://github.com/git/git/blob/v2.46.0/Documentation/RelNotes/2.46.0.txt).
 * Comes with [OpenSSL v3.2.2](https://github.com/openssl/openssl/releases/tag/openssl-3.2.2).
 * Comes with [PCRE2 v10.44](https://github.com/PCRE2Project/pcre2/blob/pcre2-10.44/ChangeLog).
 * Comes with [OpenSSH v9.8.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_8_P1).
