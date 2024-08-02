@@ -44,6 +44,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### New Features
 
 * Comes with [cURL v8.9.1](https://curl.se/changes.html#8_9_1).
+* Comes with [Bash v5.2.32](https://git.savannah.gnu.org/cgit/bash.git/commit/?id=142bbdd89e4d5bb62aea4469d1d2c24cf470afd8).
 
 ## Changes since Git for Windows v2.45.2 (June 3rd 2024)
 
