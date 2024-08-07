@@ -46,6 +46,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [cURL v8.9.1](https://curl.se/changes.html#8_9_1).
 * Comes with [Bash v5.2.32](https://git.savannah.gnu.org/cgit/bash.git/commit/?id=142bbdd89e4d5bb62aea4469d1d2c24cf470afd8).
 
+### Bug Fixes
+
+* The support code enabled via `core.WSLCompat` did not work well with files stored in subdirectories of the worktree, which [has been fixed](https://github.com/git-for-windows/git/pull/4660).
+
 ## Changes since Git for Windows v2.45.2 (June 3rd 2024)
 
 Git for Windows for Windows v2.46 is the last version to support for Windows 7 and for Windows 8, see [MSYS2's corresponding deprecation announcement](https://www.msys2.org/docs/windows_support/) (Git for Windows relies on MSYS2 for components such as Bash and Perl).
