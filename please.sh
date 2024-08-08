@@ -3327,6 +3327,14 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 
 		# BusyBox
 		$PREFIX/bin/busybox.exe
+
+		# Asciidoctor (requires Ruby to run)
+		$PREFIX/bin/asciidoctor
+		$PREFIX/bin/asciidoctor.bat
+		$PREFIX/lib/ruby/
+		$PREFIX/bin/ruby.exe
+		$PREFIX/bin/ruby*.dll
+
 		EOF
 		mkdir -p "$output_path/.sparse" &&
 		cp "$sparse_checkout_file" "$output_path/.sparse/build-installers"
