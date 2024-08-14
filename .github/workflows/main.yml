@@ -36,6 +36,7 @@ jobs:
               -e '/^make-file-list\.sh$/ainstaller/' \
               -e '/^make-file-list\.sh$/aportable/' \
               -e '/^make-file-list\.sh$/amingit/' \
+              -e '/^7-Zip\//aportable/' \
               -e 's|^\(installer/\).*|\1|' \
               -e 's|[^/]*$||' |
             sort -u >touched.txt &&
@@ -180,6 +181,30 @@ jobs:
           # cannot test SSH keys in read-only mode, skip test for now
           sed -i 's|git@ssh.dev.azure.com:v3/git-for-windows/git/git|https://github.com/git/git|' $checklist &&
           sh -x $checklist
+      - name: extract Portable Git
+        if: matrix.directory == 'portable'
+        shell: pwsh
+        run: |
+          $exePath = Get-ChildItem -Path ${{ steps.build.outputs.result }}/*.7z.exe | %{$_.FullName}
+          Get-ChildItem -Path "$exePath"
+          $installer = Start-Process -PassThru -Wait -FilePath "$exePath" -ArgumentList "-o portable-git -y"
+          $exitCode = $installer.ExitCode
+          if ($exitCode -ne 0) {
+            Write-Host "::error::Extracting the Portable Git failed with exit code $exitCode!"
+            exit 1
+          }
+          Get-ChildItem -Path "portable-git"
+          "$PWD\portable-git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+          "$PWD\portable-git\mingw64\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+      - name: validate
+        if: matrix.directory == 'portable'
+        shell: bash
+        run: |
+          set -x &&
+          root="$(cygpath -aw /)" &&
+          test "${root%portable-git}" != "$root" &&
+          git.exe version --build-options >version &&
+          cat version
   sdk-artifacts:
     needs: determine-packages
     if: needs.determine-packages.outputs.test-sdk-artifacts == 'true'
