@@ -917,6 +917,22 @@ begin
         Result:=-1;
 end;
 
+function IsRCVersion(var Pos:Integer;Version:String):Boolean;
+begin
+    if (Pos+2<=Length(Version)) and
+       ((Copy(Version,Pos,3)='-rc') or
+        (Copy(Version,Pos,3)='.rc')) then begin
+        Pos:=Pos+3;
+        Result:=True
+    end else if (Pos+1<=Length(Version)) and
+                ((Copy(Version,Pos,2)='rc') or
+                  (Copy(Version,Pos,2)='rc')) then begin
+        Pos:=Pos+2;
+        Result:=True
+    end else
+        Result:=False;
+end;
+
 function VersionCompare(CurrentVersion,PreviousVersion:String):Integer;
 var
     i,j,Current,Previous:Integer;
@@ -960,16 +976,31 @@ begin
             Exit;
         end;
         if j>Length(PreviousVersion) then begin
-            if i<=Length(CurrentVersion) then
-                Result:=+1;
+            if i<=Length(CurrentVersion) then begin
+                // an -rc version is considered "smaller"
+                if IsRCVersion(i,CurrentVersion) then
+                    Result:=-1
+                else
+                    Result:=+1;
+            end;
             Exit;
         end;
         if i>Length(CurrentVersion) then begin
-            Result:=-1;
+                // an -rc version is considered "smaller"
+                if IsRCVersion(j,PreviousVersion) then
+                    Result:=+1
+                else
+                    Result:=-1;
             Exit;
         end;
         if CurrentVersion[i]<>PreviousVersion[j] then begin
-            if PreviousVersion[j]='.' then
+            if IsRCVersion(i,CurrentVersion) then begin
+                if IsRCVersion(j,PreviousVersion) then
+                    Continue;
+                Result:=-1
+            end else if IsRCVersion(j,PreviousVersion) then
+                Result:=+1
+            else if PreviousVersion[j]='.' then
                 Result:=-1
             else
                 Result:=+1;
