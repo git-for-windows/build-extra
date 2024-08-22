@@ -1128,11 +1128,51 @@ begin
         WizardForm.NextButton.Caption:=SetupMessage(msgButtonNext);
 end;
 
+function SelfCheckVersionCompare(A,B:String;ExpectedOutcome:Integer):Boolean;
+var
+    ActualOutcome:Integer;
+begin
+    ActualOutcome:=VersionCompare(A,B);
+    if ((ActualOutcome=0) and (ExpectedOutcome=0)) or
+       ((ActualOutcome<0) and (ExpectedOutcome<0)) or
+       ((ActualOutcome>0) and (ExpectedOutcome>0)) then
+        Result:=True
+    else
+        LogError('VersionCompare('+A+','+B+')='+IntToStr(VersionCompare(A,B))+' but expected '+IntToStr(ExpectedOutcome));
+end;
+
+procedure SelfCheck;
+var
+    Failed:Boolean;
+begin
+    if not SelfCheckVersionCompare('2.32.0','2.32.1',-1) or
+       not SelfCheckVersionCompare('2.32.1','2.32.0',1) or
+       not SelfCheckVersionCompare('2.32.1.vfs.0.0','2.32.0',1) or
+       not SelfCheckVersionCompare('2.32.1.vfs.0.0','2.32.0.vfs.0.0',1) or
+       not SelfCheckVersionCompare('2.32.0.vfs.0.1','2.32.0.vfs.0.2',-1) or
+       not SelfCheckVersionCompare('2.32.0-rc0','2.31.1',1) or
+       not SelfCheckVersionCompare('2.31.1','2.32.0-rc0',-1) or
+       not SelfCheckVersionCompare('2.32.0-rc2','2.32.0',-1) or
+       not SelfCheckVersionCompare('2.32.0-rc2','2.32.0.0',-1) or
+       not SelfCheckVersionCompare('2.34.0.rc1','2.33.1',1) or
+       not SelfCheckVersionCompare('2.34.0.rc2','2.34.0',-1) then
+        Failed:=True;
+
+    if Failed then
+        ExitProcess(1);
+end;
+
 function InitializeSetup:Boolean;
 var
     CurrentVersion,Msg:String;
     ErrorCode:Integer;
 begin
+#ifdef INCLUDE_SELF_CHECK
+    SelfCheck;
+#ifdef EXIT_AFTER_SELF_CHECK
+    ExitProcess(0);
+#endif
+#endif
     UpdateInfFilenames;
 #if BITNESS=='32'
     Result:=True;
