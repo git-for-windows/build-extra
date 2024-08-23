@@ -959,6 +959,9 @@ begin
                 j:=j+1;
                 Continue;
             end;
+            // special-case `.vfs.` versions; They are neither downgrades nor upgrades.
+            if (Copy(CurrentVersion,i,4)='vfs.') or (Copy(PreviousVersion,i,4)='vfs.') then
+                Result:=0;
             Exit;
         end;
         if Current<0 then begin
@@ -1153,7 +1156,8 @@ begin
        not SelfCheckVersionCompare('2.32.0-rc2','2.32.0',-1) or
        not SelfCheckVersionCompare('2.32.0-rc2','2.32.0.0',-1) or
        not SelfCheckVersionCompare('2.34.0.rc1','2.33.1',1) or
-       not SelfCheckVersionCompare('2.34.0.rc2','2.34.0',-1) then
+       not SelfCheckVersionCompare('2.34.0.rc2','2.34.0',-1) or
+       not SelfCheckVersionCompare('git version 2.46.0.vfs.0.0','git version 2.46.0.windows.1',0) then
         Failed:=True;
 
     if Failed then
