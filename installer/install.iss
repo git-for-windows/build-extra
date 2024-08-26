@@ -917,6 +917,22 @@ begin
         Result:=-1;
 end;
 
+function IsRCVersion(var Pos:Integer;Version:String):Boolean;
+begin
+    if (Pos+2<=Length(Version)) and
+       ((Copy(Version,Pos,3)='-rc') or
+        (Copy(Version,Pos,3)='.rc')) then begin
+        Pos:=Pos+3;
+        Result:=True
+    end else if (Pos+1<=Length(Version)) and
+                ((Copy(Version,Pos,2)='rc') or
+                  (Copy(Version,Pos,2)='rc')) then begin
+        Pos:=Pos+2;
+        Result:=True
+    end else
+        Result:=False;
+end;
+
 function VersionCompare(CurrentVersion,PreviousVersion:String):Integer;
 var
     i,j,Current,Previous:Integer;
@@ -936,8 +952,6 @@ begin
         Previous:=NextNumber(PreviousVersion,j);
         Current:=NextNumber(CurrentVersion,i);
         if Previous<0 then begin
-            if Current>=0 then
-                Result:=+1;
             Result:=Ord(CurrentVersion[i])-Ord(PreviousVersion[j]);
             if (Result=0) then begin
                 // skip identical non-numerical characters
@@ -945,6 +959,9 @@ begin
                 j:=j+1;
                 Continue;
             end;
+            // special-case `.vfs.` versions; They are neither downgrades nor upgrades.
+            if (Copy(CurrentVersion,i,4)='vfs.') or (Copy(PreviousVersion,i,4)='vfs.') then
+                Result:=0;
             Exit;
         end;
         if Current<0 then begin
@@ -960,16 +977,31 @@ begin
             Exit;
         end;
         if j>Length(PreviousVersion) then begin
-            if i<=Length(CurrentVersion) then
-                Result:=+1;
+            if i<=Length(CurrentVersion) then begin
+                // an -rc version is considered "smaller"
+                if IsRCVersion(i,CurrentVersion) then
+                    Result:=-1
+                else
+                    Result:=+1;
+            end;
             Exit;
         end;
         if i>Length(CurrentVersion) then begin
-            Result:=-1;
+                // an -rc version is considered "smaller"
+                if IsRCVersion(j,PreviousVersion) then
+                    Result:=+1
+                else
+                    Result:=-1;
             Exit;
         end;
         if CurrentVersion[i]<>PreviousVersion[j] then begin
-            if PreviousVersion[j]='.' then
+            if IsRCVersion(i,CurrentVersion) then begin
+                if IsRCVersion(j,PreviousVersion) then
+                    Continue;
+                Result:=-1
+            end else if IsRCVersion(j,PreviousVersion) then
+                Result:=+1
+            else if PreviousVersion[j]='.' then
                 Result:=-1
             else
                 Result:=+1;
@@ -1097,11 +1129,52 @@ begin
         WizardForm.NextButton.Caption:=SetupMessage(msgButtonNext);
 end;
 
+function SelfCheckVersionCompare(A,B:String;ExpectedOutcome:Integer):Boolean;
+var
+    ActualOutcome:Integer;
+begin
+    ActualOutcome:=VersionCompare(A,B);
+    if ((ActualOutcome=0) and (ExpectedOutcome=0)) or
+       ((ActualOutcome<0) and (ExpectedOutcome<0)) or
+       ((ActualOutcome>0) and (ExpectedOutcome>0)) then
+        Result:=True
+    else
+        LogError('VersionCompare('+A+','+B+')='+IntToStr(VersionCompare(A,B))+' but expected '+IntToStr(ExpectedOutcome));
+end;
+
+procedure SelfCheck;
+var
+    Failed:Boolean;
+begin
+    if not SelfCheckVersionCompare('2.32.0','2.32.1',-1) or
+       not SelfCheckVersionCompare('2.32.1','2.32.0',1) or
+       not SelfCheckVersionCompare('2.32.1.vfs.0.0','2.32.0',1) or
+       not SelfCheckVersionCompare('2.32.1.vfs.0.0','2.32.0.vfs.0.0',1) or
+       not SelfCheckVersionCompare('2.32.0.vfs.0.1','2.32.0.vfs.0.2',-1) or
+       not SelfCheckVersionCompare('2.32.0-rc0','2.31.1',1) or
+       not SelfCheckVersionCompare('2.31.1','2.32.0-rc0',-1) or
+       not SelfCheckVersionCompare('2.32.0-rc2','2.32.0',-1) or
+       not SelfCheckVersionCompare('2.32.0-rc2','2.32.0.0',-1) or
+       not SelfCheckVersionCompare('2.34.0.rc1','2.33.1',1) or
+       not SelfCheckVersionCompare('2.34.0.rc2','2.34.0',-1) or
+       not SelfCheckVersionCompare('git version 2.46.0.vfs.0.0','git version 2.46.0.windows.1',0) then
+        Failed:=True;
+
+    if Failed then
+        ExitProcess(1);
+end;
+
 function InitializeSetup:Boolean;
 var
     CurrentVersion,Msg:String;
     ErrorCode:Integer;
 begin
+#ifdef INCLUDE_SELF_CHECK
+    SelfCheck;
+#ifdef EXIT_AFTER_SELF_CHECK
+    ExitProcess(0);
+#endif
+#endif
     UpdateInfFilenames;
 #if BITNESS=='32'
     Result:=True;

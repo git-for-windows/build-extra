@@ -69,6 +69,17 @@ do
 		inno_defines="$inno_defines$LF#define OUTPUT_TO_TEMP ''"
 		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
 		;;
+	--include-self-check)
+		inno_defines="$inno_defines$LF#define INCLUDE_SELF_CHECK 1"
+		;;
+	--self-check)
+		test_installer=t
+		skip_files=t
+		inno_defines="$inno_defines$LF#define OUTPUT_TO_TEMP ''"
+		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
+		inno_defines="$inno_defines$LF#define INCLUDE_SELF_CHECK 1"
+		inno_defines="$inno_defines$LF#define EXIT_AFTER_SELF_CHECK 1"
+		;;
 	--output=*)
 		output_directory="$(cygpath -m "${1#*=}")" ||
 		die "Directory inaccessible: '${1#*=}'"

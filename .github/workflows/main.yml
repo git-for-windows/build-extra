@@ -254,7 +254,7 @@ jobs:
       - name: build installer
         if: matrix.artifact == 'build-installers'
         shell: bash
-        run: ./installer/release.sh --output=$PWD/installer-${{ matrix.bitness }} 0-test
+        run: ./installer/release.sh --include-self-check --output=$PWD/installer-${{ matrix.bitness }} 0-test
       - uses: actions/upload-artifact@v4
         if: matrix.artifact == 'build-installers'
         with:
@@ -297,7 +297,8 @@ jobs:
           checklist=installer/run-checklist.sh &&
           # cannot test SSH keys in read-only mode, skip test for now
           sed -i 's|git@ssh.dev.azure.com:v3/git-for-windows/git/git|https://github.com/git/git|' $checklist &&
-          sh -x $checklist
+          sh -x $checklist &&
+          git update-git-for-windows --test-version-compare
   check-for-missing-dlls:
     needs: determine-packages
     if: needs.determine-packages.outputs.test-sdk-artifacts == 'true' || needs.determine-packages.outputs.check-for-missing-dlls == 'true'
