@@ -3392,7 +3392,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	if test makepkg-git = $mode && test ! -x "$output_path/usr/bin/git"
 	then
 		printf '#!/bin/sh\n\nexec %s/bin/git.exe "$@"\n' \
-			"/mingw$bitness" >"$output_path/usr/bin/git"
+			"$PREFIX" >"$output_path/usr/bin/git"
 	fi &&
 	if test makepkg-git = $mode && ! grep -q http://docbook.sourceforge.net/release/xsl-ns/current "$output_path/etc/xml/catalog"
 	then
