@@ -50,6 +50,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### Bug Fixes
 
 * The support code enabled via `core.WSLCompat` did not work well with files stored in subdirectories of the worktree, which [has been fixed](https://github.com/git-for-windows/git/pull/4660).
+* When using an `askpass` helper (e.g. implicitly when running inside VS Code's internal terminal), Git v2.46.0 [would error out with "read error: Invalid argument"](https://github.com/git-for-windows/git/issues/5115); This bug has been fixed.
 
 ## Changes since Git for Windows v2.45.2 (June 3rd 2024)
 
