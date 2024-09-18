@@ -1,5 +1,5 @@
-# Git for Windows v2.46.0 Release Notes
-Latest update: July 29th 2024
+# Git for Windows v2.46.1 Release Notes
+Latest update: September 18th 2024
 
 ## Introduction
 
