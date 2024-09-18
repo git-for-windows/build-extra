@@ -45,8 +45,8 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * Comes with [Bash v5.2.32](https://git.savannah.gnu.org/cgit/bash.git/commit/?id=142bbdd89e4d5bb62aea4469d1d2c24cf470afd8).
 * Comes with [OpenSSL v3.2.3](https://www.openssl.org/news/openssl-3.2-notes.html).
-* Comes with [cURL v8.10.0](https://curl.se/changes.html#8_10_0).
 * Comes with [MinTTY v3.7.5](https://github.com/mintty/mintty/releases/tag/3.7.5).
+* Comes with [cURL v8.10.1](https://curl.se/changes.html#8_10_1).
 
 ### Bug Fixes
 
