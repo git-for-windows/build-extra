@@ -39,6 +39,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.46.1 (September 18th 2024)
+
+### New Features
+
+* Comes with [OpenSSH v9.9.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_9_P1).
+
 ## Changes since Git for Windows v2.46.0 (July 29th 2024)
 
 ### New Features
