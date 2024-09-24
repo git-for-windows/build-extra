@@ -43,6 +43,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ### New Features
 
+* Comes with [Git v2.46.2](https://github.com/git/git/blob/v2.46.2/Documentation/RelNotes/2.46.2.txt).
 * Comes with [OpenSSH v9.9.P1](https://github.com/openssh/openssh-portable/releases/tag/V_9_9_P1).
 * Comes with [MinTTY v3.7.6](https://github.com/mintty/mintty/releases/tag/3.7.6).
 * Comes with [Bash v5.2.37](https://git.savannah.gnu.org/cgit/bash.git/commit/?id=6794b5478f660256a1023712b5fc169196ed0a22).
