@@ -41,6 +41,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.46.2 (September 24th 2024)
 
+Git for Windows for Windows v2.47 drops support for Windows 7 and for Windows 8, as announced previously.
+
+Please also note that the 32-bit variant of Git for Windows is deprecated; Its last official release [is planned for 2025](https://gitforwindows.org/32-bit.html).
+
 ### New Features
 
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.5.4](https://inbox.sourceware.org/cygwin-announce/20240825195526.2571058-1-corinna-cygwin@cygwin.de/), which drops Windows 7 and Windows 8 support.
