@@ -226,7 +226,8 @@ then
 	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_BUILTIN_ADD_I 1"
 fi
 
-if grep -q enable_pcon /usr/bin/msys-2.0.dll
+if grep -q enable_pcon /usr/bin/msys-2.0.dll &&
+	case "$(uname -r)" in 3.[0-4]*) true;; *) false;; esac # pcon in v3.5+ is no longer experimental
 then
 	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_PCON 1"
 fi
