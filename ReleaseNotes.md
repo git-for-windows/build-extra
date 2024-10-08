@@ -47,6 +47,7 @@ Please also note that the 32-bit variant of Git for Windows is deprecated; Its l
 
 ### New Features
 
+* Comes with [Git v2.47.0](https://github.com/git/git/blob/v2.47.0/Documentation/RelNotes/2.47.0.txt).
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.5.4](https://inbox.sourceware.org/cygwin-announce/20240825195526.2571058-1-corinna-cygwin@cygwin.de/), which drops Windows 7 and Windows 8 support.
 * The new, experimental `git backfill` command [was added](https://github.com/git-for-windows/git/pull/5172): It helps fetching relevant Git objects smartly in a partial, sparse clone.
 * The new, experimental [`git survey` command was added](https://github.com/git-for-windows/git/pull/5174). This command is designed to help identify less-than-ideal data shape in monorepos, and it will likely see highly active development. Stay tuned!
