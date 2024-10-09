@@ -39,6 +39,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.47.0 (October 8th 2024)
+
+### Bug Fixes
+
+* A regression in v2.47.0 where `git maintenance start` crashed immediately [was fixed](https://github.com/git-for-windows/git/pull/5198).
+
 ## Changes since Git for Windows v2.46.2 (September 24th 2024)
 
 Git for Windows for Windows v2.47 drops support for Windows 7 and for Windows 8, as announced previously.
