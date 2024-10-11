@@ -116,6 +116,7 @@ Name: windowsterminal; Description: "(NEW!) Add a Git Bash Profile to Windows Te
 #ifdef WITH_SCALAR
 Name: scalar; Description: "(NEW!) Scalar (Git add-on to manage large-scale repositories)"; Types: default
 #endif
+Name: poshgit; Description: "(NEW!) Install Posh-Git from the PSGallery"
 
 
 [Run]
@@ -1191,8 +1192,8 @@ begin
     end;
 #endif
     RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousGitForWindowsVersion);
-    // The Windows Terminal profile is new in v2.32.0
-    HasUnseenComponents:=IsUpgrade('2.32.0');
+    // The Posh-Git option is new in v2.35.0
+    HasUnseenComponents:=IsUpgrade('2.35.0');
     if HasUnseenComponents then
         AddToSet(CustomPagesWithUnseenOptions,wpSelectComponents);
 #if APP_VERSION!='0-test'
@@ -3060,6 +3061,7 @@ end;
 procedure CurStepChanged(CurStep:TSetupStep);
 var
     DllPath,FileName,Cmd,Msg,Ico:String;
+    ExitCode:DWORD;
     BuiltIns,ImageNames,EnvPath:TArrayOfString;
     Count,i:Longint;
     RootKey:Integer;
@@ -3492,6 +3494,40 @@ begin
     end;
 
     {
+        Install Posh-Git from the PSGallery
+    }
+
+    if (IsComponentSelected('poshgit')) then begin
+        WizardForm.StatusLabel.Caption:='Installing Posh-Git from the PSGallery';
+        // Must use the sysnative version of PowerShell, otherwise will target the wrong profile
+        Cmd:='"'+ExpandConstant('{sysnative}\WindowsPowerShell\v1.0\powershell.exe')+'"'+
+            ' -ExecutionPolicy Bypass -NoProfile -NoLogo -NonInteractive -WindowStyle Hidden -command "'+
+            'if (!(Get-PackageProvider -Name NuGet)) {'+
+            ' Install-PackageProvider -Name NuGet -Force ' +
+            '} ' +
+            '$policy = (Get-PSRepository -Name PSGallery).InstallationPolicy; ' +
+            'if ($policy -ne """Trusted""") {' +
+            ' Set-PSRepository -Name PSGallery -InstallationPolicy Trusted '+
+            '} ' +
+            'Uninstall-Package posh-git -Scope AllUsers -ErrorAction SilentlyContinue; ' +
+            'Install-Module -Repository PSGallery -Scope AllUsers posh-git; ' +
+            '$res=$?; ' +
+            'if ($policy -ne """Trusted""") {' +
+            ' Set-PSRepository -Name PSGallery -InstallationPolicy $policy ' +
+            '} ' +
+            'if ($res) {' +
+            ' Add-PoshGitToProfile -AllUsers; ' +
+            ' $res=$? ' +
+            '} ' +
+            'if (!$res) {' +
+            ' exit(1) ' +
+            '}"';
+        if not ExecWithCapture(Cmd,Msg,Msg,ExitCode) or (ExitCode<>0) then
+            LogError('Failed to install Posh-Git:'+#13+Msg);
+    end;
+
+
+    {
         Optionally "skip" installing bundled SSH binaries conflicting with external OpenSSH:
     }
 
@@ -3868,6 +3904,8 @@ var
     FileName,PathOption:String;
     EnvPath:TArrayOfString;
     i:Longint;
+    Cmd,Msg:String;
+    ExitCode:DWORD;
 begin
     if CurUninstallStep<>usUninstall then begin
         Exit;
@@ -3942,5 +3980,24 @@ begin
 
         if not DeleteFile(FileName) then
             LogError('Line {#__LINE__}: Unable to delete file "'+FileName+'". Please do it manually after logging off and on again.');
+    end;
+
+    {
+        Remove posh-git
+    }
+
+    if (IsComponentSelected('poshgit')) then begin
+        Cmd:='"'+ExpandConstant('{sysnative}\WindowsPowerShell\v1.0\powershell.exe')+'"'+
+            ' -ExecutionPolicy Bypass -NoProfile -NoLogo -NonInteractive -WindowStyle Hidden -command "'+
+            'Remove-PoshGitFromProfile -AllUsers;' +
+            '$res=$?; ' +
+            'if (!(Uninstall-Package posh-git -Scope AllUsers -ErrorAction SilentlyContinue)) {' +
+            ' $res=false; ' +
+            '} ' +
+            'if (!$res) {' +
+            ' exit(1) ' +
+            '}"';
+        if not ExecWithCapture(Cmd,Msg,Msg,ExitCode) or (ExitCode<>0) then
+            LogError('Failed to uninstall Posh-Git:'+#13+Msg);
     end;
 end;
