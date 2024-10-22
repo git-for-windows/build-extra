@@ -45,6 +45,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * A regression in v2.47.0 where `git maintenance start` crashed immediately [was fixed](https://github.com/git-for-windows/git/pull/5198).
 * A [regression](https://github.com/git-for-windows/git/issues/5199) where clones, fetches and pushes via SSH would dead-lock was fixed.
+* As of Git for Windows v2.47.0 was supposed to enable [an optimized push algorithm](https://github.com/git-for-windows/git/pull/5171), but for a typo didn't, which [was fixed](https://github.com/git-for-windows/git/pull/5220).
 
 ## Changes since Git for Windows v2.46.2 (September 24th 2024)
 
