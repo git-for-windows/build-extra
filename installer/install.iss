@@ -1884,6 +1884,18 @@ end;
 
 procedure QueryUninstallValues; forward;
 
+function IsHiddenExperimentalOptionsPageEmpty:Boolean;
+var
+    i:Integer;
+begin
+    Result:=True;
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
+    for i:=1 to GP_MaxExperimental do
+        if (RdbExperimentalOptions[i]<>nil) and RdbExperimentalOptions[i].Visible then
+            Result:=False;
+#endif
+end;
+
 procedure InitializeWizard;
 var
     PrevPageID,TabOrder,TopOfLabels,Top,Left:Integer;
@@ -2589,7 +2601,10 @@ begin
             Result:=False
         else
             Result:=(PageID<>wpInfoBefore) and (PageID<>wpFinished);
-    end else
+    end else if (PageID=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
+        // Skip experimental options page if all options are hidden
+        Result:=True
+    else
         Result:=False;
 #ifdef DEBUG_WIZARD_PAGE
     Result:=PageID<>DebugWizardPage
