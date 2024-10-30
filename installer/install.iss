@@ -336,17 +336,17 @@ end;
 
 const
     // Git Editor options.
-    GE_Nano           = 0;
-    GE_VIM            = 1;
-    GE_NotepadPlusPlus = 2;
-    GE_VisualStudioCode = 3;
+    GE_Nano                     = 0;
+    GE_VIM                      = 1;
+    GE_NotepadPlusPlus          = 2;
+    GE_VisualStudioCode         = 3;
     GE_VisualStudioCodeInsiders = 4;
-    GE_SublimeText = 5;
-    GE_Atom = 6;
-    GE_VSCodium = 7;
-    GE_Notepad = 8;
-    GE_Wordpad = 9;
-    GE_CustomEditor = 10;
+    GE_SublimeText              = 5;
+    GE_Atom                     = 6;
+    GE_VSCodium                 = 7;
+    GE_Notepad                  = 8;
+    GE_Wordpad                  = 9;
+    GE_CustomEditor             = 10;
 
     // Git Path options.
     GP_BashOnly       = 1;
