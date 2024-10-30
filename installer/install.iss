@@ -2526,6 +2526,8 @@ begin
 #endif
 
     PageIDBeforeInstall:=CurrentCustomPageID;
+    if (PageIDBeforeInstall=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
+        PageIDBeforeInstall:=PageIDBeforeInstall-1;
 
     (*
      * Create a custom page for finding the processes that lock a module.
