@@ -41,6 +41,8 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.47.0 (October 8th 2024)
 
+As of this version, wildcards in the command-line arguments of any `git.exe` process [will no longer be expanded](https://www.msys2.org/news/#2024-11-03-disabling-mingw-w64-wildcard-support-by-default) (this does _not_ affect wildcard expansion when calling `git` from Git Bash).
+
 ### Bug Fixes
 
 * A regression in v2.47.0 where `git maintenance start` crashed immediately [was fixed](https://github.com/git-for-windows/git/pull/5198).
