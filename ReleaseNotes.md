@@ -39,6 +39,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.47.0(2) (October 22nd 2024)
+
+### Bug Fixes
+
+* Due to a bug introduced in the v2.47 cycle, [the installer showed an empty "experimental options" page](https://github.com/git-for-windows/git/issues/5231), which was [fixed](https://github.com/git-for-windows/build-extra/pull/578).
+
 ## Changes since Git for Windows v2.47.0 (October 8th 2024)
 
 As of this version, wildcards in the command-line arguments of any `git.exe` process [will no longer be expanded](https://www.msys2.org/news/#2024-11-03-disabling-mingw-w64-wildcard-support-by-default) (this does _not_ affect wildcard expansion when calling `git` from Git Bash).
