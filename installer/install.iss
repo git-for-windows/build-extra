@@ -336,60 +336,71 @@ end;
 
 const
     // Git Editor options.
-    GE_Nano           = 0;
-    GE_VIM            = 1;
-    GE_NotepadPlusPlus = 2;
-    GE_VisualStudioCode = 3;
+    GE_Nano                     = 0;
+    GE_VIM                      = 1;
+    GE_NotepadPlusPlus          = 2;
+    GE_VisualStudioCode         = 3;
     GE_VisualStudioCodeInsiders = 4;
-    GE_SublimeText = 5;
-    GE_Atom = 6;
-    GE_VSCodium = 7;
-    GE_Notepad = 8;
-    GE_Wordpad = 9;
-    GE_CustomEditor = 10;
+    GE_SublimeText              = 5;
+    GE_Atom                     = 6;
+    GE_VSCodium                 = 7;
+    GE_Notepad                  = 8;
+    GE_Wordpad                  = 9;
+    GE_CustomEditor             = 10;
+    GE_MaxEditor                = 10;
 
     // Git Path options.
     GP_BashOnly       = 1;
     GP_Cmd            = 2;
     GP_CmdTools       = 3;
+    GP_MaxPath        = 3;
 
     // Default Branch options.
     DB_Unspecified    = 1;
     DB_Manual         = 2;
+    DB_MaxBranch      = 2;
 
     // Git SSH options.
     GS_OpenSSH         = 1;
     GS_Plink           = 2;
     GS_ExternalOpenSSH = 3;
+    GS_MaxSSH          = 3;
 
     // Git HTTPS (cURL) options.
     GC_OpenSSL        = 1;
     GC_WinSSL         = 2;
+    GC_MaxHTTPS       = 2;
 
     // Git line ending conversion options.
     GC_LFOnly         = 1;
     GC_CRLFAlways     = 2;
     GC_CRLFCommitAsIs = 3;
+    GC_MaxAutoCRLF    = 3;
 
     // Git Bash terminal settings.
     GB_MinTTY         = 1;
     GB_ConHost        = 2;
+    GB_MaxTerminal    = 2;
 
     // `git pull` behavior settings.
     GP_GitPullMerge   = 1;
     GP_GitPullRebase  = 2;
     GP_GitPullFFOnly  = 3;
+    GP_MaxPull        = 3;
 
     // Git Credential Manager settings.
     GCM_None          = 1;
     GCM               = 2;
+    GCM_Max           = 2;
 
     // Extra options
     GP_FSCache        = 1;
     GP_Symlinks       = 2;
+    GP_MaxExtra       = 2;
 
     // Security options
     SO_MandatoryASLR = 1;
+    SO_MaxSecurity   = 1;
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_DIFFTOOL
 #define HAVE_EXPERIMENTAL_OPTIONS 1
@@ -423,6 +434,7 @@ const
     GP_BuiltinAddI     = 4;
     GP_EnablePCon      = 5;
     GP_EnableFSMonitor = 6;
+    GP_MaxExperimental = 6;
 #endif
 
 var
@@ -443,8 +455,8 @@ var
     // Wizard page and variables for the Editor options.
     EditorPage:TInputFileWizardPage;
     CbbEditor:TNewComboBox;
-    LblEditor:array[GE_Nano..GE_CustomEditor] of array of TLabel;
-    EditorAvailable:array[GE_Nano..GE_CustomEditor] of Boolean;
+    LblEditor:array[0..GE_MaxEditor] of array of TLabel;
+    EditorAvailable:array[0..GE_MaxEditor] of Boolean;
     SelectedEditor:Integer;
 
     VisualStudioCodeUserInstallation:Boolean;
@@ -468,45 +480,45 @@ var
 
     // Wizard page and variables for the Path options.
     PathPage:TWizardPage;
-    RdbPath:array[GP_BashOnly..GP_CmdTools] of TRadioButton;
+    RdbPath:array[1..GP_MaxPath] of TRadioButton;
 
     // Wizard page and variables for the SSH options.
     SSHChoicePage:TWizardPage;
-    RdbSSH:array[GS_OpenSSH..GS_ExternalOpenSSH] of TRadioButton;
+    RdbSSH:array[1..GS_MaxSSH] of TRadioButton;
     EdtPlink:TEdit;
     TortoisePlink:TCheckBox;
 
     // Wizard page and variables for the HTTPS implementation (cURL) settings.
     CurlVariantPage:TWizardPage;
-    RdbCurlVariant:array[GC_OpenSSL..GC_WinSSL] of TRadioButton;
+    RdbCurlVariant:array[1..GC_MaxHTTPS] of TRadioButton;
 
     // Wizard page and variables for the line ending conversion options.
     CRLFPage:TWizardPage;
-    RdbCRLF:array[GC_LFOnly..GC_CRLFCommitAsIs] of TRadioButton;
+    RdbCRLF:array[1..GC_MaxAutoCRLF] of TRadioButton;
 
     // Wizard page and variables for the terminal emulator settings.
     BashTerminalPage:TWizardPage;
-    RdbBashTerminal:array[GB_MinTTY..GB_ConHost] of TRadioButton;
+    RdbBashTerminal:array[1..GB_MaxTerminal] of TRadioButton;
 
     // Wizard page and variables for the `git pull` options.
     GitPullBehaviorPage:TWizardPage;
-    RdbGitPullBehavior:array[GP_GitPullMerge..GP_GitPullFFOnly] of TRadioButton;
+    RdbGitPullBehavior:array[1..GP_MaxPull] of TRadioButton;
 
     // Wizard page and variables for the credential manager options.
     GitCredentialManagerPage:TWizardPage;
-    RdbGitCredentialManager:array[GCM_None..GCM] of TRadioButton;
+    RdbGitCredentialManager:array[1..GCM_Max] of TRadioButton;
 
     // Wizard page and variables for the extra options.
     ExtraOptionsPage:TWizardPage;
-    RdbExtraOptions:array[GP_FSCache..GP_Symlinks] of TCheckBox;
+    RdbExtraOptions:array[1..GP_MaxExtra] of TCheckBox;
 
     SecurityOptionsPage:TWizardPage;
-    RdbSecurityOptions:array[SO_MandatoryASLR..SO_MandatoryASLR] of TCheckBox;
+    RdbSecurityOptions:array[1..SO_MaxSecurity] of TCheckBox;
 
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
     // Wizard page and variables for the experimental options.
     ExperimentalOptionsPage:TWizardPage;
-    RdbExperimentalOptions:array[GP_BuiltinDifftool..GP_EnableFSMonitor] of TCheckBox;
+    RdbExperimentalOptions:array[1..GP_MaxExperimental] of TCheckBox;
 #endif
 
     // Mapping controls to hyperlinks
@@ -1872,6 +1884,18 @@ end;
 
 procedure QueryUninstallValues; forward;
 
+function IsHiddenExperimentalOptionsPageEmpty:Boolean;
+var
+    i:Integer;
+begin
+    Result:=True;
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
+    for i:=1 to GP_MaxExperimental do
+        if (RdbExperimentalOptions[i]<>nil) and RdbExperimentalOptions[i].Visible then
+            Result:=False;
+#endif
+end;
+
 procedure InitializeWizard;
 var
     PrevPageID,TabOrder,TopOfLabels,Top,Left:Integer;
@@ -2502,6 +2526,8 @@ begin
 #endif
 
     PageIDBeforeInstall:=CurrentCustomPageID;
+    if (PageIDBeforeInstall=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
+        PageIDBeforeInstall:=PageIDBeforeInstall-1;
 
     (*
      * Create a custom page for finding the processes that lock a module.
@@ -2577,7 +2603,10 @@ begin
             Result:=False
         else
             Result:=(PageID<>wpInfoBefore) and (PageID<>wpFinished);
-    end else
+    end else if (PageID=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
+        // Skip experimental options page if all options are hidden
+        Result:=True
+    else
         Result:=False;
 #ifdef DEBUG_WIZARD_PAGE
     Result:=PageID<>DebugWizardPage
