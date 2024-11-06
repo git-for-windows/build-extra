@@ -41,6 +41,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.47.0(2) (October 22nd 2024)
 
+### New Features
+
+* Comes with [cURL v8.11.0](https://curl.se/changes.html#8_11_0).
+
 ### Bug Fixes
 
 * Due to a bug introduced in the v2.47 cycle, [the installer showed an empty "experimental options" page](https://github.com/git-for-windows/git/issues/5231), which was [fixed](https://github.com/git-for-windows/build-extra/pull/578).
