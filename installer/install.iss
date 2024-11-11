@@ -678,7 +678,7 @@ var
     Caption:String;
     ManualClosingRequired:Boolean;
 begin
-    if (AppDir='') then begin
+    if (AppDir='') or (Pos('/CLOSEAPPLICATIONS',UpperCase(GetCmdTail))>0) or (Pos('/FORCECLOSEAPPLICATIONS',UpperCase(GetCmdTail))>0) then begin
         SetArrayLength(Processes,0);
         Exit;
     end;
