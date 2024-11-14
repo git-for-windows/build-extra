@@ -49,6 +49,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * Due to a bug introduced in the v2.47 cycle, [the installer showed an empty "experimental options" page](https://github.com/git-for-windows/git/issues/5231), which was [fixed](https://github.com/git-for-windows/build-extra/pull/578).
 * A potential crash in Git Bash on Insider versions of Windows/ARM64 [was fixed](https://github.com/git-for-windows/msys2-runtime/pull/76).
+* On Windows/ARM64, running the 64-bit version of Git for Windows could infrequently cause deadlocked threads (see e.g. [this report](https://github.com/msys2/msys2-autobuild/issues/62) or [this one](https://inbox.sourceware.org/cygwin-developers/78f294de-4c94-242a-722e-fd98e51edff9@jdrake.com/)), [which was addressed](https://github.com/git-for-windows/msys2-runtime/pull/73).
 
 ## Changes since Git for Windows v2.47.0 (October 8th 2024)
 
