@@ -44,6 +44,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### New Features
 
 * Comes with [cURL v8.11.0](https://curl.se/changes.html#8_11_0).
+* Comes with [Git LFS v3.6.0](https://github.com/git-lfs/git-lfs/releases/tag/3.6.0).
 
 ### Bug Fixes
 
