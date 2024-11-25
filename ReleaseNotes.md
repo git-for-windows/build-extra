@@ -45,6 +45,7 @@ This release comes with the first early native [support of Windows/ARM64](https:
 
 ### New Features
 
+* Comes with [Git v2.47.1](https://github.com/git/git/blob/v2.47.1/Documentation/RelNotes/2.47.1.txt).
 * Comes with [cURL v8.11.0](https://curl.se/changes.html#8_11_0).
 * Comes with [Git LFS v3.6.0](https://github.com/git-lfs/git-lfs/releases/tag/3.6.0).
 
