@@ -1,0 +1,8 @@
+{
+    "profiles": [
+        {
+            "name": "Git Bash",
+            "commandline": "git-bash.exe"
+        }
+    ]
+}
