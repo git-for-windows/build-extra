@@ -39,6 +39,12 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.47.1 (November 25th 2024)
+
+### Bug Fixes
+
+* The installer now correctly blocks the installation on Windows 7 and Windows 8 as these versions of Windows are no longer supported since Git for Windows v2.47.0
+
 ## Changes since Git for Windows v2.47.0(2) (October 22nd 2024)
 
 This release comes with the first early native [support of Windows/ARM64](https://github.com/git-for-windows/git/issues/3107), ready for testing. Please report any issues!
