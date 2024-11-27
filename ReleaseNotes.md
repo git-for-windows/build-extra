@@ -39,6 +39,21 @@ Git for Windows also contains Embedded CAcert Root Certificates. For more inform
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.47.1 (November 25th 2024)
+
+### New Features
+
+* Comes with [Git Credential Manager v2.6.1](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.6.1), addressing CVE-2024-50338.
+* Comes with [Git LFS v3.6.1](https://github.com/git-lfs/git-lfs/releases/tag/v3.6.1), addressing CVE-2024-53263.
+
+### Bug Fixes
+
+* [**CVE-2024-50338**](https://github.com/git-ecosystem/git-credential-manager/security/advisories/GHSA-86c2-4x57-wc8g): Git Credential Manager can be tricked to exfiltrate credentials for a trusted site to an untrusted site. Since the URLs needed for such an attack look suspicious, this usually requires a recursive clone or fetch.
+- [**CVE-2024-53263**](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-q6r2-x2cc-vrp7): In conjunction with CVE-2024-52006, Git LFS can be tricked to exfiltrate credentials for a trusted site to an untrusted site.
+* [**CVE-2024-50349**](https://github.com/git/git/security/advisories/GHSA-hmg8-h7qf-7cxr): When prompting the user for a password in the terminal, Git does not neutralize control characters.
+* [**CVE-2024-52005**](https://github.com/git/git/security/advisories/GHSA-7jjc-gg6m-3329): The sideband channel does not neutralize control characters.
+* [**CVE-2024-52006**](https://github.com/git/git/security/advisories/GHSA-r5ph-xg7q-xfrp): Similar to CVE-2020-5260, affecting credential helpers that interpret Carriage Returns as newlines.
+
 ## Changes since Git for Windows v2.47.0(2) (October 22nd 2024)
 
 This release comes with the first early native [support of Windows/ARM64](https://github.com/git-for-windows/git/issues/3107), ready for testing. Please report any issues!
