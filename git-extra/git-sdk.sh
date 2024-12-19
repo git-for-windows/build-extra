@@ -80,7 +80,7 @@ sdk () {
 			case "$(uname -m)" in
 			i686) shortcut_suffix=" 32-bit";;
 			x86_64)
-				if test -d /clangarm64
+				if test -z "$(find /clangarm64 -type f -print -quit)" || # if /clangarm64 exists and contains at least one file
 				then
 					shortcut_suffix=" arm64"
 				else
@@ -221,7 +221,7 @@ sdk () {
 			MINGW_MOUNT_POINT=/mingw32
 			;;
 		x86_64)
-			if test -d /clangarm64
+			if test -z "$(find /clangarm64 -type f -print -quit)" || # if /clangarm64 exists and contains at least one file
 			then
 				MSYSTEM=CLANGARM64
 				MINGW_MOUNT_POINT=/clangarm64
