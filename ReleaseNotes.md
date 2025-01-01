@@ -49,6 +49,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### Bug Fixes
 
 * The installer now correctly blocks the installation on Windows 7 and Windows 8 as these versions of Windows are no longer supported since Git for Windows v2.47.0
+* When using the `cache` credential helper, it could error out with "fatal: unable to connect to cache daemon: Unknown error" under certain circumstances; This [was fixed](https://github.com/git-for-windows/git/pull/5329).
 
 ## Changes since Git for Windows v2.47.0(2) (October 22nd 2024)
 
