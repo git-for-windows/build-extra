@@ -2324,7 +2324,7 @@ begin
     RdbCurlVariant[GC_WinSSL]:=CreateRadioButton(CurlVariantPage,'Use the native Windows Secure Channel library','Server certificates will be validated using Windows Certificate Stores.'+#13+'This option also allows you to use your company''s internal Root CA certificates'+#13+'distributed e.g. via Active Directory Domain Services.',TabOrder,Top,Left);
 
     // Restore the setting chosen during a previous install.
-    case ReplayChoice('CURL Option','OpenSSL') of
+    case ReplayChoice('CURL Option','WinSSL') of
         'OpenSSL': RdbCurlVariant[GC_OpenSSL].Checked:=True;
         'WinSSL': RdbCurlVariant[GC_WinSSL].Checked:=True;
     else
