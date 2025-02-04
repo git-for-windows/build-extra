@@ -41,6 +41,8 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.47.1(2) (January 14th 2025)
 
+Git for Windows v2.48.1 is the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive. Only 32-bit MinGit will be built for future versions, [until April 2029](https://gitforwindows.org/32-bit).
+
 ### New Features
 
 * Comes with [cURL v8.11.1](https://curl.se/changes.html#8_11_1).
