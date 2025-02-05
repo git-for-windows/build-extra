@@ -43,6 +43,8 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 Git for Windows v2.48.1 is the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive. Only 32-bit MinGit will be built for future versions, [until April 2029](https://gitforwindows.org/32-bit).
 
+Due to persistent maintenance challenges and the community's limited engagement and usage, `git svn` support in Git for Windows will be phased out over the next few releases.
+
 ### New Features
 
 * Comes with [MinTTY v3.7.7](https://github.com/mintty/mintty/releases/tag/3.7.7).
