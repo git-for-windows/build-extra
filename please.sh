@@ -3428,6 +3428,7 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 	sed_makepkg_e=
 	force=
 	src_pkg=
+	maybe_sync=
 	while case "$1" in
 	--only-i686|--only-32-bit)
 		MINGW_ARCH=mingw32
@@ -3468,6 +3469,9 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 		;;
 	-o*)
 		output_path="$(cygpath -am "${1#-?}")" || exit
+		;;
+	--maybe-sync|-s)
+		maybe_sync="-s --noconfirm"
 		;;
 	-*) die "Unknown option: %s\n" "$1";;
 	*) break;;
@@ -3533,7 +3537,7 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 		export SIGNTOOL="git ${d:+--git-dir="$d"} signtool"
 	 fi &&
 	 cd ${git_src_dir%/src/git}/ &&
-	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw -s --noconfirm $force -p PKGBUILD.$tag &&
+	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw $maybe_sync $force -p PKGBUILD.$tag &&
 	 if test -n "$src_pkg"
 	 then
 		git --git-dir src/git/.git archive --prefix git/ -o git-$tag.tar.gz $tag &&
