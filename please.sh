@@ -2953,7 +2953,7 @@ render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256
 	url=https://gitforwindows.org/
 	case "$display_version" in
 	prerelease-*)
-		url=https://wingit.blob.core.windows.net/files/index.html
+		url=https://gitforwindows.org/git-snapshots/
 		;;
 	*-rc*)
 		url=https://github.com/git-for-windows/git/releases/tag/$2
