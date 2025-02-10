@@ -306,27 +306,35 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        bitness: ['32', '64']
+        arch:
+          - name: i686
+            mingw-prefix: mingw32
+            msystem: MINGW32
+            sdk-repo: git-sdk-32
+          - name: x86_64
+            mingw-prefix: mingw64
+            msystem: MINGW64
+            sdk-repo: git-sdk-64
     steps:
       - uses: actions/checkout@v4
       - name: initialize bare SDK clone
         shell: bash
         run: |
           git clone --bare --depth=1 --single-branch --branch=main --filter=blob:none \
-            https://github.com/git-for-windows/git-sdk-${{ matrix.bitness }} .sdk
-      - name: build build-installers-${{ matrix.bitness }} artifact
+            https://github.com/git-for-windows/${{ matrix.arch.sdk-repo }} .sdk
+      - name: build build-installers-${{ matrix.arch.name }} artifact
         shell: bash
         run: |
           INCLUDE_OBJDUMP=t \
           ./please.sh create-sdk-artifact \
-            --bitness=${{ matrix.bitness }} \
+            --architecture=${{ matrix.arch.name }} \
             --sdk=.sdk \
             --out=sdk-artifact \
             build-installers &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
-          cygpath -aw "$PWD/sdk-artifact/mingw${{ matrix.bitness }}/bin" >>$GITHUB_PATH &&
-          echo "MSYSTEM=MINGW${{ matrix.bitness }}" >>$GITHUB_ENV
+          cygpath -aw "$PWD/sdk-artifact/${{ matrix.arch.mingw-prefix }}/bin" >>$GITHUB_PATH &&
+          echo "MSYSTEM=${{ matrix.arch.msystem }}" >>$GITHUB_ENV
       - name: check for missing DLLs
         shell: bash
         run: ./check-for-missing-dlls.sh
