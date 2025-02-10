@@ -404,10 +404,22 @@ usr/bin/dash.exe
 usr/bin/getopt.exe
 EOF
 
+EXTRA_DLL_FILES=
 case $MSYSTEM_LOWER in
 mingw*)
 	PDFTOTEXT_FILES="$MSYSTEM_LOWER/bin/pdftotext.exe
 $MSYSTEM_LOWER/bin/libstdc++-6.dll"
+	if test i686 = "$ARCH" &&
+		grep msys-unistring-2 /usr/bin/msys-gnutls-30.dll 2>&1 >/dev/null &&
+		test ! -d /var/lib/pacman/local/libunistring-0*-1
+	then
+		# Utter hack: i686 gnupg might still link to msys-unistring-2.dll
+		test -f /usr/bin/msys-unistring-2.dll ||
+		cp /usr/bin/msys-unistring-5.dll /usr/bin/msys-unistring-2.dll ||
+		die "Could not fudge msys-unistring-2.dll"
+		EXTRA_DLL_FILES='
+usr/bin/msys-unistring-2.dll'
+	fi
 	;;
 *)
 	# In the clang version, we do not need the libstdc++ DLL
@@ -421,7 +433,7 @@ etc/post-install/01-devices.post
 etc/post-install/03-mtab.post
 etc/post-install/06-windows-files.post
 usr/bin/start
-$PDFTOTEXT_FILES
+$PDFTOTEXT_FILES$EXTRA_DLL_FILES
 usr/bin/column.exe
 EOF
 
