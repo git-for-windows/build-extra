@@ -3255,6 +3255,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		/usr/bin/msys-pcre*.dll
 		/usr/bin/msys-gcc_s-*.dll
 
+		# For the libuuid check
+		/usr/bin/msys-apr*.dll
+
 		# markdown, to render the release notes
 		/usr/bin/markdown
 

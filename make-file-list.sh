@@ -187,6 +187,13 @@ then
 		mingw-w64-$PACMAN_ARCH-antiword mingw-w64-$PACMAN_ARCH-odt2txt ssh-pageant
 		mingw-w64-$PACMAN_ARCH-git-lfs mingw-w64-$PACMAN_ARCH-xz tig $GIT_UPDATE_EXTRA_PACKAGES"
 fi
+
+I686_EXCLUDE=
+if test i686 = "$ARCH" && ! grep msys-uuid-1 /usr/bin/msys-apr-1-0.dll 2>&1 >/dev/null
+then
+	I686_EXCLUDE='uuid\|lzma\|'
+fi
+
 pacman_list $packages "$@" |
 
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
@@ -234,10 +241,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/\(mingw\|clang\)[^/]*/share/gtk-doc/' \
 	-e '^/\(mingw\|clang\)[^/]*/share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
-	-e '^/usr/bin/msys-\('$(if test i686 = "$ARCH"
-	    then
-		echo 'uuid\|lzma\|'
-	    fi)'fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
+	-e '^/usr/bin/msys-\('"$I686_EXCLUDE"'fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(hdb\|history8\|kadm5\|kdc\|otp\|sl\).*\.dll$' \
 	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|ssh2\|kafs\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(ncurses++w6\|asprintf-[0-9]*\|\)\.dll$' \
