@@ -27,8 +27,7 @@ aarch64)
 esac
 
 SH_FOR_REBASE=dash
-PACKAGE_EXCLUDES="db info heimdal tcl git util-linux curl git-for-windows-keyring
-	mingw-w64-p11-kit"
+PACKAGE_EXCLUDES="db info heimdal tcl git util-linux curl git-for-windows-keyring"
 EXTRA_FILE_EXCLUDES=
 UTIL_PACKAGES="sed awk grep findutils coreutils"
 if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
@@ -49,7 +48,7 @@ fi
 if test -n "$MINIMAL_GIT"
 then
 	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES mingw-w64-bzip2 mingw-w64-c-ares
-		mingw-w64-libsystre mingw-w64-libtre-git
+		mingw-w64-libsystre mingw-w64-libtre-git mingw-w64-p11-kit
 		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
 		libedit libgdbm perl perl-.*"
 fi
@@ -108,6 +107,7 @@ pacman_list () {
 		do
 			pactree -u "$arg"
 		done |
+		sed 's/>.*//' |
 		grep -v "^\\($(echo $PACKAGE_EXCLUDES | sed \
 			-e 's/ /\\|/g' \
 			-e 's/mingw-w64-/&\\(i686\\|x86_64\\|clang-aarch64\\)-/g')\\)\$" |
@@ -210,7 +210,6 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/include/' -e '^/\(mingw\|clang\)[^/]*/include/' \
 	-e '^/usr/share/doc/' \
 	-e '^/usr/share/info/' -e '^/\(mingw\|clang\)[^/]*/share/info/' \
-	-e '^/mingw32/bin/lib\(ffi\|tasn1\)-.*\.dll$' \
 	-e '^/\(mingw\|clang\)[^/]*/share/git-doc/technical/' \
 	-e '^/\(mingw\|clang\)[^/]*/lib/cmake/' \
 	-e '^/\(mingw\|clang\)[^/]*/itcl/' \
