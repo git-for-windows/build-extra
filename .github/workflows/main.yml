@@ -250,6 +250,7 @@ jobs:
         id: build-artifact
         shell: bash
         run: |
+          set -x &&
           case "${{ matrix.artifact }}" in
           full)
             git --git-dir=.sdk worktree add --detach sdk-artifact
@@ -262,7 +263,9 @@ jobs:
               ${{ matrix.artifact }}
             ;;
           esac &&
-          echo "git-version=$(sdk-artifact/cmd/git.exe version)" >>$GITHUB_OUTPUT &&
+          ls -la sdk-artifact/ &&
+          version="$(sdk-artifact/${{ matrix.arch.mingw-prefix }}/bin/git.exe version)" &&
+          echo "git-version=$version" >>$GITHUB_OUTPUT &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/${{ matrix.arch.mingw-prefix }}/bin" >>$GITHUB_PATH &&
