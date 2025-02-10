@@ -47,30 +47,28 @@ unused_dlls_file=/tmp/unused-dlls.$$.txt
 tmp_file=/tmp/tmp.$$.txt
 trap "rm \"$used_dlls_file\" \"$missing_dlls_file\" \"$unused_dlls_file\" \"$tmp_file\"" EXIT
 
-all_files="$(export ARCH && "$thisdir"/make-file-list.sh | tr A-Z a-z | grep -v '/getprocaddr64.exe$')" &&
-usr_bin_dlls="$(echo "$all_files" | grep '^usr/bin/[^/]*\.dll$')" &&
-mingw_bin_dlls="$(echo "$all_files" | grep '^'$MINGW_PREFIX'/bin/[^/]*\.dll$')" &&
-dirs="$(echo "$all_files" | sed -n 's/[^/]*\.\(dll\|exe\)$//p' | sort | uniq)" &&
+ARCH=$ARCH "$thisdir"/make-file-list.sh | tr A-Z a-z | grep -v '/getprocaddr64.exe$' >"$tmp_file.all" &&
+usr_bin_dlls="$(grep '^usr/bin/[^/]*\.dll$' "$tmp_file.all")" &&
+mingw_bin_dlls="$(grep '^'$MINGW_PREFIX'/bin/[^/]*\.dll$' "$tmp_file.all")" &&
+dirs="$(sed -n 's/[^/]*\.\(dll\|exe\)$//p' "$tmp_file.all" | sort | uniq)" &&
 for dir in $dirs
 do
 	test -z "$print_dir" ||
 	printf "dir: $dir\\033[K\\r" >&2
 
 	case "$dir" in
-	usr/*) dlls="$sys_dlls$LF$usr_bin_dlls$LF";;
-	$MINGW_PREFIX/*) dlls="$sys_dlls$LF$mingw_bin_dlls$LF";;
-	*) dlls="$sys_dlls$LF";;
+	usr/*) dlls="$usr_bin_dlls$LF";;
+	$MINGW_PREFIX/*) dlls="$mingw_bin_dlls$LF";;
+	*) dlls="";;
 	esac
 
-	paths=$(echo "$all_files" |
-		sed -ne 's,[][],\\&,g' -e "s,^$dir[^/]*\.\(dll\|exe\)$,/&,p")
-	out="$(/usr/bin/objdump -p $paths 2>"$tmp_file")"
+	paths=$(sed -ne 's,[][],\\&,g' -e "s,^$dir[^/]*\.\(dll\|exe\)$,/&,p" "$tmp_file.all")
+	/usr/bin/objdump -p $paths 2>"$tmp_file" >"$tmp_file.ldd"
 	paths="$(sed -n 's|^/usr/bin/objdump: \([^ :]*\): file format not recognized|\1|p' <"$tmp_file")"
 	test -z "$paths" ||
-	out="$out$LF$(ldd $paths)"
+	ldd $paths >>"$tmp_file.ldd"
 
-	echo "$out" |
-	tr A-Z\\r a-z\  |
+	tr A-Z\\r a-z\ <"$tmp_file.ldd" |
 	grep -e '^.dll name:' -e '^[^ ]*\.\(dll\|exe\):' -e '\.dll =>' |
 	while read a b c d
 	do
@@ -78,7 +76,7 @@ do
 		*.exe:,*|*.dll:,*) current="${a%:}";;
 		*.dll,"=>") # `ldd` output
 			echo "$a" >>"$used_dlls_file"
-			case "$dlls" in
+			case "$sys_dlls$LF$dlls" in
 			*"/$a$LF"*) ;; # okay, it's included
 			*)
 				echo "$current is missing $a" >&2
@@ -88,7 +86,7 @@ do
 			;;
 		dll,name:) # `objdump -p` output
 			echo "$c" >>"$used_dlls_file"
-			case "$dlls" in
+			case "$sys_dlls$LF$dlls" in
 			*"/$c$LF"*) ;; # okay, it's included
 			*)
 				echo "$current is missing $c" >&2
@@ -106,8 +104,7 @@ used_dlls_regex="/\\($(test -n "$MINIMAL_GIT" || printf 'p11-kit-trust\\|';
 	uniq |
 	sed -e 's/+x/\\+/g' -e 's/\.dll$/\\|/' -e '$s/\\|//' |
 	tr -d '\n')\\)\\.dll\$"
-echo "$all_files" |
-	grep '\.dll$' |
+grep '\.dll$' "$tmp_file.all" |
 	grep -v \
 		-e "$used_dlls_regex" \
 		-e '^usr/lib/perl5/' \

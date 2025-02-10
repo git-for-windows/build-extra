@@ -345,6 +345,7 @@ jobs:
       - name: build build-installers-${{ matrix.arch.name }} artifact
         shell: bash
         run: |
+          set -x &&
           INCLUDE_OBJDUMP=t \
           ./please.sh create-sdk-artifact \
             --architecture=${{ matrix.arch.name }} \
@@ -354,10 +355,11 @@ jobs:
           cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/${{ matrix.arch.mingw-prefix }}/bin" >>$GITHUB_PATH &&
-          echo "MSYSTEM=${{ matrix.arch.msystem }}" >>$GITHUB_ENV
+          echo "MSYSTEM=${{ matrix.arch.msystem }}" >>$GITHUB_ENV &&
+          cat $GITHUB_PATH
       - name: check for missing DLLs
         shell: bash
-        run: ./check-for-missing-dlls.sh
+        run: sh -x ./check-for-missing-dlls.sh
       - name: check for missing DLLs (MinGit)
         shell: bash
         run: MINIMAL_GIT=1 ./check-for-missing-dlls.sh
