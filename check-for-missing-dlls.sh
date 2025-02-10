@@ -26,8 +26,9 @@ ARCH="$(uname -m)" ||
 die "Could not determine architecture"
 
 case "$ARCH" in
-i686) BITNESS=32;;
-x86_64) BITNESS=64;;
+i686) MINGW_PREFIX=mingw32;;
+x86_64) MINGW_PREFIX=mingw64;;
+aarch64) MINGW_PREFIX=clangarm64;;
 *) die "Unhandled architecture: $ARCH";;
 esac
 
@@ -46,9 +47,9 @@ unused_dlls_file=/tmp/unused-dlls.$$.txt
 tmp_file=/tmp/tmp.$$.txt
 trap "rm \"$used_dlls_file\" \"$missing_dlls_file\" \"$unused_dlls_file\" \"$tmp_file\"" EXIT
 
-all_files="$(export ARCH BITNESS && "$thisdir"/make-file-list.sh | tr A-Z a-z | grep -v '/getprocaddr64.exe$')" &&
+all_files="$(export ARCH && "$thisdir"/make-file-list.sh | tr A-Z a-z | grep -v '/getprocaddr64.exe$')" &&
 usr_bin_dlls="$(echo "$all_files" | grep '^usr/bin/[^/]*\.dll$')" &&
-mingw_bin_dlls="$(echo "$all_files" | grep '^mingw'$BITNESS'/bin/[^/]*\.dll$')" &&
+mingw_bin_dlls="$(echo "$all_files" | grep '^'$MINGW_PREFIX'/bin/[^/]*\.dll$')" &&
 dirs="$(echo "$all_files" | sed -n 's/[^/]*\.\(dll\|exe\)$//p' | sort | uniq)" &&
 for dir in $dirs
 do
@@ -57,7 +58,7 @@ do
 
 	case "$dir" in
 	usr/*) dlls="$sys_dlls$LF$usr_bin_dlls$LF";;
-	mingw$BITNESS/*) dlls="$sys_dlls$LF$mingw_bin_dlls$LF";;
+	$MINGW_PREFIX/*) dlls="$sys_dlls$LF$mingw_bin_dlls$LF";;
 	*) dlls="$sys_dlls$LF";;
 	esac
 
