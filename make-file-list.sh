@@ -248,6 +248,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/bin/msys-\(formw6\|menuw6\|panelw6\)\.dll$' \
 	-e '^/usr/bin/msys-svn_swig_\(py\|ruby\)-.*\.dll$' \
 	-e '^/usr/bin/\(dumper\|sasl.*\|sshd\)\.exe$' \
+	-e '^/usr/bin/.*lastlog2' \
 	-e '^/usr/lib/gio/' -e '^/usr/lib/sasl2/msys-sasldb-.*\.dll$' \
 	-e '^/usr/lib/\(itcl\|tdbc\|pkcs11/p11-kit-client\|thread\)' \
 	-e '^/usr/lib/ssh/sshd\($\|-\)' \
