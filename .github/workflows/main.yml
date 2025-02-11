@@ -129,7 +129,7 @@ jobs:
         shell: bash
         run: |
           ./please.sh create-sdk-artifact \
-            --bitness=64 \
+            --architecture=x86_64 \
             --sdk=.sdk \
             --out=sdk-artifact \
             build-installers &&
@@ -213,12 +213,28 @@ jobs:
       fail-fast: false
       matrix:
         artifact: ['minimal', 'makepkg-git', 'build-installers', 'full']
-        bitness: ['32', '64']
+        arch:
+          - name: i686
+            mingw-prefix: mingw32
+            msystem: MINGW32
+            sdk-repo: git-sdk-32
+          - name: x86_64
+            mingw-prefix: mingw64
+            msystem: MINGW64
+            sdk-repo: git-sdk-64
         exclude:
           - artifact: minimal
-            bitness: 32
+            arch:
+              name: i686
+              mingw-prefix: mingw32
+              msystem: MINGW32
+              sdk-repo: git-sdk-32
           - artifact: makepkg-git
-            bitness: 32
+            arch:
+              name: i686
+              mingw-prefix: mingw32
+              msystem: MINGW32
+              sdk-repo: git-sdk-32
     steps:
       - uses: actions/checkout@v4
       - name: initialize bare SDK clone
@@ -229,7 +245,7 @@ jobs:
           *) partial=--filter=blob:none;;
           esac &&
           git clone --bare --depth=1 --single-branch --branch=main $partial \
-            https://github.com/git-for-windows/git-sdk-${{ matrix.bitness }} .sdk
+            https://github.com/git-for-windows/${{ matrix.arch.sdk-repo }} .sdk
       - name: build ${{ matrix.artifact }} artifact
         id: build-artifact
         shell: bash
@@ -240,7 +256,7 @@ jobs:
             ;;
           *)
             ./please.sh create-sdk-artifact \
-              --bitness=${{ matrix.bitness }} \
+              --architecture=${{ matrix.arch.name }} \
               --sdk=.sdk \
               --out=sdk-artifact \
               ${{ matrix.artifact }}
@@ -249,34 +265,35 @@ jobs:
           echo "git-version=$(sdk-artifact/cmd/git.exe version)" >>$GITHUB_OUTPUT &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
-          cygpath -aw "$PWD/sdk-artifact/mingw${{ matrix.bitness }}/bin" >>$GITHUB_PATH &&
-          echo "MSYSTEM=MINGW${{ matrix.bitness }}" >>$GITHUB_ENV
+          cygpath -aw "$PWD/sdk-artifact/${{ matrix.arch.mingw-prefix }}/bin" >>$GITHUB_PATH &&
+          echo "MSYSTEM=${{ matrix.arch.msystem }}" >>$GITHUB_ENV &&
+          cat $GITHUB_PATH
       - name: build installer
         if: matrix.artifact == 'build-installers'
         shell: bash
-        run: ./installer/release.sh --include-self-check --output=$PWD/installer-${{ matrix.bitness }} 0-test
+        run: ./installer/release.sh --include-self-check --output=$PWD/installer-${{ matrix.arch.name }} 0-test
       - uses: actions/upload-artifact@v4
         if: matrix.artifact == 'build-installers'
         with:
-          name: installer-${{ matrix.bitness }}
-          path: installer-${{ matrix.bitness }}
+          name: installer-${{ matrix.arch.name }}
+          path: installer-${{ matrix.arch.name }}
       - name: run the installer
         if: matrix.artifact == 'build-installers'
         shell: pwsh
         run: |
-          $exePath = Get-ChildItem -Path installer-${{ matrix.bitness }}/*.exe | %{$_.FullName}
+          $exePath = Get-ChildItem -Path installer-${{ matrix.arch.name }}/*.exe | %{$_.FullName}
           $installer = Start-Process -PassThru -Wait -FilePath "$exePath" -ArgumentList "/SILENT /VERYSILENT /NORESTART /SUPPRESSMSGBOXES /ALLOWDOWNGRADE=1 /ALLOWINSTALLING32ON64=1 /LOG=installer.log"
           $exitCode = $installer.ExitCode
           if ($exitCode -ne 0) {
             Write-Host "::error::Installer failed with exit code $exitCode!"
             exit 1
           }
-          if ("${{ matrix.bitness }}" -eq 32) {
+          if ("${{ matrix.arch.name }}" -eq "i686") {
             "${env:ProgramFiles(x86)}\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
-            "${env:ProgramFiles(x86)}\Git\mingw32\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+            "${env:ProgramFiles(x86)}\Git\${{ matrix.arch.mingw-prefix }}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
           } else {
             "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
-            "$env:ProgramFiles\Git\mingw${{ matrix.bitness }}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+            "$env:ProgramFiles\Git\${{ matrix.arch.mingw-prefix }}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
           }
       - name: show installer log
         # run this even if the installation failed (actually, _in particular_ when the installation failed)
