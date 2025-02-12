@@ -3255,6 +3255,11 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		/usr/bin/msys-pcre*.dll
 		/usr/bin/msys-gcc_s-*.dll
 
+		# For the libuuid/libunistring check
+		/usr/bin/msys-apr*.dll
+		/usr/bin/msys-unistring*.dll
+		/usr/bin/msys-gnutls*.dll
+
 		# markdown, to render the release notes
 		/usr/bin/markdown
 
@@ -3277,6 +3282,15 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 			# copy git.exe, for the libssp test
 			git -C "$output_path" show HEAD:mingw32/bin/git.exe \
 				>"$output_path/mingw32/bin/git.exe" &&
+			# Work around an outdated i686 gnupg/gnutls build that depends on a hence-updated libunistring
+			if test ! -e "$output_path/usr/bin/msys-unistring-2.dll" -a \
+				-e "$output_path/usr/bin/msys-unistring-5.dll" -a \
+				-e "$output_path/usr/bin/msys-gnutls-30.dll" &&
+				grep msys-unistring-2 "$output_path/usr/bin/msys-gnutls-30.dll"
+			then
+				cp "$output_path/usr/bin/msys-unistring-5.dll" \
+					"$output_path/usr/bin/msys-unistring-2.dll"
+			fi &&
 			ARCH=i686 "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -lx \
 			"${this_script_path%/*}/make-file-list.sh" |
 			# escape the `[` in `[.exe`

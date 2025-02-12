@@ -27,8 +27,7 @@ aarch64)
 esac
 
 SH_FOR_REBASE=dash
-PACKAGE_EXCLUDES="db info heimdal tcl git util-linux curl git-for-windows-keyring
-	mingw-w64-p11-kit"
+PACKAGE_EXCLUDES="db info heimdal tcl git util-linux curl git-for-windows-keyring"
 EXTRA_FILE_EXCLUDES=
 UTIL_PACKAGES="sed awk grep findutils coreutils"
 if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
@@ -49,7 +48,7 @@ fi
 if test -n "$MINIMAL_GIT"
 then
 	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES mingw-w64-bzip2 mingw-w64-c-ares
-		mingw-w64-libsystre mingw-w64-libtre-git
+		mingw-w64-libsystre mingw-w64-libtre-git mingw-w64-p11-kit
 		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
 		libedit libgdbm perl perl-.*"
 fi
@@ -108,6 +107,7 @@ pacman_list () {
 		do
 			pactree -u "$arg"
 		done |
+		sed 's/>.*//' |
 		grep -v "^\\($(echo $PACKAGE_EXCLUDES | sed \
 			-e 's/ /\\|/g' \
 			-e 's/mingw-w64-/&\\(i686\\|x86_64\\|clang-aarch64\\)-/g')\\)\$" |
@@ -187,6 +187,13 @@ then
 		mingw-w64-$PACMAN_ARCH-antiword mingw-w64-$PACMAN_ARCH-odt2txt ssh-pageant
 		mingw-w64-$PACMAN_ARCH-git-lfs mingw-w64-$PACMAN_ARCH-xz tig $GIT_UPDATE_EXTRA_PACKAGES"
 fi
+
+I686_EXCLUDE=
+if test i686 = "$ARCH" && ! grep msys-uuid-1 /usr/bin/msys-apr-1-0.dll 2>&1 >/dev/null
+then
+	I686_EXCLUDE='uuid\|lzma\|'
+fi
+
 pacman_list $packages "$@" |
 
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
@@ -210,7 +217,6 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/include/' -e '^/\(mingw\|clang\)[^/]*/include/' \
 	-e '^/usr/share/doc/' \
 	-e '^/usr/share/info/' -e '^/\(mingw\|clang\)[^/]*/share/info/' \
-	-e '^/mingw32/bin/lib\(ffi\|tasn1\)-.*\.dll$' \
 	-e '^/\(mingw\|clang\)[^/]*/share/git-doc/technical/' \
 	-e '^/\(mingw\|clang\)[^/]*/lib/cmake/' \
 	-e '^/\(mingw\|clang\)[^/]*/itcl/' \
@@ -235,16 +241,14 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/\(mingw\|clang\)[^/]*/share/gtk-doc/' \
 	-e '^/\(mingw\|clang\)[^/]*/share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
-	-e '^/usr/bin/msys-\('$(if test i686 = "$ARCH"
-	    then
-		echo 'uuid\|lzma\|'
-	    fi)'fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
+	-e '^/usr/bin/msys-\('"$I686_EXCLUDE"'fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(hdb\|history8\|kadm5\|kdc\|otp\|sl\).*\.dll$' \
 	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|ssh2\|kafs\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(ncurses++w6\|asprintf-[0-9]*\|\)\.dll$' \
 	-e '^/usr/bin/msys-\(formw6\|menuw6\|panelw6\)\.dll$' \
 	-e '^/usr/bin/msys-svn_swig_\(py\|ruby\)-.*\.dll$' \
 	-e '^/usr/bin/\(dumper\|sasl.*\|sshd\)\.exe$' \
+	-e '^/usr/bin/.*lastlog2' \
 	-e '^/usr/lib/gio/' -e '^/usr/lib/sasl2/msys-sasldb-.*\.dll$' \
 	-e '^/usr/lib/\(itcl\|tdbc\|pkcs11/p11-kit-client\|thread\)' \
 	-e '^/usr/lib/ssh/sshd\($\|-\)' \
@@ -401,10 +405,22 @@ usr/bin/dash.exe
 usr/bin/getopt.exe
 EOF
 
+EXTRA_DLL_FILES=
 case $MSYSTEM_LOWER in
 mingw*)
 	PDFTOTEXT_FILES="$MSYSTEM_LOWER/bin/pdftotext.exe
 $MSYSTEM_LOWER/bin/libstdc++-6.dll"
+	if test i686 = "$ARCH" &&
+		grep msys-unistring-2 /usr/bin/msys-gnutls-30.dll 2>&1 >/dev/null &&
+		test ! -d /var/lib/pacman/local/libunistring-0*-1
+	then
+		# Utter hack: i686 gnupg might still link to msys-unistring-2.dll
+		test -f /usr/bin/msys-unistring-2.dll ||
+		cp /usr/bin/msys-unistring-5.dll /usr/bin/msys-unistring-2.dll ||
+		die "Could not fudge msys-unistring-2.dll"
+		EXTRA_DLL_FILES='
+usr/bin/msys-unistring-2.dll'
+	fi
 	;;
 *)
 	# In the clang version, we do not need the libstdc++ DLL
@@ -418,7 +434,7 @@ etc/post-install/01-devices.post
 etc/post-install/03-mtab.post
 etc/post-install/06-windows-files.post
 usr/bin/start
-$PDFTOTEXT_FILES
+$PDFTOTEXT_FILES$EXTRA_DLL_FILES
 usr/bin/column.exe
 EOF
 

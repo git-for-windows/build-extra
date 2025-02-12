@@ -21,7 +21,7 @@ $(BUILDDIR)/%.res: $(SRCDIR)/%.rc
 	$(WINDRES) --input $< --output $@ --output-format coff
 
 $(BUILDDIR)/WhoUses.exe: $(BUILDDIR)/WhoUses.o $(BUILDDIR)/SystemInfo.o
-	$(CXX) $(CXXFLAGS) -o $@ $(LDFLAGS) $^
+	$(CXX) $(CXXFLAGS) -o $@ $(LDFLAGS) $^ -lmsvcrt-os
 
 $(BUILDDIR)/WhoUses.o: $(SRCDIR)/WhoUses.cpp $(SRCDIR)/SystemInfo.h
 $(BUILDDIR)/SystemInfo.o: $(SRCDIR)/SystemInfo.cpp $(SRCDIR)/SystemInfo.h

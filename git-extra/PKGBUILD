@@ -5,7 +5,7 @@ pkgbase="mingw-w64-${_realname}"
 pkgname=($_realname
         "${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
-pkgver=1.1.641.031e03baf
+pkgver=1.1.646.1654659da
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('any')
@@ -21,7 +21,7 @@ pkgver() {
   test ! -f "$(git rev-parse --git-path shallow)" || git -c http.sslbackend fetch --unshallow
   rev="$(git rev-list -1 HEAD -- .)"
   test -n "$(git show . |
-    sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]/p')" ||
+    sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]pkgver=/d' -e "/^[-+] *'[0-9a-f]\{64\}'$/d" -e '/^[-+]/p')" ||
   rev="$(git rev-list -1 $rev^ -- .)"
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $rev -- .)" \
     "$(git rev-parse --short=9 $rev)"
@@ -68,7 +68,7 @@ sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             '3cd83627f1d20e1108533419fcf33c657cbcf777c3dc39fa7f13748b7d63858a'
             'd51229e5ec3653782a2c09aa5ad9af8f159aba94bc28498d7f358c33399b313d'
             '4716d520e7e6e0a1281bad1ae4c21e3e6442127c3030d27681162b9c40aa6b9d'
-            '937e25c096e0fa91f86f689a00a5bf5442c2333fbedab30239a935e682ae2e80'
+            '6d2e4285f5671247598446fb1876a137741b7ec87bfe1d7edbd2dc522918df60'
             'd212e1bbe75a9f81443126701324c9c44c3ed5750dd9822eba754a1799ed13b3'
             '402c51eba82453a76f5110f4754bb1005df507a6e4532574c2b9627ff4e1dc81'
             '8433a9e72b3bc9c3bc7903b54b868399bdb17a6c8de4af4dd5450dd42859c898'
