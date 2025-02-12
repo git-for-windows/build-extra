@@ -21,7 +21,7 @@ pkgver() {
   test ! -f "$(git rev-parse --git-path shallow)" || git -c http.sslbackend fetch --unshallow
   rev="$(git rev-list -1 HEAD -- .)"
   test -n "$(git show . |
-    sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]/p')" ||
+    sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]pkgver=/d' -e "/^[-+] *'[0-9a-f]\{64\}'$/d" -e '/^[-+]/p')" ||
   rev="$(git rev-list -1 $rev^ -- .)"
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $rev -- .)" \
     "$(git rev-parse --short=9 $rev)"
