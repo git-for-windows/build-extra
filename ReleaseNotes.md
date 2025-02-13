@@ -50,8 +50,8 @@ Due to persistent maintenance challenges and the community's limited engagement 
 * Comes with [MinTTY v3.7.7](https://github.com/mintty/mintty/releases/tag/3.7.7).
 * New Git for Windows installation [now default to the Windows-native HTTPS transport backend](https://github.com/git-for-windows/build-extra/pull/586).
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.5.7](https://inbox.sourceware.org/cygwin-announce/20250129212153.2589012-1-corinna-cygwin@cygwin.com/T/#u) (Git for Windows skipped [v3.5.5](https://inbox.sourceware.org/cygwin-announce/20241220181956.2204526-1-corinna-cygwin@cygwin.com) because it failed to pass Git's test suite, and [Cygwin v3.5.6](https://inbox.sourceware.org/cygwin-announce/20250126210031.2173904-1-corinna-cygwin@cygwin.com/) was superseded too quickly).
-* Comes with [cURL v8.12.0](https://curl.se/changes.html#8_12_0).
 * Comes with [Tig v2.5.12](https://github.com/jonas/tig/releases/tag/tig-2.5.12).
+* Comes with [cURL v8.12.1](https://curl.se/changes.html#8_12_1).
 
 ### Bug Fixes
 
