@@ -298,11 +298,12 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	! grep -q '"[CD]:/' /etc/xml/catalog ||
 	sed -i -e 's|"[CD]:/[^"]*/usr/|"/usr/|g' /etc/xml/catalog
 
-	# Work around an outdated i686 gnupg/gnutls build that depends on a hence-updated libunistring
-	if test i686 = $arch -a ! -e /usr/bin/msys-unistring-2.dll -a -e /usr/bin/msys-unistring-5.dll &&
-		grep msys-unistring-2 /usr/bin/msys-gnutls-30.dll 2>&1 >/dev/null
+	# Remove work around for an outdated i686 gnupg/gnutls build that depended on a hence-updated libunistring
+	if test i686 = $arch -a -e /usr/bin/msys-unistring-2.dll &&
+		! pacman -Qoq /usr/bin/msys-unistring-2.dll >/dev/null 2>&1 &&
+		! grep -q msys-unistring-2 /usr/bin/msys-gnutls-30.dll 2>&1 >/dev/null
 	then
-		cp /usr/bin/msys-unistring-5.dll /usr/bin/msys-unistring-2.dll
+		rm /usr/bin/msys-unistring-2.dll
 	fi
 }
 
