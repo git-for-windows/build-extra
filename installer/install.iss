@@ -291,7 +291,6 @@ Type: files; Name: {localappdata}\Microsoft\Windows Terminal\Fragments\Git\git-b
 #include "environment.inc.iss"
 #include "putty.inc.iss"
 #include "modules.inc.iss"
-#include "exec-with-capture.inc.iss"
 
 function ParamIsSet(Key:String):Boolean;
 begin
@@ -604,10 +603,12 @@ var
 // Returns true if at least one FSMonitor daemon was shut down successfully
 function ShutdownFSMonitorDaemons():Boolean;
 var
+    StdOut:String;
     FindRec:TFindRec;
-    ExitCode:DWORD;
-    Path,Str:String;
+    ExitCode:Integer;
+    Path:String;
     Len,i:Integer;
+    Output:TExecOutput;
 begin
     Result:=False;
 #ifdef WITH_EXPERIMENTAL_BUILTIN_FSMONITOR
@@ -627,22 +628,22 @@ begin
             // Find out which form to use.
             if (BuiltinFSMonitorStopOption='') then begin
                 BuiltinFSMonitorStopOption:='(huh?)';
-                if not ExecWithCapture('"'+AppDir+'\cmd\git.exe" fsmonitor--daemon -h',Str,Str,ExitCode) or (ExitCode<>129) then begin
+                if not ExecAndCaptureOutput('"'+AppDir+'\cmd\git.exe"', 'fsmonitor--daemon -h', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) or (ExitCode<>129) then begin
                     if (i<>1) and (i<>127) then // Suppress message if `git.exe` was not found, or if it does not know about the built-in FSMonitor
-                        LogError('Could not get FSMonitor help (exit code '+IntToStr(ExitCode)+'):'+#13+Str);
+                        LogError('Could not get FSMonitor help (exit code '+IntToStr(ExitCode)+'):'+#13+StringJoin(#13,Output.StdOut)+#13+StringJoin(#13,Output.StdErr));
                     Exit;
                 end else begin
-                    i:=Pos('stop'+#10,Str);
+                    StdOut:=StringJoin(#13, Output.StdOut);
+                    i:=Pos('stop'+#10,StdOut);
                     if (i=0) then begin
-                        LogError('Could not determine stop option from:'+#13+Str);
+                        LogError('Could not determine stop option from:'+#13+StdOut);
                         Exit;
                     end;
-                    if (i>2) and (Str[i-1]='-') and (Str[i-2]='-') then
+                    if (i>2) and (StdOut[i-1]='-') and (StdOut[i-2]='-') then
                         BuiltinFSMonitorStopOption:='--stop'
                     else
                         BuiltinFSMonitorStopOption:='stop';
                 end;
-                Str:='';
             end;
 
             // The colon was replaced with an underscore by the FSMonitor daemon
@@ -774,21 +775,21 @@ end;
 
 function GitSystemConfigSet(Key,Value:String):Boolean;
 var
-    ExitCode:DWORD;
-    StdOut,StdErr:String;
+    ExitCode:Integer;
+    Output:TExecOutput;
 begin
     if (Value=#0) then begin
-        if ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config --system --unset-all '+Key,StdOut,StdErr,ExitCode) And ((ExitCode=0) Or (ExitCode=5)) then
+        if ExecAndCaptureOutput('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe"', 'config --system --unset-all '+Key, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) And ((ExitCode=0) Or (ExitCode=5)) then
             // exit code 5 means it was already unset, so that's okay
             Result:=True
         else begin
-            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(ExitCode)+#13+#10+StdOut+#13+#10+'stderr:'+#13+#10+StdErr);
+            LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(ExitCode)+#13+#10+StringJoin(#13+#10,Output.StdOut)+#13+#10+'stderr:'+#13+#10+StringJoin(#13+#10,Output.StdErr));
             Result:=False
         end
-    end else if ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config --system --replace-all '+ShellQuote(Key)+' '+ShellQuote(Value),StdOut,StdErr,ExitCode) And (ExitCode=0) then
+    end else if ExecAndCaptureOutput('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe"', 'config --system --replace-all '+ShellQuote(Key)+' '+ShellQuote(Value), '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) And (ExitCode=0) then
         Result:=True
     else begin
-        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(ExitCode)+#13+#10+StdOut+#13+#10+'stderr:'+#13+#10+StdErr);
+        LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(ExitCode)+#13+#10+StringJoin(#13+#10,Output.StdOut)+#13+#10+'stderr:'+#13+#10+StringJoin(#13+#10,Output.StdErr));
         Result:=False;
     end;
 end;
@@ -815,10 +816,10 @@ end;
 
 function GetDefaultsFromGitConfig(WhichOne:String):Boolean;
 var
-    ExtraOptions,StdOut,StdErr,Key,Value:String;
-    ExitCode:DWORD;
+    ExtraOptions,Key,Value,StdOut:String;
     Values:TArrayOfString;
-    c,i,j,k:Integer;
+    ExitCode,c,i,j,k:Integer;
+    Output:TExecOutput;
 begin
     if AppDir='' then begin
         // No previous installation detected, therefore we cannot execute `git config`
@@ -837,12 +838,13 @@ begin
         end
     end;
 
-    if not ExecWithCapture('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe" config -l -z '+ExtraOptions,StdOut,StdErr,ExitCode) then begin
+    if not ExecAndCaptureOutput('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe"', 'config -l -z '+ExtraOptions, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) then begin
         if FileExists(AppDir+'\{#MINGW_BITNESS}\bin\git.exe') then
-            LogError('Unable to get system config (exit code '+IntToStr(ExitCode)+'):'+#13+#10+StdErr);
+            LogError('Unable to get system config (exit code '+IntToStr(ExitCode)+'):'+#13+#10+StringJoin(#13+#10,Output.StdErr));
     end;
 
     // Split NUL-delimited key/value pairs, extract LF that denotes end of key
+    StdOut:=StringJoin(#10,Output.StdOut);
     Value:=StdOut;
     i:=1; j:=i; k:=i;
     while (j<=Length(StdOut)) do begin
@@ -1052,15 +1054,16 @@ var
 
 function GetPreviousGitVersion():String;
 var
-    Path,StdOut,StdErr:String;
-    ExitCode:DWORD;
+    Path:String;
+    ExitCode:Integer;
+    Output:TExecOutput;
 begin
     if not PreviousGitVersionInitialized then begin
         PreviousGitVersionInitialized:=True;
         if (RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','InstallPath',Path))
-                and (ExecWithCapture('"'+Path+'\cmd\git.exe" version',StdOut,StdErr,ExitCode))
+                and (ExecAndCaptureOutput('"'+Path+'\cmd\git.exe"', 'version', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output))
                 and (ExitCode=0) then begin
-            PreviousGitVersion:=Trim(StdOut);
+            PreviousGitVersion:=Trim(Output.StdOut[0]);
         end;
     end;
     Result:=PreviousGitVersion;
@@ -2574,8 +2577,9 @@ end;
 
 function ShouldSkipPage(PageID:Integer):Boolean;
 var
-    Msg,Cmd,StdOut,StdErr:String;
-    Res:DWORD;
+    Msg,Cmd:String;
+    Res:Integer;
+    Output:TExecOutput;
 begin
     if (ProcessesPage<>NIL) and (PageID=ProcessesPage.ID) then begin
         // This page is only reached forward (by pressing "Next", never by pressing "Back").
@@ -2584,9 +2588,9 @@ begin
             if DirExists(AppDir) then begin
                 if not FileExists(ExpandConstant('{tmp}\blocked-file-util.exe')) then
                     ExtractTemporaryFile('blocked-file-util.exe');
-                Cmd:='"'+ExpandConstant('{tmp}\blocked-file-util.exe')+'" blocking-pids "'+AppDir+'"';
-                if not ExecWithCapture(Cmd,StdOut,StdErr,Res) or (Res<>0) then begin
-                    Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+StdErr;
+                Cmd:='"'+ExpandConstant('{tmp}\blocked-file-util.exe')+'"';
+                if not ExecAndCaptureOutput(Cmd, 'blocking-pids "'+AppDir+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, Res, Output) or (Res<>0) then begin
+                    Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+StringJoin(#13+#10,Output.StdErr);
                     if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
                         LogError(Msg)
                     else
@@ -2816,8 +2820,8 @@ end;
 
 procedure CleanupWhenUpgrading;
 var
-    StdOut,StdErr:String;
-    ErrorCode:DWORD;
+    ErrorCode:Integer;
+    Output:TExecOutput;
 begin
     if UninstallAppPath<>'' then begin
         // Save a copy of the system config so that we can copy it back later
@@ -2832,8 +2836,8 @@ begin
 
     if UninstallString<>'' then begin
         WizardForm.StatusLabel.Caption:='Removing previous Git version ('+PreviousGitForWindowsVersion+')';
-        if not ExecWithCapture(UninstallString+' /VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES',StdOut,StdErr,ErrorCode) then
-            LogError('Could not uninstall previous version (stderr: '+StdErr+'). Trying to continue anyway.');
+        if not ExecAndCaptureOutput(UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ErrorCode, Output) then
+            LogError('Could not uninstall previous version (stderr: '+StringJoin(#13+#10,Output.StdErr)+'). Trying to continue anyway.');
     end;
 end;
 
@@ -3044,10 +3048,11 @@ end;
 
 function UpgradeFromDotNetBasedScalar:Boolean;
 var
-    RegKey,UninstallScalar,ScalarExe,Cmd,StdOut,StdErr:String;
-    Res:DWORD;
+    RegKey,UninstallScalar,ScalarExe,Cmd:String;
+    Res:Integer;
     Enlistments:TArrayOfString;
     i:Integer;
+    Output:TExecOutput;
 begin
     Result:=True;
 
@@ -3082,9 +3087,8 @@ begin
     // (leaving C:\ProgramData\Scalar in place, in case
     // the user needs to downgrade again to get unblocked)
     WizardForm.StatusLabel.Caption:='Uninstalling .NET-based Scalar';
-    Cmd:=UninstallScalar+'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES /LOG';
-    if (not ExecWithCapture(Cmd,StdOut,StdErr,Res)) or (Res<>0) then
-        LogError('Could not uninstall Scalar (stderr: '+StdErr+'). Trying to continue anyway.');
+    if (not ExecAndCaptureOutput(UninstallScalar, '/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES /LOG', '', SW_SHOWNORMAL, ewWaitUntilTerminated, Res, Output)) or (Res<>0) then
+        LogError('Could not uninstall Scalar (stderr: '+StringJoin(#13+#10,Output.StdErr)+'). Trying to continue anyway.');
 end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
