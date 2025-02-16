@@ -164,6 +164,10 @@ sanitize_db () { # <file>...
 	then
 		for path in "$@"
 		do
+			if test -f "$path.sig" && call_gpg --verify "$path.sig"
+			then
+				continue
+			fi
 			call_gpg --detach-sign --no-armor -u $GPGKEY "$path" ||
 			die "Could not sign $path"
 		done
@@ -340,7 +344,15 @@ quick_add () { # <file>...
 				sanitize_db "$dir/$arch/${file%.tar.xz}" || return 1
 			done
 		done
+
 		(cd "$dir/$arch" &&
+		 # Verify that the package databases are synchronized
+		 git update-index --refresh &&
+		 git diff-files --quiet &&
+		 git diff-index --quiet HEAD -- ||
+		 die "The package databases in $arch differ between Azure Blobs and pacman-repo"
+
+		 # Now add the files to the Pacman database
 		 repo_add $sign_option git-for-windows-$arch.db.tar.xz $msys $mingw &&
 		 { test ! -h git-for-windows-$arch.db || rm git-for-windows-$arch.db; } &&
 		 cp git-for-windows-$arch.db.tar.xz git-for-windows-$arch.db && {
