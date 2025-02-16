@@ -186,9 +186,18 @@ quick_add () { # <file>...
 		die 'Need `GITHUB_TOKEN` to upload the files to `git-for-windows/pacman-repo`'
 	fi
 
-	# Create a temporary directory to work with
+	# Create a shallow, sparse & partial clone of
+	# git-for-windows/pacman-repo to work with
 	dir="$(mktemp -d)" &&
-	mkdir "$dir/x86_64" "$dir/aarch64" "$dir/i686" "$dir/sources" ||
+	git -C "$dir" init &&
+	git -C "$dir" remote add origin https://github.com/git-for-windows/pacman-repo &&
+	git -C "$dir" config set remote.origin.promisor true &&
+	git -C "$dir" config set remote.origin.partialCloneFilter blob:none &&
+	git -C "$dir" config set core.sparseCheckout true &&
+	git -C "$dir" config set core.sparseCheckoutCone false &&
+	printf '%s\n' '/git-*.db*' '/git-*.files*' >"$dir"/.git/info/sparse-checkout &&
+	printf '%s\n' '/git-for-windows.db*' '/git-for-windows.files*' >"$dir"/.git/info/exclude &&
+	mkdir "$dir/sources" ||
 	die "Could not create temporary directory"
 
 	i686_mingw=
@@ -250,6 +259,16 @@ quick_add () { # <file>...
 		test -z "$key" || eval "$key=\$$key\\ $file"
 		all_files="$all_files $arch/$file"
 
+		if test ! -d "$dir/$arch"
+		then
+			git -C "$dir" rev-parse --quiet --verify refs/remotes/origin/$arch >/dev/null ||
+			git -C "$dir" fetch --depth=1 origin x86_64 aarch64 i686 ||
+			die "$dir: could not fetch from pacman-repo"
+
+			git -C "$dir" worktree add -b $arch $arch origin/$arch ||
+			die "Could not initialize $dir/$arch"
+		fi
+
 		cp "$path" "$dir/$arch" ||
 		die "Could not copy $path to $dir/$arch"
 
@@ -270,15 +289,17 @@ quick_add () { # <file>...
 	PACMAN_DB_LEASE="$(lock)" ||
 	die 'Could not obtain a lock for uploading'
 
-	# Download indexes into the temporary directory and add files
+	# Verify that the package databases are synchronized and add files
 	sign_option=
 	test -z "$GPGKEY" || sign_option=--sign
 	dbs=
+	to_push=
 	for arch in $architectures
 	do
 		eval "msys=\$${arch}_msys"
 		eval "mingw=\$${arch}_mingw"
 		test -n "$msys$mingw" || continue
+		to_push="${to_push:+$to_push }$arch"
 
 		case "$arch,$mingw" in
 		*,) db2=;;
@@ -338,9 +359,40 @@ quick_add () { # <file>...
 					cp git-for-windows-$db2.db.tar.xz.sig git-for-windows-$db2.db.sig
 				}
 			}
-		 fi) ||
+		 fi &&
+
+		 # Remove previous versions from the Git branch
+		 printf '%s\n' $msys $mingw |
+		 sed 's/-[^-]*-[^-]*-[^-]*\.pkg\.tar\.\(xz\|zst\)$/-[0-9]*/' |
+		 xargs git rm --sparse --cached -- ||
+		 die "Could not remove previous versions from the Git branch in $arch"
+
+		 # Now add the files to the Git branch
+		 git add --sparse $msys $mingw \*.sig ':(exclude)*.old.sig' &&
+		 msg="$(printf 'Update %s package(s)\n\n%s\n' \
+			$(printf '%s\n' $msys $mingw | wc -l) \
+			"$(printf '%s\n' $msys $mingw |
+			  sed 's/^\(.*\)-\([^-]*-[^-]*\)-[^-]*\.pkg\.tar\.\(xz\|zst\)$/\1 -> \2/')")" &&
+		 git commit -asm "$msg") ||
 		die "Could not add $msys $mingw to db in $arch"
 	done
+
+	test -n "$to_push" || die "No packages to push?!"
+
+	if test -n "$PACMANDRYRUN"
+	then
+		echo "Would push $to_push to git-for-windows/pacman-repo" >&2
+	else
+		auth="$(printf 'PAT:%s' "$GITHUB_TOKEN" | base64)" &&
+		if test true = "$GITHUB_ACTIONS"
+		then
+			echo "::add-mask::$auth"
+		fi &&
+		extra_header="http.extraHeader=Authorization: Basic $auth" ||
+		die "Could not configure auth header for git-for-windows/pacman-repo"
+		git -C "$dir" -c "$extra_header" push origin $to_push ||
+		die "Could not push to git-for-windows/pacman-repo"
+	fi
 
 	# Mirror the deployment to a new GitHub Release
 	# at `git-for-windows/pacman-repo`
@@ -418,6 +470,12 @@ quick_add () { # <file>...
 	unlock "$PACMAN_DB_LEASE" ||
 	die 'Could not release lock for uploading\n'
 	PACMAN_DB_LEASE=
+
+	if test -n "$PACMANDRYRUN"
+	then
+		echo "Leaving temporary directory $dir/ for inspection" >&2
+		return
+	fi
 
 	# Remove the temporary directory
 	rm -r "$dir" ||
