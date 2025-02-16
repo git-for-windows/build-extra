@@ -181,6 +181,11 @@ quick_add () { # <file>...
 		die "Could not read token from ~/.azure-blobs-token"
 	fi
 
+	if test -z "$PACMANDRYRUN$GITHUB_TOKEN"
+	then
+		die 'Need `GITHUB_TOKEN` to upload the files to `git-for-windows/pacman-repo`'
+	fi
+
 	# Create a temporary directory to work with
 	dir="$(mktemp -d)" &&
 	mkdir "$dir/x86_64" "$dir/aarch64" "$dir/i686" "$dir/sources" ||
@@ -336,6 +341,49 @@ quick_add () { # <file>...
 		 fi) ||
 		die "Could not add $msys $mingw to db in $arch"
 	done
+
+	# Mirror the deployment to a new GitHub Release
+	# at `git-for-windows/pacman-repo`
+	tagname="$(TZ=UTC date +%Y-%m-%dT%H-%M-%S.%NZ)"
+	if test -n "$PACMANDRYRUN"
+	then
+		echo "Would create a GitHub Release '$tagname' at git-for-windows/pacman-repo" >&2
+	else
+		id="$(curl -H "Authorization: Bearer $GITHUB_TOKEN" -sfL --show-error -XPOST -d \
+			'{"tag_name":"'"$tagname"'","draft":true,"prerelease":true}' \
+			"https://api.github.com/repos/git-for-windows/pacman-repo/releases" |
+		sed -n 's/^  "id": *\([0-9]*\).*/\1/p')"
+	fi ||
+	die "Could not create a draft release for tag $tagname"
+	for path in $all_files $dbs
+	do
+		if test -n "$PACMANDRYRUN"
+		then
+			echo "Would upload $path to release" >&2
+			continue
+		fi
+	        echo "Uploading $path to release $id" >&2
+		case "$path" in
+		*.sig) content_type=application/pgp-signature;;
+		*) content_type=application/x-xz;;
+		esac
+		json="$(curl -H "Authorization: Bearer $GITHUB_TOKEN" -sfL --show-error -XPOST \
+			-H "Content-Type: $content_type" \
+			--data-binary "@$dir/$path" \
+			"https://uploads.github.com/repos/git-for-windows/pacman-repo/releases/$id/assets?name=${path##*/}")" ||
+		die "Could not upload $path to GitHub ($json)"
+	done
+	if test -n "$PACMANDRYRUN"
+	then
+		echo "Would mark GitHub Release at git-for-windows/pacman-repo as latest release" >&2
+	else
+		json="$(curl -H "Authorization: Bearer $GITHUB_TOKEN" -sfL --show-error -XPATCH \
+			-d '{"draft":false,"prerelease":false,"make_latest":"true"}' \
+			"https://api.github.com/repos/git-for-windows/pacman-repo/releases/$id")" &&
+		echo "Uploaded $all_files $dbs to $(echo "$json" |
+			sed -n 's/^  "html_url": "\(.*\)",$/\1/p')" ||
+		die "Could not publish release $id ($json)"
+	fi
 
 	# Upload the file(s) and the appropriate index(es)
 	(cd "$dir" &&
