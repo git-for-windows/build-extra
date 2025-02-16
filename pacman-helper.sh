@@ -174,6 +174,13 @@ quick_add () { # <file>...
 	test $# -gt 0 ||
 	die "Need at least one file"
 
+	if test -z "$PACMANDRYRUN$azure_blobs_token"
+	then
+		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
+		test -n "$azure_blobs_token" ||
+		die "Could not read token from ~/.azure-blobs-token"
+	fi
+
 	# Create a temporary directory to work with
 	dir="$(mktemp -d)" &&
 	mkdir "$dir/x86_64" "$dir/aarch64" "$dir/i686" "$dir/sources" ||
@@ -323,12 +330,6 @@ quick_add () { # <file>...
 
 	# Upload the file(s) and the appropriate index(es)
 	(cd "$dir" &&
-	 if test -z "$PACMANDRYRUN$azure_blobs_token"
-	 then
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	 fi &&
 	 for path in $all_files $dbs
 	 do
 		# Upload the 64-bit database with the lease
