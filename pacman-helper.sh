@@ -278,21 +278,30 @@ quick_add () { # <file>...
 		case "$arch,$mingw" in
 		*,) db2=;;
 		i686,*) db2=mingw32;;
-		*aarch64*) db2=aarch64;;
+		*aarch64*) db2=clangarm64;;
 		*) db2=mingw64;;
 		esac
-		for db in git-for-windows ${db2:+git-for-windows-$db2}
+		for db in git-for-windows-$arch ${db2:+git-for-windows-$db2}
 		do
+			# The Pacman repository on Azure Blobs still uses the old naming scheme
+			case "$db" in
+			git-for-windows-$arch) remote_db=git-for-windows;;
+			git-for-windows-clangarm64) remote_db=git-for-windows-aarch64;;
+			*) remote_db=$db;;
+			esac
+
 			for infix in db files
 			do
 				file=$db.$infix.tar.xz
+				remote_file=$remote_db.$infix.tar.xz
+
 				echo "Downloading current $arch/$file..." >&2
-				curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$file" || return 1
+				curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$remote_file" || return 1
 
 				dbs="$dbs $arch/$file $arch/${file%.tar.xz}"
 				if test -n "$sign_option"
 				then
-					curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$file.sig" ||
+					curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$remote_file.sig" ||
 					return 1
 					gpg --verify "$dir/$arch/$file.sig" ||
 					die "Could not verify GPG signature: $dir/$arch/$file"
@@ -306,12 +315,12 @@ quick_add () { # <file>...
 			done
 		done
 		(cd "$dir/$arch" &&
-		 repo_add $sign_option git-for-windows.db.tar.xz $msys $mingw &&
-		 { test ! -h git-for-windows.db || rm git-for-windows.db; } &&
-		 cp git-for-windows.db.tar.xz git-for-windows.db && {
+		 repo_add $sign_option git-for-windows-$arch.db.tar.xz $msys $mingw &&
+		 { test ! -h git-for-windows-$arch.db || rm git-for-windows-$arch.db; } &&
+		 cp git-for-windows-$arch.db.tar.xz git-for-windows-$arch.db && {
 			test -z "$sign_option" || {
-				{ test ! -h git-for-windows.db.sig || rm git-for-windows.db.sig; } &&
-				cp git-for-windows.db.tar.xz.sig git-for-windows.db.sig
+				{ test ! -h git-for-windows-$arch.db.sig || rm git-for-windows-$arch.db.sig; } &&
+				cp git-for-windows-$arch.db.tar.xz.sig git-for-windows-$arch.db.sig
 			}
 		 } &&
 		 if test -n "$db2"
@@ -332,6 +341,17 @@ quick_add () { # <file>...
 	(cd "$dir" &&
 	 for path in $all_files $dbs
 	 do
+		# The Pacman repository on Azure Blobs still uses the old naming scheme
+		remote_path="$(echo "$path" | sed \
+			-e 's,/git-for-windows-\(x86_64\|aarch64\|i686\)\.,/git-for-windows.,' \
+			-e 's,/git-for-windows-clangarm64\.,/git-for-windows-aarch64.,')"
+		test "$path" = "$remote_path" || {
+			echo "Renaming '$path' to old-style '$remote_path'..." >&2 &&
+			mv -i "$path" "$remote_path" &&
+			path="$remote_path"
+		} ||
+		die "Could not rename $path to $remote_path"
+
 		# Upload the 64-bit database with the lease
 		action=upload
 		test x86_64/git-for-windows.db != $path || action="upload-with-lease ${PACMAN_DB_LEASE:-<lease>}"
