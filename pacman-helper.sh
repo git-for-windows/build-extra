@@ -402,8 +402,62 @@ quick_add () { # <file>...
 		fi &&
 		extra_header="http.extraHeader=Authorization: Basic $auth" ||
 		die "Could not configure auth header for git-for-windows/pacman-repo"
-		git -C "$dir" -c "$extra_header" push origin $to_push ||
-		die "Could not push to git-for-windows/pacman-repo"
+		if ! git -C "$dir" -c "$extra_header" push origin $to_push
+		then
+			# We must assume that another deployment happened concurrently.
+			# No matter, we can easily adjust to that by reverting the
+			# changes to the database and then trying again
+			echo "There was a problem with the push; Assuming it was a concurrent update..." >&2
+			for backoff in 5 10 15 20 -1
+			do
+				git -C "$dir" fetch origin $architectures || die "Could not update $dir"
+				for arch in $to_push
+				do
+					# Avoid updating the branch if it is not necessary
+					test 0 -lt $(git -C "$dir" rev-list --count $arch..origin/$arch) || continue
+
+					echo "Rebasing $arch" >&2
+					(cd "$dir/$arch" &&
+					 git -C "$dir/$arch" checkout HEAD^ -- 'git-for-windows*.db*' 'git-for-windows*.files*' &&
+					 git -C "$dir/$arch" commit --amend --no-edit &&
+					 git -C "$dir/$arch" rebase origin/$arch &&
+
+					 eval "msys=\$${arch}_msys" &&
+					 eval "mingw=\$${arch}_mingw" &&
+					 printf '%s\n' $msys $mingw |
+					 sed 's/-[^-]*-[^-]*-[^-]*\.pkg\.tar\.\(xz\|zst\)$/-[0-9]*/' |
+					 xargs -r git restore --ignore-skip-worktree-bits -- &&
+
+					 repo_add $sign_option git-for-windows-$arch.db.tar.xz $msys $mingw &&
+					 { test ! -h git-for-windows-$arch.db || rm git-for-windows-$arch.db; } &&
+					 cp git-for-windows-$arch.db.tar.xz git-for-windows-$arch.db && {
+						test -z "$sign_option" || {
+							{ test ! -h git-for-windows-$arch.db.sig || rm git-for-windows-$arch.db.sig; } &&
+							cp git-for-windows-$arch.db.tar.xz.sig git-for-windows-$arch.db.sig
+						}
+					 } &&
+					 if test -n "$db2"
+					 then
+						repo_add $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
+						{ test ! -h git-for-windows-$db2.db || rm git-for-windows-$db2.db; } &&
+						cp git-for-windows-$db2.db.tar.xz git-for-windows-$db2.db && {
+							test -z "$sign_option" || {
+								{ test ! -h git-for-windows-$db2.db.sig || rm git-for-windows-$db2.db.sig; } &&
+								cp git-for-windows-$db2.db.tar.xz.sig git-for-windows-$db2.db.sig
+							}
+						}
+					 fi &&
+					 git -C "$dir/$arch" commit --amend --no-edit -- 'git-for-windows*.db*' 'git-for-windows*.files*') ||
+					die "Could not update $dir/$arch"
+				done
+				git -C "$dir" -c "$extra_header" push origin $to_push && break
+
+				test -1 != $backoff &&
+				echo "Waiting $backoff seconds before retrying..." >&2 &&
+				sleep $backoff ||
+				die "Could not push to git-for-windows/pacman-repo"
+			done
+		fi
 	fi
 
 	# Mirror the deployment to a new GitHub Release
