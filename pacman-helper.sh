@@ -164,7 +164,7 @@ sanitize_db () { # <file>...
 	then
 		for path in "$@"
 		do
-			if test -f "$path.sig" && call_gpg --verify "$path.sig"
+			if test -f "$path.sig" && gpg --verify "$path.sig"
 			then
 				continue
 			fi
