@@ -28,28 +28,16 @@ die () {
 	exit 1
 }
 
-# temporary fifo files
-fifo_find="/var/tmp/disowned.find"
-fifo_pacman="/var/tmp/disowned.pacman"
-
 mode=
 case "$1" in
-fetch|add|remove|push|files|dirs|orphans|push_missing_signatures|file_exists|lock|unlock|break_lock|quick_add|sanitize_db)
-	mode="$1"
-	shift
-	;;
-upload)
-	test -n "$IKNOWWHATIMDOING" ||
-	die "You need to switch to expert mode to do that"
-
+lock|unlock|break_lock|quick_add)
 	mode="$1"
 	shift
 	;;
 *)
-	die "Usage:\n%s\n%s\n%s\n" \
-		" $0 ( fetch | push | ( add | remove ) <package>... )" \
-		" $0 ( lock | unlock <id> | break_lock )" \
-		" $0 ( files | dirs | orphans )"
+	die "Usage:\n%s\n%s\n" \
+		" $0 quick_add <package>..." \
+		" $0 ( lock | unlock <id> | break_lock )"
 	;;
 esac
 
@@ -95,148 +83,6 @@ arch_to_mingw () { # <arch>
 	esac
 }
 
-fetch () {
-	for arch in $architectures
-	do
-		arch_url=$(arch_url $arch)
-		dir="$(arch_dir $arch)"
-		mkdir -p "$dir"
-		(cd "$dir" &&
-		 curl -sfO $arch_url/git-for-windows.db.tar.xz ||
-		 continue
-		 curl -sfO $arch_url/git-for-windows.db.tar.xz.sig ||
-		 die "Could not fetch git-for-windows.sig in $arch"
-
-		 curl -sfO $arch_url/git-for-windows.files.tar.xz ||
-		 die "Could not fetch git-for-windows.files in $arch"
-		 curl -sfO $arch_url/git-for-windows.files.tar.xz.sig ||
-		 die "Could not fetch git-for-windows.files.sig in $arch"
-
-		 s=$(arch_to_mingw "$arch")
-		 curl -sfO $arch_url/git-for-windows-$s.db.tar.xz ||
-		 die "Could not download $s db"
-		 curl -sfO $arch_url/git-for-windows-$s.db.tar.xz.sig ||
-		 die "Could not download $s db.sig"
-
-		 curl -sfO $arch_url/git-for-windows-$s.files.tar.xz ||
-		 die "Could not download $s files"
-		 curl -sfO $arch_url/git-for-windows-$s.files.tar.xz.sig ||
-		 die "Could not download $s files.sig"
-
-		 list=$(package_list git-for-windows.db.tar.xz) ||
-		 die "Cannot extract package list in $arch"
-		 list="$(echo "$list" | tr '\n' ' ')"
-
-		 # first, remove stale files
-		 for file in *.pkg.tar.xz
-		 do
-			test '*.pkg.tar.xz' !=  "$file" ||
-			break # no .pkg.tar.xz files...
-
-			case " $list " in
-			*" ${file%-*.pkg.tar.xz} "*)
-				;; # okay, included
-			*)
-				echo "Removing stale $file in $arch" >&2
-				rm $file ||
-				die "Could not remove $file in $arch"
-				test ! -f $file.sig ||
-				rm $file.sig ||
-				die "Could not remove $file.sig in $arch"
-				;;
-			esac
-		 done
-
-		 # now make sure all of the current packages are cached locally
-		 for name in $list
-		 do
-			case "$name" in
-			mingw-w64-*)
-				filename=$name-any.pkg.tar.xz
-				;;
-			*)
-				filename=$name-$arch.pkg.tar.xz
-				;;
-			esac
-			test -f $filename ||
-			curl -sfLO $(arch_url $arch)/$filename ||
-			if test $? = 56
-			then
-				curl -sfLO $(arch_url $arch)/$filename
-			fi ||
-			die "Could not get $filename ($?)"
-			test -f $filename.sig ||
-			curl -sfLO $(arch_url $arch)/$filename.sig ||
-			if test $? = 56
-			then
-				curl -sfLO $(arch_url $arch)/$filename.sig
-			fi ||
-			die "Could not get $filename.sig ($?)"
-			test x86_64 = "$arch" || continue
-
-			mkdir -p "$(arch_dir sources)" ||
-			die "Could not create $(arch_dir sources)"
-
-			(cd "$(arch_dir sources)" ||
-			 die "Could not cd to sources/"
-			 case "$name" in
-			 libcurl-[1-9]*|libcurl-devel-[1-9]*|mingw-w64-x86_64-git-doc-html-[1-9]*|mingw-w64-x86_64-git-doc-man-[1-9]*|msys2-runtime-devel-[1-9]*|libopenssl-[1-9]*|openssl-devel-[1-9]*|mingw-w64-x86_64-git-test-artifacts-[1-9]*|bash-devel-[1-9]*|heimdal-devel-[1-9]*|heimdal-libs-[1-9]*|mingw-w64-x86_64-curl-pdb-[1-9]*|mingw-w64-x86_64-git-pdb-[1-9]*|mingw-w64-x86_64-openssl-pdb-[1-9]*)
-				# extra package's source included elsewhere
-				continue
-				;;
-			 mingw-w64-x86_64-*)
-				filename=mingw-w64${name#*_64}.src.tar.gz
-				;;
-			 *)
-				filename=$name.src.tar.gz
-				;;
-			 esac
-			 test -f $filename ||
-			 curl -sfLO $base_url/sources/$filename ||
-			 if test $? = 56
-			 then
-				curl -sfLO $base_url/sources/$filename
-			 fi ||
-			 die "Could not get $filename ($?)"
-			 test -f $filename.sig ||
-			 curl -sfLO $base_url/sources/$filename.sig ||
-			 if test $? = 56
-			 then
-				curl -sfLO $base_url/sources/$filename.sig
-			 fi ||
-			 die "Could not get $filename.sig ($?)")
-		 done
-		) || exit
-	done
-}
-
-upload () { # <package> <version> <arch> <filename>
-	test -z "$PACMANDRYRUN" || {
-		echo "upload: wingit-snapshot-helper.sh wingit $(map_arch $3) <token> upload $4"
-		return
-	}
-
-	test -n "$azure_blobs_token" || {
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	}
-
-	echo "Uploading $1..." >&2
-	case "$3/$4,$PACMAN_DB_LEASE" in
-	x86_64/git-for-windows.db,?*)
-		"$this_script_dir"/wingit-snapshot-helper.sh \
-			wingit $(map_arch $3) "$azure_blobs_token" \
-			upload-with-lease "$PACMAN_DB_LEASE" $4
-		;;
-	*)
-		"$this_script_dir"/wingit-snapshot-helper.sh \
-			wingit $(map_arch $3) "$azure_blobs_token" upload $4
-		;;
-	esac ||
-	die "Could not upload $4 to $(map_arch $3)"
-}
-
 package_list () { # db.tar.xz
 	tar tf "$1" |
 	sed -ne '/ /d' -e 's/\/$//p'
@@ -252,95 +98,6 @@ call_gpg () {
 	"$CALL_GPG" "$@"
 }
 
-add () { # <file>
-	test $# -gt 0 ||
-	die "What packages do you want to add?"
-
-	for path
-	do
-		case "${path##*/}" in
-		mingw-w64-*.pkg.tar.xz)
-			arch=${path##*/}
-			arch=${arch##mingw-w64-}
-			arch=${arch%%-*}
-			;;
-		*-*.pkg.tar.xz)
-			arch=${path##*-}
-			arch=${arch%.pkg.tar.xz}
-			;;
-		*.src.tar.gz)
-			arch=sources
-			;;
-		*)
-			die "Invalid package name: $path"
-			;;
-		esac
-		case " $architectures sources " in
-		*" $arch "*)
-			# okay
-			;;
-		*)
-			die "Unknown architecture: $arch"
-			;;
-		esac
-
-		echo "Adding ${path##*/} to $arch/" >&2
-
-		dir="$(arch_dir $arch)"
-		if test -d "$dir"
-		then
-			prefix="${path##*/}"
-			prefix="${prefix%-*-*}"
-			(cd "$dir" &&
-			 for file in "$prefix"-[0-9][0-9.]*
-			 do
-				# Be careful: package names might contain `-<digit>`!
-				if test sources = "$arch"
-				then
-					test "$prefix" != "${file%-*-*}" || continue
-				else
-					test "$prefix" != "${file%-*-*-*}" || continue
-				fi
-
-				test ! -f "$file" ||
-				rm -v "$file"
-			 done)
-		else
-			mkdir -p "$dir"
-		fi &&
-		cp "$path" "$dir/" ||
-		die "Could not copy $path to $dir"
-
-		if test -n "$GPGKEY"
-		then
-			call_gpg --detach-sign --no-armor \
-				-u $GPGKEY "$dir/${path##*/}"
-		fi
-	done
-}
-
-remove () { # <package>...
-	test $# -gt 0 ||
-	die "What packages do you want to add?"
-
-	for package
-	do
-		for arch in $architectures
-		do
-			(cd "$(arch_dir $arch)" &&
-			 rm $package-*.pkg.tar.xz &&
-			 repo-remove git-for-windows.db.tar.xz $package &&
-			 case "$package" in
-			 mingw-w64-$arch-*)
-				s=$(arch_to_mingw "$arch")
-				repo-remove git-for-windows-$s.db.tar.xz \
-					$package
-				;;
-			 esac)
-		done
-	done
-}
-
 repo_add () {
 	if test ! -s "$this_script_dir/repo-add"
 	then
@@ -348,134 +105,6 @@ repo_add () {
 		 sed 's/"\(\${\?GPGKEY}\?\)"/\1/g' </usr/bin/repo-add >"$this_script_dir/repo-add"
 	fi &&
 	"$this_script_dir/repo-add" "$@"
-}
-
-update_local_package_databases () {
-	sign_option=
-	test -z "$GPGKEY" || sign_option=--sign
-	for arch in $architectures
-	do
-		(cd "$(arch_dir $arch)" &&
-		 repo_add $sign_option --new git-for-windows.db.tar.xz \
-			*.pkg.tar.xz &&
-		 repo_add $sign_option --new \
-		 git-for-windows-$(arch_to_mingw "$arch").db.tar.xz \
-		 mingw-w64-$arch-*.pkg.tar.xz) ||
-		 die "Could not update $arch package database"
-	done
-}
-
-push_next_db_version () {
-	for arch in $architectures
-	do
-		(cd "$(arch_dir $arch)" &&
-		 files= &&
-		 for suffix in db db.tar.xz files files.tar.xz
-		 do
-			filename=git-for-windows.$suffix
-			test ! -f $filename || files="$files $filename"
-			test ! -f $filename.sig || files="$files $filename.sig"
-
-			filename=git-for-windows-$(arch_to_mingw $arch).$suffix
-			test ! -f $filename || files="$files $filename"
-			test ! -f $filename.sig || files="$files $filename.sig"
-		 done
-		 for filename in $files
-		 do
-			upload package-database - $arch $filename
-		 done
-		) || exit
-	done
-}
-
-push () {
-	test -n "$azure_blobs_token" || {
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	}
-
-	update_local_package_databases
-	for arch in $architectures
-	do
-		arch_url=$(arch_url $arch)
-		dir="$(arch_dir $arch)"
-		mkdir -p "$dir"
-		(cd "$dir" &&
-		 echo "Getting $arch_url/git-for-windows.db.tar.xz" &&
-		 curl -Lfo .remote $arch_url/git-for-windows.db.tar.xz
-		) ||
-		die "Could not get remote index for $arch"
-	done
-
-	old_list="$( (for arch in $architectures
-		do
-			dir="$(arch_dir $arch)"
-			test -s "$dir/.remote" &&
-			package_list "$dir/.remote"
-		done) |
-		sort | uniq)"
-	new_list="$( (for arch in $architectures
-		do
-			dir="$(arch_dir $arch)"
-			package_list "$dir/git-for-windows.db.tar.xz"
-		done) |
-		sort | uniq)"
-
-	to_upload="$(printf "%s\n%s\n%s\n" \
-			"$old_list" "$old_list" "$new_list" |
-		sort | uniq -u)"
-
-	test -n "$to_upload" || test "x$old_list" != "x$new_list" || {
-		echo "Nothing to be done" >&2
-		return
-	}
-
-	test -z "$to_upload" || {
-		to_upload_base_names="$(echo "$to_upload" |
-			sed 's/-[0-9][^-]*-[0-9][0-9]*$//' |
-			sort | uniq)"
-
-		for name in $to_upload
-		do
-			basename=${name%-*-*}
-			version=${name#$basename-}
-			for arch in $architectures sources
-			do
-				case "$name,$arch" in
-				mingw-w64-x86_64-*,sources)
-					# sources are "included" in x86_64
-					filename=mingw-w64${name#*_64}.src.tar.gz
-					;;
-				*,sources)
-					filename=$name.src.tar.gz
-					;;
-				mingw-w64-$arch,$arch)
-					filename=$name-any.pkg.tar.xz
-					;;
-				mingw-w64-*)
-					# wrong architecture
-					continue
-					;;
-				*)
-					filename=$name-$arch.pkg.tar.xz
-					;;
-				esac
-				(cd "$(arch_dir $arch)" &&
-				 if test -f $filename
-				 then
-					upload $basename $version $arch $filename
-				 fi &&
-				 if test -f $filename.sig
-				 then
-					upload $basename $version $arch \
-						$filename.sig
-				fi) || exit
-			done
-		done
-	}
-
-	push_next_db_version
 }
 
 sanitize_db () { # <file>...
@@ -535,6 +164,10 @@ sanitize_db () { # <file>...
 	then
 		for path in "$@"
 		do
+			if test -f "$path.sig" && call_gpg --verify "$path.sig"
+			then
+				continue
+			fi
 			call_gpg --detach-sign --no-armor -u $GPGKEY "$path" ||
 			die "Could not sign $path"
 		done
@@ -545,9 +178,30 @@ quick_add () { # <file>...
 	test $# -gt 0 ||
 	die "Need at least one file"
 
-	# Create a temporary directory to work with
+	if test -z "$PACMANDRYRUN$azure_blobs_token"
+	then
+		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
+		test -n "$azure_blobs_token" ||
+		die "Could not read token from ~/.azure-blobs-token"
+	fi
+
+	if test -z "$PACMANDRYRUN$GITHUB_TOKEN"
+	then
+		die 'Need `GITHUB_TOKEN` to upload the files to `git-for-windows/pacman-repo`'
+	fi
+
+	# Create a shallow, sparse & partial clone of
+	# git-for-windows/pacman-repo to work with
 	dir="$(mktemp -d)" &&
-	mkdir "$dir/x86_64" "$dir/aarch64" "$dir/i686" "$dir/sources" ||
+	git -C "$dir" init &&
+	git -C "$dir" remote add origin https://github.com/git-for-windows/pacman-repo &&
+	git -C "$dir" config set remote.origin.promisor true &&
+	git -C "$dir" config set remote.origin.partialCloneFilter blob:none &&
+	git -C "$dir" config set core.sparseCheckout true &&
+	git -C "$dir" config set core.sparseCheckoutCone false &&
+	printf '%s\n' '/git-*.db*' '/git-*.files*' >"$dir"/.git/info/sparse-checkout &&
+	printf '%s\n' '/git-for-windows.db*' '/git-for-windows.files*' >"$dir"/.git/info/exclude &&
+	mkdir "$dir/sources" ||
 	die "Could not create temporary directory"
 
 	i686_mingw=
@@ -609,6 +263,16 @@ quick_add () { # <file>...
 		test -z "$key" || eval "$key=\$$key\\ $file"
 		all_files="$all_files $arch/$file"
 
+		if test ! -d "$dir/$arch"
+		then
+			git -C "$dir" rev-parse --quiet --verify refs/remotes/origin/$arch >/dev/null ||
+			git -C "$dir" fetch --depth=1 origin x86_64 aarch64 i686 ||
+			die "$dir: could not fetch from pacman-repo"
+
+			git -C "$dir" worktree add -b $arch $arch origin/$arch ||
+			die "Could not initialize $dir/$arch"
+		fi
+
 		cp "$path" "$dir/$arch" ||
 		die "Could not copy $path to $dir/$arch"
 
@@ -629,66 +293,72 @@ quick_add () { # <file>...
 	PACMAN_DB_LEASE="$(lock)" ||
 	die 'Could not obtain a lock for uploading'
 
-	# Download indexes into the temporary directory and add files
+	# Verify that the package databases are synchronized and add files
 	sign_option=
 	test -z "$GPGKEY" || sign_option=--sign
 	dbs=
+	to_push=
 	for arch in $architectures
 	do
 		eval "msys=\$${arch}_msys"
 		eval "mingw=\$${arch}_mingw"
 		test -n "$msys$mingw" || continue
-
-		case "$(test aarch64 = $arch && curl -sI "$(arch_url $arch)/git-for-windows.db")" in
-		*404*) initialize_fresh_pacman_repository=t;; # this one is new
-		*) initialize_fresh_pacman_repository=;;
-		esac
+		to_push="${to_push:+$to_push }$arch"
 
 		case "$arch,$mingw" in
 		*,) db2=;;
 		i686,*) db2=mingw32;;
-		*aarch64*) db2=aarch64;;
+		*aarch64*) db2=clangarm64;;
 		*) db2=mingw64;;
 		esac
-		for db in git-for-windows ${db2:+git-for-windows-$db2}
+		for db in git-for-windows-$arch ${db2:+git-for-windows-$db2}
 		do
+			# The Pacman repository on Azure Blobs still uses the old naming scheme
+			case "$db" in
+			git-for-windows-$arch) remote_db=git-for-windows;;
+			git-for-windows-clangarm64) remote_db=git-for-windows-aarch64;;
+			*) remote_db=$db;;
+			esac
+
 			for infix in db files
 			do
 				file=$db.$infix.tar.xz
-				if test -n "$initialize_fresh_pacman_repository"
-				then
-					echo "Will initialize new $arch/$file..." >&2
-				else
-					echo "Downloading current $arch/$file..." >&2
-					curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$file" || return 1
-				fi
+				remote_file=$remote_db.$infix.tar.xz
+
+				echo "Downloading current $arch/$file..." >&2
+				curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$remote_file" || return 1
+
 				dbs="$dbs $arch/$file $arch/${file%.tar.xz}"
 				if test -n "$sign_option"
 				then
-					if test -z "$initialize_fresh_pacman_repository"
-					then
-						curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$file.sig" ||
-						return 1
-						gpg --verify "$dir/$arch/$file.sig" ||
-						die "Could not verify GPG signature: $dir/$arch/$file"
-					fi
+					curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$remote_file.sig" ||
+					return 1
+					gpg --verify "$dir/$arch/$file.sig" ||
+					die "Could not verify GPG signature: $dir/$arch/$file"
+
 					dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
 				fi
-				if test -z "$initialize_fresh_pacman_repository"
-				then
-					sanitize_db "$dir/$arch/$file" || return 1
-					test ! -f "$dir/$arch/${file%.tar.xz}" ||
-					sanitize_db "$dir/$arch/${file%.tar.xz}" || return 1
-				fi
+
+				sanitize_db "$dir/$arch/$file" || return 1
+				test ! -f "$dir/$arch/${file%.tar.xz}" ||
+				sanitize_db "$dir/$arch/${file%.tar.xz}" || return 1
 			done
 		done
+
 		(cd "$dir/$arch" &&
-		 repo_add $sign_option git-for-windows.db.tar.xz $msys $mingw &&
-		 { test ! -h git-for-windows.db || rm git-for-windows.db; } &&
-		 cp git-for-windows.db.tar.xz git-for-windows.db && {
+		 # Verify that the package databases are synchronized
+		 git update-index --refresh &&
+		 git diff-files --quiet &&
+		 git diff-index --quiet HEAD -- ||
+		 die "The package databases in $arch differ between Azure Blobs and pacman-repo"
+
+		 # Now add the files to the Pacman database
+		 repo_add $sign_option git-for-windows-$arch.db.tar.xz $msys $mingw &&
+		 { test ! -h git-for-windows-$arch.db || rm git-for-windows-$arch.db; } &&
+		 cp git-for-windows-$arch.db.tar.xz git-for-windows-$arch.db && {
 			test -z "$sign_option" || {
-				{ test ! -h git-for-windows.db.sig || rm git-for-windows.db.sig; } &&
-				cp git-for-windows.db.tar.xz.sig git-for-windows.db.sig
+				{ test ! -h git-for-windows-$arch.db.sig || rm git-for-windows-$arch.db.sig; } &&
+				cp git-for-windows-$arch.db.tar.xz.sig git-for-windows-$arch.db.sig
 			}
 		 } &&
 		 if test -n "$db2"
@@ -701,20 +371,153 @@ quick_add () { # <file>...
 					cp git-for-windows-$db2.db.tar.xz.sig git-for-windows-$db2.db.sig
 				}
 			}
-		 fi) ||
+		 fi &&
+
+		 # Remove previous versions from the Git branch
+		 printf '%s\n' $msys $mingw |
+		 sed 's/-[^-]*-[^-]*-[^-]*\.pkg\.tar\.\(xz\|zst\)$/-[0-9]*/' |
+		 xargs git rm --sparse --cached -- ||
+		 die "Could not remove previous versions from the Git branch in $arch"
+
+		 # Now add the files to the Git branch
+		 git add --sparse $msys $mingw \*.sig ':(exclude)*.old.sig' &&
+		 msg="$(printf 'Update %s package(s)\n\n%s\n' \
+			$(printf '%s\n' $msys $mingw | wc -l) \
+			"$(printf '%s\n' $msys $mingw |
+			  sed 's/^\(.*\)-\([^-]*-[^-]*\)-[^-]*\.pkg\.tar\.\(xz\|zst\)$/\1 -> \2/')")" &&
+		 git commit -asm "$msg") ||
 		die "Could not add $msys $mingw to db in $arch"
 	done
 
+	test -n "$to_push" || die "No packages to push?!"
+
+	if test -n "$PACMANDRYRUN"
+	then
+		echo "Would push $to_push to git-for-windows/pacman-repo" >&2
+	else
+		auth="$(printf 'PAT:%s' "$GITHUB_TOKEN" | base64)" &&
+		if test true = "$GITHUB_ACTIONS"
+		then
+			echo "::add-mask::$auth"
+		fi &&
+		extra_header="http.extraHeader=Authorization: Basic $auth" ||
+		die "Could not configure auth header for git-for-windows/pacman-repo"
+		if ! git -C "$dir" -c "$extra_header" push origin $to_push
+		then
+			# We must assume that another deployment happened concurrently.
+			# No matter, we can easily adjust to that by reverting the
+			# changes to the database and then trying again
+			echo "There was a problem with the push; Assuming it was a concurrent update..." >&2
+			for backoff in 5 10 15 20 -1
+			do
+				git -C "$dir" fetch origin $architectures || die "Could not update $dir"
+				for arch in $to_push
+				do
+					# Avoid updating the branch if it is not necessary
+					test 0 -lt $(git -C "$dir" rev-list --count $arch..origin/$arch) || continue
+
+					echo "Rebasing $arch" >&2
+					(cd "$dir/$arch" &&
+					 git -C "$dir/$arch" checkout HEAD^ -- 'git-for-windows*.db*' 'git-for-windows*.files*' &&
+					 git -C "$dir/$arch" commit --amend --no-edit &&
+					 git -C "$dir/$arch" rebase origin/$arch &&
+
+					 eval "msys=\$${arch}_msys" &&
+					 eval "mingw=\$${arch}_mingw" &&
+					 printf '%s\n' $msys $mingw |
+					 sed 's/-[^-]*-[^-]*-[^-]*\.pkg\.tar\.\(xz\|zst\)$/-[0-9]*/' |
+					 xargs -r git restore --ignore-skip-worktree-bits -- &&
+
+					 repo_add $sign_option git-for-windows-$arch.db.tar.xz $msys $mingw &&
+					 { test ! -h git-for-windows-$arch.db || rm git-for-windows-$arch.db; } &&
+					 cp git-for-windows-$arch.db.tar.xz git-for-windows-$arch.db && {
+						test -z "$sign_option" || {
+							{ test ! -h git-for-windows-$arch.db.sig || rm git-for-windows-$arch.db.sig; } &&
+							cp git-for-windows-$arch.db.tar.xz.sig git-for-windows-$arch.db.sig
+						}
+					 } &&
+					 if test -n "$db2"
+					 then
+						repo_add $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
+						{ test ! -h git-for-windows-$db2.db || rm git-for-windows-$db2.db; } &&
+						cp git-for-windows-$db2.db.tar.xz git-for-windows-$db2.db && {
+							test -z "$sign_option" || {
+								{ test ! -h git-for-windows-$db2.db.sig || rm git-for-windows-$db2.db.sig; } &&
+								cp git-for-windows-$db2.db.tar.xz.sig git-for-windows-$db2.db.sig
+							}
+						}
+					 fi &&
+					 git -C "$dir/$arch" commit --amend --no-edit -- 'git-for-windows*.db*' 'git-for-windows*.files*') ||
+					die "Could not update $dir/$arch"
+				done
+				git -C "$dir" -c "$extra_header" push origin $to_push && break
+
+				test -1 != $backoff &&
+				echo "Waiting $backoff seconds before retrying..." >&2 &&
+				sleep $backoff ||
+				die "Could not push to git-for-windows/pacman-repo"
+			done
+		fi
+	fi
+
+	# Mirror the deployment to a new GitHub Release
+	# at `git-for-windows/pacman-repo`
+	tagname="$(TZ=UTC date +%Y-%m-%dT%H-%M-%S.%NZ)"
+	if test -n "$PACMANDRYRUN"
+	then
+		echo "Would create a GitHub Release '$tagname' at git-for-windows/pacman-repo" >&2
+	else
+		id="$(curl -H "Authorization: Bearer $GITHUB_TOKEN" -sfL --show-error -XPOST -d \
+			'{"tag_name":"'"$tagname"'","draft":true,"prerelease":true}' \
+			"https://api.github.com/repos/git-for-windows/pacman-repo/releases" |
+		sed -n 's/^  "id": *\([0-9]*\).*/\1/p')"
+	fi ||
+	die "Could not create a draft release for tag $tagname"
+	for path in $all_files $dbs
+	do
+		if test -n "$PACMANDRYRUN"
+		then
+			echo "Would upload $path to release" >&2
+			continue
+		fi
+	        echo "Uploading $path to release $id" >&2
+		case "$path" in
+		*.sig) content_type=application/pgp-signature;;
+		*) content_type=application/x-xz;;
+		esac
+		json="$(curl -H "Authorization: Bearer $GITHUB_TOKEN" -sfL --show-error -XPOST \
+			-H "Content-Type: $content_type" \
+			--data-binary "@$dir/$path" \
+			"https://uploads.github.com/repos/git-for-windows/pacman-repo/releases/$id/assets?name=${path##*/}")" ||
+		die "Could not upload $path to GitHub ($json)"
+	done
+	if test -n "$PACMANDRYRUN"
+	then
+		echo "Would mark GitHub Release at git-for-windows/pacman-repo as latest release" >&2
+	else
+		json="$(curl -H "Authorization: Bearer $GITHUB_TOKEN" -sfL --show-error -XPATCH \
+			-d '{"draft":false,"prerelease":false,"make_latest":"true"}' \
+			"https://api.github.com/repos/git-for-windows/pacman-repo/releases/$id")" &&
+		echo "Uploaded $all_files $dbs to $(echo "$json" |
+			sed -n 's/^  "html_url": "\(.*\)",$/\1/p')" ||
+		die "Could not publish release $id ($json)"
+	fi
+
 	# Upload the file(s) and the appropriate index(es)
 	(cd "$dir" &&
-	 if test -z "$PACMANDRYRUN$azure_blobs_token"
-	 then
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	 fi &&
 	 for path in $all_files $dbs
 	 do
+		# The Pacman repository on Azure Blobs still uses the old naming scheme
+		remote_path="$(echo "$path" | sed \
+			-e 's,/git-for-windows-\(x86_64\|aarch64\|i686\)\.,/git-for-windows.,' \
+			-e 's,/git-for-windows-clangarm64\.,/git-for-windows-aarch64.,')"
+		test "$path" = "$remote_path" || {
+			echo "Renaming '$path' to old-style '$remote_path'..." >&2 &&
+			mv -i "$path" "$remote_path" &&
+			path="$remote_path"
+		} ||
+		die "Could not rename $path to $remote_path"
+
 		# Upload the 64-bit database with the lease
 		action=upload
 		test x86_64/git-for-windows.db != $path || action="upload-with-lease ${PACMAN_DB_LEASE:-<lease>}"
@@ -733,6 +536,12 @@ quick_add () { # <file>...
 	unlock "$PACMAN_DB_LEASE" ||
 	die 'Could not release lock for uploading\n'
 	PACMAN_DB_LEASE=
+
+	if test -n "$PACMANDRYRUN"
+	then
+		echo "Leaving temporary directory $dir/ for inspection" >&2
+		return
+	fi
 
 	# Remove the temporary directory
 	rm -r "$dir" ||
@@ -796,203 +605,6 @@ break_lock () { #
 
 	"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
 		"$azure_blobs_token" break-lock git-for-windows.db
-}
-
-file_exists () { # arch filename
-	curl -sfI "$(arch_url $1)/$2" >/dev/null
-}
-
-push_missing_signatures () {
-	list="$( (for arch in $architectures
-		do
-			dir="$(arch_dir $arch)"
-			package_list "$dir/git-for-windows.db.tar.xz"
-		done) |
-		sort | uniq)"
-
-	sign_option=
-	test -z "$GPGKEY" || sign_option=--sign
-
-	for name in $list
-	do
-		count=0
-		basename=${name%-*-*}
-		version=${name#$basename-}
-		for arch in $architectures sources
-		do
-			case "$name,$arch" in
-			libcurl*,sources|mingw-w64-*-git-doc*,sources|msys2-runtime-devel*,sources)
-				# extra package's source included elsewhere
-				continue
-				;;
-			mingw-w64-x86_64-*,sources)
-				# sources are "included" in x86_64
-				filename=mingw-w64${name#*_64}.src.tar.gz
-				;;
-			*,sources)
-				filename=$name.src.tar.gz
-				;;
-			mingw-w64-$arch,$arch)
-				filename=$name-any.pkg.tar.xz
-				;;
-			mingw-w64-*)
-				# wrong architecture
-				continue
-				;;
-			*)
-				filename=$name-$arch.pkg.tar.xz
-				;;
-			esac
-			dir="$(arch_dir $arch)" &&
-			test -f "$dir"/$filename.sig ||
-			if test -n "$GPGKEY"
-			then
-				call_gpg --detach-sign --no-armor \
-					-u $GPGKEY "$dir/$filename"
-			else
-				die "Missing: $dir/$filename.sig"
-			fi
-			if file_exists $arch $filename.sig
-			then
-				continue
-			fi &&
-			(cd "$dir" &&
-			 echo "Uploading missing $arch/$filename.sig" &&
-			 upload $basename $version $arch $filename.sig) || exit
-			count=$(($count+1))
-		done
-	done
-
-	count=0
-	for arch in $architectures
-	do
-		cd "$(arch_dir "$arch")" ||
-		die "Could not cd to $arch/"
-
-		list2=" $(echo "$list" | tr '\n' ' ') "
-		mingw_db_name=git-for-windows-$(arch_to_mingw $arch).db.tar.xz
-		for name in $(package_list $mingw_db_name)
-		do
-			case "$list2" in
-			*" $name "*) ;; # okay, it's also in the full db
-			*)
-				repo-remove $sign_option $mingw_db_name \
-					${name%-*-*} ||
-				die "Could not remove $name from $mingw_db_name"
-				count=$(($count+1))
-				;;
-			esac
-		done
-
-		for name in $list
-		do
-			case "$name" in
-			mingw-w64-$arch-*)
-				filename=$name-any.pkg.tar.xz
-				s=$(arch_to_mingw $arch)
-				db_name=git-for-windows-$s.db.tar.xz
-				out="$(tar Oxf $db_name $name/desc)" ||
-				die "Could not look for $name in $arch/mingw"
-
-				test "a" = "a${out##*PGPSIG*}" || {
-					count=$(($count+1))
-					repo_add $sign_option $db_name $filename ||
-					die "Could not add $name in $arch/mingw"
-				}
-				;;
-			mingw-w64-*)
-				# wrong architecture; skip
-				continue
-				;;
-			*)
-				filename=$name-$arch.pkg.tar.xz
-				;;
-			esac
-
-			out="$(tar Oxf git-for-windows.db.tar.xz $name/desc)" ||
-			die "Could not look for $name in $arch"
-
-			test "a" = "a${out##*PGPSIG*}" || {
-				count=$(($count+1))
-				repo_add $sign_option git-for-windows.db.tar.xz \
-					$filename ||
-				die "Could not add $name in $arch"
-				echo "$name is missing sig in $arch"
-			}
-		done
-	done
-
-	for arch in $architectures
-	do
-		s=-$(arch_to_mingw "$arch")
-		for suffix in .db .db.tar.xz .files .files.tar.xz \
-			$s.db $s.db.tar.xz $s.files $s.files.tar.xz
-		do
-			filename=git-for-windows$suffix
-			dir="$(arch_dir $arch)"
-			test -f "$dir"/$filename.sig ||
-			if test -n "$GPGKEY"
-			then
-				call_gpg --detach-sign --no-armor \
-					-u $GPGKEY "$dir/$filename"
-			else
-				die "Missing: $dir/$filename.sig"
-			fi
-			if file_exists $arch $filename.sig
-			then
-				continue
-			fi
-			(cd "$dir" &&
-			 echo "Uploading missing $arch/$filename.sig" &&
-			 upload package-database - $arch $filename.sig) || exit
-			count=$(($count+1))
-		done || exit
-	done
-
-	test 0 = $count ||
-	push_next_db_version ||
-	die "Could not push next db_version"
-}
-
-reset_fifo_files () {
-	rm -f "$fifo_find"
-	rm -f "$fifo_pacman"
-}
-
-dirs () {
-	reset_fifo_files
-
-	find / \( -path '/dev' -o -path '/bin' -o -path '/usr/src' \
-		-o -path '/tmp' -o -path '/proc' -o -path '/home' \
-		-o -path '/var/lib/pacman' -o -path '/var/cache/pacman' \) \
-		-prune -o -type d -print | sed 's/\([^/]\)$/\1\//' | \
-		sort -u > "$fifo_find"
-
-	pacman -Qlq | sort -u > "$fifo_pacman"
-
-	comm -23 "$fifo_find" "$fifo_pacman"
-
-	reset_fifo_files
-}
-
-files () {
-	reset_fifo_files
-
-	find / \( -path '/dev' -o -path '/bin' -o -path '/usr/src' \
-		-o -path '/tmp' -o -path '/proc' -o -path "$fifo_find" \
-		-o -path '/home' -o -path '/var/lib/pacman' \
-		-o -path '/var/cache/pacman' \) -prune -o -type f -print | \
-		sort -u > "$fifo_find"
-
-	pacman -Qlq | sort -u > "$fifo_pacman"
-
-	comm -23 "$fifo_find" "$fifo_pacman"
-
-	reset_fifo_files
-}
-
-orphans () {
-	pacman -Rns $(pacman -Qtdq) 2> /dev/null || echo 'no orphans found..'
 }
 
 "$mode" "$@"
