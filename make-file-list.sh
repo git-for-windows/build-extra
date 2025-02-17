@@ -107,7 +107,7 @@ pacman_list () {
 		do
 			pactree -u "$arg"
 		done |
-		sed 's/>.*//' |
+		sed 's/[<>=].*//' |
 		grep -v "^\\($(echo $PACKAGE_EXCLUDES | sed \
 			-e 's/ /\\|/g' \
 			-e 's/mingw-w64-/&\\(i686\\|x86_64\\|clang-aarch64\\)-/g')\\)\$" |
