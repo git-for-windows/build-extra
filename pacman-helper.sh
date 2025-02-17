@@ -305,6 +305,9 @@ quick_add () { # <file>...
 		test -n "$msys$mingw" || continue
 		to_push="${to_push:+$to_push }$arch"
 
+		git -C "$dir/$arch" pull --ff-only origin $arch ||
+		die "Could not update $dir/$arch"
+
 		case "$arch,$mingw" in
 		*,) db2=;;
 		i686,*) db2=mingw32;;
