@@ -30,13 +30,14 @@ die () {
 
 mode=
 case "$1" in
-lock|unlock|break_lock|quick_add)
+lock|unlock|break_lock|quick_add|quick_remove)
 	mode="$1"
 	shift
 	;;
 *)
-	die "Usage:\n%s\n%s\n" \
+	die "Usage:\n%s\n%s\n%s\n" \
 		" $0 quick_add <package>..." \
+		" $0 quick_remove <package>..." \
 		" $0 ( lock | unlock <id> | break_lock )"
 	;;
 esac
@@ -107,6 +108,23 @@ repo_add () {
 	"$this_script_dir/repo-add" "$@"
 }
 
+repo_remove () {
+	if test ! -s "$this_script_dir/repo-remove"
+	then
+		# Make sure that GPGKEY is used unquoted
+		 sed 's/"\(\${\?GPGKEY}\?\)"/\1/g' </usr/bin/repo-remove >"$this_script_dir/repo-remove"
+	fi &&
+	"$this_script_dir/repo-remove" $(for arg
+	do
+		# repo-remove only accepts package _names_, but we are potentially given _files_.
+		# Handle this by distilling the package names from filenames.
+		case "$arg" in
+		*.pkg.tar.xz|*.pkg.tar.zst) echo "${arg%-*-*-*}";;
+		*) echo "$arg";;
+		esac
+	done)
+}
+
 sanitize_db () { # <file>...
 	perl -e '
 		foreach my $path (@ARGV) {
@@ -174,9 +192,16 @@ sanitize_db () { # <file>...
 	fi
 }
 
-quick_add () { # <file>...
-	test $# -gt 0 ||
+quick_action () { # <action> <file>...
+	test $# -gt 1 ||
 	die "Need at least one file"
+
+	label="$1"
+	shift
+	case "$label" in
+	add|remove) action=repo_$label;;
+	*) die "Unknown action '$action'";;
+	esac
 
 	if test -z "$PACMANDRYRUN$azure_blobs_token"
 	then
@@ -212,7 +237,8 @@ quick_add () { # <file>...
 	x86_64_msys=
 	all_files=
 
-	# Copy the file(s) to the temporary directory, and schedule their addition to the appropriate index(es)
+	# Copy the file(s) to the temporary directory, and schedule their addition to the appropriate index(es),
+	# or for `remove`: schedule their removal from the appropriate index(es).
 	for path in "$@"
 	do
 		file="${path##*/}"
@@ -259,12 +285,12 @@ quick_add () { # <file>...
 		*) echo "Skipping file with unknown arch: $file" >&2; continue;;
 		esac
 
-		echo "Copying $file to $arch/..." >&2
 		test -z "$key" || eval "$key=\$$key\\ $file"
 		all_files="$all_files $arch/$file"
 
 		if test ! -d "$dir/$arch"
 		then
+			echo "Initializing $dir/$arch..." >&2
 			git -C "$dir" rev-parse --quiet --verify refs/remotes/origin/$arch >/dev/null ||
 			git -C "$dir" fetch --depth=1 origin x86_64 aarch64 i686 ||
 			die "$dir: could not fetch from pacman-repo"
@@ -273,6 +299,15 @@ quick_add () { # <file>...
 			die "Could not initialize $dir/$arch"
 		fi
 
+		case "$label" in
+		remove)
+			test -z "$GPGKEY" ||
+			all_files="$all_files $arch/$file.sig"
+			continue
+			;;
+		esac
+
+		echo "Copying $file to $arch/..." >&2
 		cp "$path" "$dir/$arch" ||
 		die "Could not copy $path to $dir/$arch"
 
@@ -293,7 +328,7 @@ quick_add () { # <file>...
 	PACMAN_DB_LEASE="$(lock)" ||
 	die 'Could not obtain a lock for uploading'
 
-	# Verify that the package databases are synchronized and add files
+	# Verify that the package databases are synchronized and add or remove files
 	sign_option=
 	test -z "$GPGKEY" || sign_option=--sign
 	dbs=
@@ -355,8 +390,8 @@ quick_add () { # <file>...
 		 git diff-index --quiet HEAD -- ||
 		 die "The package databases in $arch differ between Azure Blobs and pacman-repo"
 
-		 # Now add the files to the Pacman database
-		 repo_add $sign_option git-for-windows-$arch.db.tar.xz $msys $mingw &&
+		 # Now add or remove the files to the Pacman database
+		 $action $sign_option git-for-windows-$arch.db.tar.xz $msys $mingw &&
 		 { test ! -h git-for-windows-$arch.db || rm git-for-windows-$arch.db; } &&
 		 cp git-for-windows-$arch.db.tar.xz git-for-windows-$arch.db && {
 			test -z "$sign_option" || {
@@ -366,7 +401,7 @@ quick_add () { # <file>...
 		 } &&
 		 if test -n "$db2"
 		 then
-			repo_add $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
+			$action $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
 			{ test ! -h git-for-windows-$db2.db || rm git-for-windows-$db2.db; } &&
 			cp git-for-windows-$db2.db.tar.xz git-for-windows-$db2.db && {
 				test -z "$sign_option" || {
@@ -376,20 +411,28 @@ quick_add () { # <file>...
 			}
 		 fi &&
 
-		 # Remove previous versions from the Git branch
+		 # Remove the existing versions from the Git branch
 		 printf '%s\n' $msys $mingw |
 		 sed 's/-[^-]*-[^-]*-[^-]*\.pkg\.tar\.\(xz\|zst\)$/-[0-9]*/' |
 		 xargs git rm --sparse --cached -- ||
-		 die "Could not remove previous versions from the Git branch in $arch"
+		 die "Could not remove the existing versions from the Git branch in $arch"
 
 		 # Now add the files to the Git branch
-		 git add --sparse $msys $mingw \*.sig ':(exclude)*.old.sig' &&
-		 msg="$(printf 'Update %s package(s)\n\n%s\n' \
-			$(printf '%s\n' $msys $mingw | wc -l) \
-			"$(printf '%s\n' $msys $mingw |
-			  sed 's/^\(.*\)-\([^-]*-[^-]*\)-[^-]*\.pkg\.tar\.\(xz\|zst\)$/\1 -> \2/')")" &&
+		 case "$label" in
+		 add)
+			git add --sparse $msys $mingw \*.sig ':(exclude)*.old.sig' &&
+			msg="$(printf 'Update %s package(s)\n\n%s\n' \
+				$(printf '%s\n' $msys $mingw | wc -l) \
+				"$(printf '%s\n' $msys $mingw |
+					sed 's/^\(.*\)-\([^-]*-[^-]*\)-[^-]*\.pkg\.tar\.\(xz\|zst\)$/\1 -> \2/')")"
+			;;
+		 remove)
+			 msg="$(printf 'Remove %s package(s)\n\n%s\n' \
+				$(printf '%s\n' $msys $mingw | wc -l) \
+				"$(printf '%s\n' $msys $mingw)")"
+		 esac &&
 		 git commit -asm "$msg") ||
-		die "Could not add $msys $mingw to db in $arch"
+		die "Could not ${label} $msys $mingw to/from db in $arch"
 	done
 
 	test -n "$to_push" || die "No packages to push?!"
@@ -427,11 +470,14 @@ quick_add () { # <file>...
 
 					 eval "msys=\$${arch}_msys" &&
 					 eval "mingw=\$${arch}_mingw" &&
-					 printf '%s\n' $msys $mingw |
-					 sed 's/-[^-]*-[^-]*-[^-]*\.pkg\.tar\.\(xz\|zst\)$/-[0-9]*/' |
-					 xargs -r git restore --ignore-skip-worktree-bits -- &&
-
-					 repo_add $sign_option git-for-windows-$arch.db.tar.xz $msys $mingw &&
+					 case "$label" in
+					 add)
+						printf '%s\n' $msys $mingw |
+						sed 's/-[^-]*-[^-]*-[^-]*\.pkg\.tar\.\(xz\|zst\)$/-[0-9]*/' |
+						xargs -r git restore --ignore-skip-worktree-bits --
+						;;
+					 esac &&
+					 $action $sign_option git-for-windows-$arch.db.tar.xz $msys $mingw &&
 					 { test ! -h git-for-windows-$arch.db || rm git-for-windows-$arch.db; } &&
 					 cp git-for-windows-$arch.db.tar.xz git-for-windows-$arch.db && {
 						test -z "$sign_option" || {
@@ -441,7 +487,7 @@ quick_add () { # <file>...
 					 } &&
 					 if test -n "$db2"
 					 then
-						repo_add $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
+						$action $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
 						{ test ! -h git-for-windows-$db2.db || rm git-for-windows-$db2.db; } &&
 						cp git-for-windows-$db2.db.tar.xz git-for-windows-$db2.db && {
 							test -z "$sign_option" || {
@@ -549,6 +595,14 @@ quick_add () { # <file>...
 	# Remove the temporary directory
 	rm -r "$dir" ||
 	die "Could not remove $dir/"
+}
+
+quick_add () {
+	quick_action add "$@"
+}
+
+quick_remove () {
+	quick_action remove "$@"
 }
 
 lock () { #
