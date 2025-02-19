@@ -331,7 +331,7 @@ quick_action () { # <action> <file>...
 		then
 			cp "$path".sig "$dir/$arch/" ||
 			die "Could not copy $path.sig to $dir/$arch"
-                        all_files="$all_files $arch/$file.sig"
+			all_files="$all_files $arch/$file.sig"
 		elif test -n "$GPGKEY"
 		then
 			echo "Signing $arch/$file..." >&2
@@ -549,7 +549,7 @@ quick_action () { # <action> <file>...
 			echo "Would upload $path to release" >&2
 			continue
 		fi
-	        echo "Uploading $path to release $id" >&2
+		echo "Uploading $path to release $id" >&2
 		case "$path" in
 		*.sig) content_type=application/pgp-signature;;
 		*) content_type=application/x-xz;;
