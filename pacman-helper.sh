@@ -274,6 +274,22 @@ quick_action () { # <action> <file>...
 			# skip explicit signatures; we copy them automatically
 			continue
 			;;
+		*-i686|*-x86_64|*-aarch64)
+			test remove = "$label" || die "Cannot add $path"
+			arch=${file##*-}
+			file=${file%-$arch}
+			file=${file%-[0-9]*-[0-9]*}
+			key=${arch}_msys
+			;;
+		mingw-w64-i686-*|mingw-w64-x86_64-*|mingw-w64-clang-aarch64-*)
+			test remove = "$label" || die "Cannot add $path"
+			arch=${file#mingw-w64-}
+			arch=${arch#clang-}
+			arch=${arch%%-*}
+			file=${file%-any}
+			file=${file%-[0-9]*-[0-9]*}
+			key=${arch}_mingw
+			;;
 		*)
 			echo "Skipping unknown file: $file" >&2
 			continue
@@ -413,7 +429,11 @@ quick_action () { # <action> <file>...
 
 		 # Remove the existing versions from the Git branch
 		 printf '%s\n' $msys $mingw |
-		 sed 's/-[^-]*-[^-]*-[^-]*\.pkg\.tar\.\(xz\|zst\)$/-[0-9]*/' |
+		 sed '/\.pkg\.tar/{
+			s/-[^-]*-[^-]*-[^-]*\.pkg\.tar\.\(xz\|zst\)$/-[0-9]*/
+			b
+		 }
+		 s/$/-[0-9]*/' |
 		 xargs git rm --sparse --cached -- ||
 		 die "Could not remove the existing versions from the Git branch in $arch"
 
