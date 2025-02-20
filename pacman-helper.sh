@@ -431,9 +431,18 @@ quick_action () { # <action> <file>...
 		 printf '%s\n' $msys $mingw |
 		 sed '/\.pkg\.tar/{
 			s/-[^-]*-[^-]*-[^-]*\.pkg\.tar\.\(xz\|zst\)$/-[0-9]*/
-			b
+			b1
 		 }
-		 s/$/-[0-9]*/' |
+		 s/$/-[0-9]*/
+		 :1
+		 p
+		 # Prevent false positives (e.g. deleting `msys2-runtime-3.3` when
+		 # updating `msys2-runtime`) by requiring the suffix to be of the form
+		 # `-<pkgver>-<pkgrel>-<arch><pkgext>`. Sadly, there are no non-greedy
+		 # wildcards, therefore do this via an "exclude pattern" instead:
+		 # `:(exclude)<pkgname>-[0-9]*-*-*-*`
+		 s/$/-*-*-*/
+		 s/^/:(exclude)/' |
 		 xargs git rm --sparse --cached -- ||
 		 die "Could not remove the existing versions from the Git branch in $arch"
 
