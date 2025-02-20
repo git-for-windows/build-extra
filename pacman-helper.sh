@@ -551,7 +551,7 @@ quick_action () { # <action> <file>...
 		sed -n 's/^  "id": *\([0-9]*\).*/\1/p')"
 	fi ||
 	die "Could not create a draft release for tag $tagname"
-	for path in $all_files $dbs
+	for path in $(test remove = "$label" || echo $all_files) $dbs
 	do
 		if test -n "$PACMANDRYRUN"
 		then
@@ -583,7 +583,7 @@ quick_action () { # <action> <file>...
 
 	# Upload the file(s) and the appropriate index(es)
 	(cd "$dir" &&
-	 for path in $all_files $dbs
+	 for path in $(test remove = "$label" || echo $all_files) $dbs
 	 do
 		# The Pacman repository on Azure Blobs still uses the old naming scheme
 		remote_path="$(echo "$path" | sed \
