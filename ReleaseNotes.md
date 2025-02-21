@@ -44,6 +44,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### New Features
 
 * Comes with [OpenSSH v9.9.P2](https://github.com/openssh/openssh-portable/releases/tag/V_9_9_P2).
+* Comes with [PCRE2 v10.45](https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.45).
 
 ## Changes since Git for Windows v2.47.1(2) (January 14th 2025)
 
