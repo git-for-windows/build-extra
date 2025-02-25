@@ -43,6 +43,8 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 Due to persistent maintenance challenges and the community's limited engagement and usage, `git svn` support in Git for Windows will be [phased out](https://github.com/git-for-windows/git/issues/5405) over the next few months.
 
+Git for Windows v2.48.1 was the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive. Only 32-bit MinGit will be built for future versions, [until April 2029](https://gitforwindows.org/32-bit).
+
 ### New Features
 
 * Comes with [OpenSSH v9.9.P2](https://github.com/openssh/openssh-portable/releases/tag/V_9_9_P2).
