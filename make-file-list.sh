@@ -222,7 +222,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/\(mingw\|clang\)[^/]*/itcl/' \
 	-e '^/\(mingw\|clang\)[^/]*/t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(autopoint\|[a-z]*-config\)$' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(asprintf\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13p]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
+	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(asprintf\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(atomic\|charset\|gomp\|systre'"$EXCLUDE_LIBSSP"'\)-[0-9]*\.dll$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\|zip\)[^/]*\.exe$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/recode-sr-latin.exe$' \
@@ -290,7 +290,7 @@ else
 		-e '^/\(mingw\|clang\)[^/]*/bin/libjemalloc\.dll$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/lib\(ffi\|gmp\|gomp\|jansson\|metalink\|minizip\|tasn1\)-.*\.dll$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/libvtv.*\.dll$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/libpcreposix.*\.dll$' \
+		-e '^/\(mingw\|clang\)[^/]*/bin/libpcre\(2-\)\?posix.*\.dll$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/\(.*\.def\|update-ca-trust\)$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/\(openssl\|p11tool\|pkcs1-conv\)\.exe$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/\(psktool\|recode-.*\|sexp.*\|srp.*\)\.exe$' \
