@@ -46,6 +46,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [OpenSSH v9.9.P2](https://github.com/openssh/openssh-portable/releases/tag/V_9_9_P2).
 * Comes with [PCRE2 v10.45](https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.45).
 
+### Bug Fixes
+
+* A change in upstream Git v2.48.0 broke renaming symlinks, which [was fixed](https://github.com/git-for-windows/git/pull/5437).
+
 ## Changes since Git for Windows v2.47.1(2) (January 14th 2025)
 
 Git for Windows v2.48.1 is the last version to ship with the i686 ("32-bit") variant of the installer, portable Git and archive. Only 32-bit MinGit will be built for future versions, [until April 2029](https://gitforwindows.org/32-bit).
