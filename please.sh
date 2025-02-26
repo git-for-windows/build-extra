@@ -3260,6 +3260,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		/usr/bin/msys-unistring*.dll
 		/usr/bin/msys-gnutls*.dll
 
+		# For the /etc/bash.bash_logout check
+		/etc/bash.bash_logout
+
 		# markdown, to render the release notes
 		/usr/bin/markdown
 
