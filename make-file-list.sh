@@ -395,15 +395,19 @@ EOF
 test -z "$MINIMAL_GIT_WITH_BUSYBOX" ||
 echo $MSYSTEM_LOWER/bin/busybox.exe
 
-test -n "$MINIMAL_GIT_WITH_BUSYBOX" || cat <<EOF
-etc/profile
-etc/profile.d/lang.sh
-etc/bash.bash_logout
-etc/bash.bashrc
-etc/msystem
-usr/bin/dash.exe
-usr/bin/getopt.exe
-EOF
+if test -z "$MINIMAL_GIT_WITH_BUSYBOX"
+then
+	cat <<-EOF
+	etc/profile
+	etc/profile.d/lang.sh
+	etc/bash.bashrc
+	etc/msystem
+	usr/bin/dash.exe
+	usr/bin/getopt.exe
+	EOF
+	test ! -f /etc/bash.bash_logout ||
+	echo etc/bash.bash_logout
+fi
 
 EXTRA_DLL_FILES=
 case $MSYSTEM_LOWER in
