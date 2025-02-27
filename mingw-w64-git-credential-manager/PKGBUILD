@@ -13,16 +13,30 @@ pkgdesc="Credential Manager for Git"
 install=git-credential-manager.install
 arch=('any')
 project_url="https://github.com/git-ecosystem/git-credential-manager"
-zip_url="${project_url}/releases/download/${_realtag}/gcm-win-x86-${_realver}.zip"
 src_zip_url="${project_url}/archive/${_realtag}.zip"
 license=('MIT')
 makedepends=('markdown')
 groups=('VCS')
 options=('!strip')
 
-source=("${zip_url}" "$src_zip_url")
+case "$CARCH" in
+i686)
+  zipname="gcm-win-x86-${_realver}.zip"
+  sha256sum=TODO
+  ;;
+x86_64)
+  zipname="gcm-win-x64-${_realver}.zip"
+  sha256sum=TODO
+  ;;
+aarch64)
+  zipname="gcm-win-arm64-${_realver}.zip"
+  sha256sum=TODO
+  ;;
+esac
 
-sha256sums=('bddbc4a051fbfa67d70cd2b89d49229fc1a7788f8a9296da914fb3c42b783d7e'
+source=("${project_url}/releases/download/${_realtag}/$zipname" "$src_zip_url")
+
+sha256sums=("$sha256sum"
             '550f8a8ca88e6519dab6a59e2c1b80c6b1f262e6337bf5b981e133c4e81c0a85')
 
 build() {
