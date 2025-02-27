@@ -546,7 +546,7 @@ quick_action () { # <action> <file>...
 		echo "Would create a GitHub Release '$tagname' at git-for-windows/pacman-repo" >&2
 	else
 		id="$(curl -H "Authorization: Bearer $GITHUB_TOKEN" -sfL --show-error -XPOST -d \
-			'{"tag_name":"'"$tagname"'","draft":true,"prerelease":true}' \
+			'{"tag_name":"'"$tagname"'","name":"'"$tagname"'","draft":true,"prerelease":true}' \
 			"https://api.github.com/repos/git-for-windows/pacman-repo/releases" |
 		sed -n 's/^  "id": *\([0-9]*\).*/\1/p')"
 	fi ||
