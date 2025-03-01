@@ -55,6 +55,7 @@ Git for Windows v2.48.1 was the last version to ship with the i686 ("32-bit") va
 ### Bug Fixes
 
 * A change in upstream Git v2.48.0 broke renaming symlinks, which [was fixed](https://github.com/git-for-windows/git/pull/5437).
+* On a recent Insider Windows version, [users experienced the message: "Cygwin WARNING: Couldn't compute FAST_CWD pointer"](https://github.com/git-for-windows/git/issues/5447), which has been fixed.
 
 ## Changes since Git for Windows v2.47.1(2) (January 14th 2025)
 
