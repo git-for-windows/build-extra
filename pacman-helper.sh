@@ -349,6 +349,7 @@ quick_action () { # <action> <file>...
 	test -z "$GPGKEY" || sign_option=--sign
 	dbs=
 	to_push=
+	>release_notes.txt
 	for arch in $architectures
 	do
 		eval "msys=\$${arch}_msys"
@@ -454,11 +455,16 @@ quick_action () { # <action> <file>...
 				$(printf '%s\n' $msys $mingw | wc -l) \
 				"$(printf '%s\n' $msys $mingw |
 					sed 's/^\(.*\)-\([^-]*-[^-]*\)-[^-]*\.pkg\.tar\.\(xz\|zst\)$/\1 -> \2/')")"
+			printf '%s\n' $msys $mingw |
+			sed 's/^\(.*\)-\([^-]*-[^-]*\)-[^-]*\.pkg\.tar\.\(xz\|zst\)$/* \1 -> \2/' >>release-notes.txt
 			;;
 		 remove)
 			 msg="$(printf 'Remove %s package(s)\n\n%s\n' \
 				$(printf '%s\n' $msys $mingw | wc -l) \
 				"$(printf '%s\n' $msys $mingw)")"
+			printf '%s\n' $msys $mingw |
+			sed 's/^/* dropped /' >>release-notes.txt
+			;;
 		 esac &&
 		 git commit -asm "$msg") ||
 		die "Could not ${label} $msys $mingw to/from db in $arch"
@@ -545,8 +551,9 @@ quick_action () { # <action> <file>...
 	then
 		echo "Would create a GitHub Release '$tagname' at git-for-windows/pacman-repo" >&2
 	else
+		body="$(sed -z 's/[\"]/\\&/g;s/\n/\\n/g' release-notes.txt)"
 		id="$(curl -H "Authorization: Bearer $GITHUB_TOKEN" -sfL --show-error -XPOST -d \
-			'{"tag_name":"'"$tagname"'","name":"'"$tagname"'","draft":true,"prerelease":true}' \
+			'{"tag_name":"'"$tagname"'","name":"'"$tagname"'","body":"'"$body"'","draft":true,"prerelease":true}' \
 			"https://api.github.com/repos/git-for-windows/pacman-repo/releases" |
 		sed -n 's/^  "id": *\([0-9]*\).*/\1/p')"
 	fi ||
