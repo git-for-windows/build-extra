@@ -213,10 +213,12 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	}
 
 	# Enable color and syntax-highlighting in GNU nano
-	test ! -f /etc/nanorc ||
-	grep -q '^set titlecolor' /etc/nanorc ||
-	sed -i -e '/Paint the interface elements/,/root.s .nanorc/s/^# //' \
-		-e 's/^# \(include .*nanorc"\)$/\1/' /etc/nanorc
+	test ! -f /etc/nanorc || {
+		grep -q '^set titlecolor' /etc/nanorc ||
+		sed -i '/Paint the interface elements/,/root.s .nanorc/s/^# //' /etc/nanorc
+		grep -q '^include .*\*\.nanorc' /etc/nanorc ||
+		sed -i 's/^# \(include .*\*\.nanorc"\?\)$/\1/' /etc/nanorc
+	}
 
 	# Do not require /usr/bin/cmd in /usr/bin/start
 	grep -q '^"\$COMSPEC" ' /usr/bin/start ||
