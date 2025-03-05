@@ -19,8 +19,8 @@ install='git-extra.install'
 pkgver() {
   cd "$startdir"
   test ! -f "$(git rev-parse --git-path shallow)" || git -c http.sslbackend fetch --unshallow
-  rev="$(git rev-list -1 HEAD -- .)"
-  test -n "$(git show . |
+  rev="$(git rev-list -1 HEAD -- . ':(exclude)./git-extra.install')"
+  test -n "$(git show . ':(exclude)./git-extra.install' |
     sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]pkgver=/d' -e "/^[-+] *'[0-9a-f]\{64\}'$/d" -e '/^[-+]/p')" ||
   rev="$(git rev-list -1 $rev^ -- .)"
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $rev -- .)" \
