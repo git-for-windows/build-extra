@@ -86,7 +86,7 @@ GITATTRIBUTES
 	grep -q "$otherpacman" etc/pacman.conf ||
 	sed -i -e '/^\[mingw32\]/i['$otherpacman']\nServer = https://wingit.blob.core.windows.net/'$otherarch'\n' etc/pacman.conf
 
-	test -z "$(find /clangarm64 -type f -print -quit)" || # if /clangarm64 exists and contains at least one file
+	test -z "$(find /clangarm64 -type f -print -quit 2>/dev/null)" || # if /clangarm64 exists and contains at least one file
 	grep -q "git-for-windows-aarch64" etc/pacman.conf || # then add Git for Windows' aarch64 repository (unless it's already added)
 	sed -i -e '/^\[clangarm64]/i[git-for-windows-aarch64]\nServer = https://wingit.blob.core.windows.net/aarch64\n' etc/pacman.conf
 
@@ -213,10 +213,12 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	}
 
 	# Enable color and syntax-highlighting in GNU nano
-	test ! -f /etc/nanorc ||
-	grep -q '^set titlecolor' /etc/nanorc ||
-	sed -i -e '/Paint the interface elements/,/root.s .nanorc/s/^# //' \
-		-e 's/^# \(include .*nanorc"\)$/\1/' /etc/nanorc
+	test ! -f /etc/nanorc || {
+		grep -q '^set titlecolor' /etc/nanorc ||
+		sed -i '/Paint the interface elements/,/root.s .nanorc/s/^# //' /etc/nanorc
+		grep -q '^include .*\*\.nanorc' /etc/nanorc ||
+		sed -i 's/^# \(include .*\*\.nanorc"\?\)$/\1/' /etc/nanorc
+	}
 
 	# Do not require /usr/bin/cmd in /usr/bin/start
 	grep -q '^"\$COMSPEC" ' /usr/bin/start ||
