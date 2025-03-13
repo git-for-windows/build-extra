@@ -35,8 +35,6 @@ Should you encounter other problems, please first search [the bug tracker](https
 ## Licenses
 Git is licensed under the GNU General Public License version 2.
 
-Git for Windows also contains Embedded CAcert Root Certificates. For more information please go to [https://www.cacert.org/policy/RootDistributionLicense.php](https://www.cacert.org/policy/RootDistributionLicense.php).
-
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
 ## Changes since Git for Windows v2.48.1 (February 13th 2025)
