@@ -45,6 +45,7 @@ Git for Windows v2.48.1 was the last version to ship with the i686 ("32-bit") va
 
 ### New Features
 
+* Comes with [Git v2.49.0](https://github.com/git/git/blob/v2.49.0/Documentation/RelNotes/2.49.0.txt).
 * Comes with [OpenSSH v9.9.P2](https://github.com/openssh/openssh-portable/releases/tag/V_9_9_P2).
 * Comes with [PCRE2 v10.45](https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.45).
 * The previously-experimental `--full-name-hash` option has been accepted into upstream Git as `--name-hash-version=2` and is no longer experimental.
