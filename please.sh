@@ -2689,8 +2689,8 @@ finalize () { # [--delete-existing-tag] <what, e.g. release-notes>
 			"$sdk64"/usr/src/build-extra/ReleaseNotes.md
 		then
 			url=https://github.com/git/git/blob/$v &&
-			txt="$(echo "${v#v}" | sed 's/-rc[0-9]*$//').txt" &&
-			url=$url/Documentation/RelNotes/$txt &&
+			adoc="$(echo "${v#v}" | sed 's/-rc[0-9]*$//').adoc" &&
+			url=$url/Documentation/RelNotes/$adoc &&
 			mention feature 'Comes with [Git '$v']('$url').'
 		fi ||
 		die "Could not mention that Git was upgraded to $v\n"
