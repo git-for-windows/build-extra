@@ -13,7 +13,7 @@
 #undef APP_VERSION
 #define APP_VERSION   'Snapshot'
 #endif
-#define APP_CONTACT_URL 'https://github.com/git-for-windows/git/wiki/Contact'
+#define APP_CONTACT_URL 'https://gitforwindows.org/contact'
 #define APP_URL       'https://gitforwindows.org/'
 #define APP_BUILTINS  'share\git\builtins.txt'
 
@@ -147,7 +147,7 @@ Name: {group}\Git GUI; Filename: {app}\cmd\git-gui.exe; Parameters: ""; WorkingD
 Name: {group}\Git Bash; Filename: {app}\git-bash.exe; Parameters: "--cd-to-home"; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 Name: {group}\Git CMD; Filename: {app}\git-cmd.exe; Parameters: "--cd-to-home"; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 Name: {group}\Git Release Notes; Filename: {app}\ReleaseNotes.html; Parameters: ""; WorkingDir: %HOMEDRIVE%%HOMEPATH%; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
-Name: {group}\Git FAQs (Frequently Asked Questions); Filename: https://github.com/git-for-windows/git/wiki/FAQ; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
+Name: {group}\Git FAQs (Frequently Asked Questions); Filename: https://gitforwindows.org/faq; IconFilename: {app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 
 [Messages]
 BeveledLabel={#APP_URL}
@@ -1336,7 +1336,7 @@ procedure OpenSymlinksWikiPage(Sender:TObject);
 var
   ExitStatus:Integer;
 begin
-  ShellExec('','https://github.com/git-for-windows/git/wiki/Symbolic-Links','','',SW_SHOW,ewNoWait,ExitStatus);
+  ShellExec('','https://gitforwindows.org/symbolic-links','','',SW_SHOW,ewNoWait,ExitStatus);
 end;
 
 function IsOriginalUserAdmin():Boolean;
@@ -2441,7 +2441,7 @@ begin
     RdbExtraOptions[GP_FSCache].Checked:=ReplayChoice('Performance Tweaks FSCache','Enabled')<>'Disabled';
 
     // 2nd option
-    RdbExtraOptions[GP_Symlinks]:=CreateCheckBox(ExtraOptionsPage,'Enable symbolic links','Enable <A HREF=https://github.com/git-for-windows/git/wiki/Symbolic-Links>symbolic links</A> (requires the SeCreateSymbolicLink permission).'+#13+'Please note that existing repositories are unaffected by this setting.',TabOrder,Top,Left);
+    RdbExtraOptions[GP_Symlinks]:=CreateCheckBox(ExtraOptionsPage,'Enable symbolic links','Enable <A HREF=https://gitforwindows.org/symbolic-links>symbolic links</A> (requires the SeCreateSymbolicLink permission).'+#13+'Please note that existing repositories are unaffected by this setting.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install, or auto-detect
     // by running `mklink` (unless started as administrator, in which case that

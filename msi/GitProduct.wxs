@@ -21,7 +21,7 @@
 
     <!-- Add/Remove Programs Properties -->
     <Property Id='ARPNOMODIFY' Value='1' />
-    <Property Id='ARPCONTACT' Value='https://github.com/git-for-windows/git/wiki/Contact' />
+    <Property Id='ARPCONTACT' Value='https://gitforwindows.org/contact' />
     <Property Id='ARPURLINFOABOUT' Value='https://gitforwindows.org/' />
     <Property Id='ARPPRODUCTICON' Value='git.ico' />
     <SetProperty Id='ARPINSTALLLOCATION' Value='[INSTALLFOLDER]' After='CostFinalize' />
