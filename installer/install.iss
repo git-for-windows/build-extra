@@ -240,7 +240,7 @@ Type: dirifempty; Name: {app}\cmd
 ; Delete copied *.dll files
 Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\*.dll
 
-; Delete the dynamical generated MSYS2 files
+; Delete the dynamically-generated MSYS2 files
 Type: files; Name: {app}\etc\hosts
 Type: files; Name: {app}\etc\mtab
 Type: files; Name: {app}\etc\networks
