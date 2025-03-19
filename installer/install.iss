@@ -235,11 +235,12 @@ Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\git.exe
 
 ; Delete git-lfs wrapper
 Type: files; Name: {app}\cmd\git-lfs.exe
+Type: dirifempty; Name: {app}\cmd
 
 ; Delete copied *.dll files
 Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\*.dll
 
-; Delete the dynamical generated MSYS2 files
+; Delete the dynamically-generated MSYS2 files
 Type: files; Name: {app}\etc\hosts
 Type: files; Name: {app}\etc\mtab
 Type: files; Name: {app}\etc\networks
@@ -268,19 +269,19 @@ Type: files; Name: {app}\bin\msys-2.0.dll
 Type: files; Name: {app}\bin\rebase.exe
 Type: dirifempty; Name: {app}\bin
 Type: files; Name: {app}\etc\rebase.db.i386
-Type: dirifempty; Name: {app}\etc
 #endif
 
 ; Delete recorded install options
 Type: files; Name: {app}\etc\install-options.txt
-Type: dirifempty; Name: {app}\etc
 Type: dirifempty; Name: {app}\{#MINGW_BITNESS}\libexec\git-core
 Type: dirifempty; Name: {app}\{#MINGW_BITNESS}\libexec
 Type: dirifempty; Name: {app}\{#MINGW_BITNESS}
 Type: dirifempty; Name: {app}
 
-; Delete Git Bash options
+; Delete Git Bash options and the system config
 Type: files; Name: {app}\etc\git-bash.config
+Type: files; Name: {app}\etc\gitconfig
+Type: dirifempty; Name: {app}\etc
 
 ; Delete Windows Terminal profile fragments
 Type: files; Name: {commonappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json
@@ -3135,6 +3136,8 @@ begin
     }
 
     WizardForm.StatusLabel.Caption:='Creating some Cygwin symlinks';
+    if (not ForceDirectories(AppDir+'\dev')) then
+        LogError('Failed to create /dev; continuing anyway');
     CreateCygwinSymlink(AppDir+'\dev\fd','/proc/self/fd');
     CreateCygwinSymlink(AppDir+'\dev\stdin','/proc/self/fd/0');
     CreateCygwinSymlink(AppDir+'\dev\stdout','/proc/self/fd/1');
