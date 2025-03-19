@@ -269,12 +269,10 @@ Type: files; Name: {app}\bin\msys-2.0.dll
 Type: files; Name: {app}\bin\rebase.exe
 Type: dirifempty; Name: {app}\bin
 Type: files; Name: {app}\etc\rebase.db.i386
-Type: dirifempty; Name: {app}\etc
 #endif
 
 ; Delete recorded install options
 Type: files; Name: {app}\etc\install-options.txt
-Type: dirifempty; Name: {app}\etc
 Type: dirifempty; Name: {app}\{#MINGW_BITNESS}\libexec\git-core
 Type: dirifempty; Name: {app}\{#MINGW_BITNESS}\libexec
 Type: dirifempty; Name: {app}\{#MINGW_BITNESS}
@@ -282,6 +280,7 @@ Type: dirifempty; Name: {app}
 
 ; Delete Git Bash options
 Type: files; Name: {app}\etc\git-bash.config
+Type: dirifempty; Name: {app}\etc
 
 ; Delete Windows Terminal profile fragments
 Type: files; Name: {commonappdata}\Microsoft\Windows Terminal\Fragments\Git\git-bash.json
