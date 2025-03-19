@@ -3136,6 +3136,8 @@ begin
     }
 
     WizardForm.StatusLabel.Caption:='Creating some Cygwin symlinks';
+    if (not ForceDirectories(AppDir+'\dev')) then
+        LogError('Failed to create /dev; continuing anyway');
     CreateCygwinSymlink(AppDir+'\dev\fd','/proc/self/fd');
     CreateCygwinSymlink(AppDir+'\dev\stdin','/proc/self/fd/0');
     CreateCygwinSymlink(AppDir+'\dev\stdout','/proc/self/fd/1');
