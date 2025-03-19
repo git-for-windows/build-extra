@@ -8,7 +8,7 @@ These release notes describe issues specific to the Git for Windows release. The
 See [http://git-scm.com/](http://git-scm.com/) for further details about Git including ports to other operating systems. Git for Windows is hosted at [https://gitforwindows.org/](https://gitforwindows.org/).
 
 # Known issues
-* On Windows 10 before 1703, or when Developer Mode is turned off, special permissions are required when cloning repositories with symbolic links, therefore support for symbolic links is disabled by default. Use `git clone -c core.symlinks=true <URL>` to enable it, see details [here](https://github.com/git-for-windows/git/wiki/Symbolic-Links).
+* On Windows 10 before 1703, or when Developer Mode is turned off, special permissions are required when cloning repositories with symbolic links, therefore support for symbolic links is disabled by default. Use `git clone -c core.symlinks=true <URL>` to enable it, see details [here](https://gitforwindows.org/symbolic-links).
 * If configured to use Plink, you will have to connect with [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/) first and accept the host key.
 * Some console programs, most notably non-MSYS2 Python, PHP, Node and OpenSSL, interact correctly with MinTTY only when called through `winpty` (e.g. the Python console needs to be started as `winpty python` instead of just `python`).
 * If you specify command-line options starting with a slash, POSIX-to-Windows path conversion will kick in converting e.g. "`/usr/bin/bash.exe`" to "`C:\Program Files\Git\usr\bin\bash.exe`". When that is not desired -- e.g. "`--upload-pack=/opt/git/bin/git-upload-pack`" or "`-L/regex/`" -- you need to set the environment variable `MSYS_NO_PATHCONV` temporarily, like so:
@@ -30,7 +30,7 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
 
   Alternatively, you can disable Mandatory ASLR completely in Windows Exploit protection.
 
-Should you encounter other problems, please first search [the bug tracker](https://github.com/git-for-windows/git/issues) (also look at the closed issues) and [the mailing list](http://groups.google.com/group/git-for-windows), chances are that the problem was reported already. Also make sure that you use an up to date Git for Windows version (or a [current snapshot build](https://gitforwindows.org/git-snapshots/)). If it has not been reported yet, please follow [our bug reporting guidelines](https://github.com/git-for-windows/git/wiki/Issue-reporting-guidelines) and [report the bug](https://github.com/git-for-windows/git/issues/new).
+Should you encounter other problems, please first search [the bug tracker](https://github.com/git-for-windows/git/issues) (also look at the closed issues) and [the mailing list](http://groups.google.com/group/git-for-windows), chances are that the problem was reported already. Also make sure that you use an up to date Git for Windows version (or a [current snapshot build](https://gitforwindows.org/git-snapshots/)). If it has not been reported yet, please follow [our bug reporting guidelines](https://gitforwindows.org/issue-reporting-guidelines) and [report the bug](https://github.com/git-for-windows/git/issues/new).
 
 ## Licenses
 Git is licensed under the GNU General Public License version 2.
@@ -626,7 +626,7 @@ Git for Windows will also stop supporting Windows Vista soon after Git for Windo
 
 ## Changes since Git for Windows v2.35.3 (April 15th 2022)
 
-This version includes Git LFS v3.1.4, addressing [CVE-2022-24826](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-6rw3-3whw-jvjj) (if you use Git LFS with [MinGit](https://github.com/git-for-windows/git/wiki/MinGit), you will want to upgrade).
+This version includes Git LFS v3.1.4, addressing [CVE-2022-24826](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-6rw3-3whw-jvjj) (if you use Git LFS with [MinGit](https://gitforwindows.org/mingit), you will want to upgrade).
 
 ### Upcoming breaking changes
 
@@ -1622,7 +1622,7 @@ Note: there have been MinGit-only releases v2.12.2(3) and v2.13.1(3) with backpo
 * Comes with [Git Credential Manager v1.12.0](https://github.com/Microsoft/Git-Credential-Manager-for-Windows/releases/tag/v1.12.0).
 * It is now possible to switch between Secure Channel and OpenSSL for Git's HTTPS transport by [setting the `http.sslBackend` config variable to "openssl" or "schannel"](https://github.com/git-for-windows/git/commit/d81216ee4dd46ae59a388044d1266d6fa9030c19); This [is now also the method used by the installer](https://github.com/git-for-windows/build-extra/commit/7c5a23970126e3cff1e1a7a763216b2a67005593) (rather than copying `libcurl-4.dll` files around).
 * The experimental option [`--show-ignored-directory` was added to `git status`](https://github.com/git-for-windows/git/pull/1243) to show only the name of ignored directories when the option `--untracked=all` is used.
-* Git for Windows releases now also include an experimental [BusyBox-based MinGit](https://github.com/git-for-windows/git/wiki/MinGit#experimental-busybox-based-mingit).
+* Git for Windows releases now also include an experimental [BusyBox-based MinGit](https://gitforwindows.org/mingit#experimental-busybox-based-mingit).
 
 ### Bug Fixes
 
@@ -2209,7 +2209,7 @@ Git for windows v2.10.1(2) was a MinGit-only release (i.e. there was no Git for 
 ### Bug Fixes
 
 * The MSYS2 runtime was taught [not to look hard for groups](https://github.com/git-for-windows/git/issues/193), speeding up *Git Bash*'s startup time.
-* A [work around](https://github.com/git-for-windows/git/issues/361) was added for [issues](https://github.com/git-for-windows/git/wiki/32-bit-issues) when installing 32-bit Git for Windows on 64-bit Windows 10.
+* A [work around](https://github.com/git-for-windows/git/issues/361) was added for [issues](https://gitforwindows.org/32-bit-issues) when installing 32-bit Git for Windows on 64-bit Windows 10.
 * The installer [no longer freezes](https://github.com/git-for-windows/git/issues/351) when there are interactive commands in the user's `.profile`.
 * `git rebase --skip` [was speeded up again](https://github.com/git-for-windows/git/issues/365).
 * The redirector in `/bin/bash.exe` now adjusts the `PATH` environment variable correctly (i.e. so that Git's executables are found) before launching the *real* Bash, even when called without `--login`.
