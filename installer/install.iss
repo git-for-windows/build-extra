@@ -235,6 +235,7 @@ Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\git.exe
 
 ; Delete git-lfs wrapper
 Type: files; Name: {app}\cmd\git-lfs.exe
+Type: dirifempty; Name: {app}\cmd
 
 ; Delete copied *.dll files
 Type: files; Name: {app}\{#MINGW_BITNESS}\libexec\git-core\*.dll
