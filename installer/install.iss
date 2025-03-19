@@ -278,8 +278,9 @@ Type: dirifempty; Name: {app}\{#MINGW_BITNESS}\libexec
 Type: dirifempty; Name: {app}\{#MINGW_BITNESS}
 Type: dirifempty; Name: {app}
 
-; Delete Git Bash options
+; Delete Git Bash options and the system config
 Type: files; Name: {app}\etc\git-bash.config
+Type: files; Name: {app}\etc\gitconfig
 Type: dirifempty; Name: {app}\etc
 
 ; Delete Windows Terminal profile fragments
