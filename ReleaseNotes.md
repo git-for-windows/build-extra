@@ -42,6 +42,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### New Features
 
 * Comes with [MinTTY v3.7.8](https://github.com/mintty/mintty/releases/tag/3.7.8).
+* Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.0](https://cygwin.com/pipermail/cygwin-announce/2025-March/012224.html).
 
 ## Changes since Git for Windows v2.48.1 (February 13th 2025)
 
