@@ -44,6 +44,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [MinTTY v3.7.8](https://github.com/mintty/mintty/releases/tag/3.7.8).
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.0](https://cygwin.com/pipermail/cygwin-announce/2025-March/012224.html).
 
+### Bug Fixes
+
+* On Windows Server 2022, Git v2.48.1 introduced a regression where it [failed to write files on ReFS drives](https://github.com/git-for-windows/git/issues/5427), which was [fixed](https://github.com/git-for-windows/git/pull/5515).
+
 ## Changes since Git for Windows v2.48.1 (February 13th 2025)
 
 Due to persistent maintenance challenges and the community's limited engagement and usage, `git svn` support in Git for Windows will be [phased out](https://github.com/git-for-windows/git/issues/5405) over the next few months.
