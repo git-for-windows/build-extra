@@ -72,17 +72,23 @@ jobs:
       check-for-missing-dlls: ${{ steps.set-matrix.outputs.check-for-missing-dlls }}
   build-packages:
     needs: determine-packages
-    runs-on: windows-latest
     if: needs.determine-packages.outputs.matrix != '[""]'
     strategy:
       fail-fast: false
       matrix:
         directory: ${{ fromJSON(needs.determine-packages.outputs.matrix) }}
+        architecture:
+          - name: x86_64
+            runner: windows-latest
+          - name: aarch64
+            runner: windows-11-arm
+    runs-on: ${{ matrix.architecture.runner }}
     steps:
       - uses: actions/checkout@v4
       - uses: git-for-windows/setup-git-for-windows-sdk@v1
         with:
           flavor: full
+          architecture: ${{ matrix.architecture.name }}
       - name: build ${{ matrix.directory }}
         id: build
         shell: bash
@@ -112,31 +118,42 @@ jobs:
           fi
   build-artifacts:
     needs: determine-packages
-    runs-on: windows-latest
     if: needs.determine-packages.outputs.artifacts != '[""]'
     strategy:
       fail-fast: false
       matrix:
         directory: ${{ fromJSON(needs.determine-packages.outputs.artifacts) }}
+        architecture:
+          - name: x86_64
+            runner: windows-latest
+            git-sdk: git-sdk-64
+            mingw-prefix: mingw64
+            msystem: MINGW64
+          - name: aarch64
+            runner: windows-11-arm
+            git-sdk: git-sdk-arm64
+            mingw-prefix: clangarm64
+            msystem: CLANGARM64
+    runs-on: ${{ matrix.architecture.runner }}
     steps:
       - uses: actions/checkout@v4
       - name: initialize bare SDK clone
         shell: bash
         run: |
           git clone --bare --depth=1 --single-branch --branch=main --filter=blob:none \
-            https://github.com/git-for-windows/git-sdk-64 .sdk
+            https://github.com/git-for-windows/${{ matrix.architecture.git-sdk }} .sdk
       - name: build build-installers-64 artifact
         shell: bash
         run: |
           ./please.sh create-sdk-artifact \
-            --architecture=x86_64 \
+            --architecture=${{ matrix.architecture.name }} \
             --sdk=.sdk \
             --out=sdk-artifact \
             build-installers &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin/core_perl" >>$GITHUB_PATH &&
           cygpath -aw "$PWD/sdk-artifact/usr/bin" >>$GITHUB_PATH &&
-          cygpath -aw "$PWD/sdk-artifact/mingw64/bin" >>$GITHUB_PATH &&
-          echo "MSYSTEM=MINGW64" >>$GITHUB_ENV
+          cygpath -aw "$PWD/sdk-artifact/${{ matrix.architecture.mingw-prefix }}/bin" >>$GITHUB_PATH &&
+          echo "MSYSTEM=${{ matrix.architecture.msystem }}" >>$GITHUB_ENV
       - name: build ${{ matrix.directory }}/
         shell: bash
         id: build
@@ -161,7 +178,7 @@ jobs:
             exit 1
           }
           "$env:ProgramFiles\Git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
-          "$env:ProgramFiles\Git\mingw64\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+          "$env:ProgramFiles\Git\${{ matrix.architecture.mingw-prefix }}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
       - name: show installer log
         # run this even if the installation failed (actually, _in particular_ when the installation failed)
         if: always() && matrix.directory == 'installer'
@@ -195,7 +212,7 @@ jobs:
           }
           Get-ChildItem -Path "portable-git"
           "$PWD\portable-git\usr\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
-          "$PWD\portable-git\mingw64\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
+          "$PWD\portable-git\${{ matrix.architecture.mingw-prefix }}\bin" | Out-File -Encoding ascii -Append $env:GITHUB_PATH
       - name: validate
         if: matrix.directory == 'portable'
         shell: bash
@@ -208,7 +225,6 @@ jobs:
   sdk-artifacts:
     needs: determine-packages
     if: needs.determine-packages.outputs.test-sdk-artifacts == 'true'
-    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
@@ -218,10 +234,17 @@ jobs:
             mingw-prefix: mingw32
             msystem: MINGW32
             sdk-repo: git-sdk-32
+            runner: windows-latest
           - name: x86_64
             mingw-prefix: mingw64
             msystem: MINGW64
             sdk-repo: git-sdk-64
+            runner: windows-latest
+          - name: aarch64
+            mingw-prefix: clangarm64
+            msystem: CLANGARM64
+            sdk-repo: git-sdk-arm64
+            runner: windows-11-arm
         exclude:
           - artifact: minimal
             arch:
@@ -235,6 +258,7 @@ jobs:
               mingw-prefix: mingw32
               msystem: MINGW32
               sdk-repo: git-sdk-32
+    runs-on: ${{ matrix.arch.runner }}
     steps:
       - uses: actions/checkout@v4
       - name: initialize bare SDK clone
@@ -322,7 +346,6 @@ jobs:
   check-for-missing-dlls:
     needs: determine-packages
     if: needs.determine-packages.outputs.test-sdk-artifacts == 'true' || needs.determine-packages.outputs.check-for-missing-dlls == 'true'
-    runs-on: windows-latest
     strategy:
       fail-fast: false
       matrix:
@@ -331,10 +354,18 @@ jobs:
             mingw-prefix: mingw32
             msystem: MINGW32
             sdk-repo: git-sdk-32
+            runner: windows-latest
           - name: x86_64
             mingw-prefix: mingw64
             msystem: MINGW64
             sdk-repo: git-sdk-64
+            runner: windows-latest
+          - name: aarch64
+            mingw-prefix: clangarm64
+            msystem: CLANGARM64
+            sdk-repo: git-sdk-arm64
+            runner: windows-11-arm
+    runs-on: ${{ matrix.arch.runner }}
     steps:
       - uses: actions/checkout@v4
       - name: initialize bare SDK clone

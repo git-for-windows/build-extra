@@ -22,15 +22,25 @@ die "Could not enumerate system .dll files"
 LF='
 '
 
-ARCH="$(uname -m)" ||
-die "Could not determine architecture"
+if test -z "$MINGW_PREFIX"
+then
+	case "$MSYSTEM" in
+	MINGW64) MINGW_PREFIX=mingw64;;
+	CLANGARM64) MINGW_PREFIX=clangarm64;;
+	MINGW32) MINGW_PREFIX=mingw32;;
+	*)
+		ARCH="$(uname -m)" ||
+		die "Could not determine architecture"
 
-case "$ARCH" in
-i686) MINGW_PREFIX=mingw32;;
-x86_64) MINGW_PREFIX=mingw64;;
-aarch64) MINGW_PREFIX=clangarm64;;
-*) die "Unhandled architecture: $ARCH";;
-esac
+		case "$ARCH" in
+		i686) MINGW_PREFIX=mingw32;;
+		x86_64) MINGW_PREFIX=mingw64;;
+		aarch64) MINGW_PREFIX=clangarm64;;
+		*) die "Unhandled architecture: $ARCH";;
+		esac
+		;;
+	esac
+fi
 
 if test -t 2
 then
