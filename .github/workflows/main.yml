@@ -96,7 +96,7 @@ jobs:
           top_dir=$PWD &&
           cd "${{ matrix.directory }}" &&
           MAKEFLAGS=-j8 makepkg-mingw -s --noconfirm &&
-          artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
+          artifacts="$(basename "${{ matrix.directory }}")-artifacts-${{ matrix.architecture.name }}" &&
           mkdir -p "$top_dir/$artifacts" &&
           mv *.tar.* "$top_dir/$artifacts"/ &&
           echo "result=$artifacts" >>$GITHUB_OUTPUT
@@ -158,7 +158,7 @@ jobs:
         shell: bash
         id: build
         run: |
-          artifacts="$(basename "${{ matrix.directory }}")-artifacts" &&
+          artifacts="$(basename "${{ matrix.directory }}")-artifacts-${{ matrix.architecture.name }}" &&
           mkdir -p "$artifacts" &&
           ./"${{ matrix.directory }}"/release.sh --output="$PWD/$artifacts/" 0-test &&
           echo "result=$artifacts" >>$GITHUB_OUTPUT
