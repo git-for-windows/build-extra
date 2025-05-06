@@ -2151,7 +2151,7 @@ begin
     DefaultBranchPage:=CreatePage(PrevPageID,'Adjusting the name of the initial branch in new repositories','What would you like Git to name the initial branch after "git init"?',TabOrder,Top,Left);
 
     // 1st choice
-    RdbDefaultBranch[DB_Unspecified]:=CreateRadioButton(DefaultBranchPage,'Let Git decide','Let Git use its default branch name (currently: "{#DEFAULT_BRANCH_NAME}") for the initial branch'+#13+'in newly created repositories. The Git project <A HREF=https://sfconservancy.org/news/2020/jun/23/gitbranchname/>intends</A> to change this default to'+#13+'a more inclusive name in the near future.',TabOrder,Top,Left);
+    RdbDefaultBranch[DB_Unspecified]:=CreateRadioButton(DefaultBranchPage,'Let Git decide','Let Git use its default branch name (currently: "{#DEFAULT_BRANCH_NAME}") for the initial branch'+#13+'in newly created repositories.',TabOrder,Top,Left);
     RdbDefaultBranch[DB_Unspecified].OnClick:=@DefaultBranchOptionChanged;
 
     // 2nd choice
