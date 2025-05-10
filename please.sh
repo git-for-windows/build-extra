@@ -2792,7 +2792,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 		"${this_script_path%/*}")/}"cached-source-packages
 	test -n "$unpack" ||
 	unpack=$dir/.unpack
-	url=https://wingit.blob.core.windows.net
+	url=https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads
 
 	mkdir -p "$dir" ||
 	die "Could not create '%s'\n" "$dir"
@@ -2803,7 +2803,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 
 		case $arch in
 			x86_64)
-				oarch=x86-64
+				oarch=x86_64
 				pacman_arch=x86_64
 				artifact_suffix=64-bit
 				;;
