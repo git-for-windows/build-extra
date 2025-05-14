@@ -52,4 +52,36 @@ if has("autocmd")
       autocmd Filetype diff
       \ highlight WhiteSpaceEOL ctermbg=red |
       \ match WhiteSpaceEOL /\(^+.*\)\@<=\s\+$/
+
+      " When Git starts up, it prepends its libexec dir to PATH to allow it to
+      " find external commands.
+      "
+      " Thus, if Vim is invoked via a Git process (such as the contrib git-jump,
+      " or any other usage of GIT_EDITOR/VISUAL/EDITOR in Git commands, be they
+      " scripts or internals--with the exception of manually invoking the script
+      " yourself, without using Git: sh .../git-jump), $PATH will contain
+      " something like libexec/git-core.
+      "
+      " We don't generally want it in Vim's $PATH, though, as it is passed down
+      " to *all* subprocesses, including shells started with :terminal or
+      " :shell.
+      function s:fix_git_path() abort
+          let slash = exists('+shellslash') && !&shellslash ? '\\' : '/'
+          let git_core_base = printf('%slib\%%(exec\)\?%sgit-core', slash, slash)
+          " optimization: early return
+          if $PATH !~# git_core_base
+              return
+          endif
+          let path_sep = has('win32') ? ';' : ':'
+          let new_path = split($PATH, path_sep)
+                      \ ->filter({_, d -> d !~# git_core_base..'$' })
+                      \ ->join(path_sep)
+          let $PATH = new_path
+      endfunction
+
+      augroup fix_git_path
+          autocmd!
+          autocmd VimEnter * call s:fix_git_path()
+      augroup end
+
 endif " has("autocmd")
