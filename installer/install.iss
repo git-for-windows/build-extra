@@ -348,8 +348,9 @@ const
     GE_VSCodium                 = 7;
     GE_Notepad                  = 8;
     GE_Wordpad                  = 9;
-    GE_CustomEditor             = 10;
-    GE_MaxEditor                = 10;
+    GE_MicrosoftEdit            = 10;
+    GE_CustomEditor             = 11;
+    GE_MaxEditor                = 11;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -472,6 +473,7 @@ var
     SublimeTextPath:String;
     AtomPath:String;
     VSCodiumPath:String;
+    MicrosoftEditPath:String;
     CustomEditorPath:String;
     CustomEditorOptions:String;
 
@@ -1884,6 +1886,11 @@ begin
     Result:=ExtractFilePath(ExtractCommandPath(Command)) + Suffix;
 end;
 
+function GetMicrosoftEditPath:String;
+begin
+    Result:=ExpandConstant('{localappdata}\Microsoft\WinGet\Packages\Microsoft.Edit_Microsoft.Winget.Source_8wekyb3d8bbwe\edit-1.0.0-x86_64-windows\edit.exe');
+end;
+
 procedure QueryUninstallValues; forward;
 
 function IsHiddenExperimentalOptionsPageEmpty:Boolean;
@@ -1987,6 +1994,10 @@ begin
         VSCodiumUserInstallation:=True;
     end;
 
+    // Edit is only available via WinGet at the moment so we can only check that location
+    MicrosoftEditPath:=GetMicrosoftEditPath();
+    EditorAvailable[GE_MicrosoftEdit]:=PathIsValidExecutable(MicrosoftEditPath);
+
     // Remove `" %1"` from end and unqote the string.
     if (EditorAvailable[GE_VisualStudioCode]) then
         VisualStudioCodePath:=ExtractCodeCLIPath(VisualStudioCodePath, 'bin\code');
@@ -2068,6 +2079,11 @@ begin
     CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Wordpad is a basic word processor that comes with Windows.'+#13+'It can also be used as a text editor.',Top,Left,LblEditor[GE_Wordpad],False);
     EditorAvailable[GE_Wordpad]:=True;
 
+    // 11th choice
+    Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use Microsoft Edit as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://github.com/microsoft/edit>Edit</A> is an open source terminal-based text editor which is based on the'+#13+'classic MS-DOS text editor.'+#13+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>',Top,Left,LblEditor[GE_MicrosoftEdit],False);
+
     // Custom choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Select other editor as Git'+#39+'s default editor');
@@ -2130,6 +2146,12 @@ begin
         end;
     'Notepad': CbbEditor.ItemIndex:=GE_Notepad;
     'Wordpad': CbbEditor.ItemIndex:=GE_Wordpad;
+    'MicrosoftEdit': begin
+            if EditorAvailable[GE_MicrosoftEdit] then
+                CbbEditor.ItemIndex:=GE_MicrosoftEdit
+            else
+                CbbEditor.ItemIndex:=GE_VIM;
+        end;
     'CustomEditor': begin
             CbbEditor.ItemIndex:=GE_CustomEditor;
             EditorPage.Values[0]:=ReplayChoice('Custom Editor Path','');
@@ -3572,6 +3594,8 @@ begin
         GitSystemConfigSet('core.editor','notepad')
     else if (CbbEditor.ItemIndex=GE_Wordpad) then
         GitSystemConfigSet('core.editor','wordpad')
+    else if (CbbEditor.ItemIndex=GE_MicrosoftEdit) then
+        GitSystemConfigSet('core.editor','edit')
     else if ((CbbEditor.ItemIndex=GE_CustomEditor)) and (PathIsValidExecutable(CustomEditorPath)) then
         GitSystemConfigSet('core.editor','"'+CustomEditorPath+'" '+CustomEditorOptions);
 
@@ -3642,6 +3666,8 @@ begin
         Data:='Notepad';
     end else if (CbbEditor.ItemIndex=GE_Wordpad) then begin
         Data:='Wordpad';
+    end else if (CbbEditor.ItemIndex=GE_MicrosoftEdit) then begin
+        Data:='MicrosoftEdit';
     end else if (CbbEditor.ItemIndex=GE_CustomEditor) then begin
         Data:='CustomEditor'
         CustomEditorData:=EditorPage.Values[0];
