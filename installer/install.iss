@@ -1731,7 +1731,10 @@ begin
         Exit;
     end;
 
-    TmpFile:=ExpandConstant('{tmp}\editor-test.txt');
+    // We are _not_ writing into the `{tmp}` directory, because it is private to the
+    // elevated process and cannot be written to by the non-elevated editor.
+    // Instead, we write _next_ to the `{tmp}` directory.
+    TmpFile:=ExpandConstant('{tmp}-editor-test.txt');
     InputText:='Please modify this text, e.g. delete it, then save it and exit the editor.'
     SaveStringToFile(TmpFile,InputText,False);
 
@@ -1744,17 +1747,20 @@ begin
     if not ShellExecAsOriginalUser('',CustomEditorPath,CustomEditorOptions+' "'+TmpFile+'"','',Show,ewWaitUntilTerminated,Res) then begin
         Wizardform.NextButton.Enabled:=False;
         SuppressibleMsgBox('Could not launch: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
+        DeleteFile(TmpFile); // ignore errors, if any
         Exit;
     end;
     if (Res<>0) then begin
         Wizardform.NextButton.Enabled:=False;
         SuppressibleMsgBox('Exited with failure: "'+CustomEditorPath+'"',mbError,MB_OK,IDOK);
+        DeleteFile(TmpFile); // ignore errors, if any
         Exit;
     end;
 
     if not LoadStringFromFile(TmpFile,OutputText) then begin
         Wizardform.NextButton.Enabled:=False;
         SuppressibleMsgBox('Could not read "'+TmpFile+'"',mbError,MB_OK,IDOK);
+        DeleteFile(TmpFile); // ignore errors, if any
         Exit;
     end;
 
