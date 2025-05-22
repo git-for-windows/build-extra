@@ -51,6 +51,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * On Windows Server 2022, Git v2.48.1 introduced a regression where it [failed to write files on ReFS drives](https://github.com/git-for-windows/git/issues/5427), which was [fixed](https://github.com/git-for-windows/git/pull/5515).
 * [Git for Windows 2.48.1 introduced a regression](https://github.com/git-for-windows/git/issues/5476) when fetching long branches under `core.longPaths = true`, which [was fixed](https://github.com/git-for-windows/git/pull/5550).
+* Git for Windows' installer [used a non-writable file](https://github.com/git-for-windows/git/issues/5618) for testing custom editors, which [was fixed](https://github.com/git-for-windows/build-extra/pull/618).
 
 ## Changes since Git for Windows v2.48.1 (February 13th 2025)
 
