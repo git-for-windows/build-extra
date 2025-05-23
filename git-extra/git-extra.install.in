@@ -108,6 +108,18 @@ GITATTRIBUTES
 	! grep -q 'https://dl.bintray.com/git-for-windows/pacman/x86_64' etc/pacman.conf ||
 	sed -i -e 's/https:\/\/dl\.bintray\.com\/git-for-windows\/pacman\/x86_64/https:\/\/wingit.blob.core.windows.net\/x86-64/g' etc/pacman.conf
 
+	# The main pacman database was renamed from `git-for-windows` to `git-for-windows-<arch>`
+	for ext in db db.sig files files.sig
+	do
+		if ! test -f var/lib/pacman/sync/git-for-windows-$arch.$ext
+		then
+			mv var/lib/pacman/sync/git-for-windows.$ext var/lib/pacman/sync/git-for-windows-$arch.$ext
+		elif test -f var/lib/pacman/sync/git-for-windows.$ext
+		then
+			rm var/lib/pacman/sync/git-for-windows.$ext
+		fi
+	done
+
 	test i686 != $"uname -m" ||
 	case "$(md5sum.exe < /msys2.ico)" in
 	292ad5cd*) cp /usr/share/git/msys2-32.ico /msys2.ico;;
