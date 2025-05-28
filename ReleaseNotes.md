@@ -46,6 +46,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [cURL v8.13.0](https://curl.se/changes.html#8_13_0).
 * Comes with [OpenSSH v10.0.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_0_P1).
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.1](https://cygwin.com/pipermail/cygwin-announce/2025-April/012266.html).
+* Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.2](https://cygwin.com/pipermail/cygwin-announce/2025-May/012350.html).
 
 ### Bug Fixes
 
