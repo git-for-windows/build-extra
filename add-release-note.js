@@ -46,7 +46,7 @@ const addReleaseNote = (type, message) => {
 
   // Remove any superseded entries
   if (type === 'feature') {
-    const match = message.match(/^(Comes with \[[^\]]+ )(v|patch level)/)
+    const match = message.match(/^(Comes with (?:\[[^\]]+|the MSYS2 runtime .*Cygwin) )(v|patch level)/)
     if (match) sections.feature = sections.feature.filter(e => !e.startsWith(`* ${match[1]}${match[2]}`))
   }
 
