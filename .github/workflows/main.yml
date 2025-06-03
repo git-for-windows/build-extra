@@ -36,6 +36,7 @@ jobs:
               -e '/^make-file-list\.sh$/ainstaller/' \
               -e '/^make-file-list\.sh$/aportable/' \
               -e '/^make-file-list\.sh$/amingit/' \
+              -e '/^make-file-list\.sh$/anuget/' \
               -e '/^7-Zip\//aportable/' \
               -e 's|^\(installer/\).*|\1|' \
               -e 's|[^/]*$||' |
@@ -134,6 +135,10 @@ jobs:
             git-sdk: git-sdk-arm64
             mingw-prefix: clangarm64
             msystem: CLANGARM64
+        exclude:
+          - directory: nuget
+            architecture:
+              name: aarch64
     runs-on: ${{ matrix.architecture.runner }}
     steps:
       - uses: actions/checkout@v4
