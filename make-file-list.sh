@@ -401,12 +401,14 @@ then
 	etc/profile
 	etc/profile.d/lang.sh
 	etc/bash.bashrc
-	etc/msystem*
+	etc/msystem
 	usr/bin/dash.exe
 	usr/bin/getopt.exe
 	EOF
 	test ! -f /etc/bash.bash_logout ||
 	echo etc/bash.bash_logout
+	test ! -d /etc/msystem.d ||
+	(cd / && find etc/msystem.d -type f)
 fi
 
 EXTRA_DLL_FILES=
