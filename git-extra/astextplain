@@ -7,28 +7,21 @@ if test "$#" != 1 ; then
 fi
 
 # XXX output encoding (UTF-8) hardcoded
-case "$1" in
-	*.ods | *.ODS | *.odf |*.ODF | *.odt | *.ODT)
+case "$(file --brief --mime-type "$1")" in
+	application/vnd.oasis.opendocument.spreadsheet | application/vnd.oasis.opendocument.formula | application/vnd.oasis.opendocument.text)
 		odt2txt "$1" || cat "$1"
 		;;
-	*.doc | *.DOC | *.dot | *.DOT)
-		case "$(file --brief --mime-type "$1")" in
-			application/msword)
-				out=$(antiword -m UTF-8 "$1") && sed "s/\^M$//" <<<$out || cat "$1"
-				;;
-			*)
-				cat "$1"
-				;;
-		esac
+	application/msword)
+		out=$(antiword -m UTF-8 "$1") && sed "s/\^M$//" <<<$out || cat "$1"
 		;;
-	*.docx | *.DOCX | *.dotx | *.DOTX | *.docm | *.DOCM | *.dotm | *.DOTM)
+	application/vnd.openxmlformats-officedocument.wordprocessingml.* | application/vnd.ms-word.*.macroenabled.12)
 		docx2txt.pl "$1" - || cat "$1"
 		;;
-	*.pdf | *.PDF)
+	application/pdf)
 		out=$(pdftotext -q -layout -enc UTF-8 "$1" -) && sed "s/(\^M$)|(^\^L)//" <<<$out || cat "$1"
 		;;
 	# TODO add rtf support
-	*.rtf | *.RTF)
+	application/rtf | text/rtf)
 		cat "$1"
 		;;
 	*)
