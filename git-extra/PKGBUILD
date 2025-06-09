@@ -5,7 +5,7 @@ pkgbase="mingw-w64-${_realname}"
 pkgname=($_realname
         "${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
-pkgver=1.1.657.d7f05a9c2
+pkgver=1.1.659.e3eddae38
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('any')
@@ -79,7 +79,7 @@ sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             'dcbd1b981d5b899afe30151a5f5a27ea52025ff1335f131af1b5891f62ddd55b'
             '683ab066be19cb4defec470ebd53f165ca5dbf761fd40c13aee8abe31ba42803'
             '1cf2c13fb97c51375a76ed479362c3cbcdb51ab4d3a745e8d2c3a780badd8d46'
-            '201fc40c1aadadceccc617511a4add05536b3638bff34456cc334e3b21c130e7'
+            '2ad7292f8ea4aa7d027221bff2a987ad8e7c72a6866a5f14ea67f6187e850244'
             '180e05c1b8afa34d59cb2f6635bc75fece10474f37e164ea5916a6b3b56e20dd'
             '22f41610dea842890955032af30efdb60e80f310e95a04e57ab36b10e0376923'
             '38c0cf57e03d275cdd42984f102bee8352fac672f875ab23c46b9625eefc49f3'
