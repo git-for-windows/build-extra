@@ -205,7 +205,7 @@ ignore)
 		set -- $( (
 			git -C "${root%/}"/ ls-files --exclude-standard  \
 				--other var/lib/pacman/local/ |
-			sed -n 's|^var/lib/pacman/local/\([^/]*\)-r\?[0-9][-0-9a-z_.]*-[1-9][0-9]*/.*|\1|p';
+			sed -n 's|^var/lib/pacman/local/\([^/]*\)-r\?[0-9][-0-9a-z_.~]*-[1-9][0-9]*/.*|\1|p';
 			sed -n 's|^# Package: \(.*\)-r\?[0-9][-0-9a-z_.]*-[1-9][0-9]*|\1|p' \
 				<"${root%/}/.git/info/exclude"
 			) | sort | uniq
@@ -224,7 +224,7 @@ ignore)
 		sed -i '/^$/{
 			:1
 			N
-			/^\n# \(Package: \)\?'$pkg'\(-[0-9][-0-9a-z_.]*\)\?$/{
+			/^\n# \(Package: \)\?'$pkg'\(-[0-9][^-]*-[0-9][0-9]*\)\?$/{
 				:2
 				N
 				s/.*\n//

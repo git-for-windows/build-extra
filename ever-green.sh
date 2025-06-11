@@ -70,7 +70,7 @@ extract_todo_help () {
 	help_starts_at="${help_starts_at%%:*}"
 	case "$help_starts_at" in
 	'') help=;;
-	*[^0-9]*) die "BUG: could not get start of help in $1";;
+	*[!0-9]*) die "BUG: could not get start of help in $1";;
 	*)
 		mv -f "$1" "$1.raw" ||
 		die "Could not rename $1"

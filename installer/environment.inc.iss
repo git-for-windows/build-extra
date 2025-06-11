@@ -113,3 +113,31 @@ begin
     // Also update the environment of the current process.
     SetEnvironmentVariable(VarName,Path);
 end;
+
+// Sets the contents of the specified environment variable for the current process.
+function SetEnvironmentVariable2(lpName:String;lpValue:LongInt):Boolean;
+#ifdef UNICODE
+external 'SetEnvironmentVariableW@Kernel32.dll stdcall delayload';
+#else
+external 'SetEnvironmentVariableA@Kernel32.dll stdcall delayload';
+#endif
+
+function SanitizeGitEnvironmentVariables:Boolean;
+begin
+    Result:=True;
+    if not SetEnvironmentVariable2('GIT_INDEX_FILE',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_INDEX_VERSION',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_OBJECT_DIRECTORY',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_ALTERNATE_OBJECT_DIRECTORIES',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_DIR',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_WORK_TREE',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_NAMESPACE',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_CEILING_DIRECTORIES',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_DISCOVERY_ACROSS_FILESYSTEM',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_COMMON_DIR',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_DEFAULT_HASH',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_CONFIG',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_CONFIG_GLOBAL',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_CONFIG_SYSTEM',0) then Result:=False;
+    if not SetEnvironmentVariable2('GIT_CONFIG_NOSYSTEM',0) then Result:=False;
+end;

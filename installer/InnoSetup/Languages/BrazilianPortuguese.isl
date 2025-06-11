@@ -1,4 +1,4 @@
-; *** Inno Setup version 6.1.0+ Brazilian Portuguese messages made by Cesar82 cesar.zanetti.82@gmail.com ***
+; *** Inno Setup version 6.4.0+ Brazilian Portuguese messages made by Cesar82 cesar.zanetti.82@gmail.com ***
 ;
 ; To download user-contributed translations of this file, go to:
 ;   https://jrsoftware.org/files/istrans/
@@ -151,8 +151,8 @@ WizardSelectDir=Selecione o Local de Destino
 SelectDirDesc=Aonde o [name] deve ser instalado?
 SelectDirLabel3=O instalador instalará o [name] na seguinte pasta.
 SelectDirBrowseLabel=Pra continuar clique em Avançar. Se você gostaria de selecionar uma pasta diferente, clique em Procurar.
-DiskSpaceGBLabel=Pelo menos [gb] MBs de espaço livre em disco são requeridos.
-DiskSpaceMBLabel=Pelo menos [mb] MBs de espaço livre em disco são requeridos.
+DiskSpaceGBLabel=Pelo menos [gb] GB de espaço livre em disco são requeridos.
+DiskSpaceMBLabel=Pelo menos [mb] MB de espaço livre em disco são requeridos.
 CannotInstallToNetworkDrive=O instalador não pode instalar em um drive de rede.
 CannotInstallToUNCPath=O instalador não pode instalar em um caminho UNC.
 InvalidPath=Você deve inserir um caminho completo com a letra do drive; por exemplo:%n%nC:\APP%n%não um caminho UNC no formulário:%n%n\\server\share
@@ -179,8 +179,8 @@ NoUninstallWarningTitle=O Componente Existe
 NoUninstallWarning=O instalador detectou que os seguintes componentes já estão instalados no seu computador:%n%n%1%n%nNão selecionar estes componentes não desinstalará eles.%n%nVocê gostaria de continuar de qualquer maneira?
 ComponentSize1=%1 KBs
 ComponentSize2=%1 MBs
-ComponentsDiskSpaceGBLabel=A seleção atual requer pelo menos [gb] MBs de espaço em disco.
-ComponentsDiskSpaceMBLabel=A seleção atual requer pelo menos [mb] MBs de espaço em disco.
+ComponentsDiskSpaceGBLabel=A seleção atual requer pelo menos [gb] GB de espaço em disco.
+ComponentsDiskSpaceMBLabel=A seleção atual requer pelo menos [mb] MB de espaço em disco.
 
 ; *** "Select Additional Tasks" wizard page
 WizardSelectTasks=Selecionar Tarefas Adicionais
@@ -221,6 +221,13 @@ ErrorFileHash1=Falha no hash do arquivo: %1
 ErrorFileHash2=Hash de arquivo inválido: esperado %1, encontrado %2
 ErrorProgress=Progresso inválido: %1 de %2
 ErrorFileSize=Tamanho de arquivo inválido: esperado %1, encontrado %2
+
+; *** TExtractionWizardPage wizard page and Extract7ZipArchive
+ExtractionLabel=Extraindo arquivos adicionais...
+ButtonStopExtraction=&Parar extração
+StopExtraction=Tem certeza de que deseja parar a extração?
+ErrorExtractionAborted=Extração abortada
+ErrorExtractionFailed=Extração falhou: %1
 
 ; *** "Preparing to Install" wizard page
 WizardPreparing=Preparando pra Instalar

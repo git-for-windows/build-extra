@@ -99,30 +99,39 @@ GITATTRIBUTES
 	case "$uname_m" in
 	i686)
 		arch=i686
-		otherarch=x86-64
+		otherarch=x86_64
 		otherpacman=git-for-windows-mingw64
 		;;
 	x86_64)
-		arch=x86-64
+		arch=x86_64
 		otherarch=i686
 		otherpacman=git-for-windows-mingw32
 		;;
 	esac
 
+	! grep -q '^\[git-for-windows\]$' etc/pacman.conf ||
+	sed -i -e 's/^\(\[git-for-windows\)\(\]\)$/\1-'"$arch"'\2/' etc/pacman.conf
+
+	! grep -q wingit.blob.core.windows.net etc/pacman.conf ||
+	sed -i -e '/https:\/\/wingit\.blob\.core\.windows\.net\//{
+		s|x86-64|x86_64|
+		s|https://[^/]*|https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads|
+	}' etc/pacman.conf
+
 	grep -q git-for-windows[^-] etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i[git-for-windows]\nServer = https://wingit.blob.core.windows.net/'$arch'\n' etc/pacman.conf
+	sed -i -e '/^\[mingw32\]/i[git-for-windows-'"$arch"']\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/'$arch'\n' etc/pacman.conf
 
 	! grep -A2 git-for-windows[^-] etc/pacman.conf |
 	grep -q '^SigLevel = Optional' ||
-	sed -i -e '/\[git-for-windows\]/{N;N;s/\nSigLevel = Optional//}' \
+	sed -i -e '/\[git-for-windows-'"$arch"'\]/{N;N;s/\nSigLevel = Optional//}' \
 		etc/pacman.conf
 
 	grep -q "$otherpacman" etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i['$otherpacman']\nServer = https://wingit.blob.core.windows.net/'$otherarch'\n' etc/pacman.conf
+	sed -i -e '/^\[mingw32\]/i['$otherpacman']\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/'$otherarch'\n' etc/pacman.conf
 
-	test ! -d /clangarm64 ||
-	grep -q "git-for-windows-aarch64" etc/pacman.conf ||
-	sed -i -e '/^\[clangarm64]/i[git-for-windows-aarch64]\nServer = https://wingit.blob.core.windows.net/aarch64\n' etc/pacman.conf
+	test -z "$(find /clangarm64 -type f -print -quit 2>/dev/null)" || # if /clangarm64 exists and contains at least one file
+	grep -q "git-for-windows-aarch64" etc/pacman.conf || # then add Git for Windows' aarch64 repository (unless it's already added)
+	sed -i -e '/^\[clangarm64]/i[git-for-windows-aarch64]\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/aarch64\n' etc/pacman.conf
 
 	! grep -q 'https://dl.bintray.com/\$repo/pacman/\$arch' etc/pacman.conf ||
 	sed -i -e 's/https:\/\/dl\.bintray\.com\/\$repo\/pacman\/\$arch/https:\/\/wingit.blob.core.windows.net\/'$arch'/g' etc/pacman.conf
@@ -132,6 +141,18 @@ GITATTRIBUTES
 
 	! grep -q 'https://dl.bintray.com/git-for-windows/pacman/x86_64' etc/pacman.conf ||
 	sed -i -e 's/https:\/\/dl\.bintray\.com\/git-for-windows\/pacman\/x86_64/https:\/\/wingit.blob.core.windows.net\/x86-64/g' etc/pacman.conf
+
+	# The main pacman database was renamed from `git-for-windows` to `git-for-windows-<arch>`
+	for ext in db db.sig files files.sig
+	do
+		if ! test -f var/lib/pacman/sync/git-for-windows-$arch.$ext
+		then
+			mv var/lib/pacman/sync/git-for-windows.$ext var/lib/pacman/sync/git-for-windows-$arch.$ext
+		elif test -f var/lib/pacman/sync/git-for-windows.$ext
+		then
+			rm var/lib/pacman/sync/git-for-windows.$ext
+		fi
+	done
 
 	test i686 != $"uname -m" ||
 	case "$(md5sum.exe < /msys2.ico)" in
@@ -247,10 +268,12 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	}
 
 	# Enable color and syntax-highlighting in GNU nano
-	test ! -f /etc/nanorc ||
-	grep -q '^set titlecolor' /etc/nanorc ||
-	sed -i -e '/Paint the interface elements/,/root.s .nanorc/s/^# //' \
-		-e 's/^# \(include .*nanorc"\)$/\1/' /etc/nanorc
+	test ! -f /etc/nanorc || {
+		grep -q '^set titlecolor' /etc/nanorc ||
+		sed -i '/Paint the interface elements/,/root.s .nanorc/s/^# //' /etc/nanorc
+		grep -q '^include .*\*\.nanorc' /etc/nanorc ||
+		sed -i 's/^# \(include .*\*\.nanorc"\?\)$/\1/' /etc/nanorc
+	}
 
 	# Do not require /usr/bin/cmd in /usr/bin/start
 	grep -q '^"\$COMSPEC" ' /usr/bin/start ||
@@ -297,6 +320,14 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	# Work around /etc/xml/catalog being updated using the MINGW version of xmlcatalog
 	! grep -q '"[CD]:/' /etc/xml/catalog ||
 	sed -i -e 's|"[CD]:/[^"]*/usr/|"/usr/|g' /etc/xml/catalog
+
+	# Remove work around for an outdated i686 gnupg/gnutls build that depended on a hence-updated libunistring
+	if test i686 = $arch -a -e /usr/bin/msys-unistring-2.dll &&
+		! pacman -Qoq /usr/bin/msys-unistring-2.dll >/dev/null 2>&1 &&
+		! grep -q msys-unistring-2 /usr/bin/msys-gnutls-30.dll 2>&1 >/dev/null
+	then
+		rm /usr/bin/msys-unistring-2.dll
+	fi
 }
 
 post_upgrade () {

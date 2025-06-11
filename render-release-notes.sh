@@ -61,8 +61,7 @@ die () {
 render_release_notes () {
 	(homepage=https://gitforwindows.org/ &&
 		contribute=$homepage#contribute &&
-		wiki=https://github.com/git-for-windows/git/wiki &&
-		faq=$wiki/FAQ &&
+		faq=https://gitforwindows.org/faq &&
 		mailinglist=mailto:git@vger.kernel.org &&
 		cat <<-EOF &&
 		<!DOCTYPE html>

@@ -69,6 +69,17 @@ do
 		inno_defines="$inno_defines$LF#define OUTPUT_TO_TEMP ''"
 		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
 		;;
+	--include-self-check)
+		inno_defines="$inno_defines$LF#define INCLUDE_SELF_CHECK 1"
+		;;
+	--self-check)
+		test_installer=t
+		skip_files=t
+		inno_defines="$inno_defines$LF#define OUTPUT_TO_TEMP ''"
+		inno_defines="$inno_defines$LF#define DO_NOT_INSTALL 1"
+		inno_defines="$inno_defines$LF#define INCLUDE_SELF_CHECK 1"
+		inno_defines="$inno_defines$LF#define EXIT_AFTER_SELF_CHECK 1"
+		;;
 	--output=*)
 		output_directory="$(cygpath -m "${1#*=}")" ||
 		die "Directory inaccessible: '${1#*=}'"
@@ -124,10 +135,16 @@ CLANGARM64)
 esac
 MSYSTEM_LOWER=${MSYSTEM,,}
 
-echo "Generating release notes to be included in the installer ..."
-../render-release-notes.sh --css usr/share/git/ ||
+if test -n "$page_id"
+then
+	echo "Space intentionally left empty" >ReleaseNotes.html
+else
+	echo "Generating release notes to be included in the installer ..."
+	../render-release-notes.sh --css usr/share/git/
+fi ||
 die "Could not generate release notes"
 
+test ! -d /var/lib/pacman/local/ ||
 if grep -q edit-git-bash /var/lib/pacman/local/mingw-w64-$ARCH-git-[1-9]*/files
 then
 	INCLUDE_EDIT_GIT_BASH=
@@ -209,7 +226,8 @@ then
 	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_BUILTIN_ADD_I 1"
 fi
 
-if grep -q enable_pcon /usr/bin/msys-2.0.dll
+if grep -q enable_pcon /usr/bin/msys-2.0.dll &&
+	case "$(uname -r)" in 3.[0-4]*) true;; *) false;; esac # pcon in v3.5+ is no longer experimental
 then
 	inno_defines="$inno_defines$LF#define WITH_EXPERIMENTAL_PCON 1"
 fi
@@ -289,12 +307,15 @@ fi
 # 3. Construct DeleteOpenSSHFiles function signature to be used in install.iss
 # 4. Assemble function body and compile flag to be used as guard in install.iss
 echo "$LIST" | sort >sorted-file-list.txt
-pacman -Ql openssh 2>pacman.stderr | sed -n 's|^openssh /\(.*[^/]\)$|\1|p' | sort >sorted-openssh-file-list.txt
-grep -v 'database file for .* does not exist' <pacman.stderr >&2
-openssh_deletes="$(comm -12 sorted-file-list.txt sorted-openssh-file-list.txt |
-	sed -e 'y/\//\\/' -e "s|.*|    if not DeleteFile(AppDir+'\\\\&') then\n        Result:=False;|")"
-inno_defines="$inno_defines$LF[Code]${LF}function DeleteOpenSSHFiles():Boolean;${LF}var$LF    AppDir:String;${LF}begin$LF    AppDir:=ExpandConstant('{app}');$LF    Result:=True;"
-inno_defines="$inno_defines$LF$openssh_deletes${LF}end;$LF#define DELETE_OPENSSH_FILES 1"
+if type -p pacman.exe >/dev/null 2>&1
+then
+	pacman -Ql openssh 2>pacman.stderr | sed -n 's|^openssh /\(.*[^/]\)$|\1|p' | sort >sorted-openssh-file-list.txt
+	grep -v 'database file for .* does not exist' <pacman.stderr >&2
+	openssh_deletes="$(comm -12 sorted-file-list.txt sorted-openssh-file-list.txt |
+		sed -e 'y/\//\\/' -e "s|.*|    if not DeleteFile(AppDir+'\\\\&') then\n        Result:=False;|")"
+	inno_defines="$inno_defines$LF[Code]${LF}function DeleteOpenSSHFiles():Boolean;${LF}var$LF    AppDir:String;${LF}begin$LF    AppDir:=ExpandConstant('{app}');$LF    Result:=True;"
+	inno_defines="$inno_defines$LF$openssh_deletes${LF}end;$LF#define DELETE_OPENSSH_FILES 1"
+fi
 
 test -z "$LIST" ||
 echo "$LIST" |

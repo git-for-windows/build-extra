@@ -27,8 +27,7 @@ aarch64)
 esac
 
 SH_FOR_REBASE=dash
-PACKAGE_EXCLUDES="db info heimdal tcl git util-linux curl git-for-windows-keyring
-	mingw-w64-p11-kit"
+PACKAGE_EXCLUDES="db info heimdal tcl git util-linux curl git-for-windows-keyring"
 EXTRA_FILE_EXCLUDES=
 UTIL_PACKAGES="sed awk grep findutils coreutils"
 if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
@@ -49,7 +48,7 @@ fi
 if test -n "$MINIMAL_GIT"
 then
 	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES mingw-w64-bzip2 mingw-w64-c-ares
-		mingw-w64-libsystre mingw-w64-libtre-git
+		mingw-w64-libsystre mingw-w64-libtre-git mingw-w64-p11-kit
 		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
 		libedit libgdbm perl perl-.*"
 fi
@@ -84,7 +83,9 @@ fi
 # Newer `git.exe` no longer link to `libssp-0.dll` that has been made obsolete
 # by recent GCC updates
 EXCLUDE_LIBSSP=
-grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" || EXCLUDE_LIBSSP='\|ssp'
+test ! -f "/$MSYSTEM_LOWER/bin/git.exe" ||
+grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" ||
+EXCLUDE_LIBSSP='\|ssp'
 
 this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
@@ -106,6 +107,7 @@ pacman_list () {
 		do
 			pactree -u "$arg"
 		done |
+		sed 's/[<>=].*//' |
 		grep -v "^\\($(echo $PACKAGE_EXCLUDES | sed \
 			-e 's/ /\\|/g' \
 			-e 's/mingw-w64-/&\\(i686\\|x86_64\\|clang-aarch64\\)-/g')\\)\$" |
@@ -140,17 +142,31 @@ mingw-w64-$PACMAN_ARCH-zstd"
 	return $res
 }
 
+has_pacman_package () {
+	for dir in /var/lib/pacman/local/$1-[0-9]*
+	do
+		# Be careful in case a package name contains `-<digit>`
+		test /var/lib/pacman/local/$1 = ${dir%-*-*} &&
+		return 0
+	done
+	return 1
+}
+
+has_pacman_package mingw-w64-$PACMAN_ARCH-curl-winssl &&
+LIBCURL_EXTRA=mingw-w64-$PACMAN_ARCH-curl-openssl-alternate ||
+LIBCURL_EXTRA=
+
 # Packages that have been added after Git SDK 1.0.0 was released...
 required=
-for req in mingw-w64-$PACMAN_ARCH-git-credential-manager $SH_FOR_REBASE \
+for req in mingw-w64-$PACMAN_ARCH-git-credential-manager $SH_FOR_REBASE $LIBCURL_EXTRA \
 	$(test -n "$MINIMAL_GIT" || echo \
 		mingw-w64-$PACMAN_ARCH-connect git-flow unzip docx2txt \
 		mingw-w64-$PACMAN_ARCH-antiword mingw-w64-$PACMAN_ARCH-odt2txt \
 		mingw-w64-$PACMAN_ARCH-xpdf-tools ssh-pageant mingw-w64-$PACMAN_ARCH-git-lfs \
 		tig nano perl-JSON libpcre2_8 libpcre2posix $GIT_UPDATE_EXTRA_PACKAGES)
 do
-	test -d /var/lib/pacman/local/$req-[0-9]* ||
-	test -d /var/lib/pacman/local/$req-git-[0-9]* ||
+	has_pacman_package $req ||
+	has_pacman_package $req-git ||
 	required="$required $req"
 done
 test -z "$required" || {
@@ -162,7 +178,7 @@ test -z "$required" || {
 }
 
 packages="mingw-w64-$PACMAN_ARCH-git mingw-w64-$PACMAN_ARCH-git-credential-manager
-mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES"
+mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES $LIBCURL_EXTRA"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$PACMAN_ARCH-git-doc-html ncurses mintty vim nano
@@ -171,6 +187,13 @@ then
 		mingw-w64-$PACMAN_ARCH-antiword mingw-w64-$PACMAN_ARCH-odt2txt ssh-pageant
 		mingw-w64-$PACMAN_ARCH-git-lfs mingw-w64-$PACMAN_ARCH-xz tig $GIT_UPDATE_EXTRA_PACKAGES"
 fi
+
+I686_EXCLUDE=
+if test i686 = "$ARCH" && ! grep msys-uuid-1 /usr/bin/msys-apr-1-0.dll 2>&1 >/dev/null
+then
+	I686_EXCLUDE='uuid\|lzma\|'
+fi
+
 pacman_list $packages "$@" |
 
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
@@ -178,6 +201,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/lib/python' -e '^/usr/lib/ruby' -e '^/\(mingw\|clang\)[^/]*/lib/python' \
 	-e '^/usr/share/subversion' \
 	-e '^/etc/skel/' -e '^/\(mingw\|clang\)[^/]*/etc/skel/' \
+	-e '^/etc/sshd_config' \
 	-e '^/usr/bin/svn' \
 	-e '^/usr/bin/xml.*exe$' \
 	-e '^/usr/bin/xslt.*$' \
@@ -193,13 +217,12 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/include/' -e '^/\(mingw\|clang\)[^/]*/include/' \
 	-e '^/usr/share/doc/' \
 	-e '^/usr/share/info/' -e '^/\(mingw\|clang\)[^/]*/share/info/' \
-	-e '^/mingw32/bin/lib\(ffi\|tasn1\)-.*\.dll$' \
 	-e '^/\(mingw\|clang\)[^/]*/share/git-doc/technical/' \
 	-e '^/\(mingw\|clang\)[^/]*/lib/cmake/' \
 	-e '^/\(mingw\|clang\)[^/]*/itcl/' \
 	-e '^/\(mingw\|clang\)[^/]*/t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(autopoint\|[a-z]*-config\)$' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(asprintf\|brotlienc\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13p]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
+	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(asprintf\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(atomic\|charset\|gomp\|systre'"$EXCLUDE_LIBSSP"'\)-[0-9]*\.dll$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\|zip\)[^/]*\.exe$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/recode-sr-latin.exe$' \
@@ -218,18 +241,17 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/\(mingw\|clang\)[^/]*/share/gtk-doc/' \
 	-e '^/\(mingw\|clang\)[^/]*/share/nghttp2/' \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
-	-e '^/usr/bin/msys-\('$(if test i686 = "$ARCH"
-	    then
-		echo 'uuid\|lzma\|'
-	    fi)'fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
+	-e '^/usr/bin/msys-\('"$I686_EXCLUDE"'fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(hdb\|history8\|kadm5\|kdc\|otp\|sl\).*\.dll$' \
-	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|ssh2\)-.*\.dll$' \
+	-e '^/usr/bin/msys-\(atomic\|blkid\|charset\|gthread\|metalink\|nghttp2\|ssh2\|kafs\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(ncurses++w6\|asprintf-[0-9]*\|\)\.dll$' \
 	-e '^/usr/bin/msys-\(formw6\|menuw6\|panelw6\)\.dll$' \
 	-e '^/usr/bin/msys-svn_swig_\(py\|ruby\)-.*\.dll$' \
-	-e '^/usr/bin/\(dumper\|sasl.*\)\.exe$' \
+	-e '^/usr/bin/\(dumper\|sasl.*\|sshd\)\.exe$' \
+	-e '^/usr/bin/.*lastlog2' \
 	-e '^/usr/lib/gio/' -e '^/usr/lib/sasl2/msys-sasldb-.*\.dll$' \
 	-e '^/usr/lib/\(itcl\|tdbc\|pkcs11/p11-kit-client\|thread\)' \
+	-e '^/usr/lib/ssh/sshd\($\|-\)' \
 	-e '^/usr/share.*/magic$' \
 	-e '^/usr/share/perl5/core_perl/Unicode/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
@@ -268,14 +290,14 @@ else
 		-e '^/\(mingw\|clang\)[^/]*/bin/libjemalloc\.dll$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/lib\(ffi\|gmp\|gomp\|jansson\|metalink\|minizip\|tasn1\)-.*\.dll$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/libvtv.*\.dll$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/libpcreposix.*\.dll$' \
+		-e '^/\(mingw\|clang\)[^/]*/bin/libpcre\(2-\)\?posix.*\.dll$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/\(.*\.def\|update-ca-trust\)$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/\(openssl\|p11tool\|pkcs1-conv\)\.exe$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/\(psktool\|recode-.*\|sexp.*\|srp.*\)\.exe$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/\(WhoUses\|xmlwf\)\.exe$' \
 		-e '^/\(mingw\|clang\)[^/]*/etc/pki' -e '^/\(mingw\|clang\)[^/]*/lib/p11-kit/' \
 		-e '/git-\(add--interactive\|archimport\|citool\|cvs.*\)$' \
-		-e '/git-\(difftool.*\|gui.*\|instaweb\|p4\|relink\)$' \
+		-e '/git-\(gui.*\|instaweb\|p4\|relink\)$' \
 		-e '/git-\(send-email\|svn\)$' \
 		-e '/\(mingw\|clang\)[^/]*/libexec/git-core/git-\(imap-send\|daemon\)\.exe$' \
 		-e '/\(mingw\|clang\)[^/]*/libexec/git-core/git-remote-ftp.*\.exe$' \
@@ -310,12 +332,12 @@ else
 		-e '^/usr/bin/\(pr\|printenv\|ps\|ptx\|realpath\)\.exe$' \
 		-e '^/usr/bin/\(regtool\|runcon\|scp\|seq\|setfacl\)\.exe$' \
 		-e '^/usr/bin/\(setmetamode\|sftp\|sha.*sum\|shred\)\.exe$' \
-		-e '^/usr/bin/\(shuf\|sleep\|slogin\|split\|sshd\)\.exe$' \
+		-e '^/usr/bin/\(shuf\|sleep\|slogin\|split\)\.exe$' \
 		-e '^/usr/bin/\(ssh-key.*\|ssp\|stat\|stdbuf\|strace\)\.exe$' \
 		-e '^/usr/bin/\(stty\|sum\|sync\|tac\|tee\|timeout\)\.exe$' \
 		-e '^/usr/bin/\(truncate\|tsort\|tty\|tzset\|umount\)\.exe$' \
 		-e '^/usr/bin/\(unexpand\|unlink\|users\|vdir\|who.*\)\.exe$' \
-		-e '^/usr/bin/msys-\(cilkrts\|kafs\|ssl\)-.*\.dll$' \
+		-e '^/usr/bin/msys-\(cilkrts\|ssl\)-.*\.dll$' \
 		-e '^/usr/bin/msys-sqlite3[a-z].*\.dll$' \
 		-e '^/usr/bin/msys-\(gomp.*\|vtv.*\)-.*\.dll$' \
 		-e '^/usr/lib/\(awk\|coreutils\|gawk\|openssl\|pkcs11\)/' \
@@ -373,20 +395,38 @@ EOF
 test -z "$MINIMAL_GIT_WITH_BUSYBOX" ||
 echo $MSYSTEM_LOWER/bin/busybox.exe
 
-test -n "$MINIMAL_GIT_WITH_BUSYBOX" || cat <<EOF
-etc/profile
-etc/profile.d/lang.sh
-etc/bash.bash_logout
-etc/bash.bashrc
-etc/msystem
-usr/bin/dash.exe
-usr/bin/getopt.exe
-EOF
+if test -z "$MINIMAL_GIT_WITH_BUSYBOX"
+then
+	cat <<-EOF
+	etc/profile
+	etc/profile.d/lang.sh
+	etc/bash.bashrc
+	etc/msystem
+	usr/bin/dash.exe
+	usr/bin/getopt.exe
+	EOF
+	test ! -f /etc/bash.bash_logout ||
+	echo etc/bash.bash_logout
+	test ! -d /etc/msystem.d ||
+	(cd / && find etc/msystem.d -type f)
+fi
 
+EXTRA_DLL_FILES=
 case $MSYSTEM_LOWER in
 mingw*)
 	PDFTOTEXT_FILES="$MSYSTEM_LOWER/bin/pdftotext.exe
 $MSYSTEM_LOWER/bin/libstdc++-6.dll"
+	if test i686 = "$ARCH" &&
+		grep msys-unistring-2 /usr/bin/msys-gnutls-30.dll 2>&1 >/dev/null &&
+		test ! -d /var/lib/pacman/local/libunistring-0*-1
+	then
+		# Utter hack: i686 gnupg might still link to msys-unistring-2.dll
+		test -f /usr/bin/msys-unistring-2.dll ||
+		cp /usr/bin/msys-unistring-5.dll /usr/bin/msys-unistring-2.dll ||
+		die "Could not fudge msys-unistring-2.dll"
+		EXTRA_DLL_FILES='
+usr/bin/msys-unistring-2.dll'
+	fi
 	;;
 *)
 	# In the clang version, we do not need the libstdc++ DLL
@@ -400,7 +440,7 @@ etc/post-install/01-devices.post
 etc/post-install/03-mtab.post
 etc/post-install/06-windows-files.post
 usr/bin/start
-$PDFTOTEXT_FILES
+$PDFTOTEXT_FILES$EXTRA_DLL_FILES
 usr/bin/column.exe
 EOF
 

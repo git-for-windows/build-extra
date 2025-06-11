@@ -72,7 +72,8 @@ do
 	curl -f -o "$OUT" $URL ||
 	die "Could not retrieve $URL" >&2
 
-	if grep '\[PATCH.* 00*/[1-9]' "$OUT"
+	PATCH_PREFIX="$(sed -n 's/.*\[\(PATCH.* \)00*\/[1-9].*/\1/p' "$OUT")"
+	if test -n "$PATCH_PREFIX"
 	then
 		echo "Multi-part: $OUT $URL" >&2
 		OUT2="$OUT.coverletter.html"
@@ -84,12 +85,11 @@ do
 		NO=1
 		while true
 		do
-			URL3="$(sed -n '/.*\[PATCH.* 0*'$NO'\/[1-9]/{
+			URL3="$(sed -n '/.*\['"$PATCH_PREFIX"'0*'$NO'\/[1-9]/{
 					s/^href="\.\.\/\([^"]*\).*/\1/p;q
 				}' <"$OUT2")"
 			test -n "$URL3" || break
-			curl -f https://lore.kernel.org/git/${URL3%/}/raw \
-				>>"$OUT3" ||
+			curl -f "${URL%/*/raw}/${URL3%/}/raw" >>"$OUT3" ||
 			die "Could not retrieve $URL3" >&2
 			NO=$(($NO+1))
 		done

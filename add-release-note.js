@@ -25,8 +25,8 @@ const addReleaseNote = (type, message) => {
   const path = `${__dirname}/ReleaseNotes.md`
   const contents = fs.readFileSync(path)
 
-  const entries = contents.toString().split(/(\n## Changes since Git for Windows v)(\d+(?:\.\d+)*)( \()([A-Z][a-z]+ \d+[a-z]* \d{4})(\))/g)
-  const [, currentVersion, currentDate ] = entries[0].match(/^# Git for Windows v(\d+(?:\.\d+)*(?:\(\d+\))?) Release Notes\nLatest update: ([A-Z][a-z]+ \d+[a-z]* \d{4})/)
+  const entries = contents.toString().split(/(\n## Changes since Git for Windows v)(\d+(?:\.\d+)*(?:-rc\d+)?(?:\(\d+\))?)( \()([A-Z][a-z]+ \d+[a-z]* \d{4})(\))/g)
+  const [, currentVersion, currentDate ] = entries[0].match(/^# Git for Windows v(\d+(?:\.\d+)*(?:-rc\d+)?(?:\(\d+\))?) Release Notes\nLatest update: ([A-Z][a-z]+ \d+[a-z]* \d{4})/)
   const latestVersion = entries[2]
   const latestDate = entries[4]
 
@@ -46,8 +46,8 @@ const addReleaseNote = (type, message) => {
 
   // Remove any superseded entries
   if (type === 'feature') {
-    const match = message.match(/^(Comes with \[[^\]]+ )(v|patch level)/)
-    if (match) sections.feature = sections.feature.filter(e => !e.startsWith(`* ${match[1]}`))
+    const match = message.match(/^(Comes with (?:\[[^\]]+|the MSYS2 runtime .*Cygwin) )(v|patch level)/)
+    if (match) sections.feature = sections.feature.filter(e => !e.startsWith(`* ${match[1]}${match[2]}`))
   }
 
   // Add the message to the section
@@ -69,14 +69,21 @@ const addReleaseNote = (type, message) => {
 }
 
 const wrap = (text, columns) => text
-  .split(new RegExp(`(.{0,${columns}}|\\S{${columns + 1},})(\\s+)`))
+  .split(new RegExp(`(.{0,${columns}}|\\S{${columns + 1},})(?:\\s+|$)`))
   .filter((_, i) => (i % 2) === 1)
   .join('\n')
 
 const main = async () => {
   let doCommit = false
-  if (process.argv.length > 4 && process.argv[2] === '--commit') {
-    doCommit = true
+  let mayBeAlreadyThere = false
+  while (process.argv.length > 2 && process.argv[2].startsWith('--')) {
+    if (process.argv[2] === '--commit') {
+     doCommit = true
+    } else if (process.argv[2] == '--may-be-already-there') {
+      mayBeAlreadyThere = true
+    } else {
+      throw new Error(`Unhandled argument '${process.argv[2]}`)
+    }
     process.argv.splice(2, 1)
   }
 
@@ -87,6 +94,15 @@ const main = async () => {
   addReleaseNote(type, message)
 
   if (doCommit) {
+      if (mayBeAlreadyThere) {
+        try {
+          execFileSync('git', ['--no-pager', 'diff', '--exit-code', '--', 'ReleaseNotes.md'])
+          return // no differences, exit
+        } catch (e) {
+          // There were differences, commit them
+        }
+      }
+
       const subject = `Add a release note${type !== 'blurb' ? ` (${type})` : ''}`
       const body = wrap(message, 72)
       console.log(execFileSync('git', [

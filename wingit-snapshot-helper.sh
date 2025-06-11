@@ -6,7 +6,7 @@ die () {
 }
 
 test $# -ge 4 ||
-die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>... | upload-with-lease <lease-id> <file> | remove <file>[,<filesize>]... | lock <file> | unlock <lease-id> <file> | add-snapshot <version>)"
+die "usage: ${0##*/} <storage-account-name> <container-name> <access-key> ( list | upload <file>... | upload-with-lease <lease-id> <file> | remove <file>[,<filesize>]... | lock <file> | unlock <lease-id> <file> | break-lock <file>)"
 
 storage_account="$1"; shift
 container_name="$1"; shift
@@ -110,6 +110,17 @@ req () {
 		x_ms_lease_action="x-ms-lease-action:release"
 		content_length_header="Content-Length: $content_length"
 		;;
+	break-lock)
+		file="$2"
+		content_length=0
+		resource_extra=/"${file##*/}"
+
+		request_method="PUT"
+		get_parameters="?comp=lease"
+		string_to_sign_extra="\ncomp:lease"
+		x_ms_lease_action="x-ms-lease-action:break"
+		content_length_header="Content-Length: $content_length"
+		;;
 	list)
 		request_method="GET"
 		get_parameters="?restype=container&comp=list"
@@ -173,108 +184,6 @@ req () {
 	fi
 }
 
-html_preamble='<!DOCTYPE html>
-<html>
-<head>
-<title>Git for Windows snapshots</title>
-<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-<link rel="stylesheet" href="GitForWindows.css">
-<link rel="shortcut icon" href="https://gitforwindows.org/favicon.ico">
-</head>
-<body class="details">
-<div class="links">
-<ul>
-<li><a href="https://gitforwindows.org/">homepage</a></li>
-<li><a href="https://github.com/git-for-windows/git/wiki/FAQ">faq</a></li>
-<li><a href="https://gitforwindows.org/#contribute">contribute</a></li>
-<li><a href="https://gitforwindows.org/#contribute">bugs</a></li>
-<li><a href="mailto:git@vger.kernel.org">questions</a></li>
-</ul>
-</div>
-<img src="https://gitforwindows.org/img/gwindows_logo.png" alt="Git Logo" style="float: right; width: 170px;"/><div class="content">
-<h1><center>Git for Windows Snapshots</center></h1>
-
-'
-html_footer='
-
-</div>
-</body>
-</html>
-'
-
-print_html_item () {
-	mingit=
-	mingit_busybox=
-	while case "$1" in
-	--mingit) mingit=t;;
-	--mingit-busybox) mingit_busybox=t;;
-	-*) die "Unhandled option: '$1'";;
-	*) break;;
-	esac; do shift; done
-	version="$1"
-	date="$2"
-	h2_id="$3"
-	commit="$4"
-	cat <<EOF
-<h2 id="$h2_id">$date<br />(commit <a href="https://github.com/git-for-windows/git/commit/$commit">$commit</a>)</h2>
-
-<ul>
-<li>Git for Windows installer: <a href="Git-$version-64-bit.exe">64-bit</a> and <a href="Git-$version-32-bit.exe">32-bit</a>.</li>
-<li>Portable Git (self-extracting <tt>.7z</tt> archive): <a href="PortableGit-$version-64-bit.7z.exe">64-bit</a> and <a href="PortableGit-$version-32-bit.7z.exe">32-bit</a>.</li>
-$(test -z "$mingit" ||
-printf '<li>MinGit: <a href="%s">64-bit</a> and <a href="%s">32-bit</a>.</li>\n' "MinGit-$version-64-bit.zip" "MinGit-$version-32-bit.zip"
-test -z "$mingit_busybox" ||
-printf '<li>MinGit (BusyBox): <a href="%s">64-bit</a> and <a href="%s">32-bit</a>.</li>\n' "MinGit-$version-BusyBox-64-bit.zip" "MinGit-$version-BusyBox-32-bit.zip")</ul>
-EOF
-}
-
-add_snapshot () {
-	extra=
-	files="Git-$1-32-bit.exe Git-$1-64-bit.exe"
-	files="$files PortableGit-$1-32-bit.7z.exe PortableGit-$1-64-bit.7z.exe"
-
-	test -f "MinGit-$1-32-bit.zip" &&
-	test -f "MinGit-$1-64-bit.zip" &&
-	files="$files MinGit-$1-32-bit.zip MinGit-$1-64-bit.zip" &&
-	extra="${extra:+$extra }--mingit"
-
-	test -f "MinGit-$1-BusyBox-32-bit.zip" &&
-	test -f "MinGit-$1-BusyBox-64-bit.zip" &&
-	files="$files MinGit-$1-BusyBox-32-bit.zip" &&
-	files="$files MinGit-$1-BusyBox-64-bit.zip" &&
-	extra="${extra:+$extra }--mingit-busybox"
-
-	html_item="$(print_html_item $extra "$@")"
-	for f in $files
-	do
-		test -f "$f" || die "File not found: '$f'"
-		eval req upload "$f" || die "Could not upload '$f'"
-	done
-
-	lease_id="$(req lock index.html)" || die "Could not lock 'index.html'"
-	test -n "$lease_id" || die "Could not find lease ID in $response"
-
-	url_base="https://$storage_account.$blob_store_url/$container_name"
-
-	curl --fail --head "$url_base/GitForWindows.css" 2>/dev/null ||
-	req upload --filename=GitForWindows.css \
-		"$script_dir/ReleaseNotes.css" ||
-	die "Could not upload GitForWindows.css"
-
-	if html="$(curl --silent --fail "$url_base/index.html")"
-	then
-		html="${html%%<h2*}$html_item${html#*</h1>}"
-	else
-		html="$html_preamble$html_item$html_footer"
-	fi
-	tmpfile=.wingit-index.$$.html
-	echo "$html" >$tmpfile
-	req upload --lease-id="$lease_id" --filename=index.html $tmpfile ||
-	die "Could not upload 'index.html'"
-	rm $tmpfile
-	req unlock "$lease_id" index.html || die "Could not unlock 'index.html'"
-}
-
 action="$1"; shift
 case "$action" in
 list)
@@ -310,40 +219,9 @@ unlock)
 	test $# = 2 || die "'unlock' requires two parameters: <leaseID> <file>"
 	req "$action" "$@"
 	;;
-add-snapshot)
-	commit=
-	case "$1" in
-	--commit=*) commit="${1#*=}"; shift;;
-	esac
-	test $# = 1 || die "add_snapshot requires one parameter: <version>"
-	version="$1"
-	case "$commit,$version" in
-	*" "*|*"	"*)
-		die "There cannot be any whitespace in the version parameter"
-		;;
-	,*.g[a-f0-9]*)
-		commit="${version##*.g}"
-		;;
-	,*)
-		commit="$(git rev-parse --verify refs/tags/"$version")" ||
-		die "Could not determine commit from version '$version'"
-		;;
-	esac
-
-	if git rev-parse --verify -q 10ca1f73c11475e222 2>/dev/null
-	then
-		git_checkout=.
-	else
-		git_checkout=/usr/src/git
-	fi
-	test -d "$git_checkout" || git_checkout="$HOME/git"
-	test -d "$git_checkout" || die "Could not find Git repository"
-	git -C "$git_checkout" rev-parse --verify -q "$commit" ||
-	die "No commit '$commit' in '$git_checkout'"
-	date="$(git -C "$git_checkout" show -s --format=%cD "$commit")"
-	h2_id="$(TZ=GMT date --date="$date" +%Y-%m-%d-%H:%M:%S)"
-
-	add_snapshot "$version" "$date" "$h2_id" "$commit"
+break-lock)
+	test $# = 1 || die "'break-lock' requires one parameter: <file>"
+	req "$action" "$@"
 	;;
 *)
 	die "Unhandled action: '$action'"
