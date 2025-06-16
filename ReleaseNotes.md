@@ -41,6 +41,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ### New Features
 
+* Comes with [Git v2.50.0](https://github.com/git/git/blob/v2.50.0/Documentation/RelNotes/2.50.0.adoc).
 * Comes with [MinTTY v3.7.8](https://github.com/mintty/mintty/releases/tag/3.7.8).
 * Comes with [OpenSSH v10.0.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_0_P1).
 * Comes with [cURL v8.14.1](https://curl.se/changes.html#8_14_1).
