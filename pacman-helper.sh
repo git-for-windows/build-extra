@@ -444,7 +444,7 @@ quick_action () { # <action> <file>...
 		 # `:(exclude)<pkgname>-[0-9]*-*-*-*`
 		 s/$/-*-*-*/
 		 s/^/:(exclude)/' |
-		 xargs git rm --sparse --cached -- ||
+		 xargs git rm --sparse --cached --ignore-unmatch -- ||
 		 die "Could not remove the existing versions from the Git branch in $arch"
 
 		 # Now add the files to the Git branch
