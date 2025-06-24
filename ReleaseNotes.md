@@ -37,6 +37,12 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.50.0 (June 16th 2025)
+
+### Bug Fixes
+
+* Cloning large repositories via SSH [frequently froze](https://github.com/git-for-windows/git/issues/5688) as of Git for Windows v2.50.0, which [has been fixed](https://github.com/git-for-windows/msys2-runtime/pull/102).
+
 ## Changes since Git for Windows v2.49.0 (March 17th 2025)
 
 ### New Features
