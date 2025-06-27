@@ -39,6 +39,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.50.0 (June 16th 2025)
 
+### New Features
+
+* Comes with [Git LFS v3.7.0](https://github.com/git-lfs/git-lfs/releases/tag/v3.7.0).
+
 ### Bug Fixes
 
 * Cloning large repositories via SSH [frequently froze](https://github.com/git-for-windows/git/issues/5688) as of Git for Windows v2.50.0, which [has been fixed](https://github.com/git-for-windows/msys2-runtime/pull/102).
