@@ -47,6 +47,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * Cloning large repositories via SSH [frequently froze](https://github.com/git-for-windows/git/issues/5688) as of Git for Windows v2.50.0, which [has been fixed](https://github.com/git-for-windows/msys2-runtime/pull/102).
 * Cloning large repositories via SSH [frequently hung with Git for Windows v2.50.0](https://github.com/git-for-windows/git/issues/5688), which [was fixed](https://github.com/git-for-windows/msys2-runtime/pull/103).
+* In Git for Windows v2.50.0, operations using the POSIX emulation layer (cloning via SSH, generating the Bash prompt) cannot be interrupted by Ctrl+C, which [has been fixed](https://github.com/git-for-windows/msys2-runtime/pull/104).
 
 ## Changes since Git for Windows v2.49.0 (March 17th 2025)
 
