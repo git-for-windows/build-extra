@@ -41,6 +41,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 This is a security fix release, addressing CVE-2024-50349, CVE-2024-52006, CVE-2025-27613, CVE-2025-27614, CVE-2025-46334, CVE-2025-46835, CVE-2025-48384, CVE-2025-48385, and CVE-2025-48386.
 
+### New Features
+
+* Comes with [Git v2.50.1](https://github.com/git/git/blob/v2.50.1/Documentation/RelNotes/2.50.1.adoc).
+
 ### Bug Fixes
 
 * [**CVE-2025-27613**](https://github.com/j6t/gitk/security/advisories/GHSA-f3cw-xrj3-wr2v), Gitk: When a user clones an untrusted repository and runs Gitk without additional command arguments, any writable file can be created and truncated. The option "Support per-file encoding" must have been enabled. The operation "Show origin of this line" is affected as well, regardless of the option being enabled or not.
