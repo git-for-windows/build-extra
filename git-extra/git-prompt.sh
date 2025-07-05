@@ -31,12 +31,12 @@ else
    			. "$COMPLETION_PATH/git-prompt.sh"
   			if [ ! "${ZSH_VERSION}" = "" ];
 			then
-   				precmd() # Assembles git prompt that closely resembles the bash prompt.
-       				{
-	   				pre="${newline}%F{green}%n@%m%f %F{magenta}${MSYSTEM:-"ZSH"}%f %F{yellow}%~%f %F{cyan}"
-					post="%f${newline}$ "
-     					__git_ps1 "${pre}" "${post}" "(%s)"
-	   			}
+   		# 		precmd() # Assembles git prompt that closely resembles the bash prompt.
+     #   				{
+	   	# 			pre="${newline}%F{green}%n@%m%f %F{magenta}${MSYSTEM:-"ZSH"}%f %F{yellow}%~%f %F{cyan}"
+					# post="%f${newline}$ "
+     # 					__git_ps1 "${pre}" "${post}" "(%s)"
+	   	# 		}
 				return 	# Avoids zsh git-completion.bash Error.
 			fi
 			. "$COMPLETION_PATH/git-completion.bash"
