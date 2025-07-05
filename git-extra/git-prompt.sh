@@ -1,12 +1,12 @@
-newline='
-'
-
 if test -f /etc/profile.d/git-sdk.sh
 then
 	TITLEPREFIX=SDK-${MSYSTEM#MINGW}
 else
 	TITLEPREFIX=$MSYSTEM
 fi
+
+# newline='
+# '
 
 if test -f ~/.config/git/git-prompt.sh
 then
@@ -29,7 +29,7 @@ else
 		if test -f "$COMPLETION_PATH/git-prompt.sh"
 		then
    			. "$COMPLETION_PATH/git-prompt.sh"
-  			if [ ! "${ZSH_VERSION}" = "" ];
+  			if [ ! "x${ZSH_VERSION}" = "x" ];
 			then
    		# 		precmd() # Assembles git prompt that closely resembles the bash prompt.
      #   				{
