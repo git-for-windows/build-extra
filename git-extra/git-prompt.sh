@@ -1,12 +1,13 @@
+#!/bin/sh
+# newline='
+# '
+
 if test -f /etc/profile.d/git-sdk.sh
 then
 	TITLEPREFIX=SDK-${MSYSTEM#MINGW}
 else
 	TITLEPREFIX=$MSYSTEM
 fi
-
-# newline='
-# '
 
 if test -f ~/.config/git/git-prompt.sh
 then
@@ -31,12 +32,12 @@ else
    			. "$COMPLETION_PATH/git-prompt.sh"
   			if [ ! "x${ZSH_VERSION}" = "x" ];
 			then
-   		# 		precmd() # Assembles git prompt that closely resembles the bash prompt.
-     #   				{
-	   	# 			pre="${newline}%F{green}%n@%m%f %F{magenta}${MSYSTEM:-"ZSH"}%f %F{yellow}%~%f %F{cyan}"
-					# post="%f${newline}$ "
-     # 					__git_ps1 "${pre}" "${post}" "(%s)"
-	   	# 		}
+   				precmd() # Assembles git prompt that closely resembles the bash prompt.
+       				{
+	   				pre="${newline}%F{green}%n@%m%f %F{magenta}${MSYSTEM:-"ZSH"}%f %F{yellow}%~%f %F{cyan}"
+					post="%f${newline}$ "
+     					__git_ps1 "${pre}" "${post}" "(%s)"
+	   			}
 				return 	# Avoids zsh git-completion.bash Error.
 			fi
 			. "$COMPLETION_PATH/git-completion.bash"
