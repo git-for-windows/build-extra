@@ -1,6 +1,6 @@
 #!/bin/sh
-# newline='
-# '
+newline='
+'
 
 if test -f /etc/profile.d/git-sdk.sh
 then
@@ -30,19 +30,20 @@ else
 		if test -f "$COMPLETION_PATH/git-prompt.sh"
 		then
    			. "$COMPLETION_PATH/git-prompt.sh"
-  			if [ ! "x${ZSH_VERSION}" = "x" ];
+  			if test -n "$ZSH_VERSION" # Avoids zsh git-completion.bash Error.
 			then
-   				precmd() # Assembles git prompt that closely resembles the bash prompt.
+   				# Assembles git prompt that closely resembles the default bash prompt.
+   				precmd() 
        				{
 	   				pre="${newline}%F{green}%n@%m%f %F{magenta}${MSYSTEM:-"ZSH"}%f %F{yellow}%~%f %F{cyan}"
 					post="%f${newline}$ "
      					__git_ps1 "${pre}" "${post}" "(%s)"
 	   			}
-				return 	# Avoids zsh git-completion.bash Error.
-			fi
-			. "$COMPLETION_PATH/git-completion.bash"
-			PS1="$PS1"'\[\033[36m\]'  # change color to cyan
-			PS1="$PS1"'`__git_ps1`'   # bash function
+			else
+				. "$COMPLETION_PATH/git-completion.bash"
+				PS1="$PS1"'\[\033[36m\]'  # change color to cyan
+				PS1="$PS1"'`__git_ps1`'   # bash function
+    			fi
 		fi
 	fi
 	PS1="$PS1"'\[\033[0m\]'        # change color
