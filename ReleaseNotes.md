@@ -1,5 +1,5 @@
-# Git for Windows v2.50.0(2) Release Notes
-Latest update: July 1st 2025
+# Git for Windows v2.50.1 Release Notes
+Latest update: July 8th 2025
 
 ## Introduction
 
@@ -36,6 +36,24 @@ Should you encounter other problems, please first search [the bug tracker](https
 Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
+
+## Changes since Git for Windows v2.50.0(2) (July 1st 2025)
+
+This is a security fix release, addressing CVE-2024-50349, CVE-2024-52006, CVE-2025-27613, CVE-2025-27614, CVE-2025-46334, CVE-2025-46835, CVE-2025-48384, CVE-2025-48385, and CVE-2025-48386.
+
+### New Features
+
+* Comes with [Git v2.50.1](https://github.com/git/git/blob/v2.50.1/Documentation/RelNotes/2.50.1.adoc).
+
+### Bug Fixes
+
+* [**CVE-2025-27613**](https://github.com/j6t/gitk/security/advisories/GHSA-f3cw-xrj3-wr2v), Gitk: When a user clones an untrusted repository and runs Gitk without additional command arguments, any writable file can be created and truncated. The option "Support per-file encoding" must have been enabled. The operation "Show origin of this line" is affected as well, regardless of the option being enabled or not.
+* [**CVE-2025-27614**](https://github.com/j6t/gitk/security/advisories/GHSA-g4v5-fjv9-mhhc), Gitk: A Git repository can be crafted in such a way that a user who has cloned the repository can be tricked into running any script supplied by the attacker by invoking `gitk filename`, where `filename` has a particular structure.
+* [**CVE-2025-46334**](https://github.com/j6t/git-gui/security/advisories/GHSA-7px4-9hg2-fvhx), Git GUI (Windows only): A malicious repository can ship versions of sh.exe or typical textconv filter programs such as astextplain. On Windows, path lookup can find such executables in the worktree. These programs are invoked when the user selects "Git Bash" or "Browse Files" from the menu.
+* [**CVE-2025-46835**](https://github.com/j6t/git-gui/security/advisories/GHSA-xfx7-68v4-v8fg), Git GUI: When a user clones an untrusted repository and is tricked into editing a file located in a maliciously named directory in the repository, then Git GUI can create and overwrite any writable file.
+* [**CVE-2025-48384**](https://github.com/git/git/security/advisories/GHSA-vwqx-4fm8-6qc9), Git: When reading a config value, Git strips any trailing carriage return and line feed (CRLF). When writing a config entry, values with a trailing CR are not quoted, causing the CR to be lost when the config is later read.  When initializing a submodule, if the submodule path contains a trailing CR, the altered path is read resulting in the submodule being checked out to an incorrect location. If a symlink exists that points the altered path to the submodule hooks directory, and the submodule contains an executable post-checkout hook, the script may be unintentionally executed after checkout.
+* [**CVE-2025-48385**](https://github.com/git/git/security/advisories/GHSA-m98c-vgpc-9655), Git: When cloning a repository Git knows to optionally fetch a bundle advertised by the remote server, which allows the server-side to offload parts of the clone to a CDN. The Git client does not perform sufficient validation of the advertised bundles, which allows the remote side to perform protocol injection. This protocol injection can cause the client to write the fetched bundle to a location controlled by the adversary. The fetched content is fully controlled by the server, which can in the worst case lead to arbitrary code execution.
+* [**CVE-2025-48386**](https://github.com/git/git/security/advisories/GHSA-4v56-3xvj-xvfr), Git: The wincred credential helper uses a static buffer (`target`) as a unique key for storing and comparing against internal storage. This credential helper does not properly bounds check the available space remaining in the buffer before appending to it with `wcsncat()`, leading to potential buffer overflows.
 
 ## Changes since Git for Windows v2.50.0 (June 16th 2025)
 
