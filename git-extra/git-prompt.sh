@@ -1,3 +1,7 @@
+#!/bin/sh
+newline='
+'
+
 if test -f /etc/profile.d/git-sdk.sh
 then
 	TITLEPREFIX=SDK-${MSYSTEM#MINGW}
@@ -25,10 +29,21 @@ else
 		COMPLETION_PATH="$COMPLETION_PATH/share/git/completion"
 		if test -f "$COMPLETION_PATH/git-prompt.sh"
 		then
-			. "$COMPLETION_PATH/git-completion.bash"
-			. "$COMPLETION_PATH/git-prompt.sh"
-			PS1="$PS1"'\[\033[36m\]'  # change color to cyan
-			PS1="$PS1"'`__git_ps1`'   # bash function
+   			. "$COMPLETION_PATH/git-prompt.sh"
+  			if test -n "$ZSH_VERSION" # Avoids zsh git-completion.bash Error.
+			then
+   				# Assembles git prompt that closely resembles the default bash prompt.
+   				precmd() 
+       				{
+	   				pre="${newline}%F{green}%n@%m%f %F{magenta}${MSYSTEM:-"ZSH"}%f %F{yellow}%~%f %F{cyan}"
+					post="%f${newline}$ "
+     					__git_ps1 "${pre}" "${post}" "(%s)"
+	   			}
+			else
+				. "$COMPLETION_PATH/git-completion.bash"
+				PS1="$PS1"'\[\033[36m\]'  # change color to cyan
+				PS1="$PS1"'`__git_ps1`'   # bash function
+    			fi
 		fi
 	fi
 	PS1="$PS1"'\[\033[0m\]'        # change color
