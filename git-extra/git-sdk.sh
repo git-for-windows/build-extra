@@ -360,7 +360,7 @@ sdk () {
 				  git diff-index --quiet HEAD ||
 				  test ! -s .git/index ||
 				  (uname_m="$(uname -m)" &&
-				    test ! -d "../build-$uname_m-pc-msys/$uname_m-pc-cygwin/winsup/cygwin" &&
+				    test ! -d "../build-$uname_m-pc-cygwin/$uname_m-pc-cygwin/winsup/cygwin" &&
 				    test ! -d "../build-$uname_m-pc-msys/$uname_m-pc-msys/winsup/cygwin"); }
 			then
 				# no local changes
@@ -371,9 +371,9 @@ sdk () {
 
 			# Build the current branch
 			(uname_m="$(uname -m)" &&
-			 if test -d "../build-$uname_m-pc-msys/$uname_m-pc-cygwin/winsup/cygwin"
+			 if test -d "../build-$uname_m-pc-cygwin/$uname_m-pc-cygwin/winsup/cygwin"
 			 then
-				cd "../build-$uname_m-pc-msys/$uname_m-pc-cygwin/winsup/cygwin"
+				cd "../build-$uname_m-pc-cygwin/$uname_m-pc-cygwin/winsup/cygwin"
 			 else
 				cd "../build-$uname_m-pc-msys/$uname_m-pc-msys/winsup/cygwin"
 			 fi &&
