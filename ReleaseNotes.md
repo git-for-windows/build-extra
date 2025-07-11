@@ -37,6 +37,12 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.50.1 (July 8th 2025)
+
+### New Features
+
+* The Portable Git installers (which are self-extracting 7-Zip archives) are now based off of [7-Zip 25.00](https://sourceforge.net/p/sevenzip/discussion/45797/thread/4ed0e379f4/)
+
 ## Changes since Git for Windows v2.50.0(2) (July 1st 2025)
 
 This is a security fix release, addressing CVE-2024-50349, CVE-2024-52006, CVE-2025-27613, CVE-2025-27614, CVE-2025-46334, CVE-2025-46835, CVE-2025-48384, CVE-2025-48385, and CVE-2025-48386.
