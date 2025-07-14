@@ -50,7 +50,7 @@ then
 	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES mingw-w64-bzip2 mingw-w64-c-ares
 		mingw-w64-libsystre mingw-w64-libtre-git mingw-w64-p11-kit
 		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
-		libedit libgdbm perl perl-.*"
+		libedit libgdbm perl perl-.* mingw-w64-tzdata"
 fi
 if test -z "$INCLUDE_GIT_UPDATE"
 then
