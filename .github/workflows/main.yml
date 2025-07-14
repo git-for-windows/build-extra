@@ -56,8 +56,8 @@ jobs:
           git ls-files \*/release.sh | sed 's|[^/]*$||' | sort >releaseable.txt &&
           if grep -q test-sdk-artifacts=true $GITHUB_OUTPUT
           then
-            # These are already tested as part of the `sdk-artifacts` matrix
-            sed -i '/^\(installer\|mingit\)\/$/d' releaseable.txt
+            # This is already tested as part of the `sdk-artifacts` matrix
+            sed -i '/^\(installer\)\/$/d' releaseable.txt
           fi &&
           show_files releaseable.txt &&
           define_matrix artifacts releaseable.txt touched.txt artifacts.txt &&
