@@ -669,11 +669,11 @@ setup
 # Rebase!
 if test -n "$use_original_shears"
 then
-	git rebase -i --onto "$onto" HEAD
+	git rebase -i --no-update-refs --onto "$onto" HEAD
 elif test -n "$merging"
 then
 	# --merging is incompatible with keeping cousins
-	git rebase -i --rebase-merges=rebase-cousins --onto "$onto" "$upstream"
+	git rebase -i --no-update-refs --rebase-merges=rebase-cousins --onto "$onto" "$upstream"
 else
-	git rebase -ir --onto "$onto" "$upstream"
+	git rebase -ir --no-update-refs --onto "$onto" "$upstream"
 fi
