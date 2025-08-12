@@ -92,7 +92,7 @@ VersionInfoVersion={#FILE_VERSION}
 ; Cosmetic
 SetupIconFile={#SourcePath}\..\git.ico
 WizardImageBackColor=clWhite
-WizardImageStretch=no
+WizardImageStretch=true
 WizardImageFile={#SourcePath}\git.bmp
 WizardSmallImageFile={#SourcePath}\gitsmall.bmp
 MinVersion=6.3
