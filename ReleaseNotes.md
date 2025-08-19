@@ -41,6 +41,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ### New Features
 
+* Comes with [Git v2.51.0](https://github.com/git/git/blob/v2.51.0/Documentation/RelNotes/2.51.0.adoc).
 * The Portable Git installers (which are self-extracting 7-Zip archives) are now based off of [7-Zip 25.01](https://sourceforge.net/p/sevenzip/discussion/45797/thread/da14cd780b/)
 * Comes with [cURL v8.15.0](https://curl.se/changes.html#8_15_0).
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.4](https://cygwin.com/pipermail/cygwin-announce/2025-July/012416.html).
