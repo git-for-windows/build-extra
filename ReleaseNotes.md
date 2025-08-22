@@ -37,6 +37,12 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.51.0 (August 19th 2025)
+
+### New Features
+
+* Comes with [MinTTY v3.8.0](https://github.com/mintty/mintty/releases/tag/3.8.0).
+
 ## Changes since Git for Windows v2.50.1 (July 8th 2025)
 
 ### New Features
