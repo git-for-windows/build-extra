@@ -1904,6 +1904,40 @@ begin
 #endif
 end;
 
+procedure PreselectShellIntegrationIfMatchingInstall();
+var
+  RootKey: Integer;
+  Cmd: String;
+  AppPath: String;
+begin
+  AppPath := UninstallAppPath;  // Set earlier in QueryUninstallValues()
+
+  if AppPath = '' then
+    Exit;
+
+  if IsAdminLoggedOn then
+    RootKey := HKEY_LOCAL_MACHINE
+  else
+    RootKey := HKEY_CURRENT_USER;
+
+  // Git Bash Here
+  if RegQueryStringValue(RootKey,
+    'SOFTWARE\Classes\Directory\shell\git_shell\command', '', Cmd) then
+  begin
+    if Pos(AppPath, Cmd) > 0 then
+      WizardSelectComponents('ext\shellhere');
+  end;
+
+  // Git GUI Here
+  if RegQueryStringValue(RootKey,
+    'SOFTWARE\Classes\Directory\shell\git_gui\command', '', Cmd) then
+  begin
+    if Pos(AppPath, Cmd) > 0 then
+      WizardSelectComponents('ext\guihere');
+  end;
+end;
+
+
 procedure InitializeWizard;
 var
     PrevPageID,TabOrder,TopOfLabels,Top,Left:Integer;
@@ -1922,6 +1956,9 @@ begin
     AppDir:=UninstallAppPath;
     GetDefaultsFromGitConfig('ProgramData');
     GetDefaultsFromGitConfig('system');
+
+    // Check if Windows Integration already exists to reapply it during update
+    PreselectShellIntegrationIfMatchingInstall();
 
     ChosenOptions:='';
 
