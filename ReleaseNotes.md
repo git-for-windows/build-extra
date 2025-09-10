@@ -43,6 +43,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * Comes with [MinTTY v3.8.0](https://github.com/mintty/mintty/releases/tag/3.8.0).
 * Comes with [PCRE2 v10.46](https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.46).
+* Comes with [cURL v8.16.0](https://curl.se/changes.html#8_16_0).
 
 ## Changes since Git for Windows v2.50.1 (July 8th 2025)
 
