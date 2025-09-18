@@ -45,6 +45,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [cURL v8.16.0](https://curl.se/changes.html#8_16_0).
 * Comes with [Tig v2.6.0](https://github.com/jonas/tig/releases/tag/tig-2.6.0).
 * Comes with [MinTTY v3.8.1](https://github.com/mintty/mintty/releases/tag/3.8.1).
+* Comes with [OpenSSL v3.5.3](https://www.openssl.org/news/openssl-3.5-notes.html).
 
 ## Changes since Git for Windows v2.50.1 (July 8th 2025)
 
