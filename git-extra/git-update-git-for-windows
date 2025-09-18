@@ -249,8 +249,10 @@ update_git_for_windows () {
 	if test -d /clangarm64/bin
 	then
 		arch_bit=arm64
+		prefix=/clangarm64
 	else
 		arch_bit=${bit}-bit
+		prefix=/mingw$bit
 	fi
 
 	echo "$git_label $version ($arch_bit)" >&2
@@ -296,7 +298,7 @@ update_git_for_windows () {
 		then
 			wintoast.exe --appname "$git_label" \
 				--appid GitForWindows.Updater \
-				--image /mingw$bit/share/git/git-for-windows.ico \
+				--image $prefix/share/git/git-for-windows.ico \
 				--text "Download and install $name$warn?" \
 				--action Yes --action No --expirems 15000
 			case $? in
