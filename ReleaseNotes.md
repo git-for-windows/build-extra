@@ -47,6 +47,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [MinTTY v3.8.1](https://github.com/mintty/mintty/releases/tag/3.8.1).
 * Comes with [OpenSSL v3.5.3](https://www.openssl.org/news/openssl-3.5-notes.html).
 
+### Bug Fixes
+
+* The auto-updater now shows the notification [also on Windows/ARM64](https://github.com/git-for-windows/build-extra/pull/644).
+
 ## Changes since Git for Windows v2.50.1 (July 8th 2025)
 
 ### New Features
