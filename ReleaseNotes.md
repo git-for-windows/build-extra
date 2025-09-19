@@ -49,7 +49,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ### Bug Fixes
 
-* The auto-updater now shows the notification [also on Windows/ARM64](https://github.com/git-for-windows/build-extra/pull/644).
+* The auto-updater now shows Git for Windows icon in the notification [also on Windows/ARM64](https://github.com/git-for-windows/build-extra/pull/644).
 
 ## Changes since Git for Windows v2.50.1 (July 8th 2025)
 
