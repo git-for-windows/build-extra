@@ -5,7 +5,7 @@ pkgbase="mingw-w64-${_realname}"
 pkgname=($_realname
         "${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
-pkgver=1.1.670.09847e01e
+pkgver=1.1.672.64870a8db
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('any')
