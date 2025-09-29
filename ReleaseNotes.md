@@ -42,7 +42,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### New Features
 
 * Comes with [PCRE2 v10.46](https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.46).
-* Comes with [cURL v8.16.0](https://curl.se/changes.html#8_16_0). This addresses [a bug where fetches/pushes could fail with `failed to read data from server: SEC_E_CONTEXT_EXPIRED (0x80090317)` under certain circumstances](https://github.com/git-for-windows/git/issues/5838).
+* Comes with [cURL v8.16.0](https://curl.se/changes.html#8_16_0). This addresses [a bug where fetches/pushes could fail with `failed to read data from server: SEC_E_CONTEXT_EXPIRED (0x80090317)` under certain circumstances](https://github.com/git-for-windows/git/issues/5838). Also included: a [back-port of a fix](https://github.com/git-for-windows/MINGW-packages/pull/163) for a bug where connection failures were mistakenly reported as time-outs.
 * Comes with [Tig v2.6.0](https://github.com/jonas/tig/releases/tag/tig-2.6.0).
 * Comes with [MinTTY v3.8.1](https://github.com/mintty/mintty/releases/tag/3.8.1).
 * Comes with [OpenSSL v3.5.3](https://www.openssl.org/news/openssl-3.5-notes.html).
