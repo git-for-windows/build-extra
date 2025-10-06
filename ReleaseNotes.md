@@ -39,6 +39,8 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.51.0(2) (September 29th 2025)
 
+Due to persistent maintenance challenges and the community's limited engagement and usage, `git svn` support in Git for Windows will be [dropped from the next major Git for Windows release](https://github.com/git-for-windows/git/issues/5405).
+
 ### New Features
 
 * Comes with [OpenSSL v3.5.4](https://www.openssl.org/news/openssl-3.5-notes.html).
