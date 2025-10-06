@@ -44,6 +44,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [OpenSSL v3.5.4](https://www.openssl.org/news/openssl-3.5-notes.html).
 * Comes with [OpenSSH v10.1.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_1_P1).
 
+### Bug Fixes
+
+* A potential memory corruption in the optional `wincred` credential helper [was fixed](https://github.com/git-for-windows/git/pull/5856).
+
 ## Changes since Git for Windows v2.51.0 (August 19th 2025)
 
 ### New Features
