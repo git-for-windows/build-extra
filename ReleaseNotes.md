@@ -45,6 +45,7 @@ Due to persistent maintenance challenges and the community's limited engagement 
 
 * Comes with [OpenSSL v3.5.4](https://www.openssl.org/news/openssl-3.5-notes.html).
 * Comes with [OpenSSH v10.1.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_1_P1).
+* Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.5](https://inbox.sourceware.org/cygwin-announce/d0ea504c-d683-4ed6-a47e-e866ddd37613@dronecode.org.uk/).
 
 ### Bug Fixes
 
