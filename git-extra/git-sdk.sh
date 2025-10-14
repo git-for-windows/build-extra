@@ -127,7 +127,6 @@ sdk () {
 			bash \
 			curl \
 			gawk \
-			git-flow \
 			gnupg \
 			heimdal \
 			mintty \
