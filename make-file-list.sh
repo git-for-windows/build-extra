@@ -160,7 +160,7 @@ LIBCURL_EXTRA=
 required=
 for req in mingw-w64-$PACMAN_ARCH-git-credential-manager $SH_FOR_REBASE $LIBCURL_EXTRA \
 	$(test -n "$MINIMAL_GIT" || echo \
-		mingw-w64-$PACMAN_ARCH-connect git-flow unzip docx2txt \
+		mingw-w64-$PACMAN_ARCH-connect unzip docx2txt \
 		mingw-w64-$PACMAN_ARCH-antiword mingw-w64-$PACMAN_ARCH-odt2txt \
 		mingw-w64-$PACMAN_ARCH-xpdf-tools ssh-pageant mingw-w64-$PACMAN_ARCH-git-lfs \
 		tig nano perl-JSON libpcre2_8 libpcre2posix $GIT_UPDATE_EXTRA_PACKAGES)
@@ -183,7 +183,7 @@ if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$PACMAN_ARCH-git-doc-html ncurses mintty vim nano
 		winpty less gnupg tar diffutils patch dos2unix which subversion perl-JSON
-		mingw-w64-$PACMAN_ARCH-tk mingw-w64-$PACMAN_ARCH-connect git-flow docx2txt
+		mingw-w64-$PACMAN_ARCH-tk mingw-w64-$PACMAN_ARCH-connect docx2txt
 		mingw-w64-$PACMAN_ARCH-antiword mingw-w64-$PACMAN_ARCH-odt2txt ssh-pageant
 		mingw-w64-$PACMAN_ARCH-git-lfs mingw-w64-$PACMAN_ARCH-xz tig $GIT_UPDATE_EXTRA_PACKAGES"
 fi
