@@ -39,17 +39,19 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.51.0(2) (September 29th 2025)
 
+This is a security release! Git LFS (which is enabled by default in Git for Windows) fixes [CVE-2025-26625](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-6pvw-g552-53c5) (Severity rated High, 8.6 / 10) in v3.7.1. Please only clone or pull from repositories you trust until you upgraded.
+
 Due to persistent maintenance challenges and the community's limited engagement and usage, `git svn` support in Git for Windows will be [dropped from the next major Git for Windows release](https://github.com/git-for-windows/git/issues/5405).
 
 Note that `git flow` is no longer shipped with Git for Windows, after a version had been distributed that had been languishing for years. Even the original, years-stale Git Flow project [has been archived](https://github.com/nvie/gitflow/issues/3#issuecomment-3400894835).
 
 ### New Features
 
+* Comes with [Git LFS v3.7.1](https://github.com/git-lfs/git-lfs/releases/tag/v3.7.1), addressing [CVE-2025-26625](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-6pvw-g552-53c5).
 * Comes with [OpenSSL v3.5.4](https://www.openssl.org/news/openssl-3.5-notes.html).
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.5](https://inbox.sourceware.org/cygwin-announce/d0ea504c-d683-4ed6-a47e-e866ddd37613@dronecode.org.uk/).
 * Comes with [OpenSSH v10.2.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_2_P1).
 * Drops `git flow`.
-* Comes with [Git LFS v3.7.1](https://github.com/git-lfs/git-lfs/releases/tag/v3.7.1).
 
 ### Bug Fixes
 
