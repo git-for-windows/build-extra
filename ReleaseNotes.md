@@ -47,6 +47,7 @@ Note that `git flow` is no longer shipped with Git for Windows, after a version 
 
 ### New Features
 
+* Comes with [Git v2.51.1](https://github.com/git/git/blob/v2.51.1/Documentation/RelNotes/2.51.1.adoc).
 * Comes with [Git LFS v3.7.1](https://github.com/git-lfs/git-lfs/releases/tag/v3.7.1), addressing [CVE-2025-26625](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-6pvw-g552-53c5).
 * Comes with [OpenSSL v3.5.4](https://www.openssl.org/news/openssl-3.5-notes.html).
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.5](https://inbox.sourceware.org/cygwin-announce/d0ea504c-d683-4ed6-a47e-e866ddd37613@dronecode.org.uk/).
