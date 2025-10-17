@@ -49,6 +49,7 @@ Note that `git flow` is no longer shipped with Git for Windows, after a version 
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.5](https://inbox.sourceware.org/cygwin-announce/d0ea504c-d683-4ed6-a47e-e866ddd37613@dronecode.org.uk/).
 * Comes with [OpenSSH v10.2.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_2_P1).
 * Drops `git flow`.
+* Comes with [Git LFS v3.7.1](https://github.com/git-lfs/git-lfs/releases/tag/v3.7.1).
 
 ### Bug Fixes
 
