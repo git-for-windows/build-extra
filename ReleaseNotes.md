@@ -37,6 +37,12 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.51.1 (October 17th 2025)
+
+### Bug Fixes
+
+* The default credential helper in the portable variant of Git for Windows (`credential-helper-selector`) [is now high DPI aware](https://github.com/git-for-windows/build-extra/pull/651).
+
 ## Changes since Git for Windows v2.51.0(2) (September 29th 2025)
 
 This is a security release! Git LFS (which is enabled by default in Git for Windows) fixes [CVE-2025-26625](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-6pvw-g552-53c5) (Severity rated High, 8.6 / 10) in v3.7.1. Please only clone or pull from repositories you trust until you upgraded.
