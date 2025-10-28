@@ -39,6 +39,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.51.1 (October 17th 2025)
 
+### New Features
+
+* Comes with [Git v2.51.2](https://github.com/git/git/blob/v2.51.2/Documentation/RelNotes/2.51.2.adoc).
+
 ### Bug Fixes
 
 * The default credential helper in the portable variant of Git for Windows (`credential-helper-selector`) [is now high DPI aware](https://github.com/git-for-windows/build-extra/pull/651).
