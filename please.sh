@@ -295,10 +295,6 @@ set_package () {
 		extra_packages="mingw-w64-curl-pdb"
 		pkgpath=/usr/src/MINGW-packages/$package
 		;;
-	git-flow)
-		type=MSYS
-		pkgpath=/usr/src/MSYS2-packages/$package
-		;;
 	p7zip)
 		type=MSYS
 		pkgpath=/usr/src/MSYS2-packages/$package
@@ -2261,40 +2257,6 @@ upgrade () { # [--directory=<artifacts-directory>] [--only-mingw] [--no-build] [
 		 updpkgsums &&
 		 git commit -s -m "Upgrade $package to $version${force_pkgrel:+-$force_pkgrel}" PKGBUILD &&
 		 create_bundle_artifact)
-		;;
-	git-flow)
-		repo=petervanderdoes/gitflow-avh
-		url=https://api.github.com/repos/$repo/releases/latest
-		release="$(curl --netrc -s $url)"
-		test -n "$release" ||
-		die "Could not determine the latest version of %s\n" "$package"
-		version="$(echo "$release" |
-			sed -n 's/^  "tag_name": "\(.*\)",\?$/\1/p')"
-		test -n "$version" ||
-		die "Could not determine version of %s\n" "$package"
-
-		# git-flow 1.12.2 was somehow released as tag only, without
-		# release notes, so we would only find 1.12.1...
-		# see https://github.com/petervanderdoes/gitflow-avh/issues/406
-		# for details.
-		test 1.12.1 != "$version" ||
-		version=1.12.2
-
-		(cd "$sdk64$pkgpath" &&
-		 sed -i -e 's/^\(pkgver=\).*/\1'$version/ \
-			-e 's/^pkgrel=.*/pkgrel=1/' PKGBUILD &&
-		 maybe_force_pkgrel "$force_pkgrel" &&
-		 updpkgsums &&
-		 git commit -s -m "$package: new version ($version${force_pkgrel:+-$force_pkgrel})" PKGBUILD &&
-		 create_bundle_artifact) ||
-		die "Could not update %s\n" "$sdk64$pkgpath/PKGBUILD"
-
-		git -C "$sdk32$pkgpath" pull "$sdk64$pkgpath/.." main ||
-		die "Could not update $sdk32$pkgpath"
-
-		url=https://github.com/$repo/releases/tag/$version &&
-		v="v$version${force_pkgrel:+ ($force_pkgrel)}" &&
-		release_notes_feature="Comes with [$package $v]($url)."
 		;;
 	serf)
 		url=https://serf.apache.org/download
