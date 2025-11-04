@@ -39,6 +39,8 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.51.2 (October 28th 2025)
 
+As announced in several recent release notes, [`git svn` is no longer supported by the Git for Windows project](https://github.com/git-for-windows/git/issues/5405).
+
 ### New Features
 
 * * Comes with [PCRE2 v10.47](https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.47).
