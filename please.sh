@@ -159,25 +159,6 @@ require_clean_worktree () {
 	die "%s not up-to-date\n" "$sdk$pkgpath"
 }
 
-ff_main_branch () {
-	case "$(git rev-parse --symbolic-full-name HEAD)" in
-	refs/heads/main) ;; # okay
-	refs/heads/master)
-		git branch -m main ||
-		die "%s: could not rename the main branch\n" "$sdk$pkgpath"
-		;;
-	*)
-		die "%s: Not on 'main'\n" "$sdk$pkgpath"
-		;;
-	esac
-
-	require_clean_worktree
-
-	git pull --ff-only origin HEAD ||
-	test 0 -eq $(git rev-list --count ..FETCH_HEAD) ||
-	die "%s: cannot fast-forward main branch\n" "$sdk$pkgpath"
-}
-
 fast_forward () {
 	if test -d "$2"/.git
 	then
@@ -239,63 +220,6 @@ ensure_valid_login_shell () {
 			fi
 			;;
 		esac' >&2
-}
-
-require_git_src_dir () {
-	sdk="$sdk64"
-	if test ! -d "$git_src_dir"
-	then
-		if test ! -d "${git_src_dir%/src/git}"
-		then
-			mingw_packages_dir="${git_src_dir%/*/src/git}"
-			if test ! -d "$mingw_packages_dir"
-			then
-				case "$mingw_packages_dir" in
-				*/MINGW-packages)
-					o=https://github.com/git-for-windows &&
-					git -C "${mingw_packages_dir%/*}" \
-						clone $o/MINGW-packages ||
-					die "Could not clone into %s\n" \
-						"$mingw_packages_dir"
-					;;
-				*)
-					die "Do not know how to clone %s\n" \
-						"$mingw_packages_dir"
-					;;
-				esac
-			else
-				git -C "$mingw_packages_dir" fetch &&
-				git -C "$mingw_packages_dir" \
-					checkout -t origin/main ||
-				die "Could not check out %s\n" \
-					"$mingw_packages_dir"
-			fi
-		fi
-		(cd "${git_src_dir%/src/git}" &&
-		 echo "Checking out Git (not making it)" >&2 &&
-		 "$sdk64/git-cmd" --command=usr\\bin\\sh.exe -l -c \
-			'makepkg-mingw --noconfirm -s -o' &&
-		 case "$(test -x /usr/bin/git && cat src/git/.git/objects/info/alternates 2>/dev/null)" in
-		 /*)
-			echo "Dissociating worktree, to allow MINGW git to access the worktree" >&2 &&
-			/usr/bin/git -C src/git/ repack -ad &&
-			rm src/git/.git/objects/info/alternates
-			;;
-		 esac) ||
-		die "Could not initialize %s\n" "$git_src_dir"
-	fi
-
-	test ! -f "$git_src_dir/PKGBUILD" ||
-	(cd "$git_src_dir/../.." &&
-	 sdk= pkgpath=$PWD ff_main_branch) ||
-	die "MINGW-packages not up-to-date\n"
-
-	test false = "$(git -C "$git_src_dir" config core.autoCRLF)" ||
-	(cd "$git_src_dir" &&
-	 git config core.autoCRLF false &&
-	 rm .git/index
-	 git reset --hard) ||
-	die "Could not make sure Git sources are checked out LF-only\n"
 }
 
 # build_and_test_64; intended to build and test 64-bit Git in MINGW-packages
