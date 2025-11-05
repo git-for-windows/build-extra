@@ -786,22 +786,6 @@ pkg_copy_artifacts () {
 	create_bundle_artifact
 }
 
-set_version_from_tag_name () {
-	version="${1#refs/tags/}"
-	version="${version#v}"
-	ver="$(echo "$version" | sed -n \
-		's/^\([0-9]*\.[0-9]*\.[0-9]*\(-rc[0-9]*\)\?\)\.windows\(\.1\|\(\.[0-9]*\)\)$/\1\4/p')"
-	test -n "$ver" ||
-	die "Unexpected version format: %s\n" "$version"
-
-	display_version="$ver"
-	case "$display_version" in
-	*.*.*.*)
-		display_version="${display_version%.*}(${display_version##*.})"
-		;;
-	esac
-}
-
 version_from_release_notes () {
 	sed -e '1s/^# Git for Windows v\(.*\) Release Notes$/\1/' -e 1q \
 		"$sdk64/usr/src/build-extra/ReleaseNotes.md"
@@ -1134,100 +1118,6 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 		echo "Created $artifactsdir/$zip" >&2 ||
 		die 'Could not create %s for %s\n' "$zip" "$arch"
 	done
-}
-
-render_release_notes_and_mail () { # <output-directory> <next-version> [<sha-256>...]
-	test -d "$1" || mkdir "$1" || die "Could not create '%s'\n" "$1"
-	case "$2" in
-	*-[0-9]*)
-		ver="${2#v}"
-		display_version="prerelease-$2"
-		;;
-	v[0-9]*.windows.[0-9]|v[1-9]*.windows.[1-9][0-9])
-		set_version_from_tag_name "$2"
-		;;
-	*)
-		die "Unhandled version: %s\n" "$2"
-		;;
-	esac
-
-	name="Git for Windows $display_version"
-	text="$(sed -n \
-		"/^## Changes since/,\${s/## //;:1;p;n;/^## Changes/q;b1}" \
-		<"$sdk64"/usr/src/build-extra/ReleaseNotes.md)"
-	checksums="$(printf '%s | %s\n' \
-		Git-"$ver"-64-bit.exe $3 \
-		Git-"$ver"-32-bit.exe $4 \
-		PortableGit-"$ver"-64-bit.7z.exe $5 \
-		PortableGit-"$ver"-32-bit.7z.exe $6 \
-		MinGit-"$ver"-64-bit.zip $7 \
-		MinGit-"$ver"-32-bit.zip $8 \
-		MinGit-"$ver"-busybox-64-bit.zip $9 \
-		MinGit-"$ver"-busybox-32-bit.zip ${10} \
-		Git-"$ver"-64-bit.tar.bz2 ${11} \
-		Git-"$ver"-32-bit.tar.bz2 ${12})"
-	body="$(printf "%s\n\n%s\n%s\n%s" "$text" \
-		'Filename | SHA-256' '-------- | -------' "$checksums")"
-	echo "$body" >"$1/release-notes-$ver"
-
-	# Required to render the release notes for the announcement mail
-	type w3m ||
-	case "$(uname -s)" in
-	Linux)
-		sudo apt-get -y install w3m ||
-		die "Could not install w3m\n"
-		;;
-	MINGW*|MSYS)
-		sdk="$sdk64" require w3m
-		;;
-	*)
-		die "Could not install w3m\n"
-		;;
-	esac
-
-	url=https://gitforwindows.org/
-	case "$display_version" in
-	prerelease-*)
-		url=https://gitforwindows.org/git-snapshots/
-		;;
-	*-rc*)
-		url=https://github.com/git-for-windows/git/releases/tag/$2
-		;;
-	esac
-
-	prefix="$(printf "%s\n\n%s%s\n\n    %s\n" \
-		"Dear Git users," \
-		"I hereby announce that Git for Windows " \
-		"$display_version is available from:" \
-		"$url")"
-	rendered="$(echo "$text" |
-		if type markdown >&2
-		then
-			markdown |
-			LC_CTYPE=C w3m -dump -cols 72 -T text/html
-		else
-			"$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-				'markdown |
-				LC_CTYPE=C w3m -dump -cols 72 -T text/html'
-		fi)"
-	printf "%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n%s\n\n%s\n\n%s\n\n%s\n\n%s\n%s\n" \
-		"From $version Mon Sep 17 00:00:00 2001" \
-		"From: $(git var GIT_COMMITTER_IDENT | sed -e 's/>.*/>/')" \
-		"Date: $(date -R)" \
-		"To: git-for-windows@googlegroups.com, git@vger.kernel.org, git-packagers@googlegroups.com" \
-		"Subject: [ANNOUNCE] Git for Windows $display_version" \
-		"Content-Type: text/plain; charset=UTF-8" \
-		"Content-Transfer-Encoding: 8bit" \
-		"MIME-Version: 1.0" \
-		"Fcc: Sent" \
-		"$prefix" \
-		"$rendered" \
-		"$checksums" \
-		"Ciao," \
-		"$(git var GIT_COMMITTER_IDENT | sed -e 's/ .*//')" \
-		>"$1/announce-$ver"
-
-	echo "Announcement saved as $1/announcement-$ver" >&2
 }
 
 release_sdk () { # <version>
