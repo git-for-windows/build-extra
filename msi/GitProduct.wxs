@@ -53,6 +53,7 @@
     </SetProperty>
     <SetProperty Action="SetBashCliEnvironmentPaths" Id="CLIENVIORNMENTPATHS" Value="{}" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Bash"</SetProperty>
     <SetProperty Action="SetCmdCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "Cmd"</SetProperty>
+    <SetProperty Action="SetCmdToolsMinimalCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd;[INSTALLFOLDER]bin" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "CmdToolsMinimal"</SetProperty>
     <SetProperty Action="SetCmdToolsCliEnvironmentPaths" Id="CLIENVIRONMENTPATHS" Value="[INSTALLFOLDER]cmd;[MingwFolder]bin;[INSTALLFOLDER]usr\bin" Before="InstallValidate" Sequence="execute">CLIENVIRONMENT = "CmdTools"</SetProperty>
 
     <SetProperty Id="CMDLINE_LINEENDINGS" Value="[LINEENDINGS]" Before="AppSearch" Sequence="first">
