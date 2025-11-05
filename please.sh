@@ -209,21 +209,6 @@ up_to_date () {
 	fi
 }
 
-# require_remote <nickname> <url>
-require_remote () {
-	if test -z "$(git config remote."$1".url)"
-	then
-		git remote add -f "$1" "$2"
-	else
-		test "$2" = "$(git config remote."$1".url)" ||
-		die "Incorrect URL for %s: %s\n" \
-			"$1" "$(git config remote."$1".url)"
-
-		git fetch "$1"
-	fi ||
-	die "Could not fetch from %s\n" "$1"
-}
-
 whatis () {
 	git show -s --pretty='tformat:%h (%s, %ad)' --date=short "$@"
 }
@@ -412,77 +397,6 @@ build_and_test_64 () {
 				exit 1
 			}
 		fi'
-}
-
-needs_upload_permissions () {
-	grep -q '^machine api\.github\.com$' "$HOME"/_netrc &&
-	grep -q '^machine uploads\.github\.com$' "$HOME"/_netrc ||
-	die "Missing GitHub entries in ~/_netrc\n"
-}
-
-tag_git () { # [--force]
-	force=
-	branch_to_use=
-	while case "$1" in
-	-f|--force)
-		force=--force
-		;;
-	--use-branch=*) branch_to_use="${1#*=}";;
-	-*) die "Unknown option: %s\n" "$1";;
-	*) break;;
-	esac; do shift; done
-	test $# = 0 ||
-	die "Expected no argument, got $#: %s\n" "$*"
-
-	sdk="$sdk64" require w3m
-
-	build_extra_dir="$sdk64/usr/src/build-extra"
-	(cd "$build_extra_dir" &&
-	 sdk= pkgpath=$PWD ff_main_branch) ||
-	die "Could not update build-extra\n"
-
-	git_src_dir="$sdk64/usr/src/MINGW-packages/mingw-w64-git/src/git"
-	(cd "$git_src_dir" &&
-	 require_remote upstream https://github.com/git/git &&
-	 require_remote git-for-windows \
-		https://github.com/git-for-windows/git) || exit
-
-	case "$branch_to_use" in
-	*@*)
-		git "$dir_option" fetch --tags \
-			"${branch_to_use#*@}" "${branch_to_use%%@*}" ||
-		die "Could not fetch '%s' from '%s'\n" \
-			"${branch_to_use%%@*}" "${branch_to_use#*@}"
-		branch_to_use=FETCH_HEAD
-		;;
-	esac
-	branch_to_use="${branch_to_use:-git-for-windows/main}"
-
-	next_version="$(sed -ne \
-		'1s/.* \(v[0-9][.0-9]*\(-rc[0-9]*\)\?\)(\([0-9][0-9]*\)) .*/\1.windows.\3/p' \
-		-e '1s/.* \(v[0-9][.0-9]*\(-rc[0-9]*\)\?\) .*/\1.windows.1/p' \
-		<"$build_extra_dir/ReleaseNotes.md")"
-	! git --git-dir="$git_src_dir" rev-parse --verify \
-		refs/tags/"$next_version" >/dev/null 2>&1 ||
-	test -n "$force" ||
-	die "Already tagged: %s\n" "$next_version"
-
-	notes="$("$sdk64/git-cmd.exe" --command=usr\\bin\\sh.exe -l -c \
-		'markdown </usr/src/build-extra/ReleaseNotes.md |
-		 LC_CTYPE=C w3m -dump -cols 72 -T text/html | \
-		 sed -n "/^Changes since/,\${:1;p;n;/^Changes/q;b1}"')"
-
-	tag_message="$(printf "%s\n\n%s" \
-		"$(sed -n '1s/.*\(Git for Windows v[^ ]*\).*/\1/p' \
-		<"$build_extra_dir/ReleaseNotes.md")" "$notes")" &&
-	(cd "$git_src_dir" &&
-	 sign_option= &&
-	 if git config user.signingKey >/dev/null; then sign_option=-s; fi &&
-	 git tag -m "$tag_message" -a $sign_option $force \
-		"$next_version" $branch_to_use) ||
-	die "Could not tag %s in %s\n" "$next_version" "$git_src_dir"
-
-	echo "Created tag $next_version" >&2
 }
 
 pacman_helper () {
