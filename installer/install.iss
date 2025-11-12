@@ -3813,11 +3813,9 @@ var
 begin
     Result:=True;
 
-    Form:=CreateCustomForm;
+    Form:=CreateCustomForm(ScaleX(500), ScaleY(256), False, False);
     try
         Form.Caption:='Git Uninstall: Removing in-use files';
-        Form.ClientWidth:=ScaleX(500);
-        Form.ClientHeight:=ScaleY(256);
 
         Info:=TLabel.Create(Form);
         with Info do begin
