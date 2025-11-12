@@ -251,8 +251,12 @@ sdk () {
 		esac
 		. /etc/msystem
 
-		PATH="$first_path:$second_path:$(echo "$PATH" |
-			sed -e "s|:\($first_path\|$second_path\)/\?:|:|g")"
+		PATH="$(echo "$first_path:$second_path:$PATH" | awk '
+			# Filter out duplicate and empty entries
+			BEGIN { RS=":" }
+			$0 != "" && !seen[$0]++ { out = (out ? out ":" $0 : $0) }
+			END { print out }
+		')"
 		return $?
 		;;
 	init)
