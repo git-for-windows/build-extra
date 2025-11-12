@@ -246,7 +246,7 @@ sdk () {
 			unset MINGW_MOUNT_POINT
 			PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/share/pkgconfig:/lib/pkgconfig"
 			second_path=$first_path
-			first_path=/usr/bin:/opt/bin
+			first_path=/cmd:/usr/bin:/opt/bin
 			;;
 		esac
 		. /etc/msystem
