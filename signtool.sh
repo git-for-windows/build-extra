@@ -29,7 +29,7 @@ s () {
 		-verbose \
 		-pkcs12 "$HOME/.sig/codesign.p12" \
 		-readpass "$HOME/.sig/codesign.pass" \
-		-ts http://timestamp.comodoca.com?td=sha256 \
+		-ts http://timestamp.sectigo.com?td=sha256 \
 		-n "Git for Windows" \
 		-h sha256 "$1" "$1.signed.exe" &&
 	mv -f "$1.signed.exe" "$1"
