@@ -45,6 +45,7 @@ As announced in several recent release notes, [`git svn` is no longer supported 
 
 * Comes with [PCRE2 v10.47](https://github.com/PCRE2Project/pcre2/releases/tag/pcre2-10.47).
 * Comes with [cURL v8.17.0](https://curl.se/changes.html#8_17_0).
+* The Git for Windows installer is [now built](https://github.com/git-for-windows/build-extra/pull/655) with [version 6.6.0](https://jrsoftware.org/files/is6-whatsnew.htm#:~:text=6.6.0) of InnoSetup, giving it a more modern look.
 
 ## Changes since Git for Windows v2.51.1 (October 17th 2025)
 
