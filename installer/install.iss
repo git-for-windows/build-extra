@@ -113,9 +113,9 @@ Name: assoc; Description: Associate .git* configuration files with the default t
 Name: assoc_sh; Description: Associate .sh files to be run with Bash; Types: default
 Name: consolefont; Description: Use a TrueType font in all console windows; OnlyBelowVersion: 10.0
 Name: autoupdate; Description: Check daily for Git for Windows updates
-Name: windowsterminal; Description: "(NEW!) Add a Git Bash Profile to Windows Terminal"; MinVersion: 10.0.18362
+Name: windowsterminal; Description: "Add a Git Bash Profile to Windows Terminal"; MinVersion: 10.0.18362
 #ifdef WITH_SCALAR
-Name: scalar; Description: "(NEW!) Scalar (Git add-on to manage large-scale repositories)"; Types: default
+Name: scalar; Description: "Scalar (Git add-on to manage large-scale repositories)"; Types: default
 #endif
 
 
@@ -2068,13 +2068,13 @@ begin
     // 9th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Notepad as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Notepad is a simple GUI editor that comes with Windows.',Top,Left,LblEditor[GE_Notepad],False);
+    CreateItemDescription(EditorPage,'Notepad is a simple GUI editor that comes with Windows.',Top,Left,LblEditor[GE_Notepad],False);
     EditorAvailable[GE_Notepad]:=True;
 
     // 10th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Wordpad as Git'+#39+'s default editor');
-    CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> Wordpad is a basic word processor that comes with Windows.'+#13+'It can also be used as a text editor.',Top,Left,LblEditor[GE_Wordpad],False);
+    CreateItemDescription(EditorPage,'Wordpad is a basic word processor that comes with Windows.'+#13+'It can also be used as a text editor.',Top,Left,LblEditor[GE_Wordpad],False);
     EditorAvailable[GE_Wordpad]:=True;
 
     // Custom choice
@@ -2164,7 +2164,7 @@ begin
     RdbDefaultBranch[DB_Unspecified].OnClick:=@DefaultBranchOptionChanged;
 
     // 2nd choice
-    RdbDefaultBranch[DB_Manual]:=CreateRadioButton(DefaultBranchPage,'Override the default branch name for new repositories','<RED>NEW!</RED> Many teams already renamed their default branches; common choices'+#13+'are "main", "trunk" and "development". Specify the name "git init" should use'+#13+'for the initial branch:',TabOrder,Top,Left);
+    RdbDefaultBranch[DB_Manual]:=CreateRadioButton(DefaultBranchPage,'Override the default branch name for new repositories','Many teams already renamed their default branches; common choices'+#13+'are "main", "trunk" and "development". Specify the name "git init" should use'+#13+'for the initial branch:',TabOrder,Top,Left);
     RdbDefaultBranch[DB_Manual].OnClick:=@DefaultBranchOptionChanged;
 
     // Text field for the overridden branch name
@@ -2297,7 +2297,7 @@ begin
 
         // 3rd choice
         RdbSSH[GS_ExternalOpenSSH]:=CreateRadioButton(SSHChoicePage,'Use external OpenSSH',
-            '<RED>NEW!</RED> This uses an external ssh.exe. Git will not install its own OpenSSH'+#13+
+            'This uses an external ssh.exe. Git will not install its own OpenSSH'+#13+
             '(and related) binaries but use them as found on the PATH.',
             TabOrder,Top,Left);
 
@@ -2491,21 +2491,21 @@ begin
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_REBASE
-    RdbExperimentalOptions[GP_BuiltinRebase]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in rebase','<RED>(NEW!)</RED> Use the experimental built-in rebase (about 70% faster, but only'+#13+'lightly tested).',TabOrder,Top,Left);
+    RdbExperimentalOptions[GP_BuiltinRebase]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in rebase','Use the experimental built-in rebase (about 70% faster, but only'+#13+'lightly tested).',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
     RdbExperimentalOptions[GP_BuiltinRebase].Checked:=ReplayChoice('Enable Builtin Rebase','Auto')='Enabled';
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_STASH
-    RdbExperimentalOptions[GP_BuiltinStash]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in stash','<RED>(NEW!)</RED> Use the experimental built-in stash (about 90% faster, but only'+#13+'lightly tested).',TabOrder,Top,Left);
+    RdbExperimentalOptions[GP_BuiltinStash]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in stash','Use the experimental built-in stash (about 90% faster, but only'+#13+'lightly tested).',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
     RdbExperimentalOptions[GP_BuiltinStash].Checked:=ReplayChoice('Enable Builtin Stash','Auto')='Enabled';
 #endif
 
 #ifdef WITH_EXPERIMENTAL_BUILTIN_ADD_I
-    RdbExperimentalOptions[GP_BuiltinAddI]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in add -i/-p','<RED>(NEW!)</RED> Use the experimental built-in interactive add ("git add -i" or "git add -p").'+#13+'This makes it faster (especially the startup!), but it is not yet considered robust.',TabOrder,Top,Left);
+    RdbExperimentalOptions[GP_BuiltinAddI]:=CreateCheckBox(ExperimentalOptionsPage,'Enable experimental, built-in add -i/-p','Use the experimental built-in interactive add ("git add -i" or "git add -p").'+#13+'This makes it faster (especially the startup!), but it is not yet considered robust.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install
     RdbExperimentalOptions[GP_BuiltinAddI].Checked:=ReplayChoice('Enable Builtin Interactive Add','Auto')='Enabled';
