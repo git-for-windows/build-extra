@@ -47,6 +47,10 @@ As announced in several recent release notes, [`git svn` is no longer supported 
 * Comes with [cURL v8.17.0](https://curl.se/changes.html#8_17_0).
 * The Git for Windows installer is [now built](https://github.com/git-for-windows/build-extra/pull/655) with [version 6.6.0](https://jrsoftware.org/files/is6-whatsnew.htm#:~:text=6.6.0) of InnoSetup, giving it a more modern look.
 
+### Bug Fixes
+
+* The command `git help git-bash` was broken by a change in upstream Git v2.49.0, which [has been fixed](https://github.com/git-for-windows/MINGW-packages/pull/171).
+
 ## Changes since Git for Windows v2.51.1 (October 17th 2025)
 
 ### New Features
