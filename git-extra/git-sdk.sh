@@ -246,13 +246,17 @@ sdk () {
 			unset MINGW_MOUNT_POINT
 			PKG_CONFIG_PATH="/usr/lib/pkgconfig:/usr/share/pkgconfig:/lib/pkgconfig"
 			second_path=$first_path
-			first_path=/usr/bin:/opt/bin
+			first_path=/cmd:/usr/bin:/opt/bin
 			;;
 		esac
 		. /etc/msystem
 
-		PATH="$first_path:$second_path:$(echo "$PATH" |
-			sed -e "s|:\($first_path\|$second_path\)/\?:|:|g")"
+		PATH="$(echo "$first_path:$second_path:$PATH" | awk '
+			# Filter out duplicate and empty entries
+			BEGIN { RS=":" }
+			$0 != "" && !seen[$0]++ { out = (out ? out ":" $0 : $0) }
+			END { print out }
+		')"
 		return $?
 		;;
 	init)
