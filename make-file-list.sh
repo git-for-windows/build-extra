@@ -146,6 +146,7 @@ has_pacman_package () {
 	for dir in /var/lib/pacman/local/$1-[0-9]*
 	do
 		# Be careful in case a package name contains `-<digit>`
+		test -d $dir &&
 		test /var/lib/pacman/local/$1 = ${dir%-*-*} &&
 		return 0
 	done
@@ -177,7 +178,11 @@ test -z "$required" || {
 	grep -v 'database file for .* does not exist' <"$pacman_stderr" >&2
 }
 
-packages="mingw-w64-$PACMAN_ARCH-git mingw-w64-$PACMAN_ARCH-git-credential-manager
+has_pacman_package mingw-w64-$PACMAN_ARCH-git-for-windows-addons &&
+G4W_PACKAGE=mingw-w64-$PACMAN_ARCH-git-for-windows-addons ||
+G4W_PACKAGE=mingw-w64-$PACMAN_ARCH-git
+
+packages="$G4W_PACKAGE mingw-w64-$PACMAN_ARCH-git-credential-manager
 mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES $LIBCURL_EXTRA"
 if test -z "$MINIMAL_GIT"
 then
