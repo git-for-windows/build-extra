@@ -48,3 +48,5 @@ then
 		. "$c"
 	done
 fi
+
+shopt -s no_empty_cmd_completion
