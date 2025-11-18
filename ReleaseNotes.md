@@ -37,6 +37,12 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.52.0 (November 17th 2025)
+
+### New Features
+
+* Pressing the Tab key in an empty line in Git Bash [no longer causes the session to "freeze"](https://github.com/git-for-windows/build-extra/pull/657).
+
 ## Changes since Git for Windows v2.51.2 (October 28th 2025)
 
 As announced in several recent release notes, [`git svn` is no longer supported by the Git for Windows project](https://github.com/git-for-windows/git/issues/5405).
