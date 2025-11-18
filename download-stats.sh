@@ -203,4 +203,8 @@ case "$id" in
 esac
 
 curl -s https://api.github.com/repos/git-for-windows/git/releases/$id/assets |
-grep -e '"name":' -e '"download_count":'
+grep -e '"name":' -e '"download_count":' |
+sed 'N
+	s/.*"download_count": *\([0-9]*\).*"name": *"\([^"]*\).*/\1\t\2/
+	s/.*"name": *"\([^"]*\).*"download_count": *\([0-9]*\).*/\2\t\1/
+' | sort -n -r -k1
