@@ -48,3 +48,8 @@ then
 		. "$c"
 	done
 fi
+
+# Prevents command completion if line is empty or only has whitespace
+# Can be overriden by adding the following to your .bashrc file.
+# shopt -u no_empty_cmd_completion
+shopt -s no_empty_cmd_completion
