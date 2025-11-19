@@ -3516,7 +3516,13 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 	git clone --bare https://github.com/git-for-windows/git.git ${git_src_dir%/src/git}/git ||
 	die "Could not initialize %s\n" ${git_src_dir%/src/git}/git
 
-	sed -e "s/^tag=.*/tag=${tag#v}/" $sed_makepkg_e <${git_src_dir%/src/git}/PKGBUILD >${git_src_dir%/src/git}/PKGBUILD.$tag ||
+	sha256sum=$(git -c core.eol=lf -c core.autoCRLF=false -c core.abbrev=no archive --format tar $tag | sha256sum.exe) &&
+	test -n "$sha256sum" ||
+	die "Could not compute SHA-256 sum for %s\n" $tag
+
+	sed -e "s/^tag=.*/tag=${tag#v}/" $sed_makepkg_e \
+		-e "s/^\(sha256sums=..\)[0-9a-f]\{64\}/\1${sha256sum%% *}/" \
+		<${git_src_dir%/src/git}/PKGBUILD >${git_src_dir%/src/git}/PKGBUILD.$tag ||
 	die "Could not write %s\n" ${git_src_dir%/src/git}/PKGBUILD.$tag
 
 	case "$tag" in
@@ -3563,8 +3569,10 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 	 if test -n "$src_pkg"
 	 then
 		git --git-dir src/git/.git archive --prefix git/ -o git-$tag.tar.gz $tag &&
+		sha256sum="$(sha256sum.exe git-$tag.tar.gz)" &&
 		oid="$(git --git-dir src/git/.git rev-parse $tag^0)" &&
 		sed -e 's/^source.*git+https.*/source=("git-'$tag'.tar.gz"/' \
+		    -e "s/^\(sha256sums=..\)[0-9a-f]\{64\}/\1${sha256sum%% *}/" \
 		    -e '/^prepare /{N;s/$/&& sed -i s\/GIT_BUILT_FROM_COMMIT\/\\\"'$oid'\\\"\/ version.c \&\&/}' \
 			<PKGBUILD.$tag >PKGBUILD.src &&
 		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} MINGW_ARCH=mingw64 makepkg-mingw $force --allsource -p PKGBUILD.src
