@@ -1468,7 +1468,6 @@ begin
     Result.Top:=ScaleY(Top);
     Result.Left:=ScaleX(Left+24);
     Result.Width:=ScaleX(405);
-    Result.Height:=ScaleY(13);
     Result.Visible:=Visible;
     SetArrayLength(Labels,GetArrayLength(Labels)+1);
     Labels[GetArrayLength(Labels)-1]:=Result;
@@ -1479,7 +1478,6 @@ begin
             '': begin
                 Untagged:=Untagged+Description;
                 Result.Caption:=Untagged;
-                Result.Height:=ScaleY(13*RowCount);
                 Top:=Top+13+18;
                 Exit;
             end;
@@ -1507,7 +1505,6 @@ begin
                     SubLabel.Top:=ScaleY(Top);
                     SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                     SubLabel.Width:=ScaleX(405);
-                    SubLabel.Height:=ScaleY(13);
                     SubLabel.Font.Color:=clRed;
                     SubLabel.Visible:=Visible;
                     Untagged:=Untagged+SubString(Description,1,j);
@@ -1525,7 +1522,6 @@ begin
                 SubLabel.Top:=ScaleY(Top);
                 SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                 SubLabel.Width:=ScaleX(405);
-                SubLabel.Height:=ScaleY(13*CountLines(SubLabel.Caption));
                 SubLabel.Font.Color:=clRed;
                 SubLabel.Visible:=Visible;
                 Untagged:=Untagged+SubString(Description,1,i-1);
@@ -1563,7 +1559,6 @@ begin
                     SubLabel.Top:=ScaleY(Top);
                     SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                     SubLabel.Width:=ScaleX(405);
-                    SubLabel.Height:=ScaleY(13);
                     SubLabel.Font.Color:=clBlue;
                     SubLabel.Font.Style:=[fsUnderline];
                     SubLabel.Cursor:=crHand;
@@ -1585,7 +1580,6 @@ begin
                 SubLabel.Top:=ScaleY(Top);
                 SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                 SubLabel.Width:=ScaleX(405);
-                SubLabel.Height:=ScaleY(13*CountLines(SubLabel.Caption));
                 SubLabel.Font.Color:=clBlue;
                 SubLabel.Font.Style:=[fsUnderline];
                 SubLabel.Cursor:=crHand;
