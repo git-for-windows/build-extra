@@ -1459,7 +1459,7 @@ function CreateItemDescription(Page:TWizardPage;const Description:String;var Top
 var
     SubLabel:TLabel;
     Untagged,RowPrefix,Link:String;
-    RowStart,RowCount,RowHeight,i,j:Integer;
+    RowStart,RowCount,i,j:Integer;
 begin
     Untagged:='';
     Result:=TLabel.Create(Page);
@@ -1474,16 +1474,13 @@ begin
     Labels[GetArrayLength(Labels)-1]:=Result;
     RowPrefix:='';
     RowCount:=1;
-    RowHeight:=Result.Font.Height;
-    if (RowHeight<0) then
-        RowHeight:=-RowHeight;
     while True do begin
         case Pos3(Description,#13,'<RED>','<A HREF=',i) of
             '': begin
                 Untagged:=Untagged+Description;
                 Result.Caption:=Untagged;
-                Result.Height:=ScaleY(RowHeight*RowCount);
-                Top:=Top+RowHeight+18;
+                Result.Height:=ScaleY(13*RowCount);
+                Top:=Top+13+18;
                 Exit;
             end;
             ''+#13: begin
@@ -1491,7 +1488,7 @@ begin
                 Description:=SubString(Description,i+1,-1);
                 RowCount:=RowCount+1;
                 RowPrefix:='';
-                Top:=Top+RowHeight;
+                Top:=Top+13;
             end;
             '<RED>': begin
                 Untagged:=Untagged+SubString(Description,1,i-1);
@@ -1510,14 +1507,14 @@ begin
                     SubLabel.Top:=ScaleY(Top);
                     SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                     SubLabel.Width:=ScaleX(405);
-                    SubLabel.Height:=ScaleY(RowHeight);
+                    SubLabel.Height:=ScaleY(13);
                     SubLabel.Font.Color:=clRed;
                     SubLabel.Visible:=Visible;
                     Untagged:=Untagged+SubString(Description,1,j);
                     Description:=SubString(Description,j+1,-1);
                     i:=i-j;
                     RowPrefix:='';
-                    Top:=Top+RowHeight;
+                    Top:=Top+13;
                     RowCount:=RowCount+1;
                     SetArrayLength(Labels,GetArrayLength(Labels)+1);
                     Labels[GetArrayLength(Labels)-1]:=SubLabel;
@@ -1528,7 +1525,7 @@ begin
                 SubLabel.Top:=ScaleY(Top);
                 SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                 SubLabel.Width:=ScaleX(405);
-                SubLabel.Height:=ScaleY(RowHeight*CountLines(SubLabel.Caption));
+                SubLabel.Height:=ScaleY(13*CountLines(SubLabel.Caption));
                 SubLabel.Font.Color:=clRed;
                 SubLabel.Visible:=Visible;
                 Untagged:=Untagged+SubString(Description,1,i-1);
@@ -1566,7 +1563,7 @@ begin
                     SubLabel.Top:=ScaleY(Top);
                     SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                     SubLabel.Width:=ScaleX(405);
-                    SubLabel.Height:=ScaleY(RowHeight);
+                    SubLabel.Height:=ScaleY(13);
                     SubLabel.Font.Color:=clBlue;
                     SubLabel.Font.Style:=[fsUnderline];
                     SubLabel.Cursor:=crHand;
@@ -1576,7 +1573,7 @@ begin
                     Description:=SubString(Description,j+1,-1);
                     i:=i-j;
                     RowPrefix:='';
-                    Top:=Top+RowHeight;
+                    Top:=Top+13;
                     RowCount:=RowCount+1;
                     SetArrayLength(Labels,GetArrayLength(Labels)+1);
                     Labels[GetArrayLength(Labels)-1]:=SubLabel;
@@ -1588,7 +1585,7 @@ begin
                 SubLabel.Top:=ScaleY(Top);
                 SubLabel.Left:=GetTextWidth(RowPrefix,Result.Font)+ScaleX(Left+24);
                 SubLabel.Width:=ScaleX(405);
-                SubLabel.Height:=ScaleY(RowHeight*CountLines(SubLabel.Caption));
+                SubLabel.Height:=ScaleY(13*CountLines(SubLabel.Caption));
                 SubLabel.Font.Color:=clBlue;
                 SubLabel.Font.Style:=[fsUnderline];
                 SubLabel.Cursor:=crHand;
