@@ -1478,7 +1478,7 @@ begin
             '': begin
                 Untagged:=Untagged+Description;
                 Result.Caption:=Untagged;
-                Top:=Top+13+18;
+                Top:=Top+15+18;
                 Exit;
             end;
             ''+#13: begin
@@ -1486,7 +1486,7 @@ begin
                 Description:=SubString(Description,i+1,-1);
                 RowCount:=RowCount+1;
                 RowPrefix:='';
-                Top:=Top+13;
+                Top:=Top+15;
             end;
             '<RED>': begin
                 Untagged:=Untagged+SubString(Description,1,i-1);
