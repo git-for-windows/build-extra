@@ -3538,6 +3538,7 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 	} ||
 	die "Could not initialize %s\n" $git_src_dir
 
+	git push ${git_src_dir%/src/git}/git $tag &&
 	git push $git_src_dir $tag ||
 	die "Could not push %s\n" $tag
 
