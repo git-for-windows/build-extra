@@ -43,6 +43,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * Pressing the Tab key in an empty line in Git Bash [no longer causes the session to "freeze"](https://github.com/git-for-windows/build-extra/pull/657).
 
+### Bug Fixes
+
+* The installer of Git for Windows v2.52 [showed clipped text in some setups](https://github.com/git-for-windows/git/issues/5961), which was fixed.
+
 ## Changes since Git for Windows v2.51.2 (October 28th 2025)
 
 As announced in several recent release notes, [`git svn` is no longer supported by the Git for Windows project](https://github.com/git-for-windows/git/issues/5405).
