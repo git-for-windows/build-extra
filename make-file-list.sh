@@ -287,7 +287,7 @@ if test -z "$MINIMAL_GIT"
 then
 	cat
 else
-	grep -v -e '^/cmd/start-.*$' -e '^/cmd/\(git-gui\|gitk\).exe$' \
+	grep -v -e '^/cmd/start-.*$' -e '^/cmd/\(git-gui\|gitk\|tig\).exe$' \
 		-e '^/etc/\(DIR_COLORS\|inputrc\|vimrc\)$' \
 		-e '^/etc/profile\.d/\(aliases\|env\|git-prompt\)\.sh$' \
 		-e '^/git-\(bash\|cmd\)\.exe$' \
