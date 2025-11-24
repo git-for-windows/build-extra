@@ -154,6 +154,7 @@ sdk () {
 	# for building
 	makepkg|makepkg-mingw)
 		cmd=$1; shift
+		WITH_PDBS="$(! grep -q WITH_PDBS PKGBUILD || ! sdk find_mspdb_dll || echo true)" \
 		WITHOUT_PDBS="$(! grep -q WITHOUT_PDBS PKGBUILD || sdk find_mspdb_dll || echo true)" \
 		MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} PKGEXT='.pkg.tar.xz' $cmd --syncdeps --noconfirm --skipchecksums --skippgpcheck "$@"
 		;;
