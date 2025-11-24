@@ -1,14 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
   xmlns:uap2="http://schemas.microsoft.com/appx/manifest/uap/windows10/2"
   xmlns:uap3="http://schemas.microsoft.com/appx/manifest/uap/windows10/3"
+  xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
   xmlns:desktop6="http://schemas.microsoft.com/appx/manifest/desktop/windows10/6"
-  xmlns:uap10="http://schemas.microsoft.com/appx/manifest/uap/windows10/10"
   IgnorableNamespaces="uap uap2 uap3 rescap desktop desktop6 uap10">
 
   <Identity
@@ -145,7 +144,7 @@
       <Extensions>
         <uap3:Extension Category="windows.appExecutionAlias">
           <uap3:AppExecutionAlias>
-            <desktop:ExecutionAlias Alias="nano.exe" />
+            <desktop:ExecutionAlias Alias="nano.exe"  />
           </uap3:AppExecutionAlias>
         </uap3:Extension>
       </Extensions>
