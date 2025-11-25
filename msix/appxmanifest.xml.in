@@ -13,7 +13,7 @@
   <Identity
     Name="Git.GitforWindows"
     Publisher="CN=The Git Development Community"
-    Version="2.52.0.1" ProcessorArchitecture="x64" />
+    Version="@@VERSION@@" />
 
   <Properties>
     <DisplayName>Git for Windows</DisplayName>
