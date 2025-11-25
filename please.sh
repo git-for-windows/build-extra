@@ -3551,13 +3551,18 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 	# Work around bug where the incorrect xmlcatalog.exe wrote /etc/xml/catalog
 	sed -i -e 's|C:/git-sdk-64-ci||g' /etc/xml/catalog
 
-	test true = "$GITHUB_ACTIONS" || # GitHub Actions' agents have the mspdb.dll, and cv2pdb finds it
-	test -n "$SYSTEM_COLLECTIONURI$SYSTEM_TASKDEFINITIONSURI" || # Same for Azure Pipelines
-	test "$MINGW_ARCH" = "clangarm64" || # We don't need cv2pdb when compiling using Clang/LLVM
-	find_mspdb_dll >/dev/null || {
+	test true != "$GITHUB_ACTIONS" && # GitHub Actions' agents have the mspdb.dll, and cv2pdb finds it
+	test -z "$SYSTEM_COLLECTIONURI$SYSTEM_TASKDEFINITIONSURI" && # Same for Azure Pipelines
+	test "$MINGW_ARCH" != "clangarm64" && # We don't need cv2pdb when compiling using Clang/LLVM
+	! find_mspdb_dll >/dev/null && {
+		WITH_PDBS=
 		WITHOUT_PDBS=1
-		export WITHOUT_PDBS
+	} || {
+		WITH_PDBS=1
+		WITHOUT_PDBS=
 	}
+	export WITH_PDBS
+	export WITHOUT_PDBS
 
 	(if test -n "$(git config alias.signtool)"
 	 then
