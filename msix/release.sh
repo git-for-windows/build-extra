@@ -41,14 +41,14 @@ case "$MSYSTEM" in
 MINGW32)
 	BITNESS=32
 	ARCH=i686
-	ARTIFACT_SUFFIX="32-bit"
+	ARTIFACT_SUFFIX="x86"
 	MD_ARG=128M
 	MINGW_PREFIX=mingw-w64-i686-
 	;;
 MINGW64)
 	BITNESS=64
 	ARCH=x86_64
-	ARTIFACT_SUFFIX="64-bit"
+	ARTIFACT_SUFFIX="x64"
 	MD_ARG=256M
 	MINGW_PREFIX=mingw-w64-x86_64-
 	;;
@@ -66,7 +66,7 @@ esac
 MSYSTEM_LOWER=${MSYSTEM,,}
 VERSION=$1
 shift
-TARGET="$output_directory"/PortableGit-"$VERSION"-"$ARTIFACT_SUFFIX".msix
+TARGET="$output_directory"/Git.GitforWindows_"$VERSION"_"$ARTIFACT_SUFFIX".msix
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
 case "$SCRIPT_PATH" in
@@ -178,6 +178,5 @@ echo "$LIST" |
 sed -e 'y/\//\\/' -e 's/.*/"&" "&"/' >>"$MAPFILE"
 
 PWSH_COMMAND=". \"C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\makeappx.exe\" pack /v /o /f $(cygpath -aw "$MAPFILE") /p $(cygpath -aw "$TARGET")"
-set -x
-/c/Program\ Files/WindowsApps/Microsoft.PowerShell_7.5.4.0_x64__8wekyb3d8bbwe/pwsh.exe -wd "$(cygpath -aw "/")" -nop -noni -nol -c "iex '$PWSH_COMMAND'"
-set +x
+/c/Program\ Files/WindowsApps/Microsoft.PowerShell_7.5.4.0_x64__8wekyb3d8bbwe/pwsh.exe -wd "$(cygpath -aw "/")" -nop -noni -nol -c "iex '$PWSH_COMMAND'" &&
+echo "Package created at $TARGET"
