@@ -151,6 +151,10 @@ test -z "$include_pdbs" || {
 } ||
 die "Could not unpack .pdb files"
 
+# Install Tooling
+echo "Install WinApp CLI"
+winget install Microsoft.WinAppCLI
+
 # Create MSIX
 
 MAPFILE=$SCRIPT_PATH/root/files.map
@@ -177,6 +181,6 @@ echo "\"$(cygpath -aw "$SCRIPT_PATH")/Assets/StoreLogo.png\" \"Assets/StoreLogo.
 echo "$LIST" |
 sed -e 'y/\//\\/' -e 's/.*/"&" "&"/' >>"$MAPFILE"
 
-PWSH_COMMAND=". \"C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\makeappx.exe\" pack /v /o /f $(cygpath -aw "$MAPFILE") /p $(cygpath -aw "$TARGET")"
-pwsh -wd "$(cygpath -aw "/")" -nop -noni -nol -c "iex '$PWSH_COMMAND'" &&
+PWSH_COMMAND="winapp tool makeappx.exe pack /v /o /f $(cygpath -aw "$MAPFILE") /p $(cygpath -aw "$TARGET")"
+powershell -WorkingDirectory "$(cygpath -aw "/")" -NonInteractive -NoProfile -NoLogo -Command "iex '$PWSH_COMMAND'" &&
 echo "Package created at $TARGET"
