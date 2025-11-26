@@ -178,5 +178,5 @@ echo "$LIST" |
 sed -e 'y/\//\\/' -e 's/.*/"&" "&"/' >>"$MAPFILE"
 
 PWSH_COMMAND=". \"C:\Program Files (x86)\Windows Kits\10\bin\10.0.26100.0\x64\makeappx.exe\" pack /v /o /f $(cygpath -aw "$MAPFILE") /p $(cygpath -aw "$TARGET")"
-/c/Program\ Files/WindowsApps/Microsoft.PowerShell_7.5.4.0_x64__8wekyb3d8bbwe/pwsh.exe -wd "$(cygpath -aw "/")" -nop -noni -nol -c "iex '$PWSH_COMMAND'" &&
+pwsh -wd "$(cygpath -aw "/")" -nop -noni -nol -c "iex '$PWSH_COMMAND'" &&
 echo "Package created at $TARGET"
