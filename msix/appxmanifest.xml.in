@@ -37,6 +37,7 @@
       <uap:VisualElements
         DisplayName="Git Bash"
         Description="Git Bash - Unix-like command line for Git"
+        VisualGroup="Git for Windows"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
@@ -53,6 +54,7 @@
       <uap:VisualElements
         DisplayName="Git CMD"
         Description="Git CMD - Windows command line for Git"
+        VisualGroup="Git for Windows"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
@@ -69,6 +71,7 @@
       <uap:VisualElements
         DisplayName="Git GUI"
         Description="Git GUI - Windows graphical interface for Git"
+        VisualGroup="Git for Windows"
         BackgroundColor="transparent"
         Square150x150Logo="Assets\Square150x150Logo.png"
         Square44x44Logo="Assets\Square44x44Logo.png">
