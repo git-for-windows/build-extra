@@ -5,8 +5,8 @@
 alias ls='ls -F --color=auto --show-control-chars'
 alias ll='ls -l'
 
-case "$TERM" in
-xterm*)
+if [ "${TERM_PROGRAM:-}" = "mintty" ]
+then
 	# The following programs are known to require a Win32 Console
 	# for interactive usage, therefore let's launch them through winpty
 	# when run inside `mintty`.
@@ -18,4 +18,4 @@ xterm*)
 		alias $name="winpty $name.exe"
 	done
 	;;
-esac
+fi
