@@ -153,7 +153,8 @@ die "Could not unpack .pdb files"
 
 # Install Tooling
 echo "Install WinApp CLI"
-winget install Microsoft.WinAppCLI --accept-source-agreements --accept-package-agreements --disable-interactivity
+winget install Microsoft.WinAppCLI --accept-source-agreements --accept-package-agreements --disable-interactivity ||
+die "Failed to install WinApp CLI"
 
 # Create MSIX
 
