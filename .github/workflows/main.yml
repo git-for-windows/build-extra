@@ -101,7 +101,7 @@ jobs:
           mkdir -p "$top_dir/$artifacts" &&
           mv *.tar.* "$top_dir/$artifacts"/ &&
           echo "result=$artifacts" >>$GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.build.outputs.result }}
           path: ${{ steps.build.outputs.result }}
@@ -167,7 +167,7 @@ jobs:
           mkdir -p "$artifacts" &&
           ./"${{ matrix.directory }}"/release.sh --output="$PWD/$artifacts/" 0-test &&
           echo "result=$artifacts" >>$GITHUB_OUTPUT
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         with:
           name: ${{ steps.build.outputs.result }}
           path: ${{ steps.build.outputs.result }}
@@ -304,7 +304,7 @@ jobs:
         if: matrix.artifact == 'build-installers'
         shell: bash
         run: ./installer/release.sh --include-self-check --output=$PWD/installer-${{ matrix.arch.name }} 0-test
-      - uses: actions/upload-artifact@v5
+      - uses: actions/upload-artifact@v6
         if: matrix.artifact == 'build-installers'
         with:
           name: installer-${{ matrix.arch.name }}
