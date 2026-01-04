@@ -47,6 +47,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### Bug Fixes
 
 * The installer of Git for Windows v2.52 [showed clipped text in some setups](https://github.com/git-for-windows/git/issues/5961), which was fixed.
+* When calling Microsoft Store apps, their standard I/O is now [set up correctly](https://github.com/git-for-windows/msys2-runtime/pull/122) (meaning: You can call an interactive Python interpreter without the `winpty` hack mentioned in the release notes' Known Issues).
 
 ## Changes since Git for Windows v2.51.2 (October 28th 2025)
 
