@@ -12,5 +12,6 @@
 *.gz -text
 *.xz -text
 /installer/InnoSetup/*.e32 -text
+/installer/InnoSetup/*.e64 -text
 *.bat eol=crlf
 *.patch -text
