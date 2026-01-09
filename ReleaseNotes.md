@@ -50,6 +50,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * The installer of Git for Windows v2.52 [showed clipped text in some setups](https://github.com/git-for-windows/git/issues/5961), which was fixed.
 * When calling Microsoft Store apps, their standard I/O is now [set up correctly](https://github.com/git-for-windows/msys2-runtime/pull/122) (meaning: You can call an interactive Python interpreter without the `winpty` hack mentioned in the release notes' Known Issues).
+* The `astextplain` tool (which is used by Git for Windows to generate diffs of `.pdf` and `.doc` files) used to handle empty files gracefully. This behavior is [now reinstated](https://github.com/git-for-windows/build-extra/pull/668).
 
 ## Changes since Git for Windows v2.51.2 (October 28th 2025)
 
