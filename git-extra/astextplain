@@ -21,7 +21,7 @@ case "$(file --brief --mime-type "$1")" in
 		out=$(pdftotext -q -layout -enc UTF-8 "$1" -) && sed "s/(\^M$)|(^\^L)//" <<<$out || cat "$1"
 		;;
 	# TODO add rtf support
-	application/rtf | text/rtf | text/plain)
+	application/rtf | text/rtf | text/plain | inode/x-empty)
 		cat "$1"
 		;;
 	*)
