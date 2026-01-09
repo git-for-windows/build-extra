@@ -44,6 +44,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Pressing the Tab key in an empty line in Git Bash [no longer causes the session to "freeze"](https://github.com/git-for-windows/build-extra/pull/657).
 * Git for Windows' installer is [now built by InnoSetup v6.6.1](https://github.com/git-for-windows/build-extra/pull/660).
 * Comes with [cURL v8.18.0](https://curl.se/changes.html#8_18_0).
+* [Microsoft Edit](https://learn.microsoft.com/en-us/windows/edit/) can [now be specified](https://github.com/git-for-windows/build-extra/pull/669) as Git editor.
 
 ### Bug Fixes
 
