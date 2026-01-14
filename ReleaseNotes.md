@@ -45,6 +45,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Git for Windows' installer is [now built by InnoSetup v6.6.1](https://github.com/git-for-windows/build-extra/pull/660).
 * Comes with [cURL v8.18.0](https://curl.se/changes.html#8_18_0).
 * [Microsoft Edit](https://learn.microsoft.com/en-us/windows/edit/) can [now be specified](https://github.com/git-for-windows/build-extra/pull/669) as Git editor.
+* Comes with [Git Credential Manager v2.7.0](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.7.0), the "anniversary release" after one release-less year, which brings native x64 and ARM64 binaries for the respective flavors of Git for Windows.
 
 ### Bug Fixes
 
