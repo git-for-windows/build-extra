@@ -5,7 +5,7 @@ pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
 replaces=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
-pkgver=2.6.1
+pkgver=2.7.0
 pkgrel=1
 _realver=$pkgver
 _realtag=v${pkgver}
@@ -13,17 +13,37 @@ pkgdesc="Credential Manager for Git"
 install=git-credential-manager.install
 arch=('any')
 project_url="https://github.com/git-ecosystem/git-credential-manager"
-zip_url="${project_url}/releases/download/${_realtag}/gcm-win-x86-${_realver}.zip"
-src_zip_url="${project_url}/archive/${_realtag}.zip"
 license=('MIT')
 makedepends=('markdown')
 groups=('VCS')
 options=('!strip')
 
+case "$MINGW_PACKAGE_PREFIX" in
+  mingw-w64-i686)
+    _arch=x86
+    _sha=bbed7b0f56517f92825f4a6d2f98cae9757da6455c977f93d24745fceb48b806
+    ;;
+  mingw-w64-x86_64)
+    _arch=x64
+    _sha=070c7cf706fbed844757f53d2f9d46ace09745820323264761e4f0bb4f0319bc
+    ;;
+  mingw-w64-clang-aarch64)
+    _arch=arm64
+    _sha=2b69098b1d772bf6c3cc70298bfa29d0ecf4b4f61ec86f810fd1121e79f81721
+    ;;
+  *)
+    _arch=x86
+    _sha=bbed7b0f56517f92825f4a6d2f98cae9757da6455c977f93d24745fceb48b806
+    ;;
+esac
+
+zip_url="${project_url}/releases/download/${_realtag}/gcm-win-${_arch}-${_realver}.zip"
+src_zip_url="${project_url}/archive/${_realtag}.zip"
+
 source=("${zip_url}" "$src_zip_url")
 
-sha256sums=('bddbc4a051fbfa67d70cd2b89d49229fc1a7788f8a9296da914fb3c42b783d7e'
-            '550f8a8ca88e6519dab6a59e2c1b80c6b1f262e6337bf5b981e133c4e81c0a85')
+sha256sums=("$_sha"
+            'cfd29c2ce47cac3b9264e08884ddd7a67e829616cc984d2f5331ceaa3f55a326')
 
 build() {
   markdown "${srcdir}/git-credential-manager-${_realtag#v}/README.md" > "${srcdir}/git-credential-manager-${_realtag#v}/git-credential-manager.html"
