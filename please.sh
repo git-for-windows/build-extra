@@ -3127,6 +3127,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		if git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:clangarm64 2>/dev/null
 		then
 			architecture=aarch64
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-cygwin 2>/dev/null
+		then
+			architecture=i686
 		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-msys 2>/dev/null
 		then
 			architecture=i686
