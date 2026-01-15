@@ -46,6 +46,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [cURL v8.18.0](https://curl.se/changes.html#8_18_0).
 * [Microsoft Edit](https://learn.microsoft.com/en-us/windows/edit/) can [now be specified](https://github.com/git-for-windows/build-extra/pull/669) as Git editor.
 * Comes with [Git Credential Manager v2.7.0](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.7.0), the "anniversary release" after one release-less year, which brings native x64 and ARM64 binaries for the respective flavors of Git for Windows.
+* [Upgrades](https://github.com/git-for-windows/git/pull/6034) the [memory allocator `mimalloc`](https://microsoft.github.io/mimalloc/) that is used by Git for Windows to v2.2.6.
 
 ### Bug Fixes
 
