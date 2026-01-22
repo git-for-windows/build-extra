@@ -357,7 +357,7 @@ else
 		-e '^/usr/ssl/misc/' \
 		-e '^/usr/bin/\(captoinfo\|clear\|infocmp\|infotocap\)\.exe$' \
 		-e '^/usr/bin/\(reset\|tabs\|tic\|toe\|tput\|tset\)\.exe$' \
-		-e '^/usr/bin/msys-ticw6\.dll$' \
+		-e '^/usr/bin/msys-\(ticw6\|smartcols-[0-9]*\)\.dll$' \
 		-e '^/usr/\(lib\|share\)/terminfo/' -e '^/usr/share/tabset/' \
 		-e "^\\($(echo $EXTRA_FILE_EXCLUDES |
 			sed 's/ /\\|/g')\\)\$"
