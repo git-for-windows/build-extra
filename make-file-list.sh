@@ -50,7 +50,8 @@ then
 	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES mingw-w64-bzip2 mingw-w64-c-ares
 		mingw-w64-libsystre mingw-w64-libtre-git mingw-w64-p11-kit
 		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
-		libedit libgdbm perl perl-.* mingw-w64-tzdata"
+		libedit libgdbm perl perl-.* mingw-w64-tzdata
+		mingw-w64-git-svn subversion libserf apr apr-util expat libexpat liblz4"
 fi
 if test -z "$INCLUDE_GIT_UPDATE"
 then
@@ -347,7 +348,7 @@ else
 		-e '^/usr/bin/\(stty\|sum\|sync\|tac\|tee\|timeout\)\.exe$' \
 		-e '^/usr/bin/\(truncate\|tsort\|tty\|tzset\|umount\)\.exe$' \
 		-e '^/usr/bin/\(unexpand\|unlink\|users\|vdir\|who.*\)\.exe$' \
-		-e '^/usr/bin/msys-\(cilkrts\|ssl\)-.*\.dll$' \
+		-e '^/usr/bin/msys-\(cilkrts\|ssl\|uuid\)-.*\.dll$' \
 		-e '^/usr/bin/msys-sqlite3[a-z].*\.dll$' \
 		-e '^/usr/bin/msys-\(gomp.*\|vtv.*\)-.*\.dll$' \
 		-e '^/usr/lib/\(awk\|coreutils\|gawk\|openssl\|pkcs11\)/' \
