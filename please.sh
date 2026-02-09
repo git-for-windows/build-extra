@@ -372,58 +372,6 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	done
 }
 
-release_sdk () { # <version>
-	version="$1"
-	tag=git-sdk-"$version"
-
-	up_to_date /usr/src/build-extra ||
-	die "build-extra is not up-to-date\n"
-
-	! git rev-parse --git-dir="$sdk64"/usr/src/build-extra \
-		--verify "$tag" >/dev/null 2>&1 ||
-	die "Tag %s already exists\n" "$tag"
-
-	for sdk in "$sdk32" "$sdk64"
-	do
-		"$sdk"/git-cmd.exe --command=usr\\bin\\sh.exe -l -c \
-			'cd /usr/src/build-extra/sdk-installer &&
-			 ./release.sh '"$version" ||
-		die "%s: could not build\n" "$sdk$pkgpath"
-	done
-
-	sign_files "$HOME"/git-sdk-installer-"$version"-64.7z.exe \
-		"$HOME"/git-sdk-installer-"$version"-32.7z.exe
-
-	git --git-dir="$sdk64"/usr/src/build-extra/.git \
-		tag -a -m "Git for Windows SDK $version" "$tag" ||
-	die "Could not tag %s\n" "$tag"
-}
-
-publish_sdk () { #
-	up_to_date /usr/src/build-extra ||
-	die "build-extra is not up-to-date\n"
-
-	tag="$(git --git-dir="$sdk64"/usr/src/build-extra/.git for-each-ref \
-		--format='%(refname:short)' --sort=-taggerdate \
-		--count=1 'refs/tags/git-sdk-*'	)"
-	version="${tag#git-sdk-}"
-
-	url=https://api.github.com/repos/git-for-windows/build-extra/releases
-	id="$(curl --netrc -s $url |
-		sed -n '/^    "id":/{:1;N;/"tag_name": *"'"$tag"'"/{
-			s/^ *"id": *\([0-9]*\).*/\1/p;q};b1}')"
-	test -z "$id" ||
-	die "Release %s exists already as ID %s\n" "$tag" "$id"
-
-	"$sdk64/usr/src/build-extra/upload-to-github.sh" \
-		--repo=build-extra "$tag" \
-		"$HOME"/git-sdk-installer-"$version"-64.7z.exe \
-		"$HOME"/git-sdk-installer-"$version"-32.7z.exe ||
-	die "Could not upload files\n"
-
-	git --git-dir="$sdk64"/usr/src/build-extra/.git push origin "$tag"
-}
-
 create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--architecture=(x86_64|i686|aarch64|auto)] [--bitness=(32|64)] [--force] <name>
 	git_sdk_path=/
 	output_path=
