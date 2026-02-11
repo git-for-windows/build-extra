@@ -5,7 +5,7 @@ pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
 replaces=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
-pkgver=2.7.1
+pkgver=2.7.2
 pkgrel=1
 _realver=$pkgver
 _realtag=v${pkgver}
@@ -22,19 +22,19 @@ options=('!strip')
 case "$MINGW_PACKAGE_PREFIX" in
   mingw-w64-i686)
     _arch=x86
-    _sha=ef0bb67678a8ef20a071375a810bd9ad9a4806c75c1f22d09033daa786dcf446
+    _sha=4010820705b193c010bdee8a661ae66bea6e01a33952ca14bed7485217660fc9
     ;;
   mingw-w64-x86_64)
     _arch=x64
-    _sha=86369d14f0d90e8c5bac4fd829ded47ee1a80a7fdad8cb76ba1938d3d7320f7e
+    _sha=6674e105c10a778d9011670d7829182030f8401142357339880d0d4aec622d01
     ;;
   mingw-w64-clang-aarch64)
     _arch=arm64
-    _sha=93e5cc57bcb7b5b5fe6614397d99e2b17b017af64c2a8b543453b02a90ee821c
+    _sha=c4cf90ae5d3a1cff10cbc3670df6251daa58ee8c711b056e821347b3f22fbc5a
     ;;
   *)
     _arch=x86
-    _sha=ef0bb67678a8ef20a071375a810bd9ad9a4806c75c1f22d09033daa786dcf446
+    _sha=4010820705b193c010bdee8a661ae66bea6e01a33952ca14bed7485217660fc9
     ;;
 esac
 
@@ -46,7 +46,7 @@ source=("${zip_url}" "$src_zip_url")
 noextract=("${zip_name}")
 
 sha256sums=("$_sha"
-            '67ef666b18f2e0b1c8da9f5b6bdc6c7058de4fdc4918f537e8925a7b5b38f858')
+            '8e46461c729552ceb154735e86bf343c2d63cc06ca5acc4d93fdfe16538fb731')
 
 build() {
   markdown "${srcdir}/git-credential-manager-${_realtag#v}/README.md" > "${srcdir}/git-credential-manager-${_realtag#v}/git-credential-manager.html"
