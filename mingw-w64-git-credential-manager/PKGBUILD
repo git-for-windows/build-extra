@@ -5,7 +5,7 @@ pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
 replaces=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
-pkgver=2.7.0
+pkgver=2.7.3
 pkgrel=1
 _realver=$pkgver
 _realtag=v${pkgver}
@@ -21,19 +21,19 @@ options=('!strip')
 case "$MINGW_PACKAGE_PREFIX" in
   mingw-w64-i686)
     _arch=x86
-    _sha=bbed7b0f56517f92825f4a6d2f98cae9757da6455c977f93d24745fceb48b806
+    _sha=4065c4823f040720cbd7a81ebaca901385063d5795dcfb6224c28161e2c6e680
     ;;
   mingw-w64-x86_64)
     _arch=x64
-    _sha=070c7cf706fbed844757f53d2f9d46ace09745820323264761e4f0bb4f0319bc
+    _sha=529ea8aa1379b3a11bd8aafe4705a839cf253a41e14908fca113abeefa30657f
     ;;
   mingw-w64-clang-aarch64)
     _arch=arm64
-    _sha=2b69098b1d772bf6c3cc70298bfa29d0ecf4b4f61ec86f810fd1121e79f81721
+    _sha=fe1142ec8a0e84e91c445603ca499bbb6ee32bae8a373492cb81645b76944462
     ;;
   *)
     _arch=x86
-    _sha=bbed7b0f56517f92825f4a6d2f98cae9757da6455c977f93d24745fceb48b806
+    _sha=4065c4823f040720cbd7a81ebaca901385063d5795dcfb6224c28161e2c6e680
     ;;
 esac
 
@@ -43,10 +43,10 @@ src_zip_url="${project_url}/archive/${_realtag}.zip"
 source=("${zip_url}" "$src_zip_url")
 
 sha256sums=("$_sha"
-            'cfd29c2ce47cac3b9264e08884ddd7a67e829616cc984d2f5331ceaa3f55a326')
+            'a901dca0d30377e233470b02101a8d3114bb5228bc941ad82b2f85a8c65e0d8c')
 
 build() {
-  markdown "${srcdir}/git-credential-manager-${_realtag#v}/README.md" > "${srcdir}/git-credential-manager-${_realtag#v}/git-credential-manager.html"
+  markdown "${srcdir}/git-credential-manager-embargoed-${_realtag#v}/README.md" > "${srcdir}/git-credential-manager-embargoed-${_realtag#v}/git-credential-manager.html"
 }
 
 package() {
@@ -55,7 +55,7 @@ package() {
   install -d -m755 "${prefix}"/bin
   install -m755 "$srcdir2"/*.{dll,exe,config} "${prefix}"/bin
   install -d -m755 "${prefix}"/doc/git-credential-manager
-  install -m644 "$srcdir2"/git-credential-manager-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager
+  install -m644 "$srcdir2"/git-credential-manager-embargoed-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager
   install -d -m755 "${prefix}"/share/doc/git-doc
-  install -m644 "$srcdir2"/git-credential-manager-${_realtag#v}/git-credential-manager.html "${prefix}"/share/doc/git-doc
+  install -m644 "$srcdir2"/git-credential-manager-embargoed-${_realtag#v}/git-credential-manager.html "${prefix}"/share/doc/git-doc
 }
