@@ -37,6 +37,12 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.53.0 (February 2nd 2026)
+
+This is a security fix release, addressing CVE-2025-66413.
+
+* [CVE-2025-66413](https://github.com/git-for-windows/git/security/advisories/GHSA-hv9c-4jm9-jh3x), Git for Windows: When a user clones a repository from an attacker-controlled server, Git may attempt NTLM authentication and disclose the user's NTLMv2 hash to the remote server. Since NTLM hashing is weak, the captured hash can potentially be brute-forced to recover the user's credentials. This is addressed by disabling NTLM authentication by default.
+
 ## Changes since Git for Windows v2.52.0 (November 17th 2025)
 
 ### New Features
