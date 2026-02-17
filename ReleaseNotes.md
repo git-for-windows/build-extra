@@ -45,6 +45,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [Git Credential Manager v2.7.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.7.2).
 * Comes with [MinTTY v3.8.2](https://github.com/mintty/mintty/releases/tag/3.8.2).
 
+### Bug Fixes
+
+* The `iconv` executable, which was [inadvertently dropped](https://github.com/git-for-windows/git/issues/6083) from Git for Windows v2.53.0's installer, [is now included again](https://github.com/git-for-windows/build-extra/pull/678).
+
 ## Changes since Git for Windows v2.52.0 (November 17th 2025)
 
 ### New Features
