@@ -33,7 +33,7 @@ UTIL_PACKAGES="sed awk grep findutils coreutils"
 if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
 then
 	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES bash sh coreutils mingw-w64-busybox
-		libiconv libintl libreadline ncurses openssl
+		libiconv iconv libintl libreadline ncurses openssl
 		mingw-w64-libmetalink mingw-w64-spdylay diffutils"
 
 	EXTRA_FILE_EXCLUDES="/etc/post-install/.* /usr/bin/getfacl.exe
@@ -188,7 +188,7 @@ mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES $LIBCURL_EXTRA"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$PACMAN_ARCH-git-doc-html ncurses mintty vim nano
-		winpty less gnupg tar diffutils patch dos2unix which subversion perl-JSON
+		winpty less gnupg tar diffutils iconv patch dos2unix which subversion perl-JSON
 		mingw-w64-$PACMAN_ARCH-tk mingw-w64-$PACMAN_ARCH-connect docx2txt
 		mingw-w64-$PACMAN_ARCH-antiword mingw-w64-$PACMAN_ARCH-odt2txt ssh-pageant
 		mingw-w64-$PACMAN_ARCH-git-lfs mingw-w64-$PACMAN_ARCH-xz tig $GIT_UPDATE_EXTRA_PACKAGES"
