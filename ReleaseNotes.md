@@ -43,6 +43,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * Comes with [Bash v5.3.9](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=637f5c8696a6adc9b4519f1cd74aa78492266b7f).
 * Comes with [Git Credential Manager v2.7.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.7.2).
+* Comes with [MinTTY v3.8.2](https://github.com/mintty/mintty/releases/tag/3.8.2).
 
 ## Changes since Git for Windows v2.52.0 (November 17th 2025)
 
