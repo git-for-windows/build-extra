@@ -43,6 +43,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [Bash v5.3.9](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=637f5c8696a6adc9b4519f1cd74aa78492266b7f).
 * Comes with [Git Credential Manager v2.7.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.7.2).
 * Comes with [MinTTY v3.8.2](https://github.com/mintty/mintty/releases/tag/3.8.2).
+* The shell aliases in Git Bash that ensured that interpreters such as Python and Node.JS are executed via `winpty` are no longer necessary, and have therefore [been dropped](https://github.com/git-for-windows/build-extra/pull/664).
 
 ### Bug Fixes
 
