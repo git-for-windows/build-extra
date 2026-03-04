@@ -191,8 +191,9 @@ echo "\"$(cygpath -aw "$SCRIPT_PATH")/Assets/Square44x44Logo.png\" \"Assets/Squa
 echo "\"$(cygpath -aw "$SCRIPT_PATH")/Assets/Square44x44Logo.scale-200.png\" \"Assets/Square44x44Logo.scale-200.png\"" >>"$MAPFILE" &&
 echo "\"$(cygpath -aw "$SCRIPT_PATH")/Assets/Square44x44Logo.targetsize-24_altform-unplated.png\" \"Assets/Square44x44Logo.targetsize-24_altform-unplated.png\"" >>"$MAPFILE" &&
 echo "\"$(cygpath -aw "$SCRIPT_PATH")/Assets/StoreLogo.png\" \"Assets/StoreLogo.png\"" >>"$MAPFILE" &&
+MSYS_ROOT="$(cygpath -aw /)" &&
 echo "$LIST" |
-sed -e 'y/\//\\/' -e 's/.*/"&" "&"/' >>"$MAPFILE"
+sed -e 'y/\//\\/' -e "s|.*|\"$MSYS_ROOT\\\\&\" \"&\"|" >>"$MAPFILE"
 
 MSYS_NO_PATHCONV=1 "$MAKEAPPX" pack /v /o /f "$(cygpath -aw "$MAPFILE")" /p "$(cygpath -aw "$TARGET")" &&
 echo "Package created at $TARGET"
