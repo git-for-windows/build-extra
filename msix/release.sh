@@ -151,10 +151,22 @@ test -z "$include_pdbs" || {
 } ||
 die "Could not unpack .pdb files"
 
-# Install Tooling
-echo "Install WinApp CLI"
-winget install Microsoft.WinAppCLI --accept-source-agreements --accept-package-agreements --disable-interactivity ||
-die "Failed to install WinApp CLI"
+# Find makeappx.exe from the Windows SDK
+MAKEAPPX=
+for sdk_dir in "/c/Program Files (x86)/Windows Kits/10/bin"/*/
+do
+	case "$ARCH" in
+	x86_64) sdk_arch=x64;;
+	i686) sdk_arch=x86;;
+	aarch64) sdk_arch=arm64;;
+	esac
+	if test -f "$sdk_dir$sdk_arch/makeappx.exe"
+	then
+		MAKEAPPX="$sdk_dir$sdk_arch/makeappx.exe"
+	fi
+done
+test -n "$MAKEAPPX" ||
+die "Could not find makeappx.exe in the Windows SDK"
 
 # Create MSIX
 
@@ -182,6 +194,5 @@ echo "\"$(cygpath -aw "$SCRIPT_PATH")/Assets/StoreLogo.png\" \"Assets/StoreLogo.
 echo "$LIST" |
 sed -e 'y/\//\\/' -e 's/.*/"&" "&"/' >>"$MAPFILE"
 
-PWSH_COMMAND="winapp tool makeappx.exe pack /v /o /f $(cygpath -aw "$MAPFILE") /p $(cygpath -aw "$TARGET")"
-powershell -WorkingDirectory "$(cygpath -aw "/")" -NonInteractive -NoProfile -NoLogo -Command "iex '$PWSH_COMMAND'" &&
+"$MAKEAPPX" pack /v /o /f "$(cygpath -aw "$MAPFILE")" /p "$(cygpath -aw "$TARGET")" &&
 echo "Package created at $TARGET"
