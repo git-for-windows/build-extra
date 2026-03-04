@@ -194,5 +194,5 @@ echo "\"$(cygpath -aw "$SCRIPT_PATH")/Assets/StoreLogo.png\" \"Assets/StoreLogo.
 echo "$LIST" |
 sed -e 'y/\//\\/' -e 's/.*/"&" "&"/' >>"$MAPFILE"
 
-"$MAKEAPPX" pack /v /o /f "$(cygpath -aw "$MAPFILE")" /p "$(cygpath -aw "$TARGET")" &&
+MSYS_NO_PATHCONV=1 "$MAKEAPPX" pack /v /o /f "$(cygpath -aw "$MAPFILE")" /p "$(cygpath -aw "$TARGET")" &&
 echo "Package created at $TARGET"
