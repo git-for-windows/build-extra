@@ -192,8 +192,10 @@ echo "\"$(cygpath -aw "$SCRIPT_PATH")/Assets/Square44x44Logo.scale-200.png\" \"A
 echo "\"$(cygpath -aw "$SCRIPT_PATH")/Assets/Square44x44Logo.targetsize-24_altform-unplated.png\" \"Assets/Square44x44Logo.targetsize-24_altform-unplated.png\"" >>"$MAPFILE" &&
 echo "\"$(cygpath -aw "$SCRIPT_PATH")/Assets/StoreLogo.png\" \"Assets/StoreLogo.png\"" >>"$MAPFILE" &&
 MSYS_ROOT="$(cygpath -aw /)" &&
-echo "$LIST" |
-sed -e 'y/\//\\/' -e "s|.*|\"$MSYS_ROOT\\\\&\" \"&\"|" >>"$MAPFILE"
+echo "$LIST" | while IFS= read -r entry; do
+	winpath="${entry//\//\\}"
+	echo "\"$MSYS_ROOT\\$winpath\" \"$winpath\""
+done >>"$MAPFILE"
 
 MSYS_NO_PATHCONV=1 "$MAKEAPPX" pack /v /o /f "$(cygpath -aw "$MAPFILE")" /p "$(cygpath -aw "$TARGET")" &&
 echo "Package created at $TARGET"
