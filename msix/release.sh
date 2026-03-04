@@ -66,6 +66,17 @@ esac
 MSYSTEM_LOWER=${MSYSTEM,,}
 VERSION=$1
 shift
+
+# MSIX requires version in X.X.X.X format (numeric only)
+# Convert Git for Windows versions like "2.47.1.windows.1" to "2.47.1.1"
+# and test versions like "0-test" to "0.0.0.0"
+MSIX_VERSION="$(echo "$VERSION" | sed -e 's/\.windows\./\./' -e 's/[^0-9.]//g')"
+# Ensure we have exactly 4 numeric segments
+while test "$(echo "$MSIX_VERSION" | tr -cd '.' | wc -c)" -lt 3
+do
+	MSIX_VERSION="$MSIX_VERSION.0"
+done
+
 TARGET="$output_directory"/Git.GitforWindows_"$VERSION"_"$ARTIFACT_SUFFIX".msix
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
@@ -176,7 +187,7 @@ MANIFESTOUT=$SCRIPT_PATH/root/appxmanifest.xml
 
 echo "Create MSIX"
 
-sed -e "s/@@VERSION@@/$VERSION/g" <"$MANIFESTIN" >"$MANIFESTOUT"
+sed -e "s/@@VERSION@@/$MSIX_VERSION/g" <"$MANIFESTIN" >"$MANIFESTOUT"
 
 echo "[Files]" >"$MAPFILE" &&
 echo "\"$(cygpath -aw "$SCRIPT_PATH")/root/appxmanifest.xml\" \"AppxManifest.xml\"" >>"$MAPFILE" &&
