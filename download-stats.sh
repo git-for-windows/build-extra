@@ -8,11 +8,14 @@ test "--update" != "$1" || {
 	 https://api.github.com/repos/git-for-windows/git/releases |
 	tac |
 	sed -n '/^  }/{
-    :1;N;/\n  {/b2;b1
-    :2;
-    y/\n/\r/
-    s/.*"tag_name": "\([^"]*\)".*"id": \([0-9]*\).*/# \1\n#id=${1:-\2}/p
-}' | sed '$s/^#//' >"${0%.sh}".ids &&
+	    :1;N;/\n  {/b2;b1
+	    :2
+	    y/\n/\r/
+	    s/.*"tag_name": "\(v[^"]*\)".*"id": \([0-9]*\).*/\2\t# \1\t#id=${1:-\2}/p
+	}' |
+	sort -n -k1 |
+	sed 's/.*\t\(.*\)\t/\1\n/' |
+	sed '$s/^#//' >"${0%.sh}".ids &&
 	echo "$ids" |
 	sed -i -e '/^#\( v\?2.*windows\|id=\)/d' -e '/^id=/d' \
 		-e "/^# IDs/r${0%.sh}.ids" "$0"
