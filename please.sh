@@ -913,7 +913,7 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 	die "Could not build mingw-w64-git\n"
 
 	test -z "$output_path" || {
-		pkgpattern="$(sed -n '/^pkgver=/{N;s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2/p}' <${git_src_dir%/src/git}/PKGBUILD.$tag)" &&
+		pkgpattern="$(bash -c "cd ${git_src_dir%/src/git}/ && . PKGBUILD.$tag && echo \$pkgver-\$pkgrel")" &&
 		mkdir -p "$output_path" &&
 		{ test -z "$src_pkg" || cp ${git_src_dir%/src/git}/*-"$pkgpattern".src.tar.gz "$output_path/"; } &&
 		cp ${git_src_dir%/src/git}/*-"$pkgpattern"-any.pkg.tar.xz ${git_src_dir%/src/git}/PKGBUILD.$tag "$output_path/"
