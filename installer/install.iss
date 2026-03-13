@@ -2402,16 +2402,23 @@ begin
      * Create a custom page for the default behavior of `git pull`.
      *)
 
-    GitPullBehaviorPage:=CreatePage(PrevPageID,'Choose the default behavior of `git pull`','What should `git pull` do by default?',TabOrder,Top,Left);
+    GitPullBehaviorPage:=CreatePage(PrevPageID,'Choose the default behavior of `git pull`','By default, Git downloads remote changes and fast-forwards. History diverges when both local and remote branches have new commits. To resolve this, choose:',TabOrder,Top,Left);
 
     // 1st choice
-    RdbGitPullBehavior[GP_GitPullMerge]:=CreateRadioButton(GitPullBehaviorPage,'Fast-forward or merge','Fast-forward the current branch to the fetched branch when possible,'+#13+'otherwise create a merge commit.',TabOrder,Top,Left);
+    RdbGitPullBehavior[GP_GitPullMerge]:=CreateRadioButton(GitPullBehaviorPage,'Fast-forward or merge','[Local Branch] + [Remote Branch] = [Merge Commit]'+#13+'Automatically combines histories. May hide logical conflicts between changes.',TabOrder,Top,Left);
 
     // 2nd choice
-    RdbGitPullBehavior[GP_GitPullRebase]:=CreateRadioButton(GitPullBehaviorPage,'Rebase','Rebase the current branch onto the fetched branch. If there are no local'+#13+'commits to rebase, this is equivalent to a fast-forward.',TabOrder,Top,Left);
+    RdbGitPullBehavior[GP_GitPullRebase]:=CreateRadioButton(GitPullBehaviorPage,'Fast-forward or rebase','[Remote Branch] -> [Local Commit 1] -> [Local Commit 2] -> [...]'+#13+'Replays your commits sequentially. Conflicts must be resolved one by one.',TabOrder,Top,Left);
 
     // 3rd choice
-    RdbGitPullBehavior[GP_GitPullFFOnly]:=CreateRadioButton(GitPullBehaviorPage,'Only ever fast-forward','Fast-forward to the fetched branch. Fail if that is not possible.'+#13+'This is the standard behavior of `git pull`.',TabOrder,Top,Left);
+    RdbGitPullBehavior[GP_GitPullFFOnly]:=CreateRadioButton(GitPullBehaviorPage,'Fast-forward only (Standard behavior)','[Remote Branch] // [Local Branch unchanged]'+#13+'Safely aborts but requires manually running `git merge` or `git rebase`.',TabOrder,Top,Left);
+
+    // Footer note (same pattern as DefaultBranchPage, line 2198)
+    LblInfo:=TLabel.Create(GitPullBehaviorPage);
+    LblInfo.Parent:=GitPullBehaviorPage.Surface;
+    LblInfo.Caption:='Note: These options handle changes to different files or different lines of the same file.'+#13+'Modifying the same lines always causes a conflict.';
+    LblInfo.Left:=ScaleX(Left);
+    LblInfo.Top:=ScaleY(Top);
 
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Git Pull Behavior Option','Merge') of
