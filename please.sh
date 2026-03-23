@@ -2865,14 +2865,20 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 				die 'Could not copy %s (%d)\n' "$tar" $?
 			else
 				echo "Retrieving $tar..." >&2
-				curl -sfo "$dir/$tar" $url/$oarch/$tar
+				case $tar in
+				mingw-w64-x86_64-curl-*-8.18.0-1*|mingw-w64-i686-curl-*-8.18.0-1*)
+					tar_url=https://github.com/git-for-windows/pacman-repo/releases/download/2026-01-07T21-55-10.690988000Z/$tar;;
+				mingw-w64-clang-aarch64-curl-*-8.18.0-1*)
+					tar_url=https://github.com/git-for-windows/pacman-repo/releases/download/2026-01-07T21-45-13.731088400Z/$tar;;
+				*) tar_url=$url/$oarch/$tar;;
+				esac
+				curl -Lsfo "$dir/$tar" $tar_url
 				case $? in
 				0) ;; # okay
 				56)
 					while test 56 = $?
 					do
-						curl -sfo "$dir/$tar" \
-							$url/$oarch/$tar ||
+						curl -Lsfo "$dir/$tar" $tar_url ||
 						die "curl error %s (%d)\n" \
 							"$tar" $?
 					done
