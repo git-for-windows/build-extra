@@ -38,6 +38,8 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.53.0(2) (March 10th 2026)
 
+Due to persistent maintenance challenges, `git svn` is no longer included in Git for Windows. Users who still need this command are highly encouraged to use [a Linux version of git svn via the Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/) instead, or switch to a regular MSYS2 setup: install [MSYS2](https://www.msys2.org/), then run the following command in the MSYS2 UCRT64 Bash: `pacman -Sy mingw-w64-ucrt-x86_64-git-svn`. After that, the `git svn` command will be available in that Bash. On Windows/ARM64, you will want to use the CLANGARM64 variant instead (and install `mingw-w64-clang-aarch64-git-svn`).
+
 ### New Features
 
 * Comes with [Bash v5.3.9](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=637f5c8696a6adc9b4519f1cd74aa78492266b7f).
