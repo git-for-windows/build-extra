@@ -630,6 +630,7 @@ quick_action () { # <action> <file>...
 	fi
 
 	# Remove the temporary directory
+	chmod -R +w "$dir/.git/objects" &&
 	rm -r "$dir" ||
 	die "Could not remove $dir/"
 }
