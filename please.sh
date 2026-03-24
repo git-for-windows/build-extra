@@ -898,7 +898,7 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 		export SIGNTOOL="git ${d:+--git-dir="$d"} signtool"
 	 fi &&
 	 cd ${git_src_dir%/src/git}/ &&
-	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw $maybe_sync $force -p PKGBUILD.$tag &&
+	 _DEFAULT_EDITOR=vim MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw $maybe_sync $force -p PKGBUILD.$tag &&
 	 if test -n "$src_pkg"
 	 then
 		git --git-dir src/git/.git archive --prefix git/ -o git-$tag.tar.gz $tag &&
