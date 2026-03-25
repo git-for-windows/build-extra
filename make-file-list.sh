@@ -185,7 +185,7 @@ G4W_PACKAGE=mingw-w64-$PACMAN_ARCH-git-for-windows-addons ||
 G4W_PACKAGE=mingw-w64-$PACMAN_ARCH-git
 
 packages="$G4W_PACKAGE mingw-w64-$PACMAN_ARCH-git-credential-manager
-mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES $LIBCURL_EXTRA"
+mingw-w64-$PACMAN_ARCH-git-extra openssh msys2-runtime $UTIL_PACKAGES $LIBCURL_EXTRA"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$PACMAN_ARCH-git-doc-html ncurses mintty vim nano
