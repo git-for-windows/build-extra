@@ -51,7 +51,8 @@ then
 		mingw-w64-libsystre mingw-w64-libtre-git mingw-w64-p11-kit
 		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
 		libedit libgdbm perl perl-.* mingw-w64-tzdata
-		mingw-w64-git-svn subversion libserf apr apr-util expat libexpat liblz4"
+		mingw-w64-git-svn subversion libserf apr apr-util expat libexpat liblz4
+		vim nano"
 fi
 if test -z "$INCLUDE_GIT_UPDATE"
 then
@@ -184,14 +185,15 @@ G4W_PACKAGE=mingw-w64-$PACMAN_ARCH-git-for-windows-addons ||
 G4W_PACKAGE=mingw-w64-$PACMAN_ARCH-git
 
 packages="$G4W_PACKAGE mingw-w64-$PACMAN_ARCH-git-credential-manager
-mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES $LIBCURL_EXTRA"
+mingw-w64-$PACMAN_ARCH-git-extra openssh msys2-runtime $UTIL_PACKAGES $LIBCURL_EXTRA"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$PACMAN_ARCH-git-doc-html ncurses mintty vim nano
-		winpty less gnupg tar diffutils iconv patch dos2unix which subversion perl-JSON
+		winpty less gnupg tar diffutils patch dos2unix which subversion perl-JSON
 		mingw-w64-$PACMAN_ARCH-tk mingw-w64-$PACMAN_ARCH-connect docx2txt
 		mingw-w64-$PACMAN_ARCH-antiword mingw-w64-$PACMAN_ARCH-odt2txt ssh-pageant
 		mingw-w64-$PACMAN_ARCH-git-lfs mingw-w64-$PACMAN_ARCH-xz tig $GIT_UPDATE_EXTRA_PACKAGES"
+	test i686 = "$ARCH" || packages="$packages iconv"
 fi
 
 I686_EXCLUDE=
