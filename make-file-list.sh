@@ -266,6 +266,8 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/lib/\(itcl\|tdbc\|pkcs11/p11-kit-client\|thread\)' \
 	-e '^/usr/lib/ssh/sshd\($\|-\)' \
 	-e '^/usr/share.*/magic$' \
+	-e '^/usr/lib/perl5/core_perl/auto/DB_File/' \
+	-e '^/usr/lib/perl5/core_perl/DB_File\.pm$' \
 	-e '^/usr/share/perl5/core_perl/Unicode/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
 	-e '^/usr/share/perl5/core_perl/Locale/' \
