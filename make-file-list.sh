@@ -51,7 +51,8 @@ then
 		mingw-w64-libsystre mingw-w64-libtre-git mingw-w64-p11-kit
 		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
 		libedit libgdbm perl perl-.* mingw-w64-tzdata
-		mingw-w64-git-svn subversion libserf apr apr-util expat libexpat liblz4"
+		mingw-w64-git-svn subversion libserf apr apr-util expat libexpat liblz4
+		vim nano"
 fi
 if test -z "$INCLUDE_GIT_UPDATE"
 then
