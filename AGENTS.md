@@ -26,6 +26,15 @@ The repository lives inside a Git for Windows SDK at `/usr/src/build-extra`.
 Most of its scripts assume they run in a Git SDK Bash environment (MSYS2 +
 MinGW toolchain).
 
+### Local SDK Revision
+
+The local SDK (e.g. `D:\git-sdk-64`) may lag behind what CI runs
+against.  When investigating a CI failure that involves SDK file
+contents, check the build-installers directory (e.g.
+`D:\git-sdk-64-build-installers`) or query the specific commit in the
+remote git-sdk-64/32/arm64 repository rather than assuming the local
+filesystem reflects the failing state.
+
 ## Repository Structure
 
 ### Installer / Artifact Generators
@@ -61,13 +70,23 @@ here using Pacman `PKGBUILD` files:
 These packages are built with `makepkg-mingw -s` (MinGW packages) or
 `makepkg -s` (MSYS2 packages) from within the appropriate subdirectory.
 
+### Pacman Repository Interactions
+
+The Git for Windows Pacman repository can *shadow* upstream MSYS2
+packages by shipping a build with a higher `pkgrel`.  When upstream
+rebuilds a package (e.g. for a Perl major version bump), the upstream
+`pkgrel` may be lower than the Git for Windows one, causing
+`pacman -Syu` to skip the rebuild.  Use `pacman -Syuu` (double `-u`)
+to allow downgrades in that situation.  The SDK sync scripts live in
+the git-sdk-64/32/arm64 repos (`update-via-pacman.ps1`).
+
 ### Key Scripts
 
 | Script                 | Purpose                                          |
 |------------------------|--------------------------------------------------|
 | `please.sh`            | SDK artifact creation and PDB bundling            |
 | `shears.sh`            | "Git garden shears" for merging-rebases           |
-| `make-file-list.sh`    | Generates file lists for installer artifacts      |
+| `make-file-list.sh`    | Generates file lists for installer artifacts (see below) |
 | `add-release-note.js`  | Adds entries to `ReleaseNotes.md` (Node.js)       |
 | `render-release-notes.sh` | Converts `ReleaseNotes.md` to HTML             |
 | `pacman-helper.sh`     | Helper for Pacman package operations              |
@@ -113,6 +132,44 @@ definition line. Key remaining subcommands:
   heavily used by CI workflows both here and in
   `git-for-windows-automation`.
 - `bundle-pdbs` -- Collects PDB debug symbol files for a release.
+
+## `make-file-list.sh`
+
+This script produces the list of files that go into each installer artifact.
+It has two layers of exclusion that interact in non-obvious ways:
+
+1. **`PACKAGE_EXCLUDES`** -- a space-separated list of package names
+   passed through `grep -v` after `pactree -u` expands the dependency
+   tree.  Packages listed here (and their files) are dropped entirely.
+   The list is extended for `MINIMAL_GIT` builds.  Note that `pactree`
+   still *traverses* excluded packages, so transitive dependencies of
+   an excluded package can still appear if they are not themselves
+   excluded.
+
+2. **`grep -v` file-pattern filters** -- individual file paths are
+   removed by regular expressions even if they belong to a package that
+   passed the first filter.  This is necessary when a kept package
+   bundles files that depend on an excluded library (e.g. Perl's core
+   `DB_File` module links against `msys-db-6.2.dll`, but the `db`
+   package is excluded).
+
+When diagnosing a `check-for-missing-dlls` failure, determine which layer
+is responsible: if the missing DLL belongs to an excluded *package*, the
+fix is a file-pattern exclusion for the consumer; if the DLL's package
+is simply not in the dependency tree, the fix may be to add it.
+
+## `check-for-missing-dlls.sh`
+
+Runs in the `check-for-missing-dlls` workflow in all three SDK snapshot
+repos ([git-sdk-64](https://github.com/git-for-windows/git-sdk-64),
+[git-sdk-32](https://github.com/git-for-windows/git-sdk-32),
+[git-sdk-arm64](https://github.com/git-for-windows/git-sdk-arm64)).
+It calls `make-file-list.sh` to obtain the installer file list, then
+for every `.dll`/`.exe` in that list it checks (via `objdump -p` and
+`ldd`) that all DLL dependencies are satisfied by either a system DLL
+or another DLL in the file list.  MSYS2 binaries (`usr/*`) are checked
+against `usr/bin/*.dll`; MinGW binaries (`$MINGW_PREFIX/*`) are checked
+against `$MINGW_PREFIX/bin/*.dll`.
 
 ## Building and Testing
 
