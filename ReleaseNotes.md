@@ -48,6 +48,7 @@ Due to persistent maintenance challenges, `git svn` is no longer included in Git
 * The shell aliases in Git Bash that ensured that interpreters such as Python and Node.JS are executed via `winpty` are no longer necessary, and have therefore [been dropped](https://github.com/git-for-windows/build-extra/pull/664).
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.7](https://sourceware.org/pipermail/cygwin-announce/2026-March/012878.html).
 * Comes with [cURL v8.19.0](https://curl.se/changes.html#8_19_0).
+* Comes with [OpenSSH v10.3.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_3_P1).
 
 ### Bug Fixes
 
