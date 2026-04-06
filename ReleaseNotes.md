@@ -55,6 +55,7 @@ Due to persistent maintenance challenges, `git svn` is no longer included in Git
 * The `iconv` executable, which was [inadvertently dropped](https://github.com/git-for-windows/git/issues/6083) from Git for Windows v2.53.0's installer, [is now included again](https://github.com/git-for-windows/build-extra/pull/678).
 * In some circumstances, when typing while a still-running program is about to terminate, [the typed characters could arrive out of order in Git Bash](https://github.com/git-for-windows/git/issues/5632). This bug [was fixed](https://github.com/git-for-windows/msys2-runtime/pull/124).
 * Similar to how `git clean` already avoids traversing NTFS junctions, `git worktree remove` [now does the same](https://github.com/git-for-windows/git/pull/6151).
+* The number of CPU cores is [now detected correctly](https://github.com/git-for-windows/git/pull/6108) on multi-socket systems.
 
 ## Changes since Git for Windows v2.53.0 (February 2nd 2026)
 
