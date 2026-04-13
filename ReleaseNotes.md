@@ -57,6 +57,7 @@ Due to persistent maintenance challenges, `git svn` is no longer included in Git
 * Similar to how `git clean` already avoids traversing NTFS junctions, `git worktree remove` [now does the same](https://github.com/git-for-windows/git/pull/6151).
 * The number of CPU cores is [now detected correctly](https://github.com/git-for-windows/git/pull/6108) on multi-socket systems.
 * When fetching/pushing via Secure Channel (the default TLS/SSL method), the timeout to renegotiate (e.g. using client certificates) was recently reduced to 7 seconds, which was too short. It has been [extended to 60 seconds](https://github.com/git-for-windows/MINGW-packages/pull/192).
+* The recent security bug fix that disables NTLM by default missed the NTLM fallback in the Kerberos protocol. This fallback [is now disabled](https://github.com/git-for-windows/MINGW-packages/pull/193), following the cURL project's guidance.
 
 ## Changes since Git for Windows v2.53.0 (February 2nd 2026)
 
