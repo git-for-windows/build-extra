@@ -48,6 +48,54 @@ For conditions of distribution and use, see <a href="files/is/license.txt">LICEN
 <details open="">
 <summary>Inno Setup 6.7</summary>
 
+<p><a name="6.7.1"></a><span class="ver">6.7.1 </span><span class="date">(2026-02-17)</span></p>
+
+<span class="head2">General improvements</span>
+
+<ul>
+  <li>Compiler:
+  <ul>
+    <li>When setting <tt>WizardBackImageFile</tt>, the compiler now also checks whether a custom style was specified via <tt>WizardStyleFile</tt>.</li>
+    <li>The compiler's retry mechanisms now also retry the initial copy of the E32 file to the output EXE.</li>
+  </ul>  
+  </li>
+  <li>Compiler IDE:
+  <ul>
+    <li>Improved section folding to allow folding of (entire) functions and procedures in the <tt>[Code]</tt> section.</li>
+    <li>Added new <i>Smart Home key</i> option, enabled by default.</li>
+    <li>Added a banner that will appear in April 2026, inviting you to share your ideas and vote on others on an ideas board, open that month only.</li>
+  </ul>
+  </li>
+  <li>Setup:
+    <ul>
+      <li>Improved enumeration of the Windows <i>PendingFileRenameOperations</i> registry value.<br/>
+          If you use <tt>restartreplace</tt> flags in your <tt>[Files]</tt> section, updating is recommended.</li>
+      <li>Edit controls that take paths to directories now exclude names of files from their AutoComplete lists.</li>
+      <li>Added workaround for slower folder browsing on Windows 11 25H2.</li>
+    </ul>
+  </li>
+</ul>
+
+<span class="head2">Other changes</span>
+
+<ul>
+  <li>Pascal Scripting:
+  <ul>
+    <li>Added new <tt>Alignment</tt> property to support class <tt>TNewStaticText</tt>. See updated <i><a href="https://raw.githubusercontent.com/jrsoftware/issrc/refs/heads/main/Examples/CodeClasses.iss">CodeClasses.iss</a></i> example script for an example.</li>
+    <li>Added new <tt>AutoCompleteFiles</tt> property to support class <tt>TNewPathEdit</tt>. If set to <tt>False</tt> (the default value), only directory names are included in the AutoComplete list. If set to <tt>True</tt>, file names are included as well.</li>
+  </ul>
+  </li>
+  <li>ISPP:
+  <ul>
+    <li>The date and time separators of support functions <tt>GetDateTimeString</tt> and <tt>GetFileDateTimeString</tt> are now truly optional, rather than requiring empty strings.</li>
+    <li>Added new support function <tt>EmitLanguagesSection</tt>, to generate a full <tt>[Languages]</tt> section for all available official languages, including English. Example: <tt>#expr EmitLanguagesSection</tt>.<br/>
+        When possible, the Compiler IDE's New Script Wizard will use this function.</li>
+  </ul>
+  </li>
+  <li>Added official Thai translation.</li>
+  <li>Other minor improvements.</li>
+</ul>
+
 <p><a name="6.7.0"></a><span class="ver">6.7.0 </span><span class="date">(2026-01-06)</span></p>
 
 <p><b>Using Inno Setup commercially?</b> Please <a href="https://jrsoftware.org/isorder.php">purchase a license</a>.</p>
@@ -149,7 +197,7 @@ For conditions of distribution and use, see <a href="files/is/license.txt">LICEN
     <li>Using support function <tt>ExtractFileDir</tt> no longer triggers a warning about <tt>RemoveBackslash</tt>.</li>
   </ul>
   </li>
-  <li>The various options for <tt>[Setup]</tt> section directive <tt>DisablePrecompiledFileVerifications</tt> have had their <tt>dll</tt>/<tt>e32</tt>/<tt>exe</tt> postfixes removed. Options <tt>setupldre32</tt> and <tt>setuplde64</tt> have been merged into a single <tt>setupldr</tt> option.</li>
+  <li>The various options for <tt>[Setup]</tt> section directive <tt>DisablePrecompiledFileVerifications</tt> have had their <tt>dll</tt>/<tt>e32</tt>/<tt>exe</tt> postfixes removed. Options <tt>setupldre32</tt> and <tt>setupldre64</tt> have been merged into a single <tt>setupldr</tt> option.</li>
   <li><i>Experimental</i>: Added support for using a 64-bit version of the "Setup Loader" program by setting existing <tt>[Setup]</tt> section directive <tt>UseSetupLdr</tt> to <tt>x64</tt>.<br/>
       Using <tt>x64</tt> does not mean that Setup itself will also be 64-bit: Setup itself is currently always built as a 32-bit x86 binary.<br/>
       Using <tt>x64</tt> anyway has several benefits: your installer initially presents itself as a native 64-bit executable, and the 64-bit loader has high-entropy ASLR enabled. Additionally, it can help satisfy policy or third-party requirements that mandate 64-bit installers, even while the main Setup program is still 32-bit.<br/>

@@ -10,7 +10,6 @@ See [http://git-scm.com/](http://git-scm.com/) for further details about Git inc
 # Known issues
 * On Windows 10 before 1703, or when Developer Mode is turned off, special permissions are required when cloning repositories with symbolic links, therefore support for symbolic links is disabled by default. Use `git clone -c core.symlinks=true <URL>` to enable it, see details [here](https://gitforwindows.org/symbolic-links).
 * If configured to use Plink, you will have to connect with [putty](http://www.chiark.greenend.org.uk/~sgtatham/putty/) first and accept the host key.
-* Some console programs, most notably non-MSYS2 Python, PHP, Node and OpenSSL, interact correctly with MinTTY only when called through `winpty` (e.g. the Python console needs to be started as `winpty python` instead of just `python`).
 * If you specify command-line options starting with a slash, POSIX-to-Windows path conversion will kick in converting e.g. "`/usr/bin/bash.exe`" to "`C:\Program Files\Git\usr\bin\bash.exe`". When that is not desired -- e.g. "`--upload-pack=/opt/git/bin/git-upload-pack`" or "`-L/regex/`" -- you need to set the environment variable `MSYS_NO_PATHCONV` temporarily, like so:
 
   > `MSYS_NO_PATHCONV=1 git blame -L/pathconv/ msys2_path_conv.cc`
@@ -36,6 +35,31 @@ Should you encounter other problems, please first search [the bug tracker](https
 Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
+
+## Changes since Git for Windows v2.53.0(3) (April 14th 2026)
+
+Due to persistent maintenance challenges, `git svn` is no longer included in Git for Windows. Users who still need this command are highly encouraged to use [a Linux version of git svn via the Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/) instead, or switch to a regular MSYS2 setup: install [MSYS2](https://www.msys2.org/), then run the following command in the MSYS2 UCRT64 Bash: `pacman -Sy mingw-w64-ucrt-x86_64-git-svn`. After that, the `git svn` command will be available in that Bash. On Windows/ARM64, you will want to use the CLANGARM64 variant instead (and install `mingw-w64-clang-aarch64-git-svn`).
+
+### New Features
+
+* Comes with [Bash v5.3.9](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=637f5c8696a6adc9b4519f1cd74aa78492266b7f).
+* Comes with [Git Credential Manager v2.7.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.7.2).
+* Comes with [MinTTY v3.8.2](https://github.com/mintty/mintty/releases/tag/3.8.2).
+* The shell aliases in Git Bash that ensured that interpreters such as Python and Node.JS are executed via `winpty` are no longer necessary, and have therefore [been dropped](https://github.com/git-for-windows/build-extra/pull/664).
+* Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.7](https://sourceware.org/pipermail/cygwin-announce/2026-March/012878.html).
+* Comes with [cURL v8.19.0](https://curl.se/changes.html#8_19_0).
+* Comes with [OpenSSH v10.3.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_3_P1).
+* Comes with [OpenSSL v3.5.6](https://www.openssl.org/news/openssl-3.5-notes.html).
+
+### Bug Fixes
+
+* The `iconv` executable, which was [inadvertently dropped](https://github.com/git-for-windows/git/issues/6083) from Git for Windows v2.53.0's installer, [is now included again](https://github.com/git-for-windows/build-extra/pull/678).
+* In some circumstances, when typing while a still-running program is about to terminate, [the typed characters could arrive out of order in Git Bash](https://github.com/git-for-windows/git/issues/5632). This bug [was fixed](https://github.com/git-for-windows/msys2-runtime/pull/124).
+* Similar to how `git clean` already avoids traversing NTFS junctions, `git worktree remove` [now does the same](https://github.com/git-for-windows/git/pull/6151).
+* The number of CPU cores is [now detected correctly](https://github.com/git-for-windows/git/pull/6108) on multi-socket systems.
+* When fetching/pushing via Secure Channel (the default TLS/SSL method), the timeout to renegotiate (e.g. using client certificates) was recently reduced to 7 seconds, which was too short. It has been [extended to 60 seconds](https://github.com/git-for-windows/MINGW-packages/pull/192).
+* The recent security bug fix that disables NTLM by default missed the NTLM fallback in the Kerberos protocol. This fallback [is now disabled](https://github.com/git-for-windows/MINGW-packages/pull/193), following the cURL project's guidance.
+* A _really_ old bug which prevented Kerberos authentication from working with the default [`http.emptyAuth`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-httpemptyAuth) ("auto"), [was fixed](https://github.com/git-for-windows/git/pull/6170).
 
 ## Changes since Git for Windows v2.53.0(2) (March 10th 2026)
 

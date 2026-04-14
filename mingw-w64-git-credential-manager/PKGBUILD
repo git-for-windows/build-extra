@@ -14,7 +14,8 @@ install=git-credential-manager.install
 arch=('any')
 project_url="https://github.com/git-ecosystem/git-credential-manager"
 license=('MIT')
-makedepends=('markdown')
+makedepends=('markdown'
+             'unzip')
 groups=('VCS')
 options=('!strip')
 
@@ -37,25 +38,32 @@ case "$MINGW_PACKAGE_PREFIX" in
     ;;
 esac
 
-zip_url="${project_url}/releases/download/${_realtag}/gcm-win-${_arch}-${_realver}.zip"
+zip_name="gcm-win-${_arch}-${_realver}.zip"
+zip_url="${project_url}/releases/download/${_realtag}/${zip_name}"
 src_zip_url="${project_url}/archive/${_realtag}.zip"
 
 source=("${zip_url}" "$src_zip_url")
+noextract=("${zip_name}")
 
 sha256sums=("$_sha"
             'a901dca0d30377e233470b02101a8d3114bb5228bc941ad82b2f85a8c65e0d8c')
 
 build() {
-  markdown "${srcdir}/git-credential-manager-embargoed-${_realtag#v}/README.md" > "${srcdir}/git-credential-manager-embargoed-${_realtag#v}/git-credential-manager.html"
+  markdown "${srcdir}/git-credential-manager-${_realtag#v}/README.md" > "${srcdir}/git-credential-manager-${_realtag#v}/git-credential-manager.html"
+}
+
+prepare() {
+  mkdir -p "${srcdir}/${_arch}"
+  unzip "${srcdir}/${zip_name}" -d "${srcdir}/${_arch}"
 }
 
 package() {
   prefix="$pkgdir/${MINGW_PREFIX}"
-  srcdir2="${srcdir}/"
+  bindir="${srcdir}/${_arch}"
   install -d -m755 "${prefix}"/bin
-  install -m755 "$srcdir2"/*.{dll,exe,config} "${prefix}"/bin
+  install -m755 "$bindir"/*.{dll,exe,config} "${prefix}"/bin
   install -d -m755 "${prefix}"/doc/git-credential-manager
-  install -m644 "$srcdir2"/git-credential-manager-embargoed-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager
+  install -m644 "$srcdir"/git-credential-manager-${_realtag#v}/{README.md,LICENSE,NOTICE} "${prefix}"/doc/git-credential-manager
   install -d -m755 "${prefix}"/share/doc/git-doc
-  install -m644 "$srcdir2"/git-credential-manager-embargoed-${_realtag#v}/git-credential-manager.html "${prefix}"/share/doc/git-doc
+  install -m644 "$srcdir"/git-credential-manager-${_realtag#v}/git-credential-manager.html "${prefix}"/share/doc/git-doc
 }

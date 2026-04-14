@@ -33,7 +33,7 @@ UTIL_PACKAGES="sed awk grep findutils coreutils"
 if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
 then
 	PACKAGE_EXCLUDES="$PACKAGE_EXCLUDES bash sh coreutils mingw-w64-busybox
-		libiconv libintl libreadline ncurses openssl
+		libiconv iconv libintl libreadline ncurses openssl
 		mingw-w64-libmetalink mingw-w64-spdylay diffutils"
 
 	EXTRA_FILE_EXCLUDES="/etc/post-install/.* /usr/bin/getfacl.exe
@@ -51,7 +51,8 @@ then
 		mingw-w64-libsystre mingw-w64-libtre-git mingw-w64-p11-kit
 		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
 		libedit libgdbm perl perl-.* mingw-w64-tzdata
-		mingw-w64-git-svn subversion libserf apr apr-util expat libexpat liblz4"
+		mingw-w64-git-svn subversion libserf apr apr-util expat libexpat liblz4
+		vim nano"
 fi
 if test -z "$INCLUDE_GIT_UPDATE"
 then
@@ -184,7 +185,7 @@ G4W_PACKAGE=mingw-w64-$PACMAN_ARCH-git-for-windows-addons ||
 G4W_PACKAGE=mingw-w64-$PACMAN_ARCH-git
 
 packages="$G4W_PACKAGE mingw-w64-$PACMAN_ARCH-git-credential-manager
-mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES $LIBCURL_EXTRA"
+mingw-w64-$PACMAN_ARCH-git-extra openssh msys2-runtime $UTIL_PACKAGES $LIBCURL_EXTRA"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$PACMAN_ARCH-git-doc-html ncurses mintty vim nano
@@ -192,6 +193,7 @@ then
 		mingw-w64-$PACMAN_ARCH-tk mingw-w64-$PACMAN_ARCH-connect docx2txt
 		mingw-w64-$PACMAN_ARCH-antiword mingw-w64-$PACMAN_ARCH-odt2txt ssh-pageant
 		mingw-w64-$PACMAN_ARCH-git-lfs mingw-w64-$PACMAN_ARCH-xz tig $GIT_UPDATE_EXTRA_PACKAGES"
+	test i686 = "$ARCH" || packages="$packages iconv"
 fi
 
 I686_EXCLUDE=
@@ -264,6 +266,8 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/lib/\(itcl\|tdbc\|pkcs11/p11-kit-client\|thread\)' \
 	-e '^/usr/lib/ssh/sshd\($\|-\)' \
 	-e '^/usr/share.*/magic$' \
+	-e '^/usr/lib/perl5/core_perl/auto/DB_File/' \
+	-e '^/usr/lib/perl5/core_perl/DB_File\.pm$' \
 	-e '^/usr/share/perl5/core_perl/Unicode/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
 	-e '^/usr/share/perl5/core_perl/Locale/' \
