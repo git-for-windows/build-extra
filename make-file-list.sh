@@ -243,6 +243,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/\(mingw\|clang\)[^/]*/.*/git-\(remote-testsvn\|shell\)\.exe$' \
 	-e '^/\(mingw\|clang\)[^/]*/.*/git-cvsserver.*$' \
 	-e '^/\(mingw\|clang\)[^/]*/.*/gitweb/' \
+	-e '^/\(mingw\|clang\)[^/]*/.*/git-instaweb' \
 	-e '^/\(mingw\|clang\)[^/]*/lib/\(dde\|itcl\|sqlite\|tdbc\)' \
 	-e '^/\(mingw\|clang\)[^/]*/libexec/git-core/git-archimport$' \
 	-e '^/\(mingw\|clang\)[^/]*/share/doc/git-doc/git-archimport' \
@@ -312,7 +313,7 @@ else
 		-e '^/\(mingw\|clang\)[^/]*/bin/\(WhoUses\|xmlwf\)\.exe$' \
 		-e '^/\(mingw\|clang\)[^/]*/etc/pki' -e '^/\(mingw\|clang\)[^/]*/lib/p11-kit/' \
 		-e '/git-\(add--interactive\|archimport\|citool\|cvs.*\)$' \
-		-e '/git-\(gui.*\|instaweb\|p4\|relink\)$' \
+		-e '/git-\(gui.*\|p4\|relink\)$' \
 		-e '/git-\(send-email\|svn\)$' \
 		-e '/\(mingw\|clang\)[^/]*/libexec/git-core/git-\(imap-send\|daemon\)\.exe$' \
 		-e '/\(mingw\|clang\)[^/]*/libexec/git-core/git-remote-ftp.*\.exe$' \
@@ -325,7 +326,7 @@ else
 		-e '^/\(mingw\|clang\)[^/]*/share/gettext-' \
 		-e '^/\(mingw\|clang\)[^/]*/share/git/\(builtins\|compat\|completion\)' \
 		-e '^/\(mingw\|clang\)[^/]*/share/git/.*\.ico$' \
-		-e '^/\(mingw\|clang\)[^/]*/share/\(git-gui\|gitweb\)/' \
+		-e '^/\(mingw\|clang\)[^/]*/share/git-gui/' \
 		-e '^/\(mingw\|clang\)[^/]*/share/perl' \
 		-e '^/\(mingw\|clang\)[^/]*/share/pki/' \
 		-e '/zsh/' \
