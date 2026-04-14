@@ -60,6 +60,7 @@ Due to persistent maintenance challenges, `git svn` is no longer included in Git
 * When fetching/pushing via Secure Channel (the default TLS/SSL method), the timeout to renegotiate (e.g. using client certificates) was recently reduced to 7 seconds, which was too short. It has been [extended to 60 seconds](https://github.com/git-for-windows/MINGW-packages/pull/192).
 * The recent security bug fix that disables NTLM by default missed the NTLM fallback in the Kerberos protocol. This fallback [is now disabled](https://github.com/git-for-windows/MINGW-packages/pull/193), following the cURL project's guidance.
 * A _really_ old bug which prevented Kerberos authentication from working with the default [`http.emptyAuth`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-httpemptyAuth) ("auto"), [was fixed](https://github.com/git-for-windows/git/pull/6170).
+* The `git instaweb` command [is no longer distributed with Git for Windows](https://github.com/git-for-windows/build-extra/pull/689) because it would require GitWeb (which has not been distributed with Git for Windows for quite a few years).
 
 ## Changes since Git for Windows v2.53.0(2) (March 10th 2026)
 
