@@ -325,7 +325,7 @@ else
 		-e '^/\(mingw\|clang\)[^/]*/share/gettext-' \
 		-e '^/\(mingw\|clang\)[^/]*/share/git/\(builtins\|compat\|completion\)' \
 		-e '^/\(mingw\|clang\)[^/]*/share/git/.*\.ico$' \
-		-e '^/\(mingw\|clang\)[^/]*/share/\(git-gui\|gitweb\)/' \
+		-e '^/\(mingw\|clang\)[^/]*/share/git-gui/' \
 		-e '^/\(mingw\|clang\)[^/]*/share/perl' \
 		-e '^/\(mingw\|clang\)[^/]*/share/pki/' \
 		-e '/zsh/' \
