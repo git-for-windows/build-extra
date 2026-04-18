@@ -186,13 +186,19 @@ QuitPager(winId) {
     Sleep 500
 }
 
-; Launch Git Bash via the Start Menu, wait for a mintty window to appear,
-; and return the window handle.
-LaunchGitBashViaStartMenu() {
-    minttyClass := 'ahk_class mintty'
+; Launch an application via the Start Menu and wait for a new window
+; of the given class to appear. Returns the window handle.
+; titleFilter, if non-empty, requires the new window's title to contain
+; the given substring.
+LaunchViaStartMenu(searchText, windowClass, titleFilter := '', timeout := 20000) {
+    winSpec := 'ahk_class ' windowClass
     existing := Map()
-    for h in WinGetList(minttyClass)
+    for h in WinGetList(winSpec)
         existing[h] := true
+
+    ; Dismiss any stale Start Menu state before opening a fresh one.
+    SendEvent('{Escape}')
+    Sleep 500
 
     SendEvent('{LWin}')
     deadline := A_TickCount + 5000
@@ -205,32 +211,62 @@ LaunchGitBashViaStartMenu() {
         Sleep 100
     }
     if A_TickCount >= deadline
+    {
+        ; Retry once: the shell may need a nudge.
+        Info 'Start Menu did not appear on first try, retrying...'
+        SendEvent('{LWin}')
+        deadline := A_TickCount + 5000
+        while A_TickCount < deadline
+        {
+            try {
+                if WinGetProcessName('A') == 'SearchHost.exe'
+                    break
+            }
+            Sleep 100
+        }
+    }
+    if A_TickCount >= deadline
         ExitWithError 'Start Menu did not appear'
     Info 'Start Menu opened'
 
-    SendInput('Git Bash')
-    Sleep 500
-    SendEvent('{Enter}')
-
-    ; Wait for a new mintty window to appear.
+    SendInput(searchText)
+    ; Give the search index time to find and highlight the result,
+    ; then send Enter. Retry up to twice if the target window has
+    ; not appeared, but wait substantially between retries to avoid
+    ; launching multiple instances on a busy machine.
     hwnd := 0
-    deadline := A_TickCount + 10000
-    while A_TickCount < deadline
+    retries := 3
+    deadline := A_TickCount + timeout
+    loop retries
     {
-        for h in WinGetList(minttyClass)
+        Sleep 2000
+        SendEvent('{Enter}')
+        ; Wait up to 5 seconds for the window to appear after each Enter.
+        innerDeadline := A_TickCount + 5000
+        while A_TickCount < innerDeadline && A_TickCount < deadline
         {
-            if !existing.Has(h)
+            for h in WinGetList(winSpec)
             {
-                hwnd := h
-                break 2
+                if !existing.Has(h)
+                && (titleFilter == '' || InStr(WinGetTitle('ahk_id ' h), titleFilter))
+                {
+                    hwnd := h
+                    break 3
+                }
             }
+            Sleep 200
         }
-        Sleep 100
+        ; If SearchHost is no longer active, the Start Menu closed
+        ; without launching anything (user may have pressed Escape).
+        try {
+            if WinGetProcessName('A') != 'SearchHost.exe'
+                break
+        }
     }
     if !hwnd
-        ExitWithError 'Git Bash (mintty) window did not appear after Start Menu launch'
+        ExitWithError searchText ' window did not appear after Start Menu launch'
     WinActivate('ahk_id ' hwnd)
-    Info 'Git Bash launched, mintty hwnd: ' hwnd
+    Info searchText ' launched, hwnd: ' hwnd
     return hwnd
 }
 

@@ -34,5 +34,28 @@ else
 Info 'Export file: ' exportFile
 
 Info 'All prerequisites met.'
+
+; === Test: Git Bash starts via Start Menu ===
+Info '=== Git Bash starts via Start Menu ==='
+hwnd := LaunchViaStartMenu('Git Bash', 'mintty')
+winId := 'ahk_id ' hwnd
+minttyToClose := hwnd
+
+; Wait for the bash prompt to appear.
+deadline := A_TickCount + 30000
+while A_TickCount < deadline
+{
+    capture := CaptureBufferFromMintty(exportFile, winId)
+    if InStr(capture, '$ ')
+        break
+    Sleep 500
+}
+if !InStr(capture, '$ ')
+    ExitWithError 'Timed out waiting for bash prompt'
+Info 'Bash prompt appeared'
+
+; Close the Git Bash window.
+CloseMinTTYWindow(winId)
+
 Info '=== Tests complete ==='
 ExitApp 0
