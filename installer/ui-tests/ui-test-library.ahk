@@ -166,6 +166,26 @@ CaptureBufferFromMintty(exportFile, hotkey, winTitle := '') {
     return text
 }
 
+; Wait for a regex to match in the mintty buffer. Returns the match object
+; on success, exits with error on timeout.
+WaitForRegExInMintty(exportFile, hotkey, regex, errorMessage, successMessage, timeout := 5000, winTitle := '') {
+    deadline := timeout + A_TickCount
+    while true
+    {
+        capturedText := CaptureBufferFromMintty(exportFile, hotkey, winTitle)
+        if RegExMatch(capturedText, regex, &matchObj)
+        {
+            Info(successMessage)
+            return matchObj
+        }
+        Sleep 200
+        if A_TickCount > deadline {
+            Info('Captured text:`n' . capturedText)
+            ExitWithError errorMessage
+        }
+    }
+}
+
 ; Close a MinTTY window, handling the "close running processes?"
 ; confirmation dialog if it appears.
 CloseMinTTYWindow(winId) {
