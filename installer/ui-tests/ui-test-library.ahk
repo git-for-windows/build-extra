@@ -207,6 +207,16 @@ CloseMinTTYWindow(winId) {
     WinWaitClose(winId, , 3)
 }
 
+; Quit a pager (less) running inside a terminal window. On ARM64
+; runners, SendEvent('{Text}q') (VK_PACKET) has been observed to be
+; swallowed by less's alternate-screen mode under x64 emulation.
+; Send (SendInput / real VK_Q) is more reliable.
+QuitPager(winId) {
+    WinActivate(winId)
+    Send 'q'
+    Sleep 500
+}
+
 ; Wait up to timeout ms for a window matching winSpec that is not in
 ; existing (a list from WinGetList) and whose title contains titleFilter
 ; (if non-empty). Returns the window handle, or 0 on timeout.

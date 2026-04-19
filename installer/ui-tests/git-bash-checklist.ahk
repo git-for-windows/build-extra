@@ -85,6 +85,27 @@ Sleep 1000
 ; The Git for Windows prompt shows the branch in parentheses, e.g. (main).
 WaitForRegExInMintty(exportFile, exportHtmlHotkey, 's)\(main\).*\$ ', 'Prompt does not show branch name after cd into test repo', 'Prompt shows branch (main)', 10000, winId)
 
+; === Test: git log is colorful and stops after first page ===
+Info '=== git log colorful and paged ==='
+WinActivate(winId)
+SetKeyDelay 20, 20
+SendEvent('{Text}git log')
+SendEvent('{Enter}')
+Sleep 2000
+; The pager (less) shows a colon prompt at the bottom when there is more
+; content. Check for it in the plain text.
+WaitForRegExInMintty(exportFile, exportHtmlHotkey, '\n:', 'Timed out waiting for git log pager prompt', 'git log pager is active', 10000, winId)
+; Now check the raw HTML for colored text. git log uses colors for
+; commit hashes, author names, dates, and decorations. mintty writes
+; them as inline styles in the body; its <style> header always defines
+; every color, so it must not be searched.
+rawHtml := CaptureRawHtmlFromMintty(exportFile, exportHtmlHotkey, winId)
+if !RegExMatch(rawHtml, "s)<body.*[' ]color: #")
+    ExitWithError 'git log output has no color'
+Info 'git log output is colorful'
+; Quit the pager.
+QuitPager(winId)
+
 ; Close the Git Bash window.
 CloseMinTTYWindow(winId)
 
