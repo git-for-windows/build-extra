@@ -70,6 +70,16 @@ if !InStr(capture, '$ ')
     ExitWithError 'Timed out waiting for bash prompt'
 Info 'Bash prompt appeared'
 
+; === Test: Prompt shows branch ===
+Info '=== Prompt shows branch ==='
+WinActivate(winId)
+SetKeyDelay 20, 20
+SendEvent('{Text}cd ' testRepo)
+SendEvent('{Enter}')
+Sleep 1000
+; The Git for Windows prompt shows the branch in parentheses, e.g. (main).
+WaitForRegExInMintty(exportFile, 's)\(main\).*\$ ', 'Prompt does not show branch name after cd into test repo', 'Prompt shows branch (main)', 10000, winId)
+
 ; Close the Git Bash window.
 CloseMinTTYWindow(winId)
 
