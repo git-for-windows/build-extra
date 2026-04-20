@@ -5,6 +5,11 @@
 
 logFile := ''
 
+; Timeout in milliseconds for a Tk window to appear. On ARM64
+; runners, wish.exe under x64 emulation can take over 130 seconds
+; for a cold start.
+tkWaitTimeout := 180000
+
 SetLogFile(path) {
     global logFile
     logFile := path
@@ -207,6 +212,22 @@ CloseMinTTYWindow(winId) {
     WinWaitClose(winId, , 3)
 }
 
+; Wait for an exit-code file to appear on disk (written by a shell
+; command like `echo $? >file`), read it, and verify it is '0'.
+WaitForExitCode(label, exitFile, timeout := 5000) {
+    code := ''
+    deadline := A_TickCount + timeout
+    while code = '' && A_TickCount < deadline {
+        Sleep 200
+        try code := Trim(FileRead(exitFile), ' `t`r`n')
+    }
+    if code = ''
+        ExitWithError label ' exit code file was not written'
+    if code != '0'
+        ExitWithError label ' exited with code ' code
+    Info label ' closed with exit code 0'
+}
+
 ; Quit a pager (less) running inside a terminal window. On ARM64
 ; runners, SendEvent('{Text}q') (VK_PACKET) has been observed to be
 ; swallowed by less's alternate-screen mode under x64 emulation.
@@ -287,4 +308,212 @@ LaunchViaStartMenu(searchText, windowClass, titleFilter := '', timeout := 20000)
     WinActivate('ahk_id ' hwnd)
     Info searchText ' launched, hwnd: ' hwnd
     return hwnd
+}
+
+; Initialize GDI+ and return the token. Call ShutdownGdiPlus(token)
+; when done.
+StartupGdiPlus() {
+    DllCall('LoadLibrary', 'str', 'gdiplus')
+    input := Buffer(24, 0)
+    NumPut('uint', 1, input)
+    token := 0
+    DllCall('gdiplus\GdiplusStartup', 'ptr*', &token, 'ptr', input, 'ptr', 0)
+    return token
+}
+
+ShutdownGdiPlus(token) {
+    DllCall('gdiplus\GdiplusShutdown', 'ptr', token)
+}
+
+; Get the CLSID for the GDI+ PNG encoder.
+; This is a well-known constant: {557cf406-1a04-11d3-9a73-0000f81ef32e}
+GetPngEncoderClsid() {
+    clsid := Buffer(16)
+    NumPut('uint', 0x557cf406, clsid, 0)
+    NumPut('ushort', 0x1a04, clsid, 4)
+    NumPut('ushort', 0x11d3, clsid, 6)
+    NumPut('uchar', 0x9a, clsid, 8)
+    NumPut('uchar', 0x73, clsid, 9)
+    NumPut('uchar', 0x00, clsid, 10)
+    NumPut('uchar', 0x00, clsid, 11)
+    NumPut('uchar', 0xf8, clsid, 12)
+    NumPut('uchar', 0x1e, clsid, 13)
+    NumPut('uchar', 0xf3, clsid, 14)
+    NumPut('uchar', 0x2e, clsid, 15)
+    return clsid
+}
+
+; Capture a window, downscale to thumbW x thumbH, and save as PNG.
+; Uses GDI+ HighQualityBicubic interpolation for Lanczos-like quality.
+; The window must be visible and unobscured since we capture from screen
+; (Tk windows do not support PrintWindow).
+CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, outFile) {
+    ; Get window rectangle on screen.
+    rc := Buffer(16)
+    DllCall('GetWindowRect', 'ptr', hwnd, 'ptr', rc)
+    x := NumGet(rc, 0, 'int')
+    y := NumGet(rc, 4, 'int')
+    w := NumGet(rc, 8, 'int') - x
+    h := NumGet(rc, 12, 'int') - y
+    if w <= 0 || h <= 0
+        ExitWithError 'Window has zero size'
+
+    ; Capture from the screen DC via BitBlt.
+    hdcScreen := DllCall('GetDC', 'ptr', 0, 'ptr')
+    hdcMem := DllCall('CreateCompatibleDC', 'ptr', hdcScreen, 'ptr')
+    hbm := DllCall('CreateCompatibleBitmap', 'ptr', hdcScreen, 'int', w, 'int', h, 'ptr')
+    hOld := DllCall('SelectObject', 'ptr', hdcMem, 'ptr', hbm, 'ptr')
+    ; SRCCOPY = 0x00CC0020
+    DllCall('BitBlt', 'ptr', hdcMem, 'int', 0, 'int', 0, 'int', w, 'int', h,
+        'ptr', hdcScreen, 'int', x, 'int', y, 'uint', 0x00CC0020)
+    DllCall('SelectObject', 'ptr', hdcMem, 'ptr', hOld)
+    DllCall('DeleteDC', 'ptr', hdcMem)
+    DllCall('ReleaseDC', 'ptr', 0, 'ptr', hdcScreen)
+
+    ; Convert HBITMAP to GDI+ Bitmap.
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromHBITMAP', 'ptr', hbm, 'ptr', 0, 'ptr*', &pBitmap)
+    DllCall('DeleteObject', 'ptr', hbm)
+
+    ; Create a thumbnail bitmap and draw with high quality.
+    pThumb := 0
+    DllCall('gdiplus\GdipCreateBitmapFromScan0', 'int', thumbW, 'int', thumbH,
+        'int', 0, 'int', 0x26200A, 'ptr', 0, 'ptr*', &pThumb)
+    pGraphics := 0
+    DllCall('gdiplus\GdipGetImageGraphicsContext', 'ptr', pThumb, 'ptr*', &pGraphics)
+    ; InterpolationModeHighQualityBicubic = 7
+    DllCall('gdiplus\GdipSetInterpolationMode', 'ptr', pGraphics, 'int', 7)
+    DllCall('gdiplus\GdipDrawImageRectI', 'ptr', pGraphics, 'ptr', pBitmap,
+        'int', 0, 'int', 0, 'int', thumbW, 'int', thumbH)
+
+    ; Save as PNG.
+    pngClsid := GetPngEncoderClsid()
+    DllCall('gdiplus\GdipSaveImageToFile', 'ptr', pThumb, 'wstr', outFile, 'ptr', pngClsid, 'ptr', 0)
+
+    ; Cleanup.
+    DllCall('gdiplus\GdipDeleteGraphics', 'ptr', pGraphics)
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pThumb)
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+}
+
+; Verify a gitk window by analyzing its screenshot structurally rather
+; than comparing pixel-by-pixel against a reference image. This makes
+; the test independent of system-specific font metrics, window chrome,
+; and theme colors that vary across Windows versions.
+;
+; Checks performed on the 80x60 thumbnail:
+;  1. Window rendered (not blank/uniform)
+;  2. Commit graph decorations visible (colored pixels on the left)
+;  3. Commit list text visible (darker-than-background rows in center)
+;  4. At least minCommitRows commit entries rendered
+;  5. A selection highlight row exists
+;
+; existingTk is WinGetList('ahk_class TkTopLevel'), taken before gitk
+; was launched, so that only a new window is checked.
+VerifyGitkLayout(label, thumbFile, existingTk, timeout := 30000) {
+    hwnd := WaitForNewWindow('ahk_class TkTopLevel', existingTk, tkWaitTimeout)
+    if !hwnd
+        ExitWithError label ': Tk window did not appear'
+    Info label ': window appeared'
+    WinMove(100, 100, 800, 600, 'ahk_id ' hwnd)
+    WinActivate('ahk_id ' hwnd)
+
+    thumbW := 80
+    thumbH := 60
+    deadline := A_TickCount + timeout
+    lastErr := 'no capture attempted'
+    while A_TickCount < deadline {
+        CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, thumbFile)
+        lastErr := CheckGitkStructure(thumbFile, thumbW, thumbH)
+        if lastErr = '' {
+            Info label ': layout verification passed'
+            WinClose('ahk_id ' hwnd)
+            WinWaitClose('ahk_id ' hwnd, , 5)
+            Info label ': closed'
+            return hwnd
+        }
+        Info label ': retry (' lastErr ')'
+        Sleep 2000
+    }
+    ExitWithError label ': layout check failed after ' timeout 'ms: ' lastErr
+}
+
+; Analyze a gitk screenshot for expected structure.
+; Returns empty string on success, or an error description.
+CheckGitkStructure(file, w, h) {
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file, 'ptr*', &pBitmap)
+    if !pBitmap {
+        ShutdownGdiPlus(gdipToken)
+        return 'failed to load ' file
+    }
+
+    ; Per-row analysis over the thumbnail.
+    graphRows := 0
+    textRows := 0
+    highlightRows := 0
+    nonBlankRows := 0
+
+    loop h {
+        y := A_Index - 1
+        leftColored := false
+        centerTextPixels := 0
+        highlightPixels := 0
+        rowIsBlank := true
+
+        loop w {
+            x := A_Index - 1
+            argb := 0
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBitmap,
+                'int', x, 'int', y, 'uint*', &argb)
+            r := (argb >> 16) & 0xFF
+            g := (argb >> 8) & 0xFF
+            b := argb & 0xFF
+            avg := (r + g + b) // 3
+            chroma := Max(Abs(r - g), Abs(g - b), Abs(r - b))
+
+            if avg < 230 || chroma > 25
+                rowIsBlank := false
+
+            ; Left 10 columns: graph decorations are distinctly colored.
+            if x < 10 && chroma > 40
+                leftColored := true
+
+            ; Center columns 15..65: commit text is darker than white
+            ; background but lighter than a selection highlight.
+            if x >= 15 && x <= 65 {
+                if avg >= 140 && avg <= 210
+                    centerTextPixels++
+                if avg < 130
+                    highlightPixels++
+            }
+        }
+
+        if !rowIsBlank
+            nonBlankRows++
+        if leftColored
+            graphRows++
+        ; A row counts as "text" when enough center pixels are text-like.
+        if centerTextPixels >= 10
+            textRows++
+        if highlightPixels >= 10
+            highlightRows++
+    }
+
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+
+    if nonBlankRows < h * 0.3
+        return 'window mostly blank (' nonBlankRows '/' h ' non-blank rows)'
+    if graphRows < 3
+        return 'too few graph rows (' graphRows '), need >= 3'
+    if textRows < 5
+        return 'too few commit text rows (' textRows '), need >= 5'
+    if highlightRows < 1
+        return 'no selection highlight found'
+
+    return ''
 }

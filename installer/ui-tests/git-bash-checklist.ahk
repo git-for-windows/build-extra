@@ -106,6 +106,16 @@ Info 'git log output is colorful'
 ; Quit the pager.
 QuitPager(winId)
 
+; === Test: gitk runs and shows history ===
+Info '=== gitk shows history ==='
+WinActivate(winId)
+SetKeyDelay 20, 20
+tk := WinGetList('ahk_class TkTopLevel')
+SendEvent('{Text}gitk; echo $? >gitk-exit.code')
+SendEvent('{Enter}')
+VerifyGitkLayout('gitk', A_ScriptDir . '\gitk-thumb.png', tk)
+WaitForExitCode('gitk', testRepoWin . '\gitk-exit.code')
+
 ; Close the Git Bash window.
 CloseMinTTYWindow(winId)
 
