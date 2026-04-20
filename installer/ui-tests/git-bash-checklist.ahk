@@ -101,6 +101,25 @@ WinActivate(winId)
 SendEvent('{Text}q')
 Sleep 500
 
+; === Test: gitk runs and shows history ===
+Info '=== gitk shows history ==='
+WinActivate(winId)
+SetKeyDelay 20, 20
+SendEvent('{Text}gitk; echo $? >gitk-exit.code')
+SendEvent('{Enter}')
+VerifyTkScreenshot('gitk', testRepoWin . '\gitk-thumb.png', A_ScriptDir . '\gitk-reference.png')
+; Verify gitk exited with code 0 (bash was blocked while gitk ran).
+gitkExitFile := testRepoWin . '\gitk-exit.code'
+deadline := A_TickCount + 5000
+while !FileExist(gitkExitFile) && A_TickCount < deadline
+    Sleep 200
+if !FileExist(gitkExitFile)
+    ExitWithError 'gitk exit code file was not written'
+gitkExitCode := Trim(FileRead(gitkExitFile), ' `t`r`n')
+if gitkExitCode != '0'
+    ExitWithError 'gitk exited with code ' gitkExitCode
+Info 'gitk closed with exit code 0'
+
 ; Close the Git Bash window.
 CloseMinTTYWindow(winId)
 

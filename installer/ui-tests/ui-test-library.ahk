@@ -156,6 +156,24 @@ CloseMinTTYWindow(winId) {
     minttyToClose := 0
 }
 
+; Wait for a new TkTopLevel window to appear, set a fixed size,
+; verify its screenshot matches a reference image, then close it.
+; Returns the window handle (already closed).
+VerifyTkScreenshot(label, thumbFile, referenceFile, maxDiff := 0.15) {
+    hwnd := WinWait('ahk_class TkTopLevel', , 15)
+    if !hwnd
+        ExitWithError label ': Tk window did not appear'
+    Info label ': window appeared'
+    WinMove(100, 100, 800, 600, 'ahk_id ' hwnd)
+    WinActivate('ahk_id ' hwnd)
+    diffRatio := CaptureUntilMatchesReference(hwnd, 80, 60, thumbFile, referenceFile, maxDiff)
+    Info label ': screenshot diff ratio: ' diffRatio
+    WinClose('ahk_id ' hwnd)
+    WinWaitClose('ahk_id ' hwnd, , 5)
+    Info label ': closed'
+    return hwnd
+}
+
 ; Launch an application via the Start Menu and wait for a new window
 ; of the given class to appear. Returns the window handle.
 ; titleFilter, if non-empty, requires the new window's title to contain
@@ -358,30 +376,21 @@ CompareImages(file1, file2, tolerance := 10) {
     return diffCount / (w1 * h1)
 }
 
-; Capture a window screenshot that has stabilized (no longer changing).
-; Takes successive thumbnails until two consecutive ones match, then
-; compares against a reference image. Returns the diff ratio (0.0 = identical).
-; Exits with error if the window never stabilizes within the timeout.
-CaptureStableScreenshot(hwnd, thumbW, thumbH, outFile, timeout := 30000) {
-    prev := outFile . '.prev.png'
+; Capture a window screenshot, retrying until it matches a reference
+; image within the given diff threshold. This handles applications that
+; render progressively (like gitk loading commits) by comparing each
+; capture against what we expect rather than against the previous frame
+; (which would falsely stabilize on two identical loading screens).
+; Returns the actual diff ratio on success.
+CaptureUntilMatchesReference(hwnd, thumbW, thumbH, outFile, referenceFile, maxDiff, timeout := 30000) {
     deadline := A_TickCount + timeout
-    CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, outFile)
     while A_TickCount < deadline
     {
-        Sleep 1000
-        if FileExist(prev)
-            FileDelete prev
-        FileMove outFile, prev
         CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, outFile)
-        if CompareImages(outFile, prev, 2) == 0.0
-        {
-            FileDelete prev
-            return
-        }
-        ; Still changing; wait a bit longer before the next attempt.
+        diffRatio := CompareImages(outFile, referenceFile, 10)
+        if diffRatio <= maxDiff
+            return diffRatio
         Sleep 2000
     }
-    if FileExist(prev)
-        FileDelete prev
-    ExitWithError 'Window screenshot did not stabilize within ' timeout 'ms'
+    ExitWithError 'Window screenshot did not match reference within ' timeout 'ms (last diff=' diffRatio ')'
 }
