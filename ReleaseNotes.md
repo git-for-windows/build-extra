@@ -42,6 +42,7 @@ Due to persistent maintenance challenges, `git svn` is no longer included in Git
 
 ### New Features
 
+* Comes with [Git v2.54.0](https://github.com/git/git/blob/v2.54.0/Documentation/RelNotes/2.54.0.adoc).
 * Comes with [Bash v5.3.9](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=637f5c8696a6adc9b4519f1cd74aa78492266b7f).
 * Comes with [Git Credential Manager v2.7.3](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.7.3).
 * Comes with [MinTTY v3.8.2](https://github.com/mintty/mintty/releases/tag/3.8.2).
