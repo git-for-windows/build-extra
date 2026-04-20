@@ -99,8 +99,169 @@ Info 'git log output is colorful'
 ; Quit the pager.
 QuitPager(winId)
 
+; === Test: gitk runs and shows history ===
+Info '=== gitk shows history ==='
+WinActivate(winId)
+SetKeyDelay 20, 20
+SendEvent('{Text}gitk; echo $? >gitk-exit.code')
+SendEvent('{Enter}')
+VerifyGitkLayout('gitk', testRepoWin . '\gitk-thumb.png')
+WaitForExitCode('gitk', testRepoWin . '\gitk-exit.code')
+
 ; Close the Git Bash window.
 CloseMinTTYWindow(winId)
+
+} ; end runGitBash
+
+if runGitCMD
+{
+
+; === Git CMD tests ===
+; These require Windows Terminal with exportBuffer configured.
+wtConfig := ReadWindowsTerminalExportBufferConfig()
+if wtConfig.Count == 0
+{
+    Info 'NOTE: Windows Terminal exportBuffer not configured; skipping Git CMD tests.'
+    Info 'See installer/checklist.txt for manual verification steps.'
+}
+else
+{
+    wtExportFile := wtConfig['exportFile']
+    wtHotkey := WindowsTerminalHotkeyToAHK(wtConfig['hotkey'])
+    Info 'Windows Terminal export file: ' wtExportFile
+    Info 'Windows Terminal hotkey: ' wtConfig['hotkey'] ' (AHK: ' wtHotkey ')'
+
+    ; === Test: Git CMD starts via Start Menu ===
+    Info '=== Git CMD starts via Start Menu ==='
+    cmdHwnd := LaunchViaStartMenu('Git CMD', 'CASCADIA_HOSTING_WINDOW_CLASS')
+    cmdWinId := 'ahk_id ' cmdHwnd
+    WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, '>\s*$', 'Timed out waiting for CMD prompt', 'CMD prompt appeared', 30000, cmdWinId)
+
+    ; cd into the test repo.
+    WinActivate(cmdWinId)
+    SetKeyDelay 20, 20
+    SendEvent('{Text}cd /d ' testRepoWin)
+    SendEvent('{Enter}')
+    Sleep 1000
+
+    ; === Test: git log is colorful and paged (Git CMD) ===
+    Info '=== git log colorful and paged (Git CMD) ==='
+    WinActivate(cmdWinId)
+    WinMove(100, 100, 800, 600, cmdWinId)
+    SetKeyDelay 20, 20
+    SendEvent('{Text}git log')
+    SendEvent('{Enter}')
+    Sleep 2000
+    cmdLogRef := A_ScriptDir . '\cmd-git-log-reference.png'
+    if FileExist(cmdLogRef)
+    {
+        diffRatio := CaptureUntilMatchesReference(cmdHwnd, 80, 60, testRepoWin . '\cmd-git-log-thumb.png', cmdLogRef, 0.15)
+        Info 'git log (CMD) screenshot diff ratio: ' diffRatio
+    }
+    else
+        Info 'WARNING: cmd-git-log-reference.png not found; skipping screenshot check'
+    WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, ':\s*$', 'Timed out waiting for git log pager (CMD)', 'git log pager is active (CMD)', 10000, cmdWinId)
+    WinActivate(cmdWinId)
+    SendEvent('{Text}q')
+    Sleep 500
+
+    ; === Test: gitk runs and shows history (Git CMD) ===
+    Info '=== gitk shows history (Git CMD) ==='
+    WinActivate(cmdWinId)
+    SetKeyDelay 20, 20
+    SendEvent('{Text}gitk')
+    SendEvent('{Enter}')
+    ; gitk.exe returns immediately to CMD (it is a GUI wrapper).
+    WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, '>\s*$', 'CMD prompt did not return after gitk', 'gitk returned to CMD prompt', 10000, cmdWinId)
+    VerifyGitkLayout('gitk (CMD)', testRepoWin . '\cmd-gitk-thumb.png')
+
+    ; === Test: git gui runs without error (Git CMD) ===
+    Info '=== git gui no error (Git CMD) ==='
+    WinActivate(cmdWinId)
+    SetKeyDelay 20, 20
+    SendEvent('{Text}git gui')
+    SendEvent('{Enter}')
+    VerifyTkScreenshot('git gui (CMD)', testRepoWin . '\cmd-git-gui-thumb.png', A_ScriptDir . '\git-gui-reference.png')
+
+    ; Close the Git CMD window.
+    WinClose(cmdWinId)
+    WinWaitClose(cmdWinId, , 5)
+}
+
+} ; end runGitCMD
+
+if runGitGUI
+{
+
+; === Git GUI standalone tests ===
+Info '=== Git GUI standalone ==='
+; Temporarily replace .gitconfig so the chooser shows only the test repo.
+gitconfigPath := EnvGet('USERPROFILE') . '\.gitconfig'
+gitconfigBackup := gitconfigPath . '.ui-test-backup'
+if FileExist(gitconfigBackup)
+    FileDelete gitconfigBackup
+FileMove gitconfigPath, gitconfigBackup
+; Ensure .gitconfig is restored on any exit.
+OnExit((*) => (FileExist(gitconfigBackup) && (FileDelete(gitconfigPath), FileMove(gitconfigBackup, gitconfigPath))))
+testRepoUnix := StrReplace(testRepoWin, '\', '/')
+FileAppend '[gui]`n`trecentrepo = ' testRepoUnix '`n', gitconfigPath
+
+; Launch Git GUI via Start Menu (opens the chooser dialog).
+Info '=== Git GUI starts via Start Menu ==='
+gitGuiChooserHwnd := LaunchViaStartMenu('Git GUI', 'TkTopLevel', 'Git Gui')
+
+; Verify the chooser via screenshot.
+WinMove(100, 100, 500, 400, 'ahk_id ' gitGuiChooserHwnd)
+WinActivate('ahk_id ' gitGuiChooserHwnd)
+chooserRef := A_ScriptDir . '\git-gui-chooser-reference.png'
+if FileExist(chooserRef)
+{
+    diffRatio := CaptureUntilMatchesReference(gitGuiChooserHwnd, 80, 60, testRepoWin . '\git-gui-chooser-thumb.png', chooserRef, 0.20, 15000)
+    Info 'Git GUI chooser screenshot diff ratio: ' diffRatio
+}
+else
+    Info 'WARNING: git-gui-chooser-reference.png not found; skipping screenshot check'
+
+; Click the first (only) recent repo entry to open it.
+; Use window-relative coordinates to avoid DPI scaling mismatches.
+CoordMode 'Mouse', 'Window'
+WinActivate('ahk_id ' gitGuiChooserHwnd)
+Sleep 500
+Click(250, 220)
+Sleep 3000
+CoordMode 'Mouse', 'Screen'
+
+; A Git GUI window should have opened for the test repo.
+gitGuiRepoHwnd := 0
+for h in WinGetList('ahk_class TkTopLevel')
+{
+    if InStr(WinGetTitle('ahk_id ' h), 'git-bash-checklist-test-repo')
+    {
+        gitGuiRepoHwnd := h
+        break
+    }
+}
+if !gitGuiRepoHwnd
+    ExitWithError 'Git GUI did not open the test repository from the recent list'
+Info 'Git GUI opened the test repo: ' WinGetTitle('ahk_id ' gitGuiRepoHwnd)
+
+; Verify it matches the existing git-gui-reference.png.
+WinMove(100, 100, 800, 600, 'ahk_id ' gitGuiRepoHwnd)
+WinActivate('ahk_id ' gitGuiRepoHwnd)
+diffRatio := CaptureUntilMatchesReference(gitGuiRepoHwnd, 80, 60, testRepoWin . '\git-gui-standalone-thumb.png', A_ScriptDir . '\git-gui-reference.png', 0.15)
+Info 'Git GUI repo screenshot diff ratio: ' diffRatio
+
+; Close all Tk windows.
+for h in WinGetList('ahk_class TkTopLevel')
+    WinClose('ahk_id ' h)
+Sleep 1000
+
+; Restore original .gitconfig (also handled by OnExit).
+FileDelete gitconfigPath
+FileMove gitconfigBackup, gitconfigPath
+Info 'Restored .gitconfig'
+
+} ; end runGitGUI
 
 Info '=== Tests complete ==='
 ExitApp 0
