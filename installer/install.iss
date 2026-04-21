@@ -2432,7 +2432,7 @@ begin
     RdbGitCredentialManager[GCM]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager','Use the <A HREF=https://github.com/GitCredentialManager/git-credential-manager>cross-platform Git Credential Manager</A>.'+#13+'See more information about the future of Git Credential Manager <A HREF=https://github.com/GitCredentialManager/git-credential-manager/blob/HEAD/docs/faq.md#about-the-project>here</A>.',TabOrder,Top,Left);
 
     // No credential helper
-    RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.',TabOrder,Top,Left);
+    RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.'+#13+#13+'Note: Select only for headless environments, SSH-only workflows,'+#13+'or custom credential helpers. Otherwise, Git will prompt for'+#13+'credentials on every HTTPS operation.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install, if .NET Framework 4.7.2
     // or later is available.
