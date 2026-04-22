@@ -108,6 +108,15 @@ SendEvent('{Enter}')
 VerifyGitkLayout('gitk', testRepoWin . '\gitk-thumb.png')
 WaitForExitCode('gitk', testRepoWin . '\gitk-exit.code')
 
+; === Test: git gui runs without error ===
+Info '=== git gui no error ==='
+WinActivate(winId)
+SetKeyDelay 20, 20
+SendEvent('{Text}git gui; echo $? >git-gui-exit.code')
+SendEvent('{Enter}')
+VerifyGitGuiLayout('git gui', testRepoWin . '\git-gui-thumb.png')
+WaitForExitCode('git gui', testRepoWin . '\git-gui-exit.code')
+
 ; Close the Git Bash window.
 CloseMinTTYWindow(winId)
 
