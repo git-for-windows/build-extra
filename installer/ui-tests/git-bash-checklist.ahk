@@ -120,6 +120,27 @@ if gitkExitCode != '0'
     ExitWithError 'gitk exited with code ' gitkExitCode
 Info 'gitk closed with exit code 0'
 
+; === Test: git gui runs without error ===
+Info '=== git gui no error ==='
+WinActivate(winId)
+SetKeyDelay 20, 20
+SendEvent('{Text}git gui; echo $? >git-gui-exit.code')
+SendEvent('{Enter}')
+VerifyTkScreenshot('git gui', testRepoWin . '\git-gui-thumb.png', A_ScriptDir . '\git-gui-reference.png')
+; Verify git gui exited with code 0.
+WinWaitClose('ahk_id ' gitGuiHwnd, , 5)
+; Verify git gui exited with code 0.
+gitGuiExitFile := testRepoWin . '\git-gui-exit.code'
+deadline := A_TickCount + 5000
+while !FileExist(gitGuiExitFile) && A_TickCount < deadline
+    Sleep 200
+if !FileExist(gitGuiExitFile)
+    ExitWithError 'git gui exit code file was not written'
+gitGuiExitCode := Trim(FileRead(gitGuiExitFile), ' `t`r`n')
+if gitGuiExitCode != '0'
+    ExitWithError 'git gui exited with code ' gitGuiExitCode
+Info 'git gui closed with exit code 0'
+
 ; Close the Git Bash window.
 CloseMinTTYWindow(winId)
 
