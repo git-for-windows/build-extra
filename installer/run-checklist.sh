@@ -48,4 +48,39 @@ then
 	esac
 fi
 
+# Check HTML docs for raw linkgit: macros that should have been
+# converted to hyperlinks during the AsciiDoc build.
+doc_dir="$(git --exec-path)/../../share/doc/git-doc"
+test -d "$doc_dir" || die "Missing $doc_dir"
+# These matches are known to have linkgit: inside literal blocks
+# (<pre> in the HTML) where AsciiDoc/Asciidoctor does not expand
+# macros. The source text is either indented (which AsciiDoc treats
+# as a literal paragraph) or inside an explicit .... block. See
+# commits b3ac6e737db8 and 399694384bf9 in git/git for similar fixes.
+unexpected="$(grep -rn --include='*.html' 'linkgit:' "$doc_dir" |
+	grep -v \
+		-e '/gitformat-commit-graph\.html:' \
+		-e '/gitformat-index\.html:' \
+		-e '/gitformat-pack\.html:' \
+		-e '/MyFirstContribution\.html:')" || true
+test -z "$unexpected" ||
+die "Unexpected linkgit: macros:
+$unexpected"
+
+# Verify that git help git opens the correct page by using a fake
+# browser command that writes the URL to a file.
+url_file="/tmp/git-help-url-$$"
+rm -f "$url_file"
+git -c "browser.fake.cmd=echo >$url_file" \
+    -c help.browser=fake \
+    help git
+test -s "$url_file" ||
+die 'git help git did not invoke the fake browser'
+url="$(cat "$url_file")"
+rm -f "$url_file"
+case "$url" in
+*git.html) ;;
+*) die "git help git opened wrong page: $url";;
+esac
+
 echo "All checks passed!" >&2
