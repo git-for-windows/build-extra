@@ -128,8 +128,6 @@ SendEvent('{Text}git gui; echo $? >git-gui-exit.code')
 SendEvent('{Enter}')
 VerifyTkScreenshot('git gui', testRepoWin . '\git-gui-thumb.png', A_ScriptDir . '\git-gui-reference.png')
 ; Verify git gui exited with code 0.
-WinWaitClose('ahk_id ' gitGuiHwnd, , 5)
-; Verify git gui exited with code 0.
 gitGuiExitFile := testRepoWin . '\git-gui-exit.code'
 deadline := A_TickCount + 5000
 while !FileExist(gitGuiExitFile) && A_TickCount < deadline
@@ -143,6 +141,32 @@ Info 'git gui closed with exit code 0'
 
 ; Close the Git Bash window.
 CloseMinTTYWindow(winId)
+
+; === Git CMD tests ===
+; These require Windows Terminal with exportBuffer configured.
+wtConfig := ReadWindowsTerminalExportBufferConfig()
+if wtConfig.Count == 0
+{
+    Info 'NOTE: Windows Terminal exportBuffer not configured; skipping Git CMD tests.'
+    Info 'See installer/checklist.txt for manual verification steps.'
+}
+else
+{
+    wtExportFile := wtConfig['exportFile']
+    wtHotkey := WindowsTerminalHotkeyToAHK(wtConfig['hotkey'])
+    Info 'Windows Terminal export file: ' wtExportFile
+    Info 'Windows Terminal hotkey: ' wtConfig['hotkey'] ' (AHK: ' wtHotkey ')'
+
+    ; === Test: Git CMD starts via Start Menu ===
+    Info '=== Git CMD starts via Start Menu ==='
+    cmdHwnd := LaunchViaStartMenu('Git CMD', 'CASCADIA_HOSTING_WINDOW_CLASS')
+    cmdWinId := 'ahk_id ' cmdHwnd
+    WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, '>\s*$', 'Timed out waiting for CMD prompt', 'CMD prompt appeared', 30000, cmdWinId)
+
+    ; Close the Git CMD window.
+    WinClose(cmdWinId)
+    WinWaitClose(cmdWinId, , 5)
+}
 
 Info '=== Tests complete ==='
 ExitApp 0
