@@ -1,7 +1,8 @@
 ; Reusable library functions for the Git for Windows installer UI tests.
 ;
 ; Adapted from the MSYS2 runtime's ui-test-library.ahk, trimmed to only
-; what is needed for mintty-based testing of an installed Git for Windows.
+; what is needed for mintty and Windows Terminal based testing of an
+; installed Git for Windows.
 
 logFile := ''
 
@@ -237,6 +238,107 @@ LaunchViaStartMenu(searchText, windowClass, titleFilter := '', timeout := 20000)
     WinActivate('ahk_id ' hwnd)
     Info searchText ' launched, hwnd: ' hwnd
     return hwnd
+}
+
+; --- Windows Terminal support ---
+
+; Read the Windows Terminal settings.json and extract the exportBuffer
+; configuration. Returns a Map with keys 'exportFile' and 'hotkey'.
+; Returns an empty Map if exportBuffer is not configured with a path.
+ReadWindowsTerminalExportBufferConfig() {
+    result := Map()
+    localAppData := EnvGet('LOCALAPPDATA')
+    ; Check all known settings.json locations per
+    ; https://learn.microsoft.com/en-us/windows/terminal/install
+    for settingsPath in [
+        localAppData . '\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json',
+        localAppData . '\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json',
+        localAppData . '\Microsoft\Windows Terminal\settings.json'
+    ]
+    {
+        if !FileExist(settingsPath)
+            continue
+        json := FileRead(settingsPath)
+
+        ; Find the exportBuffer action and extract its path.
+        if !RegExMatch(json, 's)"action"\s*:\s*"exportBuffer"[^}]*"path"\s*:\s*"([^"]+)"', &m)
+            continue
+        exportPath := m[1]
+
+        ; Find the id for this action.
+        if !RegExMatch(json, 's)"action"\s*:\s*"exportBuffer"[^}]*\}[^}]*"id"\s*:\s*"([^"]+)"', &idMatch)
+            continue
+        actionId := idMatch[1]
+
+        ; Find the key binding for this id.
+        if !RegExMatch(json, '"id"\s*:\s*"' actionId '"[^}]*"keys"\s*:\s*"([^"]+)"', &keyMatch)
+        && !RegExMatch(json, '"keys"\s*:\s*"([^"]+)"[^}]*"id"\s*:\s*"' actionId '"', &keyMatch)
+            continue
+
+        result['exportFile'] := StrReplace(exportPath, '/', '\')
+        result['hotkey'] := keyMatch[1]
+        return result
+    }
+    return result
+}
+
+; Convert a Windows Terminal key binding string (e.g., "ctrl+shift+e")
+; to an AHK Send string (e.g., "^+e").
+WindowsTerminalHotkeyToAHK(wtKey) {
+    ahk := ''
+    parts := StrSplit(wtKey, '+')
+    key := parts[parts.Length]
+    loop parts.Length - 1
+    {
+        switch StrLower(parts[A_Index]) {
+        case 'ctrl': ahk .= '^'
+        case 'shift': ahk .= '+'
+        case 'alt': ahk .= '!'
+        case 'win': ahk .= '#'
+        }
+    }
+    ; Handle function keys and special keys.
+    if RegExMatch(key, '^f\d+$')
+        ahk .= '{' key '}'
+    else
+        ahk .= key
+    return ahk
+}
+
+; Capture the Windows Terminal buffer via the exportBuffer action.
+CaptureBufferFromWindowsTerminal(exportFile, hotkey, winTitle := '') {
+    if FileExist(exportFile)
+        FileDelete exportFile
+    if winTitle != ''
+        WinActivate winTitle
+    Sleep 200
+    Send hotkey
+    deadline := A_TickCount + 3000
+    while !FileExist(exportFile) && A_TickCount < deadline
+        Sleep 50
+    if !FileExist(exportFile)
+        return ''
+    Sleep 100
+    return FileRead(exportFile)
+}
+
+; Wait for a regex to match in the Windows Terminal buffer.
+WaitForRegExInWindowsTerminal(exportFile, hotkey, regex, errorMessage, successMessage, timeout := 5000, winTitle := '') {
+    deadline := timeout + A_TickCount
+    while true
+    {
+        capturedText := CaptureBufferFromWindowsTerminal(exportFile, hotkey, winTitle)
+        if RegExMatch(capturedText, regex, &matchObj)
+        {
+            Info(successMessage)
+            return matchObj
+        }
+        Sleep 200
+        if A_TickCount > deadline {
+            Info('Captured text:`n' . capturedText)
+            ExitWithError errorMessage
+        }
+    }
 }
 
 ; Initialize GDI+ and return the token. Call ShutdownGdiPlus(token)
