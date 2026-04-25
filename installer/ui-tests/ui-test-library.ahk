@@ -500,6 +500,109 @@ CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, outFile) {
     ShutdownGdiPlus(gdipToken)
 }
 
+; Compare two PNG files pixel-by-pixel. Returns a value 0.0..1.0
+; representing the fraction of pixels that differ by more than
+; `tolerance` (0-255) in any channel.
+CompareImages(file1, file2, tolerance := 10) {
+    gdipToken := StartupGdiPlus()
+    pBmp1 := 0
+    pBmp2 := 0
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file1, 'ptr*', &pBmp1)
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file2, 'ptr*', &pBmp2)
+    w1 := 0
+    h1 := 0
+    w2 := 0
+    h2 := 0
+    DllCall('gdiplus\GdipGetImageWidth', 'ptr', pBmp1, 'uint*', &w1)
+    DllCall('gdiplus\GdipGetImageHeight', 'ptr', pBmp1, 'uint*', &h1)
+    DllCall('gdiplus\GdipGetImageWidth', 'ptr', pBmp2, 'uint*', &w2)
+    DllCall('gdiplus\GdipGetImageHeight', 'ptr', pBmp2, 'uint*', &h2)
+    if w1 != w2 || h1 != h2
+    {
+        DllCall('gdiplus\GdipDisposeImage', 'ptr', pBmp1)
+        DllCall('gdiplus\GdipDisposeImage', 'ptr', pBmp2)
+        ShutdownGdiPlus(gdipToken)
+        return 1.0
+    }
+    diffCount := 0
+    loop h1 {
+        y := A_Index - 1
+        loop w1 {
+            x := A_Index - 1
+            c1 := 0
+            c2 := 0
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBmp1, 'int', x, 'int', y, 'uint*', &c1)
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBmp2, 'int', x, 'int', y, 'uint*', &c2)
+            r1 := (c1 >> 16) & 0xFF
+            g1 := (c1 >> 8) & 0xFF
+            b1 := c1 & 0xFF
+            r2 := (c2 >> 16) & 0xFF
+            g2 := (c2 >> 8) & 0xFF
+            b2 := c2 & 0xFF
+            if Abs(r1 - r2) > tolerance || Abs(g1 - g2) > tolerance || Abs(b1 - b2) > tolerance
+                diffCount++
+        }
+    }
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBmp1)
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBmp2)
+    ShutdownGdiPlus(gdipToken)
+    return diffCount / (w1 * h1)
+}
+
+; Capture a window screenshot, retrying until it matches a reference
+; image within the given diff threshold. This handles applications that
+; render progressively (like gitk loading commits) by comparing each
+; capture against what we expect rather than against the previous frame
+; (which would falsely stabilize on two identical loading screens).
+; Returns the actual diff ratio on success.
+CaptureUntilMatchesReference(hwnd, thumbW, thumbH, outFile, referenceFile, maxDiff, timeout := 30000) {
+    deadline := A_TickCount + timeout
+    while A_TickCount < deadline
+    {
+        CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, outFile)
+        diffRatio := CompareImages(outFile, referenceFile, 10)
+        if diffRatio <= maxDiff
+            return diffRatio
+        Sleep 2000
+    }
+    ExitWithError 'Window screenshot did not match reference within ' timeout 'ms (last diff=' diffRatio ')'
+}
+
+; Count the separate bands of colored rows in an image. A row is colored
+; if at least 5 of its pixels are clearly not gray. Colored text lines
+; form several bands; a colored title bar forms at most one.
+CountColoredRowBands(file) {
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file, 'ptr*', &pBitmap)
+    w := 0
+    h := 0
+    DllCall('gdiplus\GdipGetImageWidth', 'ptr', pBitmap, 'uint*', &w)
+    DllCall('gdiplus\GdipGetImageHeight', 'ptr', pBitmap, 'uint*', &h)
+    bands := 0
+    inBand := false
+    loop h {
+        y := A_Index - 1
+        coloredPixels := 0
+        loop w {
+            argb := 0
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBitmap,
+                'int', A_Index - 1, 'int', y, 'uint*', &argb)
+            r := (argb >> 16) & 0xFF
+            g := (argb >> 8) & 0xFF
+            b := argb & 0xFF
+            if Max(Abs(r - g), Abs(g - b), Abs(r - b)) > 30
+                coloredPixels++
+        }
+        if coloredPixels >= 5 && !inBand
+            bands++
+        inBand := coloredPixels >= 5
+    }
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+    return bands
+}
+
 ; Verify a gitk window by analyzing its screenshot structurally rather
 ; than comparing pixel-by-pixel against a reference image. This makes
 ; the test independent of system-specific font metrics, window chrome,

@@ -150,6 +150,52 @@ else
     cmdWinId := 'ahk_id ' cmdHwnd
     WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, '>\s*$', 'Timed out waiting for CMD prompt', 'CMD prompt appeared', 30000, cmdWinId)
 
+    ; cd into the test repo.
+    WinActivate(cmdWinId)
+    SetKeyDelay 20, 20
+    SendEvent('{Text}cd /d ' testRepoWin)
+    SendEvent('{Enter}')
+    Sleep 1000
+
+    ; === Test: git log is colorful and paged (Git CMD) ===
+    Info '=== git log colorful and paged (Git CMD) ==='
+    WinActivate(cmdWinId)
+    WinMove(100, 100, 800, 600, cmdWinId)
+    SetKeyDelay 20, 20
+    SendEvent('{Text}git log')
+    SendEvent('{Enter}')
+    Sleep 2000
+    diffRatio := CaptureUntilMatchesReference(cmdHwnd, 80, 60, A_ScriptDir . '\cmd-git-log-thumb.png', A_ScriptDir . '\cmd-git-log-reference.png', 0.15)
+    Info 'git log (CMD) screenshot diff ratio: ' diffRatio
+    ; The reference comparison alone would accept a colorless rendering.
+    bands := CountColoredRowBands(A_ScriptDir . '\cmd-git-log-thumb.png')
+    if bands < 3
+        ExitWithError 'git log (CMD) is not colorful (' bands ' colored row bands)'
+    Info 'git log (CMD) colored row bands: ' bands
+    WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, ':\s*$', 'Timed out waiting for git log pager (CMD)', 'git log pager is active (CMD)', 10000, cmdWinId)
+    WinActivate(cmdWinId)
+    QuitPager(cmdWinId)
+
+    ; === Test: gitk runs and shows history (Git CMD) ===
+    Info '=== gitk shows history (Git CMD) ==='
+    WinActivate(cmdWinId)
+    SetKeyDelay 20, 20
+    tk := WinGetList('ahk_class TkTopLevel')
+    SendEvent('{Text}gitk')
+    SendEvent('{Enter}')
+    ; gitk.exe returns immediately to CMD (it is a GUI wrapper).
+    WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, 's)>gitk\R.*>\s*$', 'CMD prompt did not return after gitk', 'gitk returned to CMD prompt', 10000, cmdWinId)
+    VerifyGitkLayout('gitk (CMD)', A_ScriptDir . '\cmd-gitk-thumb.png', tk)
+
+    ; === Test: git gui runs without error (Git CMD) ===
+    Info '=== git gui no error (Git CMD) ==='
+    WinActivate(cmdWinId)
+    SetKeyDelay 20, 20
+    tk := WinGetList('ahk_class TkTopLevel')
+    SendEvent('{Text}git gui')
+    SendEvent('{Enter}')
+    VerifyGitGuiLayout('git gui (CMD)', A_ScriptDir . '\cmd-git-gui-thumb.png', tk)
+
     ; Close the Git CMD window.
     WinClose(cmdWinId)
     WinWaitClose(cmdWinId, , 5)
