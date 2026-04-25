@@ -163,6 +163,52 @@ else
     cmdWinId := 'ahk_id ' cmdHwnd
     WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, '>\s*$', 'Timed out waiting for CMD prompt', 'CMD prompt appeared', 30000, cmdWinId)
 
+    ; cd into the test repo.
+    WinActivate(cmdWinId)
+    SetKeyDelay 20, 20
+    SendEvent('{Text}cd /d ' testRepoWin)
+    SendEvent('{Enter}')
+    Sleep 1000
+
+    ; === Test: git log is colorful and paged (Git CMD) ===
+    Info '=== git log colorful and paged (Git CMD) ==='
+    WinActivate(cmdWinId)
+    WinMove(100, 100, 800, 600, cmdWinId)
+    SetKeyDelay 20, 20
+    SendEvent('{Text}git log')
+    SendEvent('{Enter}')
+    Sleep 2000
+    cmdLogRef := A_ScriptDir . '\cmd-git-log-reference.png'
+    if FileExist(cmdLogRef)
+    {
+        diffRatio := CaptureUntilMatchesReference(cmdHwnd, 80, 60, testRepoWin . '\cmd-git-log-thumb.png', cmdLogRef, 0.15)
+        Info 'git log (CMD) screenshot diff ratio: ' diffRatio
+    }
+    else
+        Info 'WARNING: cmd-git-log-reference.png not found; skipping screenshot check'
+    WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, ':\s*$', 'Timed out waiting for git log pager (CMD)', 'git log pager is active (CMD)', 10000, cmdWinId)
+    WinActivate(cmdWinId)
+    SendEvent('{Text}q')
+    Sleep 500
+
+    ; === Test: gitk runs and shows history (Git CMD) ===
+    Info '=== gitk shows history (Git CMD) ==='
+    WinActivate(cmdWinId)
+    SetKeyDelay 20, 20
+    SendEvent('{Text}gitk')
+    SendEvent('{Enter}')
+    ; gitk.exe returns immediately to CMD (it is a GUI wrapper).
+    WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, '>\s*$', 'CMD prompt did not return after gitk', 'gitk returned to CMD prompt', 10000, cmdWinId)
+    VerifyTkScreenshot('gitk (CMD)', testRepoWin . '\cmd-gitk-thumb.png', A_ScriptDir . '\gitk-reference.png')
+
+    ; === Test: git gui runs without error (Git CMD) ===
+    Info '=== git gui no error (Git CMD) ==='
+    WinActivate(cmdWinId)
+    SetKeyDelay 20, 20
+    SendEvent('{Text}git gui')
+    SendEvent('{Enter}')
+    VerifyTkScreenshot('git gui (CMD)', testRepoWin . '\cmd-git-gui-thumb.png', A_ScriptDir . '\git-gui-reference.png')
+
     ; Close the Git CMD window.
     WinClose(cmdWinId)
     WinWaitClose(cmdWinId, , 5)
