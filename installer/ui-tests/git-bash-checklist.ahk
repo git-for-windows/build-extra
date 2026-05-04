@@ -13,24 +13,48 @@ SetLogFile(A_ScriptDir . '\git-bash-checklist.log')
 Info '=== Git Bash checklist UI tests ==='
 Info 'Date: ' A_Now
 
-; Validate minttyrc prerequisites.
-minttyrc := ReadMinTTYRC()
-RequireMinTTYRCSetting(minttyrc, 'KeyFunctions', 'C+F5:export-html')
-RequireMinTTYRCSetting(minttyrc, 'SaveFilename', '/tmp/mintty-export')
+; Parse command-line arguments to select which phases to run.
+; With no arguments, all phases run. Otherwise only named phases run.
+; Usage: git-bash-checklist.ahk [--git-bash] [--git-cmd] [--git-gui]
+runAll := A_Args.Length == 0
+runGitBash := runAll
+runGitCMD := runAll
+runGitGUI := runAll
+for arg in A_Args
+{
+    switch arg {
+    case '--git-bash': runGitBash := true
+    case '--git-cmd': runGitCMD := true
+    case '--git-gui': runGitGUI := true
+    default: ExitWithError 'Unknown argument: ' arg
+    }
+}
 
-; Derive the export file path from SaveFilename.
-saveFilename := minttyrc['SaveFilename']
+; Validate minttyrc prerequisites (only needed for Git Bash).
+if runGitBash
+{
+    minttyrc := ReadMinTTYRC()
+    RequireMinTTYRCSetting(minttyrc, 'KeyFunctions', 'C+F5:export-html')
+    RequireMinTTYRCSetting(minttyrc, 'SaveFilename', '/tmp/mintty-export')
+}
+
 ; We need git.exe for cygpath conversions throughout the script.
 gitExe := 'C:\Program Files\Git\cmd\git.exe'
 if !FileExist(gitExe)
     ExitWithError 'Git for Windows not found at ' gitExe
-; mintty appends .html to the SaveFilename value.
-; If the path looks like a Unix path, resolve it via cygpath.
-if SubStr(saveFilename, 1, 1) == '/'
-    exportFile := RunWaitOne('"' gitExe '" -c alias.cygpath="!cygpath" cygpath -aw "' saveFilename '"') . '.html'
-else
-    exportFile := StrReplace(saveFilename, '/', '\') . '.html'
-Info 'Export file: ' exportFile
+
+; Derive the mintty export file path (only needed for Git Bash).
+if runGitBash
+{
+    saveFilename := minttyrc['SaveFilename']
+    ; mintty appends .html to the SaveFilename value.
+    ; If the path looks like a Unix path, resolve it via cygpath.
+    if SubStr(saveFilename, 1, 1) == '/'
+        exportFile := RunWaitOne('"' gitExe '" -c alias.cygpath="!cygpath" cygpath -aw "' saveFilename '"') . '.html'
+    else
+        exportFile := StrReplace(saveFilename, '/', '\') . '.html'
+    Info 'Export file: ' exportFile
+}
 
 Info 'All prerequisites met.'
 
@@ -50,6 +74,9 @@ if DirExist(testRepoWin)
 }
 RunWaitOne('"' gitExe '" -c alias.sh="!sh" sh "' scriptDirUnix '/generate-test-repo.sh" --create-test-repo=' testRepo)
 Info 'Test repository created at ' testRepoWin
+
+if runGitBash
+{
 
 ; === Test: Git Bash starts via Start Menu ===
 Info '=== Git Bash starts via Start Menu ==='
@@ -142,6 +169,11 @@ Info 'git gui closed with exit code 0'
 ; Close the Git Bash window.
 CloseMinTTYWindow(winId)
 
+} ; end runGitBash
+
+if runGitCMD
+{
+
 ; === Git CMD tests ===
 ; These require Windows Terminal with exportBuffer configured.
 wtConfig := ReadWindowsTerminalExportBufferConfig()
@@ -213,6 +245,81 @@ else
     WinClose(cmdWinId)
     WinWaitClose(cmdWinId, , 5)
 }
+
+} ; end runGitCMD
+
+if runGitGUI
+{
+
+; === Git GUI standalone tests ===
+Info '=== Git GUI standalone ==='
+; Temporarily replace .gitconfig so the chooser shows only the test repo.
+gitconfigPath := EnvGet('USERPROFILE') . '\.gitconfig'
+gitconfigBackup := gitconfigPath . '.ui-test-backup'
+if FileExist(gitconfigBackup)
+    FileDelete gitconfigBackup
+FileMove gitconfigPath, gitconfigBackup
+; Ensure .gitconfig is restored on any exit.
+OnExit((*) => (FileExist(gitconfigBackup) && (FileDelete(gitconfigPath), FileMove(gitconfigBackup, gitconfigPath))))
+testRepoUnix := StrReplace(testRepoWin, '\', '/')
+FileAppend '[gui]`n`trecentrepo = ' testRepoUnix '`n', gitconfigPath
+
+; Launch Git GUI via Start Menu (opens the chooser dialog).
+Info '=== Git GUI starts via Start Menu ==='
+gitGuiChooserHwnd := LaunchViaStartMenu('Git GUI', 'TkTopLevel', 'Git Gui')
+
+; Verify the chooser via screenshot.
+WinMove(100, 100, 500, 400, 'ahk_id ' gitGuiChooserHwnd)
+WinActivate('ahk_id ' gitGuiChooserHwnd)
+chooserRef := A_ScriptDir . '\git-gui-chooser-reference.png'
+if FileExist(chooserRef)
+{
+    diffRatio := CaptureUntilMatchesReference(gitGuiChooserHwnd, 80, 60, testRepoWin . '\git-gui-chooser-thumb.png', chooserRef, 0.20, 15000)
+    Info 'Git GUI chooser screenshot diff ratio: ' diffRatio
+}
+else
+    Info 'WARNING: git-gui-chooser-reference.png not found; skipping screenshot check'
+
+; Click the first (only) recent repo entry to open it.
+; Use window-relative coordinates to avoid DPI scaling mismatches.
+CoordMode 'Mouse', 'Window'
+WinActivate('ahk_id ' gitGuiChooserHwnd)
+Sleep 500
+Click(250, 220)
+Sleep 3000
+CoordMode 'Mouse', 'Screen'
+
+; A Git GUI window should have opened for the test repo.
+gitGuiRepoHwnd := 0
+for h in WinGetList('ahk_class TkTopLevel')
+{
+    if InStr(WinGetTitle('ahk_id ' h), 'git-bash-checklist-test-repo')
+    {
+        gitGuiRepoHwnd := h
+        break
+    }
+}
+if !gitGuiRepoHwnd
+    ExitWithError 'Git GUI did not open the test repository from the recent list'
+Info 'Git GUI opened the test repo: ' WinGetTitle('ahk_id ' gitGuiRepoHwnd)
+
+; Verify it matches the existing git-gui-reference.png.
+WinMove(100, 100, 800, 600, 'ahk_id ' gitGuiRepoHwnd)
+WinActivate('ahk_id ' gitGuiRepoHwnd)
+diffRatio := CaptureUntilMatchesReference(gitGuiRepoHwnd, 80, 60, testRepoWin . '\git-gui-standalone-thumb.png', A_ScriptDir . '\git-gui-reference.png', 0.15)
+Info 'Git GUI repo screenshot diff ratio: ' diffRatio
+
+; Close all Tk windows.
+for h in WinGetList('ahk_class TkTopLevel')
+    WinClose('ahk_id ' h)
+Sleep 1000
+
+; Restore original .gitconfig (also handled by OnExit).
+FileDelete gitconfigPath
+FileMove gitconfigBackup, gitconfigPath
+Info 'Restored .gitconfig'
+
+} ; end runGitGUI
 
 Info '=== Tests complete ==='
 ExitApp 0
