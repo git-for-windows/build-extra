@@ -13,30 +13,52 @@ SetLogFile(A_ScriptDir . '\git-bash-checklist.log')
 Info '=== Git Bash checklist UI tests ==='
 Info 'Date: ' A_Now
 
-; Validate minttyrc prerequisites.
-minttyrc := ReadMinTTYRC()
-RequireMinTTYRCSetting(minttyrc, 'KeyFunctions', 'C+F5:export-html')
-RequireMinTTYRCSetting(minttyrc, 'SaveFilename', '/tmp/mintty-export')
-exportHtmlBinding := FindMinTTYKeyFunction(minttyrc['KeyFunctions'], 'export-html')
-if exportHtmlBinding == ''
-    ExitWithError 'KeyFunctions in ~/.minttyrc does not bind `export-html`.`n'
-        . 'Please add `export-html` to KeyFunctions, e.g.`n  KeyFunctions=C+F5:export-html'
-exportHtmlHotkey := MinTTYKeyToAHK(exportHtmlBinding)
-Info 'export-html bound to ' exportHtmlBinding ' (AHK: ' exportHtmlHotkey ')'
+; Parse command-line arguments to select which phases to run.
+; With no arguments, all phases run. Otherwise only named phases run.
+; Usage: git-bash-checklist.ahk [--git-bash] [--git-cmd]
+runAll := A_Args.Length == 0
+runGitBash := runAll
+runGitCMD := runAll
+for arg in A_Args
+{
+    switch arg {
+    case '--git-bash': runGitBash := true
+    case '--git-cmd': runGitCMD := true
+    default: ExitWithError 'Unknown argument: ' arg
+    }
+}
 
-; Derive the export file path from SaveFilename.
-saveFilename := minttyrc['SaveFilename']
+; Validate minttyrc prerequisites (only needed for Git Bash).
+if runGitBash
+{
+    minttyrc := ReadMinTTYRC()
+    RequireMinTTYRCSetting(minttyrc, 'KeyFunctions', 'C+F5:export-html')
+    RequireMinTTYRCSetting(minttyrc, 'SaveFilename', '/tmp/mintty-export')
+    exportHtmlBinding := FindMinTTYKeyFunction(minttyrc['KeyFunctions'], 'export-html')
+    if exportHtmlBinding == ''
+        ExitWithError 'KeyFunctions in ~/.minttyrc does not bind `export-html`.`n'
+            . 'Please add `export-html` to KeyFunctions, e.g.`n  KeyFunctions=C+F5:export-html'
+    exportHtmlHotkey := MinTTYKeyToAHK(exportHtmlBinding)
+    Info 'export-html bound to ' exportHtmlBinding ' (AHK: ' exportHtmlHotkey ')'
+}
+
 ; We need git.exe for cygpath conversions throughout the script.
 gitExe := 'C:\Program Files\Git\cmd\git.exe'
 if !FileExist(gitExe)
     ExitWithError 'Git for Windows not found at ' gitExe
-; mintty appends .html to the SaveFilename value.
-; If the path looks like a Unix path, resolve it via cygpath.
-if SubStr(saveFilename, 1, 1) == '/'
-    exportFile := RunWaitOne('"' gitExe '" -c alias.cygpath="!cygpath" cygpath -aw "' saveFilename '"') . '.html'
-else
-    exportFile := StrReplace(saveFilename, '/', '\') . '.html'
-Info 'Export file: ' exportFile
+
+; Derive the mintty export file path (only needed for Git Bash).
+if runGitBash
+{
+    saveFilename := minttyrc['SaveFilename']
+    ; mintty appends .html to the SaveFilename value.
+    ; If the path looks like a Unix path, resolve it via cygpath.
+    if SubStr(saveFilename, 1, 1) == '/'
+        exportFile := RunWaitOne('"' gitExe '" -c alias.cygpath="!cygpath" cygpath -aw "' saveFilename '"') . '.html'
+    else
+        exportFile := StrReplace(saveFilename, '/', '\') . '.html'
+    Info 'Export file: ' exportFile
+}
 
 Info 'All prerequisites met.'
 
@@ -56,6 +78,9 @@ if DirExist(testRepoWin)
 }
 RunWaitOne('"' gitExe '" -c alias.sh="!sh" sh "' scriptDirUnix '/generate-test-repo.sh" "' testRepoWin '"')
 Info 'Test repository created at ' testRepoWin
+
+if runGitBash
+{
 
 ; === Test: Git Bash starts via Start Menu ===
 Info '=== Git Bash starts via Start Menu ==='
@@ -129,6 +154,11 @@ WaitForExitCode('git gui', testRepoWin . '\git-gui-exit.code')
 ; Close the Git Bash window.
 CloseMinTTYWindow(winId)
 
+} ; end runGitBash
+
+if runGitCMD
+{
+
 ; === Git CMD tests ===
 ; These require Windows Terminal with exportBuffer configured.
 wtConfig := ReadWindowsTerminalExportBufferConfig()
@@ -200,6 +230,8 @@ else
     WinClose(cmdWinId)
     WinWaitClose(cmdWinId, , 5)
 }
+
+} ; end runGitCMD
 
 Info '=== Tests complete ==='
 ExitApp 0
