@@ -42,6 +42,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.9](https://sourceware.org/pipermail/cygwin-announce/2026-April/012969.html).
 * Comes with [Git Credential Manager v2.8.0](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.8.0).
+* Comes with [cURL v8.20.0](https://curl.se/changes.html#8_20_0).
 
 ### Bug Fixes
 
