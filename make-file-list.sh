@@ -465,4 +465,9 @@ usr/bin/tmux.exe
 $(ldd /usr/bin/tmux.exe | sed -n 's/.*> \/\(.*msys-event[^ ]*\).*/\1/p')
 EOF
 
-test -z "$INCLUDE_OBJDUMP" || echo usr/bin/objdump.exe
+test -z "$INCLUDE_OBJDUMP" || {
+	echo usr/bin/objdump.exe
+	test -n "$MINIMAL_GIT" &&
+	grep -q msys-zstd-1 /usr/bin/objdump.exe 2>/dev/null &&
+	echo usr/bin/msys-zstd-1.dll
+}
