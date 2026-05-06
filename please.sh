@@ -265,6 +265,12 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	unpack=$dir/.unpack
 	url=https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads
 
+	# When $GITHUB_TOKEN is non-empty, pass it via Basic Auth so the otherwise
+	# strictly rate-limited raw.githubusercontent.com (and api.github.com
+	# release download) endpoints accept more requests.
+	github_curl_auth=
+	test -z "$GITHUB_TOKEN" || github_curl_auth="-u x-access-token:$GITHUB_TOKEN"
+
 	mkdir -p "$dir" ||
 	die "Could not create '%s'\n" "$dir"
 
@@ -336,20 +342,25 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 				die 'Could not copy %s (%d)\n' "$tar" $?
 			else
 				echo "Retrieving $tar..." >&2
-				case $tar in
-				mingw-w64-x86_64-curl-*-8.18.0-1*|mingw-w64-i686-curl-*-8.18.0-1*)
-					tar_url=https://github.com/git-for-windows/pacman-repo/releases/download/2026-01-07T21-55-10.690988000Z/$tar;;
-				mingw-w64-clang-aarch64-curl-*-8.18.0-1*)
-					tar_url=https://github.com/git-for-windows/pacman-repo/releases/download/2026-01-07T21-45-13.731088400Z/$tar;;
-				*) tar_url=$url/$oarch/$tar;;
-				esac
-				curl -Lsfo "$dir/$tar" $tar_url
+				pkgname="${tar%-*-*-*.pkg.tar.*}"
+				remainder="${tar#"$pkgname"-}"
+				verrel="${remainder%-*.pkg.tar.*}"
+				release_tag="$(curl $github_curl_auth -Lsf \
+					"$url/$oarch/$pkgname.versions.json" |
+					sed -n 's/^ *"'"$verrel"'": *"\([^"]*\)".*/\1/p')"
+				if test -n "$release_tag"
+				then
+					tar_url=https://github.com/git-for-windows/pacman-repo/releases/download/$release_tag/$tar
+				else
+					tar_url=$url/$oarch/$tar
+				fi
+				curl $github_curl_auth -Lsfo "$dir/$tar" $tar_url
 				case $? in
 				0) ;; # okay
 				56)
 					while test 56 = $?
 					do
-						curl -Lsfo "$dir/$tar" $tar_url ||
+						curl $github_curl_auth -Lsfo "$dir/$tar" $tar_url ||
 						die "curl error %s (%d)\n" \
 							"$tar" $?
 					done
