@@ -171,6 +171,8 @@ if runGitCMD
 wtConfig := ReadWindowsTerminalExportBufferConfig()
 if wtConfig.Count == 0
 {
+    if EnvGet('REQUIRE_UI_TESTS') != ''
+        ExitWithError 'Windows Terminal exportBuffer not configured'
     Info 'NOTE: Windows Terminal exportBuffer not configured; skipping Git CMD tests.'
     Info 'See installer/checklist.txt for manual verification steps.'
 }

@@ -85,7 +85,7 @@ esac
 
 # If the prerequisites for the UI tests are met (AutoHotkey in PATH
 # and ~/.minttyrc has the required settings), run them. Otherwise
-# just print an informational message.
+# print an informational message, or fail if REQUIRE_UI_TESTS is set.
 ahk_exe=
 for name in AutoHotkey64.exe AutoHotkey32.exe AutoHotkey.exe
 do
@@ -93,11 +93,13 @@ do
 done
 if test -z "$ahk_exe"
 then
+	test -z "$REQUIRE_UI_TESTS" || die "AutoHotkey not found in PATH"
 	echo "NOTE: AutoHotkey not found in PATH; skipping UI tests." >&2
 	echo "See installer/checklist.txt for manual verification steps." >&2
 elif ! grep -q '^KeyFunctions=.*export-html' ~/.minttyrc 2>/dev/null ||
      ! grep -q '^SaveFilename=' ~/.minttyrc 2>/dev/null
 then
+	test -z "$REQUIRE_UI_TESTS" || die "~/.minttyrc is missing KeyFunctions or SaveFilename"
 	echo "NOTE: ~/.minttyrc is missing KeyFunctions or SaveFilename;" >&2
 	echo "skipping UI tests. To enable them, add these lines:" >&2
 	echo "  KeyFunctions=C+F5:export-html" >&2
