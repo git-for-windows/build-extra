@@ -17,7 +17,7 @@ else
 	PS1="$PS1"'$MSYSTEM '          # show MSYSTEM
 	PS1="$PS1"'\[\033[33m\]'       # change to brownish yellow
 	PS1="$PS1"'\w'                 # current working directory
-	if test -z "$WINELOADERNOEXEC"
+	if test -n "$BASH_VERSION" && test -z "$WINELOADERNOEXEC"
 	then
 		GIT_EXEC_PATH="$(git --exec-path 2>/dev/null)"
 		COMPLETION_PATH="${GIT_EXEC_PATH%/libexec/git-core}"
@@ -39,7 +39,7 @@ fi
 MSYS2_PS1="$PS1"               # for detection by MSYS2 SDK's bash.basrc
 
 # Evaluate all user-specific Bash completion scripts (if any)
-if test -z "$WINELOADERNOEXEC"
+if test -n "$BASH_VERSION" && test -z "$WINELOADERNOEXEC"
 then
 	for c in "$HOME"/bash_completion.d/*.bash
 	do
@@ -52,4 +52,7 @@ fi
 # Prevents command completion if line is empty or only has whitespace
 # Can be overriden by adding the following to your .bashrc file.
 # shopt -u no_empty_cmd_completion
-shopt -s no_empty_cmd_completion
+if test -n "$BASH_VERSION"
+then
+	shopt -s no_empty_cmd_completion
+fi
