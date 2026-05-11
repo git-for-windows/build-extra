@@ -113,7 +113,7 @@ else
 	ahk_script="$(cygpath -aw "$ui_tests_dir/git-bash-checklist.ahk")"
 	exit_code_file="$(mktemp)"
 	{
-		MSYS2_ARG_CONV_EXCL="/ErrorStdOut" \
+		MSYS2_ARG_CONV_EXCL='*' \
 		"$ahk_exe" /ErrorStdOut /force "$ahk_script"
 		echo $? >"$exit_code_file"
 	} | tee "$ui_tests_dir/git-bash-checklist.log"
