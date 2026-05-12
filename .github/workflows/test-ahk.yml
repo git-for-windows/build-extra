@@ -38,36 +38,7 @@ jobs:
             'KeyFunctions=C+F5:export-html' \
             'SaveFilename=/tmp/mintty-export' \
             >>~/.minttyrc
-      - name: Run diagnostic AHK script
-        timeout-minutes: 2
-        shell: bash
-        run: |
-          set -x
-          ahk_script="$(cygpath -aw installer/ui-tests/test-hello.ahk)"
-          {
-            MSYS2_ARG_CONV_EXCL='*' \
-            AutoHotkey64.exe /ErrorStdOut /force "$ahk_script"
-            echo $? >exit.code
-          } | tee diag.log
-          echo "exit: $(cat exit.code)"
-      - name: Take screenshot on failure
-        if: failure()
-        shell: pwsh
-        run: |
-          [Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null
-          Add-Type -AssemblyName System.Windows.Forms
-          $screen = [System.Windows.Forms.Screen]::PrimaryScreen
-          $w = $screen.Bounds.Width
-          $h = $screen.Bounds.Height
-          $bmp = New-Object Drawing.Bitmap $w, $h
-          $graphics = [Drawing.Graphics]::FromImage($bmp)
-          $graphics.CopyFromScreen(0, 0, 0, 0, [Drawing.Size]::new($w, $h))
-          $bmp.Save("installer/ui-tests/screenshot.png")
-          $graphics.Dispose()
-          $bmp.Dispose()
-      - name: Upload artifacts
-        if: always()
-        uses: actions/upload-artifact@v7
+      - name: Setup tmate session
+        uses: mxschmitt/action-tmate@v3
         with:
-          name: ui-tests
-          path: installer/ui-tests/
+          limit-access-to-actor: true
