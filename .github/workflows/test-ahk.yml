@@ -31,32 +31,47 @@ jobs:
           mkdir -p "$RUNNER_TEMP/ahk" &&
           "$WINDIR/system32/tar.exe" -C "$RUNNER_TEMP/ahk" -xf "$RUNNER_TEMP/ahk.zip" &&
           cygpath -aw "$RUNNER_TEMP/ahk" >>$GITHUB_PATH
-      - name: Test from PowerShell
-        shell: pwsh
+      - name: Configure minttyrc
+        shell: bash
         run: |
-          & AutoHotkey64.exe /ErrorStdOut /force `
-            installer/ui-tests/test-hello.ahk 2>&1 | Out-Default
-          Write-Host "pwsh exit: $LASTEXITCODE"
-      - name: Test from bash with tee
+          printf '%s\n' \
+            'KeyFunctions=C+F5:export-html' \
+            'SaveFilename=/tmp/mintty-export' \
+            >>~/.minttyrc
+      - name: Run the real checklist AHK script
+        timeout-minutes: 5
         shell: bash
         run: |
           set -x
+          ahk_script="$(cygpath -aw installer/ui-tests/git-bash-checklist.ahk)"
+          exit_code_file="$(mktemp)"
           {
             MSYS2_ARG_CONV_EXCL='*' \
-            AutoHotkey64.exe /ErrorStdOut /force \
-              "$(cygpath -aw installer/ui-tests/test-hello.ahk)"
-            echo $? >exit.code
-          } | tee hello.log
-          echo "exit: $(cat exit.code)"
-          echo "log: $(cat hello.log)"
-      - name: Test from bash without tee
-        shell: bash
+            AutoHotkey64.exe /ErrorStdOut /force "$ahk_script"
+            echo $? >"$exit_code_file"
+          } | tee installer/ui-tests/git-bash-checklist.log
+          ahk_exit="$(cat "$exit_code_file")"
+          rm -f "$exit_code_file"
+          echo "ahk_exit=$ahk_exit"
+          test 0 = "$ahk_exit"
+      - name: Take screenshot on failure
+        if: failure()
+        shell: pwsh
         run: |
-          set -x
-          MSYS2_ARG_CONV_EXCL='*' \
-          AutoHotkey64.exe /ErrorStdOut /force \
-            "$(cygpath -aw installer/ui-tests/test-hello.ahk)"
-          echo "exit: $?"
-      - name: Test from shell script (like run-checklist.sh)
-        shell: bash
-        run: sh -x installer/test-ahk-from-script.sh
+          [Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null
+          Add-Type -AssemblyName System.Windows.Forms
+          $screen = [System.Windows.Forms.Screen]::PrimaryScreen
+          $w = $screen.Bounds.Width
+          $h = $screen.Bounds.Height
+          $bmp = New-Object Drawing.Bitmap $w, $h
+          $graphics = [Drawing.Graphics]::FromImage($bmp)
+          $graphics.CopyFromScreen(0, 0, 0, 0, [Drawing.Size]::new($w, $h))
+          $bmp.Save("installer/ui-tests/screenshot.png")
+          $graphics.Dispose()
+          $bmp.Dispose()
+      - name: Upload artifacts
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: ui-tests
+          path: installer/ui-tests/
