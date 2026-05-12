@@ -1,0 +1,59 @@
+name: Test AHK stdout
+
+on: push
+
+jobs:
+  test:
+    runs-on: windows-latest
+    env:
+      AUTOHOTKEY_VERSION: '2.0.19'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/cache/restore@v5
+        id: cache
+        with:
+          key: ahk-${{ env.AUTOHOTKEY_VERSION }}
+          path: ${{ runner.temp }}/ahk.zip
+      - name: Download AutoHotKey2
+        if: steps.cache.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -fL -o "$RUNNER_TEMP/ahk.zip" \
+            https://github.com/AutoHotkey/AutoHotkey/releases/download/v$AUTOHOTKEY_VERSION/AutoHotkey_$AUTOHOTKEY_VERSION.zip
+      - uses: actions/cache/save@v5
+        if: steps.cache.outputs.cache-hit != 'true'
+        with:
+          key: ahk-${{ env.AUTOHOTKEY_VERSION }}
+          path: ${{ runner.temp }}/ahk.zip
+      - name: Install AutoHotKey2
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/ahk" &&
+          "$WINDIR/system32/tar.exe" -C "$RUNNER_TEMP/ahk" -xf "$RUNNER_TEMP/ahk.zip" &&
+          cygpath -aw "$RUNNER_TEMP/ahk" >>$GITHUB_PATH
+      - name: Test from PowerShell
+        shell: pwsh
+        run: |
+          & AutoHotkey64.exe /ErrorStdOut /force `
+            installer/ui-tests/test-hello.ahk 2>&1 | Out-Default
+          Write-Host "pwsh exit: $LASTEXITCODE"
+      - name: Test from bash with tee
+        shell: bash
+        run: |
+          set -x
+          {
+            MSYS2_ARG_CONV_EXCL='*' \
+            AutoHotkey64.exe /ErrorStdOut /force \
+              "$(cygpath -aw installer/ui-tests/test-hello.ahk)"
+            echo $? >exit.code
+          } | tee hello.log
+          echo "exit: $(cat exit.code)"
+          echo "log: $(cat hello.log)"
+      - name: Test from bash without tee
+        shell: bash
+        run: |
+          set -x
+          MSYS2_ARG_CONV_EXCL='*' \
+          AutoHotkey64.exe /ErrorStdOut /force \
+            "$(cygpath -aw installer/ui-tests/test-hello.ahk)"
+          echo "exit: $?"
