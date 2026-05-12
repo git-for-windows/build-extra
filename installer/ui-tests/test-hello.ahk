@@ -79,16 +79,25 @@ SendEvent('{Enter}')
 Sleep 5000
 Info 'Step 7f: pressed Enter, active: ' . WinGetProcessName('A') . ' title=' . WinGetTitle('A')
 
-; Check all windows
+; Enumerate ALL visible windows with details
 for h in WinGetList()
 {
     try {
         title := WinGetTitle(h)
-        exe := WinGetProcessName(h)
-        if title != '' && (InStr(exe, 'mintty') || InStr(title, 'Git') || InStr(title, 'Bash'))
-            Info '  window: ' . exe . ' - ' . title
+        if title != ''
+        {
+            exe := WinGetProcessName(h)
+            cls := WinGetClass(h)
+            Info '  window: cls=' . cls . ' exe=' . exe . ' title=' . title
+        }
     }
 }
+
+; Check specifically for mintty and CASCADIA
+for h in WinGetList('ahk_class mintty')
+    Info '  MINTTY: ' . WinGetTitle(h)
+for h in WinGetList('ahk_class CASCADIA_HOSTING_WINDOW_CLASS')
+    Info '  CASCADIA: ' . WinGetTitle(h)
 
 hwnd := 0
 for h in WinGetList(minttyClass)
