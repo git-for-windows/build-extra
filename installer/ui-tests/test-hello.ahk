@@ -28,6 +28,29 @@ else
 Info 'Step 6: export file=' . exportFile
 
 Info 'Step 7: about to launch via Start Menu'
+
+; Verify Start Menu shortcuts exist
+smDir := 'C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Git'
+Info 'Step 7a: checking ' . smDir
+if DirExist(smDir)
+{
+    loop files smDir . '\*.*'
+        Info '  found: ' . A_LoopFileName
+}
+else
+    Info '  directory does not exist!'
+
+; Also check user Start Menu
+userSmDir := EnvGet('APPDATA') . '\Microsoft\Windows\Start Menu\Programs\Git'
+Info 'Step 7b: checking ' . userSmDir
+if DirExist(userSmDir)
+{
+    loop files userSmDir . '\*.*'
+        Info '  found: ' . A_LoopFileName
+}
+else
+    Info '  directory does not exist!'
+
 hwnd := LaunchViaStartMenu('Git Bash', 'mintty')
 Info 'Step 8: mintty hwnd=' . hwnd
 
