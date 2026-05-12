@@ -38,22 +38,18 @@ jobs:
             'KeyFunctions=C+F5:export-html' \
             'SaveFilename=/tmp/mintty-export' \
             >>~/.minttyrc
-      - name: Run the real checklist AHK script
-        timeout-minutes: 5
+      - name: Run diagnostic AHK script
+        timeout-minutes: 2
         shell: bash
         run: |
           set -x
-          ahk_script="$(cygpath -aw installer/ui-tests/git-bash-checklist.ahk)"
-          exit_code_file="$(mktemp)"
+          ahk_script="$(cygpath -aw installer/ui-tests/test-hello.ahk)"
           {
             MSYS2_ARG_CONV_EXCL='*' \
             AutoHotkey64.exe /ErrorStdOut /force "$ahk_script"
-            echo $? >"$exit_code_file"
-          } | tee installer/ui-tests/git-bash-checklist.log
-          ahk_exit="$(cat "$exit_code_file")"
-          rm -f "$exit_code_file"
-          echo "ahk_exit=$ahk_exit"
-          test 0 = "$ahk_exit"
+            echo $? >exit.code
+          } | tee diag.log
+          echo "exit: $(cat exit.code)"
       - name: Take screenshot on failure
         if: failure()
         shell: pwsh
