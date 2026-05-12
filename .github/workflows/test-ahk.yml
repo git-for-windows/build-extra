@@ -57,3 +57,6 @@ jobs:
           AutoHotkey64.exe /ErrorStdOut /force \
             "$(cygpath -aw installer/ui-tests/test-hello.ahk)"
           echo "exit: $?"
+      - name: Test from shell script (like run-checklist.sh)
+        shell: bash
+        run: sh -x installer/test-ahk-from-script.sh
