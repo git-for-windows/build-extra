@@ -51,7 +51,57 @@ if DirExist(userSmDir)
 else
     Info '  directory does not exist!'
 
-hwnd := LaunchViaStartMenu('Git Bash', 'mintty')
+Info 'Step 7c: trying to launch'
+
+; Instead of LaunchViaStartMenu, do it manually with more logging
+minttyClass := 'ahk_class mintty'
+existing := Map()
+for h in WinGetList(minttyClass)
+    existing[h] := true
+
+SendEvent('{LWin}')
+deadline := A_TickCount + 5000
+while A_TickCount < deadline
+{
+    try {
+        if WinGetProcessName('A') == 'SearchHost.exe'
+            break
+    }
+    Sleep 100
+}
+Info 'Step 7d: active window after Win key: ' . WinGetProcessName('A') . ' title=' . WinGetTitle('A')
+
+SendInput('Git Bash')
+Sleep 3000
+Info 'Step 7e: typed Git Bash, active: ' . WinGetProcessName('A') . ' title=' . WinGetTitle('A')
+
+SendEvent('{Enter}')
+Sleep 5000
+Info 'Step 7f: pressed Enter, active: ' . WinGetProcessName('A') . ' title=' . WinGetTitle('A')
+
+; Check all windows
+for h in WinGetList()
+{
+    try {
+        title := WinGetTitle(h)
+        exe := WinGetProcessName(h)
+        if title != '' && (InStr(exe, 'mintty') || InStr(title, 'Git') || InStr(title, 'Bash'))
+            Info '  window: ' . exe . ' - ' . title
+    }
+}
+
+hwnd := 0
+for h in WinGetList(minttyClass)
+{
+    if !existing.Has(h)
+    {
+        hwnd := h
+        break
+    }
+}
+if !hwnd
+    ExitWithError 'No new mintty window'
+Info 'Step 8: mintty hwnd=' . hwnd
 Info 'Step 8: mintty hwnd=' . hwnd
 
 WinClose('ahk_id ' hwnd)
