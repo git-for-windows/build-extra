@@ -134,7 +134,7 @@ WinActivate(winId)
 SetKeyDelay 20, 20
 SendEvent('{Text}gitk; echo $? >gitk-exit.code')
 SendEvent('{Enter}')
-VerifyTkScreenshot('gitk', testRepoWin . '\gitk-thumb.png', A_ScriptDir . '\gitk-reference.png')
+VerifyGitkLayout('gitk', testRepoWin . '\gitk-thumb.png')
 ; Verify gitk exited with code 0 (bash was blocked while gitk ran).
 gitkExitFile := testRepoWin . '\gitk-exit.code'
 deadline := A_TickCount + 5000
@@ -231,7 +231,7 @@ else
     SendEvent('{Enter}')
     ; gitk.exe returns immediately to CMD (it is a GUI wrapper).
     WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, '>\s*$', 'CMD prompt did not return after gitk', 'gitk returned to CMD prompt', 10000, cmdWinId)
-    VerifyTkScreenshot('gitk (CMD)', testRepoWin . '\cmd-gitk-thumb.png', A_ScriptDir . '\gitk-reference.png')
+    VerifyGitkLayout('gitk (CMD)', testRepoWin . '\cmd-gitk-thumb.png')
 
     ; === Test: git gui runs without error (Git CMD) ===
     Info '=== git gui no error (Git CMD) ==='

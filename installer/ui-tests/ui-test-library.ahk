@@ -496,3 +496,120 @@ CaptureUntilMatchesReference(hwnd, thumbW, thumbH, outFile, referenceFile, maxDi
     }
     ExitWithError 'Window screenshot did not match reference within ' timeout 'ms (last diff=' diffRatio ')'
 }
+
+; Verify a gitk window by analyzing its screenshot structurally rather
+; than comparing pixel-by-pixel against a reference image. This makes
+; the test independent of system-specific font metrics, window chrome,
+; and theme colors that vary across Windows versions.
+;
+; Checks performed on the 80x60 thumbnail:
+;  1. Window rendered (not blank/uniform)
+;  2. Commit graph decorations visible (colored pixels on the left)
+;  3. Commit list text visible (darker-than-background rows in center)
+;  4. At least minCommitRows commit entries rendered
+;  5. A selection highlight row exists
+VerifyGitkLayout(label, thumbFile, timeout := 30000) {
+    hwnd := WinWait('ahk_class TkTopLevel', , 15)
+    if !hwnd
+        ExitWithError label ': Tk window did not appear'
+    Info label ': window appeared'
+    WinMove(100, 100, 800, 600, 'ahk_id ' hwnd)
+    WinActivate('ahk_id ' hwnd)
+
+    thumbW := 80
+    thumbH := 60
+    deadline := A_TickCount + timeout
+    lastErr := 'no capture attempted'
+    while A_TickCount < deadline {
+        CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, thumbFile)
+        lastErr := CheckGitkStructure(thumbFile, thumbW, thumbH)
+        if lastErr = '' {
+            Info label ': layout verification passed'
+            WinClose('ahk_id ' hwnd)
+            WinWaitClose('ahk_id ' hwnd, , 5)
+            Info label ': closed'
+            return hwnd
+        }
+        Info label ': retry (' lastErr ')'
+        Sleep 2000
+    }
+    ExitWithError label ': layout check failed after ' timeout 'ms: ' lastErr
+}
+
+; Analyze a gitk screenshot for expected structure.
+; Returns empty string on success, or an error description.
+CheckGitkStructure(file, w, h) {
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file, 'ptr*', &pBitmap)
+    if !pBitmap {
+        ShutdownGdiPlus(gdipToken)
+        return 'failed to load ' file
+    }
+
+    ; Per-row analysis over the thumbnail.
+    graphRows := 0
+    textRows := 0
+    highlightRows := 0
+    nonBlankRows := 0
+
+    loop h {
+        y := A_Index - 1
+        leftColored := false
+        centerTextPixels := 0
+        highlightPixels := 0
+        rowIsBlank := true
+
+        loop w {
+            x := A_Index - 1
+            argb := 0
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBitmap,
+                'int', x, 'int', y, 'uint*', &argb)
+            r := (argb >> 16) & 0xFF
+            g := (argb >> 8) & 0xFF
+            b := argb & 0xFF
+            avg := (r + g + b) // 3
+            chroma := Max(Abs(r - g), Abs(g - b), Abs(r - b))
+
+            if avg < 230 || chroma > 25
+                rowIsBlank := false
+
+            ; Left 10 columns: graph decorations are distinctly colored.
+            if x < 10 && chroma > 40
+                leftColored := true
+
+            ; Center columns 15..65: commit text is darker than white
+            ; background but lighter than a selection highlight.
+            if x >= 15 && x <= 65 {
+                if avg >= 140 && avg <= 210
+                    centerTextPixels++
+                if avg < 130
+                    highlightPixels++
+            }
+        }
+
+        if !rowIsBlank
+            nonBlankRows++
+        if leftColored
+            graphRows++
+        ; A row counts as "text" when enough center pixels are text-like.
+        if centerTextPixels >= 10
+            textRows++
+        if highlightPixels >= 10
+            highlightRows++
+    }
+
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+
+    if nonBlankRows < h * 0.3
+        return 'window mostly blank (' nonBlankRows '/' h ' non-blank rows)'
+    if graphRows < 3
+        return 'too few graph rows (' graphRows '), need >= 3'
+    if textRows < 5
+        return 'too few commit text rows (' textRows '), need >= 5'
+    if highlightRows < 1
+        return 'no selection highlight found'
+
+    return ''
+}
