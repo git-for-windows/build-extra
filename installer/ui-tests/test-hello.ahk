@@ -1,20 +1,36 @@
 #Requires AutoHotkey v2.0
-FileAppend 'Step 1: basic output works' . '`n', '*'
+FileAppend 'Step 0: before include' . '`n', '*'
 
-FileAppend 'Step 2: trying ComObject...' . '`n', '*'
-shell := ComObject("WScript.Shell")
-FileAppend 'Step 3: ComObject created' . '`n', '*'
+#Include ui-test-library.ahk
 
-FileAppend 'Step 4: trying RunWaitOne...' . '`n', '*'
-exec := shell.Run(A_ComSpec ' /S /C "git version | clip"', 0, true)
-FileAppend 'Step 5: RunWaitOne done, exit=' . exec . '`n', '*'
-FileAppend 'Step 6: clipboard=' . A_Clipboard . '`n', '*'
+FileAppend 'Step 1: after include' . '`n', '*'
 
-FileAppend 'Step 7: trying SendEvent...' . '`n', '*'
-SendEvent('{LWin}')
-Sleep 2000
-FileAppend 'Step 8: sent Win key' . '`n', '*'
-Send('{Escape}')
+SetLogFile(A_ScriptDir . '\test-diag.log')
+Info 'Step 2: Info works'
 
-FileAppend 'All steps passed' . '`n', '*'
+minttyrc := ReadMinTTYRC()
+Info 'Step 3: minttyrc read, keys=' . minttyrc.Count
+
+RequireMinTTYRCSetting(minttyrc, 'KeyFunctions', 'C+F5:export-html')
+RequireMinTTYRCSetting(minttyrc, 'SaveFilename', '/tmp/mintty-export')
+Info 'Step 4: minttyrc validated'
+
+gitExe := 'C:\Program Files\Git\cmd\git.exe'
+if !FileExist(gitExe)
+    ExitWithError 'Git not found at ' gitExe
+Info 'Step 5: git found'
+
+saveFilename := minttyrc['SaveFilename']
+if SubStr(saveFilename, 1, 1) == '/'
+    exportFile := RunWaitOne('"' gitExe '" -c alias.cygpath="!cygpath" cygpath -aw "' saveFilename '"') . '.html'
+else
+    exportFile := StrReplace(saveFilename, '/', '\') . '.html'
+Info 'Step 6: export file=' . exportFile
+
+Info 'Step 7: about to launch via Start Menu'
+hwnd := LaunchViaStartMenu('Git Bash', 'mintty')
+Info 'Step 8: mintty hwnd=' . hwnd
+
+WinClose('ahk_id ' hwnd)
+Info 'All steps passed'
 ExitApp 0
