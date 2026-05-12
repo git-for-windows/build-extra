@@ -171,6 +171,19 @@ jobs:
         with:
           name: ${{ steps.build.outputs.result }}
           path: ${{ steps.build.outputs.result }}
+      - name: uninstall pre-installed Git
+        if: matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          # The runner image installs Git with "Bash Terminal Option: ConHost".
+          # InnoSetup's ReplayChoice preserves previous settings during
+          # /VERYSILENT upgrades, so a reinstall would keep ConHost instead
+          # of defaulting to MinTTY. Uninstalling first ensures a clean slate.
+          $uninstaller = "$env:ProgramFiles\Git\unins000.exe"
+          if (Test-Path $uninstaller) {
+            $p = Start-Process -PassThru -Wait -FilePath $uninstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES"
+            Write-Host "Uninstall exit code: $($p.ExitCode)"
+          }
       - name: run the installer
         if: matrix.directory == 'installer'
         shell: pwsh
@@ -188,7 +201,10 @@ jobs:
         # run this even if the installation failed (actually, _in particular_ when the installation failed)
         if: always() && matrix.directory == 'installer'
         shell: bash
-        run: cat installer.log
+        run: |
+          cat installer.log
+          echo "--- install-options.txt ---"
+          cat "/c/Program Files/Git/etc/install-options.txt"
       - uses: actions/cache/restore@v5
         if: matrix.directory == 'installer'
         id: restore-ahk
@@ -217,12 +233,18 @@ jobs:
             'KeyFunctions=C+F5:export-html' \
             'SaveFilename=/tmp/mintty-export' \
             >>~/.minttyrc
-      - name: Minimize log window for UI tests
+      - name: Restart Explorer and minimize windows for UI tests
         if: matrix.directory == 'installer'
         shell: pwsh
         run: |
+          # On headless runners, Explorer may run without the taskbar/Start
+          # Menu fully initialized. Restarting ensures the shell UI is ready
+          # for Start Menu searches. This may not be strictly necessary; if
+          # tests pass without it, this restart can be removed.
+          Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+          Start-Sleep 5
           # Give the search indexer time to index the newly installed shortcuts
-          Start-Sleep -Seconds 10
+          Start-Sleep 10
           & AutoHotkey64.exe /ErrorStdOut /force `
             installer/ui-tests/minimize-windows.ahk 2>&1 | Out-Default
       - name: validate
@@ -367,6 +389,15 @@ jobs:
         with:
           name: installer-${{ matrix.arch.name }}
           path: installer-${{ matrix.arch.name }}
+      - name: uninstall pre-installed Git
+        if: matrix.artifact == 'build-installers'
+        shell: pwsh
+        run: |
+          $uninstaller = "$env:ProgramFiles\Git\unins000.exe"
+          if (Test-Path $uninstaller) {
+            $p = Start-Process -PassThru -Wait -FilePath $uninstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES"
+            Write-Host "Uninstall exit code: $($p.ExitCode)"
+          }
       - name: run the installer
         if: matrix.artifact == 'build-installers'
         shell: pwsh
@@ -418,11 +449,13 @@ jobs:
             'KeyFunctions=C+F5:export-html' \
             'SaveFilename=/tmp/mintty-export' \
             >>~/.minttyrc
-      - name: Minimize log window for UI tests
+      - name: Restart Explorer and minimize windows for UI tests
         if: matrix.artifact == 'build-installers'
         shell: pwsh
         run: |
-          Start-Sleep -Seconds 10
+          Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+          Start-Sleep 5
+          Start-Sleep 10
           & AutoHotkey64.exe /ErrorStdOut /force `
             installer/ui-tests/minimize-windows.ahk 2>&1 | Out-Default
       - name: validate

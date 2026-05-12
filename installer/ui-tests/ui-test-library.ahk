@@ -185,6 +185,10 @@ LaunchViaStartMenu(searchText, windowClass, titleFilter := '', timeout := 20000)
     for h in WinGetList(winSpec)
         existing[h] := true
 
+    ; Dismiss any stale Start Menu state before opening a fresh one.
+    SendEvent('{Escape}')
+    Sleep 500
+
     SendEvent('{LWin}')
     deadline := A_TickCount + 5000
     while A_TickCount < deadline
@@ -196,7 +200,31 @@ LaunchViaStartMenu(searchText, windowClass, titleFilter := '', timeout := 20000)
         Sleep 100
     }
     if A_TickCount >= deadline
+    {
+        ; Retry once: the shell may need a nudge.
+        Info 'Start Menu did not appear on first try, retrying...'
+        SendEvent('{LWin}')
+        deadline := A_TickCount + 5000
+        while A_TickCount < deadline
+        {
+            try {
+                if WinGetProcessName('A') == 'SearchHost.exe'
+                    break
+            }
+            Sleep 100
+        }
+    }
+    if A_TickCount >= deadline
+    {
+        Info 'Start Menu did not appear. Active window: '
+        try
+            Info '  exe=' WinGetProcessName('A') ' title=' WinGetTitle('A') ' class=' WinGetClass('A')
+        catch
+            Info '  (no active window)'
+        LogAllWindows('  ')
+        CaptureScreen(A_ScriptDir . '\start-menu-failure.png')
         ExitWithError 'Start Menu did not appear'
+    }
     Info 'Start Menu opened'
 
     SendInput(searchText)
@@ -478,6 +506,45 @@ CompareImages(file1, file2, tolerance := 10) {
     return diffCount / (w1 * h1)
 }
 
+; Capture the entire primary screen to a PNG file. Useful for diagnostics.
+CaptureScreen(outFile) {
+    w := SysGet(78)  ; SM_CXVIRTUALSCREEN
+    h := SysGet(79)  ; SM_CYVIRTUALSCREEN
+    if w <= 0 || h <= 0
+        w := 1920, h := 1080
+    hdcScreen := DllCall('GetDC', 'ptr', 0, 'ptr')
+    hdcMem := DllCall('CreateCompatibleDC', 'ptr', hdcScreen, 'ptr')
+    hbm := DllCall('CreateCompatibleBitmap', 'ptr', hdcScreen, 'int', w, 'int', h, 'ptr')
+    hOld := DllCall('SelectObject', 'ptr', hdcMem, 'ptr', hbm, 'ptr')
+    DllCall('BitBlt', 'ptr', hdcMem, 'int', 0, 'int', 0, 'int', w, 'int', h,
+        'ptr', hdcScreen, 'int', 0, 'int', 0, 'uint', 0x00CC0020)
+    DllCall('SelectObject', 'ptr', hdcMem, 'ptr', hOld)
+    DllCall('DeleteDC', 'ptr', hdcMem)
+    DllCall('ReleaseDC', 'ptr', 0, 'ptr', hdcScreen)
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromHBITMAP', 'ptr', hbm, 'ptr', 0, 'ptr*', &pBitmap)
+    DllCall('DeleteObject', 'ptr', hbm)
+    pngClsid := GetPngEncoderClsid()
+    DllCall('gdiplus\GdipSaveImageToFile', 'ptr', pBitmap, 'wstr', outFile, 'ptr', pngClsid, 'ptr', 0)
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+}
+
+; Log all visible windows (for diagnostics).
+LogAllWindows(prefix := '') {
+    for h in WinGetList() {
+        try {
+            title := WinGetTitle(h)
+            if title != '' {
+                cls := WinGetClass(h)
+                exe := WinGetProcessName(h)
+                Info prefix . 'window: cls=' cls ' exe=' exe ' title=' title
+            }
+        }
+    }
+}
+
 ; Capture a window screenshot, retrying until it matches a reference
 ; image within the given diff threshold. This handles applications that
 ; render progressively (like gitk loading commits) by comparing each
@@ -610,6 +677,115 @@ CheckGitkStructure(file, w, h) {
         return 'too few commit text rows (' textRows '), need >= 5'
     if highlightRows < 1
         return 'no selection highlight found'
+
+    return ''
+}
+
+; Verify a git gui window by analyzing its screenshot structurally.
+; Checks that the window has rendered content typical of git gui:
+;  1. Window is not blank/uniform
+;  2. Colored staging area visible (yellow/green region on the left)
+;  3. Distinct horizontal regions (menu bar, staging, commit area)
+;  4. Title does not contain "Error" or "not a git repository"
+VerifyGitGuiLayout(label, thumbFile, timeout := 30000) {
+    hwnd := WinWait('ahk_class TkTopLevel', , 15)
+    if !hwnd
+        ExitWithError label ': Tk window did not appear'
+    Info label ': window appeared'
+
+    ; Check title for errors before anything else.
+    title := WinGetTitle('ahk_id ' hwnd)
+    if InStr(title, 'Error') || InStr(title, 'not a git repository')
+        ExitWithError label ': title indicates error: ' title
+
+    WinMove(100, 100, 800, 600, 'ahk_id ' hwnd)
+    WinActivate('ahk_id ' hwnd)
+
+    thumbW := 80
+    thumbH := 60
+    deadline := A_TickCount + timeout
+    lastErr := 'no capture attempted'
+    while A_TickCount < deadline {
+        CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, thumbFile)
+        lastErr := CheckGitGuiStructure(thumbFile, thumbW, thumbH)
+        if lastErr = '' {
+            Info label ': layout verification passed'
+            WinClose('ahk_id ' hwnd)
+            WinWaitClose('ahk_id ' hwnd, , 5)
+            Info label ': closed'
+            return hwnd
+        }
+        Info label ': retry (' lastErr ')'
+        Sleep 2000
+    }
+    ExitWithError label ': layout check failed after ' timeout 'ms: ' lastErr
+}
+
+; Analyze a git gui screenshot for expected structure.
+; Returns empty string on success, or an error description.
+CheckGitGuiStructure(file, w, h) {
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file, 'ptr*', &pBitmap)
+    if !pBitmap {
+        ShutdownGdiPlus(gdipToken)
+        return 'failed to load ' file
+    }
+
+    ; Analyze the thumbnail for git gui's characteristic layout:
+    ; - Colored rows (yellow/green staging area)
+    ; - Light rows (white diff/commit area)
+    ; - Dark or text-like rows (menu bar, labels)
+    nonBlankRows := 0
+    coloredRows := 0
+    lightRows := 0
+
+    loop h {
+        y := A_Index - 1
+        rowIsBlank := true
+        coloredPixels := 0
+        lightPixels := 0
+
+        loop w {
+            x := A_Index - 1
+            argb := 0
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBitmap,
+                'int', x, 'int', y, 'uint*', &argb)
+            r := (argb >> 16) & 0xFF
+            g := (argb >> 8) & 0xFF
+            b := argb & 0xFF
+            avg := (r + g + b) // 3
+            chroma := Max(Abs(r - g), Abs(g - b), Abs(r - b))
+
+            if avg < 230 || chroma > 25
+                rowIsBlank := false
+
+            ; Colored pixels: staging area has yellow/green hues
+            if chroma > 30 && avg > 100 && avg < 230
+                coloredPixels++
+
+            ; Light pixels: white/near-white areas (diff pane, empty areas)
+            if avg > 230 && chroma < 15
+                lightPixels++
+        }
+
+        if !rowIsBlank
+            nonBlankRows++
+        if coloredPixels >= 5
+            coloredRows++
+        if lightPixels >= w // 2
+            lightRows++
+    }
+
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+
+    if nonBlankRows < h * 0.3
+        return 'window mostly blank (' nonBlankRows '/' h ' non-blank rows)'
+    if coloredRows < 2
+        return 'too few colored rows (' coloredRows '), need >= 2 (staging area)'
+    if lightRows < 3
+        return 'too few light rows (' lightRows '), need >= 3 (diff/commit area)'
 
     return ''
 }

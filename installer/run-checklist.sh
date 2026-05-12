@@ -106,6 +106,16 @@ then
 else
 	echo "Running UI tests via AutoHotkey ($ahk_exe)..." >&2
 	ui_tests_dir="$(cd "$(dirname "$0")/ui-tests" && pwd)"
+
+	# Smoke-test: verify AHK can produce stdout output in this context.
+	hello_script="$(cygpath -aw "$ui_tests_dir/test-hello.ahk")"
+	echo "Smoke-testing AHK stdout..." >&2
+	{
+		MSYS2_ARG_CONV_EXCL='*' \
+		"$ahk_exe" /ErrorStdOut /force "$hello_script"
+	} | cat
+	echo "Smoke test done (exit $?)" >&2
+
 	# MSYS2_ARG_CONV_EXCL prevents MSYS2 from converting /ErrorStdOut
 	# to a Unix path. The pipe to tee gives AHK a valid stdout handle
 	# (without a pipe, MSYS2 bash does not provide one to native
@@ -116,7 +126,7 @@ else
 		MSYS2_ARG_CONV_EXCL='*' \
 		"$ahk_exe" /ErrorStdOut /force "$ahk_script"
 		echo $? >"$exit_code_file"
-	} | tee "$ui_tests_dir/git-bash-checklist.log"
+	} | tee "$ui_tests_dir/git-bash-checklist-stdout.log"
 	ahk_exit="$(cat "$exit_code_file")"
 	rm -f "$exit_code_file"
 	test 0 = "$ahk_exit" ||
