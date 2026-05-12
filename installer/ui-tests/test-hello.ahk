@@ -51,14 +51,10 @@ if DirExist(userSmDir)
 else
     Info '  directory does not exist!'
 
-Info 'Step 7c: trying to launch'
+Info 'Step 7c: waiting 30s for search indexing'
+Sleep 30000
 
-; Instead of LaunchViaStartMenu, do it manually with more logging
-minttyClass := 'ahk_class mintty'
-existing := Map()
-for h in WinGetList(minttyClass)
-    existing[h] := true
-
+; Try the Start Menu search with retries
 SendEvent('{LWin}')
 deadline := A_TickCount + 5000
 while A_TickCount < deadline
@@ -72,12 +68,14 @@ while A_TickCount < deadline
 Info 'Step 7d: active window after Win key: ' . WinGetProcessName('A') . ' title=' . WinGetTitle('A')
 
 SendInput('Git Bash')
-Sleep 3000
-Info 'Step 7e: typed Git Bash, active: ' . WinGetProcessName('A') . ' title=' . WinGetTitle('A')
+Sleep 5000
+Info 'Step 7e: typed Git Bash, waiting 5s for search results'
+Info 'Step 7e: active: ' . WinGetProcessName('A') . ' title=' . WinGetTitle('A')
 
 SendEvent('{Enter}')
-Sleep 5000
-Info 'Step 7f: pressed Enter, active: ' . WinGetProcessName('A') . ' title=' . WinGetTitle('A')
+Sleep 10000
+Info 'Step 7f: pressed Enter, waited 10s'
+Info 'Step 7f: active: ' . WinGetProcessName('A') . ' title=' . WinGetTitle('A')
 
 ; Enumerate ALL visible windows with details
 for h in WinGetList()
