@@ -125,6 +125,15 @@ repo_remove () {
 	done)
 }
 
+update_versions_json () { # <file> <version> <tagname>
+	{
+		test ! -f "$1" ||
+		sed -n 's/^ *\("[^"]*": *"[^"]*"\).*/ \1/p' "$1"
+		printf ' "%s": "%s"\n' "$2" "$3"
+	} | sort -u | sed '$!s/$/,/' |
+	{ printf '{\n'; cat; printf '}\n'; } >"$1.tmp" && mv "$1.tmp" "$1"
+}
+
 sanitize_db () { # <file>...
 	perl -e '
 		foreach my $path (@ARGV) {
@@ -225,7 +234,7 @@ quick_action () { # <action> <file>...
 	git -C "$dir" config set core.sparseCheckout true &&
 	git -C "$dir" config set core.sparseCheckoutCone false &&
 	mkdir -p "$dir"/.git/info &&
-	printf '%s\n' '/git-*.db*' '/git-*.files*' >"$dir"/.git/info/sparse-checkout &&
+	printf '%s\n' '/git-*.db*' '/git-*.files*' '/*.versions.json' >"$dir"/.git/info/sparse-checkout &&
 	printf '%s\n' '/git-for-windows.db*' '/git-for-windows.files*' >"$dir"/.git/info/exclude &&
 	mkdir "$dir/sources" ||
 	die "Could not create temporary directory"
@@ -351,6 +360,7 @@ quick_action () { # <action> <file>...
 	dbs=
 	to_push=
 	>"$dir/release_notes.txt"
+	tagname="$(TZ=UTC date +%Y-%m-%dT%H-%M-%S.%NZ)"
 	for arch in $architectures
 	do
 		eval "msys=\$${arch}_msys"
@@ -452,6 +462,16 @@ quick_action () { # <action> <file>...
 		 case "$label" in
 		 add)
 			git add --sparse $msys $mingw \*.sig ':(exclude)*.old.sig' &&
+			for file in $msys $mingw
+			do
+				pkgname="${file%-*-*-*.pkg.tar.*}" &&
+				remainder="${file#"$pkgname"-}" &&
+				verrel="${remainder%-*.pkg.tar.*}" &&
+				update_versions_json "$pkgname.versions.json" \
+					"$verrel" "$tagname" ||
+				die "Could not update %s\n" "$pkgname.versions.json"
+			done &&
+			git add --sparse '*.versions.json' &&
 			msg="$(printf 'Update %s package(s)\n\n%s\n' \
 				$(printf '%s\n' $msys $mingw | wc -l) \
 				"$(printf '%s\n' $msys $mingw |
@@ -501,6 +521,17 @@ quick_action () { # <action> <file>...
 					echo "Rebasing $arch" >&2
 					(cd "$dir/$arch" &&
 					 git -C "$dir/$arch" checkout HEAD^ -- 'git-for-windows*.db*' 'git-for-windows*.files*' &&
+					 # Revert .versions.json to parent state; re-inserted after rebase
+					 git diff-tree --no-commit-id -r --name-only HEAD -- '*.versions.json' |
+					 while IFS= read -r vjson
+					 do
+						if git cat-file -e "HEAD^:$vjson" 2>/dev/null
+						then
+							git checkout HEAD^ -- "$vjson"
+						else
+							git rm --cached -- "$vjson"
+						fi || exit 1
+					 done &&
 					 git -C "$dir/$arch" commit --amend --no-edit &&
 					 git -C "$dir/$arch" rebase origin/$arch &&
 
@@ -532,7 +563,22 @@ quick_action () { # <action> <file>...
 							}
 						}
 					 fi &&
-					 git -C "$dir/$arch" commit --amend --no-edit -- 'git-for-windows*.db*' 'git-for-windows*.files*') ||
+					 # Re-insert .versions.json entries after rebase
+					 case "$label" in
+					 add)
+						for file in $msys $mingw
+						do
+							pkgname="${file%-*-*-*.pkg.tar.*}" &&
+							remainder="${file#"$pkgname"-}" &&
+							verrel="${remainder%-*.pkg.tar.*}" &&
+							update_versions_json "$pkgname.versions.json" \
+								"$verrel" "$tagname" ||
+							die "Could not update %s\n" "$pkgname.versions.json"
+						done &&
+						git add --sparse '*.versions.json'
+						;;
+					 esac &&
+					 git -C "$dir/$arch" commit --amend --no-edit -- 'git-for-windows*.db*' 'git-for-windows*.files*' '*.versions.json') ||
 					die "Could not update $dir/$arch"
 				done
 				git -C "$dir" -c "$extra_header" push origin $to_push && break
@@ -547,7 +593,6 @@ quick_action () { # <action> <file>...
 
 	# Mirror the deployment to a new GitHub Release
 	# at `git-for-windows/pacman-repo`
-	tagname="$(TZ=UTC date +%Y-%m-%dT%H-%M-%S.%NZ)"
 	if test -n "$PACMANDRYRUN"
 	then
 		echo "Would create a GitHub Release '$tagname' at git-for-windows/pacman-repo" >&2
