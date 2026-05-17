@@ -171,6 +171,19 @@ jobs:
         with:
           name: ${{ steps.build.outputs.result }}
           path: ${{ steps.build.outputs.result }}
+      - name: uninstall pre-installed Git
+        if: matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          # The runner image installs Git with "Bash Terminal Option: ConHost".
+          # InnoSetup's ReplayChoice preserves previous settings during
+          # /VERYSILENT upgrades, so a reinstall would keep ConHost instead
+          # of defaulting to MinTTY. Uninstalling first ensures a clean slate.
+          $uninstaller = "$env:ProgramFiles\Git\unins000.exe"
+          if (Test-Path $uninstaller) {
+            $p = Start-Process -PassThru -Wait -FilePath $uninstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES"
+            Write-Host "Uninstall exit code: $($p.ExitCode)"
+          }
       - name: run the installer
         if: matrix.directory == 'installer'
         shell: pwsh
@@ -188,9 +201,55 @@ jobs:
         # run this even if the installation failed (actually, _in particular_ when the installation failed)
         if: always() && matrix.directory == 'installer'
         shell: bash
-        run: cat installer.log
+        run: |
+          cat installer.log
+          echo "--- install-options.txt ---"
+          cat "/c/Program Files/Git/etc/install-options.txt"
+      - uses: actions/cache/restore@v5
+        if: matrix.directory == 'installer'
+        id: restore-ahk
+        with:
+          key: ahk-2.0.19
+          path: ${{ runner.temp }}/ahk.zip
+      - name: Download AutoHotKey2
+        if: matrix.directory == 'installer' && steps.restore-ahk.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -fL -o "$RUNNER_TEMP/ahk.zip" \
+            https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.19/AutoHotkey_2.0.19.zip
+      - uses: actions/cache/save@v5
+        if: matrix.directory == 'installer' && steps.restore-ahk.outputs.cache-hit != 'true'
+        with:
+          key: ahk-2.0.19
+          path: ${{ runner.temp }}/ahk.zip
+      - name: Install AutoHotKey2 and configure MinTTY for UI tests
+        if: matrix.directory == 'installer'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/ahk" &&
+          "$WINDIR/system32/tar.exe" -C "$RUNNER_TEMP/ahk" -xf "$RUNNER_TEMP/ahk.zip" &&
+          cygpath -aw "$RUNNER_TEMP/ahk" >>$GITHUB_PATH &&
+          printf '%s\n' \
+            'KeyFunctions=C+F5:export-html' \
+            'SaveFilename=/tmp/mintty-export' \
+            >>~/.minttyrc
+      - name: Restart Explorer and minimize windows for UI tests
+        if: matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          # On headless runners, Explorer may run without the taskbar/Start
+          # Menu fully initialized. Restarting ensures the shell UI is ready
+          # for Start Menu searches. This may not be strictly necessary; if
+          # tests pass without it, this restart can be removed.
+          Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+          Start-Sleep 5
+          # Give the search indexer time to index the newly installed shortcuts
+          Start-Sleep 10
+          & AutoHotkey64.exe /ErrorStdOut /force `
+            installer/ui-tests/minimize-windows.ahk 2>&1 | Out-Default
       - name: validate
         if: matrix.directory == 'installer'
+        timeout-minutes: 10
         shell: bash
         run: |
           set -x &&
@@ -203,6 +262,27 @@ jobs:
           # cannot test SSH keys in read-only mode, skip test for now
           sed -i 's|git@ssh.dev.azure.com:v3/git-for-windows/git/git|https://github.com/git/git|' $checklist &&
           sh -x $checklist
+      - name: Take screenshot on failure
+        if: failure() && matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          [Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null
+          Add-Type -AssemblyName System.Windows.Forms
+          $screen = [System.Windows.Forms.Screen]::PrimaryScreen
+          $w = $screen.Bounds.Width
+          $h = $screen.Bounds.Height
+          $bmp = New-Object Drawing.Bitmap $w, $h
+          $graphics = [Drawing.Graphics]::FromImage($bmp)
+          $graphics.CopyFromScreen(0, 0, 0, 0, [Drawing.Size]::new($w, $h))
+          $bmp.Save("installer/ui-tests/screenshot.png")
+          $graphics.Dispose()
+          $bmp.Dispose()
+      - name: Upload UI test artifacts
+        if: always() && matrix.directory == 'installer'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ui-tests-${{ matrix.architecture.name }}
+          path: installer/ui-tests/
       - name: extract Portable Git
         if: matrix.directory == 'portable'
         shell: pwsh
@@ -309,6 +389,15 @@ jobs:
         with:
           name: installer-${{ matrix.arch.name }}
           path: installer-${{ matrix.arch.name }}
+      - name: uninstall pre-installed Git
+        if: matrix.artifact == 'build-installers'
+        shell: pwsh
+        run: |
+          $uninstaller = "$env:ProgramFiles\Git\unins000.exe"
+          if (Test-Path $uninstaller) {
+            $p = Start-Process -PassThru -Wait -FilePath $uninstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES"
+            Write-Host "Uninstall exit code: $($p.ExitCode)"
+          }
       - name: run the installer
         if: matrix.artifact == 'build-installers'
         shell: pwsh
@@ -332,8 +421,46 @@ jobs:
         if: always() && matrix.artifact == 'build-installers'
         shell: bash
         run: cat installer.log
+      - uses: actions/cache/restore@v5
+        if: matrix.artifact == 'build-installers'
+        id: restore-ahk-2
+        with:
+          key: ahk-2.0.19
+          path: ${{ runner.temp }}/ahk.zip
+      - name: Download AutoHotKey2
+        if: matrix.artifact == 'build-installers' && steps.restore-ahk-2.outputs.cache-hit != 'true'
+        shell: bash
+        run: |
+          curl -fL -o "$RUNNER_TEMP/ahk.zip" \
+            https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.19/AutoHotkey_2.0.19.zip
+      - uses: actions/cache/save@v5
+        if: matrix.artifact == 'build-installers' && steps.restore-ahk-2.outputs.cache-hit != 'true'
+        with:
+          key: ahk-2.0.19
+          path: ${{ runner.temp }}/ahk.zip
+      - name: Install AutoHotKey2 and configure MinTTY for UI tests
+        if: matrix.artifact == 'build-installers'
+        shell: bash
+        run: |
+          mkdir -p "$RUNNER_TEMP/ahk" &&
+          "$WINDIR/system32/tar.exe" -C "$RUNNER_TEMP/ahk" -xf "$RUNNER_TEMP/ahk.zip" &&
+          cygpath -aw "$RUNNER_TEMP/ahk" >>$GITHUB_PATH &&
+          printf '%s\n' \
+            'KeyFunctions=C+F5:export-html' \
+            'SaveFilename=/tmp/mintty-export' \
+            >>~/.minttyrc
+      - name: Restart Explorer and minimize windows for UI tests
+        if: matrix.artifact == 'build-installers'
+        shell: pwsh
+        run: |
+          Stop-Process -Name explorer -Force -ErrorAction SilentlyContinue
+          Start-Sleep 5
+          Start-Sleep 10
+          & AutoHotkey64.exe /ErrorStdOut /force `
+            installer/ui-tests/minimize-windows.ahk 2>&1 | Out-Default
       - name: validate
         if: matrix.artifact == 'build-installers'
+        timeout-minutes: 10
         shell: bash
         run: |
           set -x &&
@@ -348,6 +475,27 @@ jobs:
           sed -i 's|git@ssh.dev.azure.com:v3/git-for-windows/git/git|https://github.com/git/git|' $checklist &&
           sh -x $checklist &&
           git update-git-for-windows --test-version-compare
+      - name: Take screenshot on failure
+        if: failure() && matrix.artifact == 'build-installers'
+        shell: pwsh
+        run: |
+          [Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null
+          Add-Type -AssemblyName System.Windows.Forms
+          $screen = [System.Windows.Forms.Screen]::PrimaryScreen
+          $w = $screen.Bounds.Width
+          $h = $screen.Bounds.Height
+          $bmp = New-Object Drawing.Bitmap $w, $h
+          $graphics = [Drawing.Graphics]::FromImage($bmp)
+          $graphics.CopyFromScreen(0, 0, 0, 0, [Drawing.Size]::new($w, $h))
+          $bmp.Save("installer/ui-tests/screenshot.png")
+          $graphics.Dispose()
+          $bmp.Dispose()
+      - name: Upload UI test artifacts
+        if: always() && matrix.artifact == 'build-installers'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ui-tests-${{ matrix.arch.name }}
+          path: installer/ui-tests/
   check-for-missing-dlls:
     needs: determine-packages
     if: needs.determine-packages.outputs.test-sdk-artifacts == 'true' || needs.determine-packages.outputs.check-for-missing-dlls == 'true'
