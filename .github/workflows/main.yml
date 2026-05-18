@@ -142,6 +142,8 @@ jobs:
     runs-on: ${{ matrix.architecture.runner }}
     steps:
       - uses: actions/checkout@v6
+      - uses: mxschmitt/action-tmate/detached@v3
+        if: matrix.directory == 'installer'
       - name: initialize bare SDK clone
         shell: bash
         run: |
