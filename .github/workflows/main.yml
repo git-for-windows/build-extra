@@ -114,6 +114,10 @@ jobs:
             'KeyFunctions=C+F5:export-html' \
             'SaveFilename=/tmp/mintty-export' \
             >>~/.minttyrc
+      - name: Set up Copilot CLI
+        if: matrix.directory == 'installer'
+        shell: bash
+        run: npm install -g @github/copilot
       - name: Restart Explorer and minimize windows for UI tests
         if: matrix.directory == 'installer'
         shell: pwsh
@@ -167,12 +171,31 @@ jobs:
           $bmp.Save("installer/ui-tests/screenshot.png")
           $graphics.Dispose()
           $bmp.Dispose()
+      - name: Run Copilot CLI to debug failure
+        if: failure() && matrix.directory == 'installer'
+        shell: bash
+        timeout-minutes: 90
+        env:
+          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          COPILOT_MODEL: claude-opus-4.7
+        run: |
+          prompt="$(cat installer/ui-tests/tmate-yolo-prompt.md)" &&
+          copilot -p "$prompt" \
+            --yolo \
+            ${COPILOT_MODEL:+--model "$COPILOT_MODEL"}
+      - name: Archive Copilot session state
+        if: always() && matrix.directory == 'installer'
+        shell: bash
+        run: |
+          if test -d ~/.copilot; then
+            tar czf copilot-session.tar.gz -C "$USERPROFILE" .copilot
+          fi
       - name: Upload UI test artifacts
         if: always() && matrix.directory == 'installer'
         uses: actions/upload-artifact@v7
         with:
           name: ui-tests-${{ matrix.architecture.name }}
-          path: installer/ui-tests/
+          path: ./
       - name: extract Portable Git
         if: matrix.directory == 'portable'
         shell: pwsh
