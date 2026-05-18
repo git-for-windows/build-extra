@@ -171,6 +171,19 @@ jobs:
         with:
           name: ${{ steps.build.outputs.result }}
           path: ${{ steps.build.outputs.result }}
+      - name: uninstall pre-installed Git
+        if: matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          # The runner image installs Git with "Bash Terminal Option: ConHost".
+          # InnoSetup's ReplayChoice preserves previous settings during
+          # /VERYSILENT upgrades, so a reinstall would keep ConHost instead
+          # of defaulting to MinTTY. Uninstalling first ensures a clean slate.
+          $uninstaller = "$env:ProgramFiles\Git\unins000.exe"
+          if (Test-Path $uninstaller) {
+            $p = Start-Process -PassThru -Wait -FilePath $uninstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES"
+            Write-Host "Uninstall exit code: $($p.ExitCode)"
+          }
       - name: run the installer
         if: matrix.directory == 'installer'
         shell: pwsh
@@ -376,6 +389,15 @@ jobs:
         with:
           name: installer-${{ matrix.arch.name }}
           path: installer-${{ matrix.arch.name }}
+      - name: uninstall pre-installed Git
+        if: matrix.artifact == 'build-installers'
+        shell: pwsh
+        run: |
+          $uninstaller = "$env:ProgramFiles\Git\unins000.exe"
+          if (Test-Path $uninstaller) {
+            $p = Start-Process -PassThru -Wait -FilePath $uninstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES"
+            Write-Host "Uninstall exit code: $($p.ExitCode)"
+          }
       - name: run the installer
         if: matrix.artifact == 'build-installers'
         shell: pwsh
