@@ -978,3 +978,93 @@ CheckGitGuiStructure(file, w, h) {
 
     return ''
 }
+
+; Scan a Git GUI chooser screenshot for the recent repo link row.
+; The link is rendered as colored text (typically blue) against a
+; neutral background. The scan groups contiguous blue rows into bands
+; and returns the y coordinate of the LAST band whose peak blue-pixel
+; count is above a noise threshold (the recent-repo link sits below
+; the Create/Clone/Open links). Bands with only a handful of blue
+; pixels are bleed-through from windows behind the chooser captured
+; via BitBlt from the screen DC and are discarded. Returns -1 if no
+; sufficiently strong band is found.
+FindChooserLinkRow(file, w, h) {
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file, 'ptr*', &pBitmap)
+    if !pBitmap {
+        ShutdownGdiPlus(gdipToken)
+        return -1
+    }
+
+    ; The chooser's content area ends well before the captured bitmap's
+    ; bottom edge: the bottom-most widgets (Quit button etc.) sit at
+    ; roughly y = h - 40, with a small margin below them. The capture
+    ; can include a narrow strip of pixels from BEHIND the chooser
+    ; (e.g. desktop accent colour bleeding through during the BitBlt
+    ; from the screen DC), which presents as a solid blue band in the
+    ; last ~10 rows. Clamp the scan to the upper 90% so that band is
+    ; never considered.
+    scanLimit := h - (h // 10)
+
+    bands := []
+    bStart := -1
+    bEnd := -1
+    bMax := 0
+    loop scanLimit {
+        y := A_Index - 1
+        bluePixels := 0
+        loop w {
+            x := A_Index - 1
+            argb := 0
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBitmap,
+                'int', x, 'int', y, 'uint*', &argb)
+            r := (argb >> 16) & 0xFF
+            g := (argb >> 8) & 0xFF
+            b := argb & 0xFF
+            ; Link text is blue: high blue, lower red and green.
+            if b > 100 && b > r + 30 && b > g + 30
+                bluePixels++
+        }
+        ; A row only counts as part of a link band if it has
+        ; substantially more blue pixels than the noise floor. The
+        ; chooser's window border / DWM frame contributes a constant
+        ; ~7-8 blue pixels per row across hundreds of rows; treating
+        ; that as part of a band would bridge the real link band to
+        ; whatever noise sits below it, yielding one mega-band whose
+        ; midpoint lands in dead space. Real link-text rows have 60+
+        ; blue pixels (typically 100-250), so a threshold of 30
+        ; cleanly separates link rows from border bleed.
+        if bluePixels >= 30 {
+            if bStart < 0 {
+                bStart := y
+                bEnd := y
+                bMax := bluePixels
+            } else if y - bEnd <= 2 {
+                bEnd := y
+                bMax := Max(bMax, bluePixels)
+            } else {
+                bands.Push({y1: bStart, y2: bEnd, max: bMax})
+                bStart := y
+                bEnd := y
+                bMax := bluePixels
+            }
+        }
+    }
+    if bStart >= 0
+        bands.Push({y1: bStart, y2: bEnd, max: bMax})
+
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+
+    ; The recent-repo link is the last band that has a substantial
+    ; blue-pixel run. Real link bands have dozens to hundreds of blue
+    ; pixels per row; bleed-through has at most a handful.
+    i := bands.Length
+    while i >= 1 {
+        if bands[i].max >= 20
+            return (bands[i].y1 + bands[i].y2) // 2
+        i--
+    }
+    return -1
+}

@@ -15,15 +15,17 @@ Info 'Date: ' A_Now
 
 ; Parse command-line arguments to select which phases to run.
 ; With no arguments, all phases run. Otherwise only named phases run.
-; Usage: git-bash-checklist.ahk [--git-bash] [--git-cmd]
+; Usage: git-bash-checklist.ahk [--git-bash] [--git-cmd] [--git-gui]
 runAll := A_Args.Length == 0
 runGitBash := runAll
 runGitCMD := runAll
+runGitGUI := runAll
 for arg in A_Args
 {
     switch arg {
     case '--git-bash': runGitBash := true
     case '--git-cmd': runGitCMD := true
+    case '--git-gui': runGitGUI := true
     default: ExitWithError 'Unknown argument: ' arg
     }
 }
@@ -237,6 +239,123 @@ else
 }
 
 } ; end runGitCMD
+
+if runGitGUI
+{
+
+; === Git GUI standalone tests ===
+Info '=== Git GUI standalone ==='
+
+; On CI runners, the Start Menu can become unresponsive after the
+; first test cycle. Restart Explorer to get a fresh shell UI.
+if EnvGet('CI') != ''
+{
+    Info 'CI: restarting Explorer...'
+    try
+        ProcessClose(WinGetPID('ahk_class Shell_TrayWnd'))
+    catch as e
+        Info 'CI: Shell_TrayWnd not found: ' e.Message
+    Info 'CI: waiting for Explorer to restart...'
+    ; Wait for Shell_TrayWnd to reappear (Explorer auto-restarts).
+    deadline := A_TickCount + 30000
+    while !WinExist('ahk_class Shell_TrayWnd') && A_TickCount < deadline
+        Sleep 500
+    if WinExist('ahk_class Shell_TrayWnd')
+        Info 'CI: Shell_TrayWnd reappeared'
+    else
+        Info 'CI: WARNING: Shell_TrayWnd did not reappear within 30s'
+    ; Give StartMenuExperienceHost and SearchHost time to initialize.
+    Sleep 5000
+    ; A fresh Explorer respawns the windows-11-arm OOBE
+    ; Shell_OOBEProxy within ~5 seconds, which then blocks {LWin}
+    ; in the next LaunchViaStartMenu(). Dismiss it again.
+    DismissOOBE()
+}
+
+Info 'Git GUI standalone: setting up .gitconfig'
+; Temporarily replace .gitconfig so the chooser shows only the test repo.
+gitconfigPath := EnvGet('USERPROFILE') . '\.gitconfig'
+gitconfigBackup := gitconfigPath . '.ui-test-backup'
+if FileExist(gitconfigBackup)
+    ExitWithError gitconfigBackup ' exists (left over from an earlier run?); restore it first'
+hadGitconfig := FileExist(gitconfigPath)
+if hadGitconfig
+{
+    FileMove gitconfigPath, gitconfigBackup
+    Info 'Git GUI standalone: .gitconfig backed up'
+}
+else
+    Info 'Git GUI standalone: no .gitconfig to back up'
+; Ensure .gitconfig is restored (or removed) on any exit.
+OnExit((*) => (
+    hadGitconfig
+    ? (FileExist(gitconfigBackup) && (FileDelete(gitconfigPath), FileMove(gitconfigBackup, gitconfigPath)))
+    : (FileExist(gitconfigPath) && FileDelete(gitconfigPath))
+))
+testRepoUnix := StrReplace(testRepoWin, '\', '/')
+FileAppend '[gui]`n`trecentrepo = ' testRepoUnix '`n', gitconfigPath
+
+; Launch Git GUI via Start Menu (opens the chooser dialog).
+Info '=== Git GUI starts via Start Menu ==='
+gitGuiHwnd := LaunchViaStartMenu('Git GUI', 'TkTopLevel', 'Git Gui', tkWaitTimeout)
+
+WinMove(100, 100, 500, 400, 'ahk_id ' gitGuiHwnd)
+WinActivate('ahk_id ' gitGuiHwnd)
+WinGetPos(&wx, &wy, &ww, &wh, 'ahk_id ' gitGuiHwnd)
+Info 'Git GUI chooser pos: ' wx ',' wy ' size: ' ww 'x' wh
+
+; Find and click the recent repo link. Capture the chooser at full
+; window size (not downscaled) for precise pixel analysis, then scan
+; for the blue link text row, retrying until the chooser has rendered.
+; The full-size capture is saved as an artifact for diagnostic inspection.
+CoordMode 'Mouse', 'Window'
+fullCapture := A_ScriptDir . '\chooser-fullsize.png'
+deadline := A_TickCount + 30000
+loop {
+    CaptureAndDownscaleWindow(gitGuiHwnd, ww, wh, fullCapture)
+    clickY := FindChooserLinkRow(fullCapture, ww, wh)
+    if clickY >= 0 || A_TickCount >= deadline
+        break
+    Sleep 500
+}
+Info 'Git GUI chooser: link row at y=' clickY ' (full-size ' ww 'x' wh ')'
+
+if clickY < 0
+    ExitWithError 'Git GUI chooser: could not locate recent repo link row'
+
+WinActivate('ahk_id ' gitGuiHwnd)
+Sleep 300
+Click(ww // 2, clickY)
+CoordMode 'Mouse', 'Screen'
+
+; git gui turns the chooser window itself into the repository window.
+if !WinWait('git-bash-checklist-test-repo ahk_id ' gitGuiHwnd, , 30)
+    ExitWithError 'Git GUI did not open the test repository from the recent list'
+Info 'Git GUI opened the test repo: ' WinGetTitle('ahk_id ' gitGuiHwnd)
+
+; Verify it has the expected git gui layout (retry until stable).
+WinMove(100, 100, 800, 600, 'ahk_id ' gitGuiHwnd)
+WinActivate('ahk_id ' gitGuiHwnd)
+thumbFile := A_ScriptDir . '\git-gui-standalone-thumb.png'
+deadline := A_TickCount + 30000
+lastErr := 'no capture attempted'
+while A_TickCount < deadline {
+    CaptureAndDownscaleWindow(gitGuiHwnd, 80, 60, thumbFile)
+    lastErr := CheckGitGuiStructure(thumbFile, 80, 60)
+    if lastErr = '' {
+        Info 'Git GUI standalone layout verified'
+        break
+    }
+    Info 'Git GUI standalone: retry (' lastErr ')'
+    Sleep 2000
+}
+if lastErr != ''
+    ExitWithError 'Git GUI standalone layout check failed: ' lastErr
+
+WinClose('ahk_id ' gitGuiHwnd)
+Sleep 1000
+
+} ; end runGitGUI
 
 Info '=== Tests complete ==='
 ExitApp 0
