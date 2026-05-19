@@ -13,14 +13,25 @@ jobs:
         directory:
           - installer
         architecture:
-          - name: x86_64
-            runner: windows-latest
-            git-sdk: git-sdk-64
-            mingw-prefix: mingw64
-            msystem: MINGW64
+          - name: aarch64
+            runner: windows-11-arm
+            git-sdk: git-sdk-arm64
+            mingw-prefix: clangarm64
+            msystem: CLANGARM64
     runs-on: ${{ matrix.architecture.runner }}
     steps:
       - uses: actions/checkout@v6
+      - uses: msys2/setup-msys2@v2
+        # The public preview of GitHub-hosted Windows/ARM64 runners lacks
+        # a working MSYS2 installation, which `owenthereal/action-upterm`
+        # requires (it installs `tmux` via `pacman`). Set MSYS2 up
+        # ourselves on ARM64. Per the upterm action's own manual test,
+        # `location: C:\.\` is needed to fool an internal sanity check
+        # that erroneously believes an MSYS2 already exists at `C:\msys64`.
+        if: matrix.directory == 'installer' && matrix.architecture.name == 'aarch64'
+        with:
+          msystem: ${{ matrix.architecture.msystem }}
+          location: C:\.\
       - uses: owenthereal/action-upterm/detached@v1
         if: matrix.directory == 'installer'
       - name: initialize bare SDK clone
