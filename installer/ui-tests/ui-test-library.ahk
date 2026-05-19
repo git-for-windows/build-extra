@@ -245,7 +245,16 @@ LaunchViaStartMenu(searchText, windowClass, titleFilter := '', timeout := 20000)
         }
     }
     if A_TickCount >= deadline
+    {
+        Info 'Start Menu did not appear. Active window: '
+        try
+            Info '  exe=' WinGetProcessName('A') ' title=' WinGetTitle('A') ' class=' WinGetClass('A')
+        catch
+            Info '  (no active window)'
+        LogAllWindows('  ')
+        CaptureScreen(A_ScriptDir . '\start-menu-failure.png')
         ExitWithError 'Start Menu did not appear'
+    }
     Info 'Start Menu opened'
 
     SendInput(searchText)
@@ -525,6 +534,45 @@ CompareImages(file1, file2, tolerance := 10) {
     DllCall('gdiplus\GdipDisposeImage', 'ptr', pBmp2)
     ShutdownGdiPlus(gdipToken)
     return diffCount / (w1 * h1)
+}
+
+; Capture the entire primary screen to a PNG file. Useful for diagnostics.
+CaptureScreen(outFile) {
+    w := SysGet(78)  ; SM_CXVIRTUALSCREEN
+    h := SysGet(79)  ; SM_CYVIRTUALSCREEN
+    if w <= 0 || h <= 0
+        w := 1920, h := 1080
+    hdcScreen := DllCall('GetDC', 'ptr', 0, 'ptr')
+    hdcMem := DllCall('CreateCompatibleDC', 'ptr', hdcScreen, 'ptr')
+    hbm := DllCall('CreateCompatibleBitmap', 'ptr', hdcScreen, 'int', w, 'int', h, 'ptr')
+    hOld := DllCall('SelectObject', 'ptr', hdcMem, 'ptr', hbm, 'ptr')
+    DllCall('BitBlt', 'ptr', hdcMem, 'int', 0, 'int', 0, 'int', w, 'int', h,
+        'ptr', hdcScreen, 'int', 0, 'int', 0, 'uint', 0x00CC0020)
+    DllCall('SelectObject', 'ptr', hdcMem, 'ptr', hOld)
+    DllCall('DeleteDC', 'ptr', hdcMem)
+    DllCall('ReleaseDC', 'ptr', 0, 'ptr', hdcScreen)
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromHBITMAP', 'ptr', hbm, 'ptr', 0, 'ptr*', &pBitmap)
+    DllCall('DeleteObject', 'ptr', hbm)
+    pngClsid := GetPngEncoderClsid()
+    DllCall('gdiplus\GdipSaveImageToFile', 'ptr', pBitmap, 'wstr', outFile, 'ptr', pngClsid, 'ptr', 0)
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+}
+
+; Log all visible windows (for diagnostics).
+LogAllWindows(prefix := '') {
+    for h in WinGetList() {
+        try {
+            title := WinGetTitle(h)
+            if title != '' {
+                cls := WinGetClass(h)
+                exe := WinGetProcessName(h)
+                Info prefix . 'window: cls=' cls ' exe=' exe ' title=' title
+            }
+        }
+    }
 }
 
 ; Capture a window screenshot, retrying until it matches a reference

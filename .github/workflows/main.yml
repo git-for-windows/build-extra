@@ -201,7 +201,10 @@ jobs:
         # run this even if the installation failed (actually, _in particular_ when the installation failed)
         if: always() && matrix.directory == 'installer'
         shell: bash
-        run: cat installer.log
+        run: |
+          cat installer.log
+          echo "--- install-options.txt ---"
+          cat "/c/Program Files/Git/etc/install-options.txt"
       - uses: actions/cache/restore@v5
         if: matrix.directory == 'installer'
         id: restore-ahk

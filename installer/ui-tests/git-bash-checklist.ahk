@@ -63,8 +63,10 @@ Info 'All prerequisites met.'
 ; This runs outside the UI, before launching Git Bash.
 Info '=== Create test repository ==='
 scriptDirUnix := RunWaitOne('"' gitExe '" -c alias.cygpath="!cygpath" cygpath -u "' A_ScriptDir '"')
+Info 'scriptDirUnix: ' scriptDirUnix
 testRepo := '/tmp/git-bash-checklist-test-repo'
 testRepoWin := RunWaitOne('"' gitExe '" -c alias.cygpath="!cygpath" cygpath -aw "' testRepo '"')
+Info 'testRepoWin: ' testRepoWin
 if DirExist(testRepoWin)
 {
     try
@@ -72,8 +74,18 @@ if DirExist(testRepoWin)
     catch as e
         ExitWithError 'Could not clean up old test repo at ' testRepoWin ': ' e.Message
 }
-RunWaitOne('"' gitExe '" -c alias.sh="!sh" sh "' scriptDirUnix '/generate-test-repo.sh" --create-test-repo=' testRepo)
+genOutput := RunWaitOne('"' gitExe '" -c alias.sh="!sh" sh "' scriptDirUnix '/generate-test-repo.sh" --create-test-repo="' testRepoWin '"')
+Info 'generate-test-repo output: ' genOutput
 Info 'Test repository created at ' testRepoWin
+Info 'AHK TEMP=' EnvGet('TEMP') ' USERPROFILE=' EnvGet('USERPROFILE')
+; Verify the repo directory actually exists on the Windows filesystem.
+if !DirExist(testRepoWin)
+    ExitWithError 'Test repository dir does not exist at: ' testRepoWin
+Info 'Verified: testRepoWin exists on Windows filesystem'
+; Show which git.exe RunWaitOne used and what /tmp/ contains.
+Info 'git.exe path: ' gitExe
+Info 'git.exe --exec-path: ' RunWaitOne('"' gitExe '" --exec-path')
+Info 'ls /tmp/ via git: ' RunWaitOne('"' gitExe '" -c alias.ls="!ls" ls /tmp/ 2>&1')
 
 if runGitBash
 {
@@ -99,6 +111,15 @@ Info 'Bash prompt appeared'
 
 ; === Test: Prompt shows branch ===
 Info '=== Prompt shows branch ==='
+; Log what /tmp/ resolves to inside the mintty session for debugging.
+WinActivate(winId)
+SetKeyDelay 20, 20
+SendEvent('{Text}echo TEMP=$TEMP TMP=$TMP; ls -d /tmp/git-bash-checklist-test-repo 2>&1; ls /tmp/ | head -5; cygpath -aw /tmp; test -d "' testRepoWin '" && echo WIN_PATH_EXISTS || echo WIN_PATH_MISSING')
+SendEvent('{Enter}')
+Sleep 2000
+diagCapture := CaptureBufferFromMintty(exportFile, winId)
+Info 'Diagnostic: ' diagCapture
+
 WinActivate(winId)
 SetKeyDelay 20, 20
 SendEvent('{Text}cd ' testRepo)
@@ -134,7 +155,7 @@ WinActivate(winId)
 SetKeyDelay 20, 20
 SendEvent('{Text}gitk; echo $? >gitk-exit.code')
 SendEvent('{Enter}')
-VerifyTkScreenshot('gitk', testRepoWin . '\gitk-thumb.png', A_ScriptDir . '\gitk-reference.png')
+VerifyGitkLayout('gitk', testRepoWin . '\gitk-thumb.png')
 ; Verify gitk exited with code 0 (bash was blocked while gitk ran).
 gitkExitFile := testRepoWin . '\gitk-exit.code'
 deadline := A_TickCount + 5000
@@ -220,7 +241,8 @@ else
         Info 'WARNING: cmd-git-log-reference.png not found; skipping screenshot check'
     WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, ':\s*$', 'Timed out waiting for git log pager (CMD)', 'git log pager is active (CMD)', 10000, cmdWinId)
     WinActivate(cmdWinId)
-    QuitPager(cmdWinId)
+    SendEvent('{Text}q')
+    Sleep 500
 
     ; === Test: gitk runs and shows history (Git CMD) ===
     Info '=== gitk shows history (Git CMD) ==='
@@ -230,7 +252,7 @@ else
     SendEvent('{Enter}')
     ; gitk.exe returns immediately to CMD (it is a GUI wrapper).
     WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, '>\s*$', 'CMD prompt did not return after gitk', 'gitk returned to CMD prompt', 10000, cmdWinId)
-    VerifyTkScreenshot('gitk (CMD)', testRepoWin . '\cmd-gitk-thumb.png', A_ScriptDir . '\gitk-reference.png')
+    VerifyGitkLayout('gitk (CMD)', testRepoWin . '\cmd-gitk-thumb.png')
 
     ; === Test: git gui runs without error (Git CMD) ===
     Info '=== git gui no error (Git CMD) ==='
@@ -258,6 +280,8 @@ Info '=== Git GUI standalone ==='
 if EnvGet('CI') != ''
 {
     Info 'CI: restarting Explorer...'
+    LogAllWindows('  before-restart: ')
+    CaptureScreen(testRepoWin . '\diag-before-explorer-restart.png')
     try
         ProcessClose(WinGetPID('ahk_class Shell_TrayWnd'))
     catch as e
@@ -303,9 +327,11 @@ OnExit((*) => (
 ))
 testRepoUnix := StrReplace(testRepoWin, '\', '/')
 FileAppend '[gui]`n`trecentrepo = ' testRepoUnix '`n', gitconfigPath
+Info 'Git GUI standalone: wrote temp .gitconfig'
 
 ; Launch Git GUI via Start Menu (opens the chooser dialog).
 Info '=== Git GUI starts via Start Menu ==='
+CaptureScreen(testRepoWin . '\diag-before-git-gui-launch.png')
 gitGuiChooserHwnd := LaunchViaStartMenu('Git GUI', 'TkTopLevel', 'Git Gui')
 
 ; Verify the chooser appeared with the right title.
@@ -331,25 +357,76 @@ CaptureAndDownscaleWindow(gitGuiChooserHwnd, ww, wh, fullCapture)
 clickY := FindChooserLinkRow(fullCapture, ww, wh)
 Info 'Git GUI chooser: link row at y=' clickY ' (full-size ' ww 'x' wh ')'
 
-if clickY < 0
-    ExitWithError 'Git GUI chooser: could not locate recent repo link row'
-
-WinActivate('ahk_id ' gitGuiChooserHwnd)
-Sleep 300
-Click(ww // 2, clickY)
-Sleep 2000
-for h in WinGetList('ahk_class TkTopLevel')
+; Try 1: click the detected link position at full resolution.
+if clickY >= 0
 {
-    if InStr(WinGetTitle('ahk_id ' h), 'git-bash-checklist-test-repo')
+    WinActivate('ahk_id ' gitGuiChooserHwnd)
+    Sleep 300
+    Click(ww // 2, clickY)
+    Sleep 2000
+    for h in WinGetList('ahk_class TkTopLevel')
     {
-        gitGuiRepoHwnd := h
-        break
+        if InStr(WinGetTitle('ahk_id ' h), 'git-bash-checklist-test-repo')
+        {
+            gitGuiRepoHwnd := h
+            break
+        }
+    }
+    if !gitGuiRepoHwnd
+        Info 'Git GUI chooser: click at y=' clickY ' did not open repo, trying nearby rows'
+    ; Try a few rows below (the link text may be just below the detected row).
+    if !gitGuiRepoHwnd
+    {
+        for offset in [5, 10, 15, -5]
+        {
+            WinActivate('ahk_id ' gitGuiChooserHwnd)
+            Sleep 300
+            Click(ww // 2, clickY + offset)
+            Sleep 1500
+            for h in WinGetList('ahk_class TkTopLevel')
+            {
+                if InStr(WinGetTitle('ahk_id ' h), 'git-bash-checklist-test-repo')
+                {
+                    gitGuiRepoHwnd := h
+                    Info 'Git GUI chooser: click at y=' (clickY + offset) ' worked'
+                    break 2
+                }
+            }
+        }
+    }
+}
+
+; Try 2: keyboard navigation (Tab to focus the link, Enter to open).
+if !gitGuiRepoHwnd
+{
+    Info 'Git GUI chooser: pixel click failed, trying keyboard'
+    WinActivate('ahk_id ' gitGuiChooserHwnd)
+    Sleep 300
+    loop 15
+    {
+        Send('{Tab}')
+        Sleep 100
+    }
+    Send('{Enter}')
+    Sleep 3000
+    for h in WinGetList('ahk_class TkTopLevel')
+    {
+        if InStr(WinGetTitle('ahk_id ' h), 'git-bash-checklist-test-repo')
+        {
+            gitGuiRepoHwnd := h
+            Info 'Git GUI chooser: keyboard navigation worked'
+            break
+        }
     }
 }
 CoordMode 'Mouse', 'Screen'
 
 if !gitGuiRepoHwnd
+{
+    CaptureScreen(A_ScriptDir . '\chooser-click-failed.png')
+    LogAllWindows('  ')
     ExitWithError 'Git GUI did not open the test repository from the recent list'
+}
 Info 'Git GUI opened the test repo: ' WinGetTitle('ahk_id ' gitGuiRepoHwnd)
 
 ; Verify it has the expected git gui layout (retry until stable).
