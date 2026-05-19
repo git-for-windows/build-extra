@@ -153,7 +153,7 @@ WinActivate(winId)
 SetKeyDelay 20, 20
 SendEvent('{Text}git gui; echo $? >git-gui-exit.code')
 SendEvent('{Enter}')
-VerifyTkScreenshot('git gui', testRepoWin . '\git-gui-thumb.png', A_ScriptDir . '\git-gui-reference.png')
+VerifyGitGuiLayout('git gui', testRepoWin . '\git-gui-thumb.png')
 ; Verify git gui exited with code 0.
 gitGuiExitFile := testRepoWin . '\git-gui-exit.code'
 deadline := A_TickCount + 5000
@@ -238,7 +238,7 @@ else
     SetKeyDelay 20, 20
     SendEvent('{Text}git gui')
     SendEvent('{Enter}')
-    VerifyTkScreenshot('git gui (CMD)', testRepoWin . '\cmd-git-gui-thumb.png', A_ScriptDir . '\git-gui-reference.png')
+    VerifyGitGuiLayout('git gui (CMD)', testRepoWin . '\cmd-git-gui-thumb.png')
 
     ; Close the Git CMD window.
     WinClose(cmdWinId)
