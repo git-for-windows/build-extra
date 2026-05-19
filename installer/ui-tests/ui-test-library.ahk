@@ -771,3 +771,49 @@ CheckGitGuiStructure(file, w, h) {
 
     return ''
 }
+
+; Scan a Git GUI chooser screenshot for the recent repo link row.
+; The link is rendered as colored text (typically blue) against a
+; neutral background. Returns the y coordinate in thumbnail space
+; of the first link-like row, or -1 if not found.
+FindChooserLinkRow(file, w, h) {
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file, 'ptr*', &pBitmap)
+    if !pBitmap {
+        ShutdownGdiPlus(gdipToken)
+        return -1
+    }
+
+    ; Scan rows in the lower portion of the window (the "Open Recent
+    ; Repository" section is below the Create/Clone/Open buttons).
+    ; Look for rows with distinctly colored pixels (chroma > 30,
+    ; not too dark, not too light) which indicate link text.
+    linkY := -1
+    startRow := h // 2
+    loop h - startRow {
+        y := startRow + A_Index - 1
+        bluePixels := 0
+        loop w {
+            x := A_Index - 1
+            argb := 0
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBitmap,
+                'int', x, 'int', y, 'uint*', &argb)
+            r := (argb >> 16) & 0xFF
+            g := (argb >> 8) & 0xFF
+            b := argb & 0xFF
+            ; Link text is blue: high blue, lower red and green.
+            if b > 100 && b > r + 30 && b > g + 30
+                bluePixels++
+        }
+        ; A row with several blue pixels is the link.
+        if bluePixels >= 3 {
+            linkY := y
+            break
+        }
+    }
+
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+    return linkY
+}

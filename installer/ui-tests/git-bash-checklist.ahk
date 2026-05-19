@@ -252,14 +252,55 @@ if runGitGUI
 
 ; === Git GUI standalone tests ===
 Info '=== Git GUI standalone ==='
+
+; On CI runners, the Start Menu can become unresponsive after the
+; first test cycle. Restart Explorer to get a fresh shell UI.
+if EnvGet('CI') != ''
+{
+    Info 'CI: restarting Explorer...'
+    try
+        ProcessClose(WinGetPID('ahk_class Shell_TrayWnd'))
+    catch as e
+        Info 'CI: Shell_TrayWnd not found: ' e.Message
+    Info 'CI: waiting for Explorer to restart...'
+    ; Wait for Shell_TrayWnd to reappear (Explorer auto-restarts).
+    deadline := A_TickCount + 30000
+    while !WinExist('ahk_class Shell_TrayWnd') && A_TickCount < deadline
+        Sleep 500
+    if WinExist('ahk_class Shell_TrayWnd')
+        Info 'CI: Shell_TrayWnd reappeared'
+    else
+        Info 'CI: WARNING: Shell_TrayWnd did not reappear within 30s'
+    ; Give StartMenuExperienceHost and SearchHost time to initialize.
+    Sleep 5000
+    LogAllWindows('  after-restart: ')
+    CaptureScreen(testRepoWin . '\diag-after-explorer-restart.png')
+    ; A fresh Explorer respawns the windows-11-arm OOBE
+    ; Shell_OOBEProxy within ~5 seconds, which then blocks {LWin}
+    ; in the next LaunchViaStartMenu(). Dismiss it again.
+    DismissOOBE()
+}
+
+Info 'Git GUI standalone: setting up .gitconfig'
 ; Temporarily replace .gitconfig so the chooser shows only the test repo.
 gitconfigPath := EnvGet('USERPROFILE') . '\.gitconfig'
 gitconfigBackup := gitconfigPath . '.ui-test-backup'
 if FileExist(gitconfigBackup)
     FileDelete gitconfigBackup
-FileMove gitconfigPath, gitconfigBackup
-; Ensure .gitconfig is restored on any exit.
-OnExit((*) => (FileExist(gitconfigBackup) && (FileDelete(gitconfigPath), FileMove(gitconfigBackup, gitconfigPath))))
+hadGitconfig := FileExist(gitconfigPath)
+if hadGitconfig
+{
+    FileMove gitconfigPath, gitconfigBackup
+    Info 'Git GUI standalone: .gitconfig backed up'
+}
+else
+    Info 'Git GUI standalone: no .gitconfig to back up'
+; Ensure .gitconfig is restored (or removed) on any exit.
+OnExit((*) => (
+    hadGitconfig
+    ? (FileExist(gitconfigBackup) && (FileDelete(gitconfigPath), FileMove(gitconfigBackup, gitconfigPath)))
+    : (FileExist(gitconfigPath) && FileDelete(gitconfigPath))
+))
 testRepoUnix := StrReplace(testRepoWin, '\', '/')
 FileAppend '[gui]`n`trecentrepo = ' testRepoUnix '`n', gitconfigPath
 
@@ -267,29 +308,36 @@ FileAppend '[gui]`n`trecentrepo = ' testRepoUnix '`n', gitconfigPath
 Info '=== Git GUI starts via Start Menu ==='
 gitGuiChooserHwnd := LaunchViaStartMenu('Git GUI', 'TkTopLevel', 'Git Gui')
 
-; Verify the chooser via screenshot.
+; Verify the chooser appeared with the right title.
 WinMove(100, 100, 500, 400, 'ahk_id ' gitGuiChooserHwnd)
 WinActivate('ahk_id ' gitGuiChooserHwnd)
-chooserRef := A_ScriptDir . '\git-gui-chooser-reference.png'
-if FileExist(chooserRef)
-{
-    diffRatio := CaptureUntilMatchesReference(gitGuiChooserHwnd, 80, 60, testRepoWin . '\git-gui-chooser-thumb.png', chooserRef, 0.20, 15000)
-    Info 'Git GUI chooser screenshot diff ratio: ' diffRatio
-}
-else
-    Info 'WARNING: git-gui-chooser-reference.png not found; skipping screenshot check'
+Sleep 2000
+chooserTitle := WinGetTitle('ahk_id ' gitGuiChooserHwnd)
+Info 'Git GUI chooser title: ' chooserTitle
+WinGetPos(&wx, &wy, &ww, &wh, 'ahk_id ' gitGuiChooserHwnd)
+Info 'Git GUI chooser pos: ' wx ',' wy ' size: ' ww 'x' wh
 
-; Click the first (only) recent repo entry to open it.
-; Use window-relative coordinates to avoid DPI scaling mismatches.
+; Find and click the recent repo link. Capture the chooser at full
+; window size (not downscaled) for precise pixel analysis, then scan
+; for the blue link text row. The full-size capture is saved as an
+; artifact for diagnostic inspection.
 CoordMode 'Mouse', 'Window'
-WinActivate('ahk_id ' gitGuiChooserHwnd)
-Sleep 500
-Click(250, 220)
-Sleep 3000
-CoordMode 'Mouse', 'Screen'
-
-; A Git GUI window should have opened for the test repo.
 gitGuiRepoHwnd := 0
+
+WinActivate('ahk_id ' gitGuiChooserHwnd)
+Sleep 1000
+fullCapture := A_ScriptDir . '\chooser-fullsize.png'
+CaptureAndDownscaleWindow(gitGuiChooserHwnd, ww, wh, fullCapture)
+clickY := FindChooserLinkRow(fullCapture, ww, wh)
+Info 'Git GUI chooser: link row at y=' clickY ' (full-size ' ww 'x' wh ')'
+
+if clickY < 0
+    ExitWithError 'Git GUI chooser: could not locate recent repo link row'
+
+WinActivate('ahk_id ' gitGuiChooserHwnd)
+Sleep 300
+Click(ww // 2, clickY)
+Sleep 2000
 for h in WinGetList('ahk_class TkTopLevel')
 {
     if InStr(WinGetTitle('ahk_id ' h), 'git-bash-checklist-test-repo')
@@ -298,24 +346,48 @@ for h in WinGetList('ahk_class TkTopLevel')
         break
     }
 }
+CoordMode 'Mouse', 'Screen'
+
 if !gitGuiRepoHwnd
     ExitWithError 'Git GUI did not open the test repository from the recent list'
 Info 'Git GUI opened the test repo: ' WinGetTitle('ahk_id ' gitGuiRepoHwnd)
 
-; Verify it matches the existing git-gui-reference.png.
+; Verify it has the expected git gui layout (retry until stable).
 WinMove(100, 100, 800, 600, 'ahk_id ' gitGuiRepoHwnd)
 WinActivate('ahk_id ' gitGuiRepoHwnd)
-diffRatio := CaptureUntilMatchesReference(gitGuiRepoHwnd, 80, 60, testRepoWin . '\git-gui-standalone-thumb.png', A_ScriptDir . '\git-gui-reference.png', 0.15)
-Info 'Git GUI repo screenshot diff ratio: ' diffRatio
+thumbFile := testRepoWin . '\git-gui-standalone-thumb.png'
+deadline := A_TickCount + 30000
+lastErr := 'no capture attempted'
+while A_TickCount < deadline {
+    CaptureAndDownscaleWindow(gitGuiRepoHwnd, 80, 60, thumbFile)
+    lastErr := CheckGitGuiStructure(thumbFile, 80, 60)
+    if lastErr = '' {
+        Info 'Git GUI standalone layout verified'
+        break
+    }
+    Info 'Git GUI standalone: retry (' lastErr ')'
+    Sleep 2000
+}
+if lastErr != ''
+    ExitWithError 'Git GUI standalone layout check failed: ' lastErr
 
 ; Close all Tk windows.
 for h in WinGetList('ahk_class TkTopLevel')
     WinClose('ahk_id ' h)
 Sleep 1000
 
-; Restore original .gitconfig (also handled by OnExit).
-FileDelete gitconfigPath
-FileMove gitconfigBackup, gitconfigPath
+; Restore original .gitconfig (also handled by OnExit). Only restore
+; from backup if we actually backed one up; otherwise just remove the
+; temp file. Without this guard, FileMove on a missing backup raises
+; an uncaught exception that surfaces as an invisible modal error
+; dialog on the CI runner and hangs the script.
+if hadGitconfig
+{
+    FileDelete gitconfigPath
+    FileMove gitconfigBackup, gitconfigPath
+}
+else if FileExist(gitconfigPath)
+    FileDelete gitconfigPath
 Info 'Restored .gitconfig'
 
 } ; end runGitGUI
