@@ -32,8 +32,12 @@ MINGW32) MINGW_PREFIX=mingw32;;
 
 	case "$ARCH" in
 	i686) MINGW_PREFIX=mingw32;;
-	x86_64) MINGW_PREFIX=mingw64;;
-	aarch64) MINGW_PREFIX=clangarm64;;
+	x86_64)
+		case $(uname -s) in
+			*-ARM64) MINGW_PREFIX=clangarm64;;
+			*) MINGW_PREFIX=mingw64;;
+		esac
+		;;
 	*) die "Unhandled architecture: $ARCH";;
 	esac
 	;;
