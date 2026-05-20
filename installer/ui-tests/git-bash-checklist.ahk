@@ -62,6 +62,11 @@ if runGitBash
 
 Info 'All prerequisites met.'
 
+; On GitHub-hosted ARM64 runners the desktop may still be in the
+; Out-Of-Box-Experience flow when the script starts. Dismiss it
+; before any LaunchViaStartMenu() call so the shell is usable.
+DismissOOBE()
+
 ; === Create test repository ===
 ; Build a temporary repo for use in subsequent tests.
 ; This runs outside the UI, before launching Git Bash.

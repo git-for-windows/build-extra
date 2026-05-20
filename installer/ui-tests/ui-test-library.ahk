@@ -549,6 +549,152 @@ CompareImages(file1, file2, tolerance := 10) {
     return diffCount / (w1 * h1)
 }
 
+; Best-effort dismissal of any active Windows Out-Of-Box-Experience flow.
+;
+; The GitHub-hosted `windows-11-arm` runner image has been observed to
+; surface a fresh OOBE "Choose privacy settings for your device" page
+; instead of a logged-in desktop, which occludes the shell and breaks
+; LaunchViaStartMenu(). Reboot is NOT an option (these runners are
+; ephemeral; rebooting kills the runner agent and the job with it),
+; so we dismiss OOBE in-process by walking through its pages with
+; {Enter} (each page's default button is Next/Accept), then escalating
+; to taskkill on the known OOBE host processes.
+;
+; Always returns without raising. If OOBE persists, the subsequent
+; LaunchViaStartMenu() call fails with "Start Menu did not appear".
+DismissOOBE() {
+    ; Outside CI, processes like WWAHost.exe may be the user's own apps.
+    if EnvGet('CI') == '' || !IsOOBEActive()
+        return
+    Info 'OOBE detected; attempting dismissal'
+
+    ; Phase 1: keyboard walkthrough. The default button on each OOBE
+    ; page is Next/Accept, so {Enter} advances. The long sleep between
+    ; presses absorbs page transitions and animations. Log title+class
+    ; of each iteration so a post-mortem can see exactly which OOBE
+    ; pages were encountered.
+    loop 20
+    {
+        hwnd := FindOOBEWindow()
+        if !hwnd
+            break
+        try {
+            Info '  oobe-walkthrough iter ' A_Index
+                . ': cls=' WinGetClass('ahk_id ' hwnd)
+                . ' title=' WinGetTitle('ahk_id ' hwnd)
+        }
+        try WinActivate('ahk_id ' hwnd)
+        Sleep 500
+        SendEvent('{Enter}')
+        Sleep 1500
+    }
+    if !IsOOBEActive()
+    {
+        Info 'OOBE dismissed via keyboard walkthrough'
+        return
+    }
+
+    ; Phase 2: close the Shell_OOBEProxy window directly. On the
+    ; windows-11-arm runner image the OOBE proxy is hosted by
+    ; explorer.exe itself, so taskkilling OOBE child processes
+    ; (Phase 3 below) only tears down the inner web view; explorer
+    ; re-creates the proxy on demand. WinClose'ing the proxy window
+    ; itself reliably removes it without restarting explorer
+    ; (verified: window does not respawn within 5s).
+    Info 'Closing Shell_OOBEProxy window directly'
+    loop 5
+    {
+        hwnd := FindOOBEWindow()
+        if !hwnd
+            break
+        try {
+            Info '  oobe-winclose iter ' A_Index
+                . ': cls=' WinGetClass('ahk_id ' hwnd)
+                . ' title=' WinGetTitle('ahk_id ' hwnd)
+        }
+        try WinClose('ahk_id ' hwnd)
+        Sleep 1500
+    }
+    if !IsOOBEActive()
+    {
+        Info 'OOBE dismissed via WinClose'
+        return
+    }
+
+    ; Phase 3: taskkill OOBE host processes. This catches the case
+    ; where Shell_OOBEProxy is gone but WWAHost.exe (the WebView2
+    ; host for the actual OOBE pages) is still running with a cloaked
+    ; Windows.UI.Core.CoreWindow holding foreground focus. Verified
+    ; on windows-11-arm on 2026-05-22: killing WWAHost.exe removes
+    ; the foreground OOBE window and restores normal shell input.
+    Info 'OOBE still active after WinClose; killing OOBE processes'
+    for procName in OOBEProcessNames()
+    {
+        try Run('taskkill /F /IM "' procName '"', , 'Hide')
+    }
+    Sleep 2000
+    if !IsOOBEActive()
+        Info 'OOBE dismissed via taskkill'
+    else
+        Info 'OOBE STILL active after taskkill; leaving for the next step to surface'
+    ; Intentionally do NOT restart explorer.exe here: on the
+    ; windows-11-arm runner image a fresh explorer respawns the
+    ; Shell_OOBEProxy "Microsoft account" window within ~5 seconds,
+    ; which then blocks {LWin} in LaunchViaStartMenu().
+}
+
+; Return the HWND of any active OOBE window, or 0 if none found.
+; Identifies OOBE by the Shell_OOBEProxy window class OR by ownership
+; of one of the well-known OOBE host processes.
+;
+; NOTE: this only returns windows enumerated by WinGetList(); on
+; windows-11-arm the actual OOBE WebView lives in WWAHost.exe with a
+; cloaked Windows.UI.Core.CoreWindow that WinGetList() skips, so this
+; function CAN return 0 while OOBE is still on screen. Use
+; IsOOBEActive() for "is any OOBE process still alive?" checks.
+FindOOBEWindow() {
+    for h in WinGetList()
+    {
+        try {
+            cls := WinGetClass(h)
+            if cls == 'Shell_OOBEProxy'
+                return h
+            exe := StrLower(WinGetProcessName(h))
+            for procName in OOBEProcessNames()
+                if exe == StrLower(procName)
+                    return h
+        }
+    }
+    return 0
+}
+
+; The list of process names that host OOBE pages on Windows 10/11.
+OOBEProcessNames() {
+    return [
+        'oobenetworkconnectionflow.exe',
+        'OOBE.exe',
+        'oobeldr.exe',
+        'oobesetup.exe',
+        'WWAHost.exe',
+        'UserOOBEBroker.exe'
+    ]
+}
+
+; True if any OOBE window OR any OOBE host process owns the
+; foreground active window. Checking the foreground catches the
+; cloaked WWAHost.exe CoreWindow that FindOOBEWindow() misses.
+IsOOBEActive() {
+    if FindOOBEWindow()
+        return true
+    try {
+        exe := StrLower(WinGetProcessName('A'))
+        for procName in OOBEProcessNames()
+            if exe == StrLower(procName)
+                return true
+    }
+    return false
+}
+
 ; Capture a window screenshot, retrying until it matches a reference
 ; image within the given diff threshold. This handles applications that
 ; render progressively (like gitk loading commits) by comparing each
