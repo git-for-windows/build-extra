@@ -27,14 +27,20 @@ die "Could not determine architecture"
 
 case "$MSYSTEM" in
 MINGW64) MINGW_PREFIX=mingw64;;
-CLANGARM64) MINGW_PREFIX=clangarm64;;
+CLANGARM64)
+	MINGW_PREFIX=clangarm64
+	ARCH=aarch64
+	;;
 MINGW32) MINGW_PREFIX=mingw32;;
 *)
 	case "$ARCH" in
 	i686) MINGW_PREFIX=mingw32;;
 	x86_64)
 		case $(uname -s) in
-			*-ARM64) MINGW_PREFIX=clangarm64;;
+			*-ARM64)
+				MINGW_PREFIX=clangarm64
+				ARCH=aarch64
+				;;
 			*) MINGW_PREFIX=mingw64;;
 		esac
 		;;
