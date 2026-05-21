@@ -82,26 +82,20 @@ do
 	paths=$(sed -ne 's,[][],\\&,g' -e "s,^$dir[^/]*\.\(dll\|exe\)$,/&,p" "$tmp_file.all")
 	/usr/bin/objdump -p $paths 2>"$tmp_file" >"$tmp_file.ldd"
 	paths="$(sed -n 's|^/usr/bin/objdump: \([^ :]*\): file format not recognized|\1|p' <"$tmp_file")"
-	test -z "$paths" ||
-	ldd $paths >>"$tmp_file.ldd"
+	if test -n "$paths"
+	then
+		powershell.exe -NoProfile -ExecutionPolicy Bypass \
+			-File "$thisdir/pe-imports.ps1" $paths >>"$tmp_file.ldd" ||
+		die "pe-imports.ps1 failed to parse PE imports"
+	fi
 
 	tr A-Z\\r a-z\ <"$tmp_file.ldd" |
-	grep -e '^.dll name:' -e '^[^ ]*\.\(dll\|exe\):' -e '\.dll =>' |
+	grep -e '^.dll name:' -e '^[^ ]*\.\(dll\|exe\):' |
 	while read a b c d
 	do
 		case "$a,$b" in
 		*.exe:,*|*.dll:,*) current="${a%:}";;
-		*.dll,"=>") # `ldd` output
-			echo "$a" >>"$used_dlls_file"
-			case "$sys_dlls$LF$dlls" in
-			*"/$a$LF"*) ;; # okay, it's included
-			*)
-				echo "$current is missing $a" >&2
-				echo "$a" >>"$missing_dlls_file"
-				;;
-			esac
-			;;
-		dll,name:) # `objdump -p` output
+		dll,name:) # `objdump -p` / pe-imports.ps1 output
 			echo "$c" >>"$used_dlls_file"
 			case "$sys_dlls$LF$dlls" in
 			*"/$c$LF"*) ;; # okay, it's included
