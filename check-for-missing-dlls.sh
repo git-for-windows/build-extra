@@ -93,6 +93,7 @@ do
 	grep -e '^.dll name:' -e '^[^ ]*\.\(dll\|exe\):' |
 	while read a b c d
 	do
+		case "$c" in api-ms-*) continue;; esac # API set, always provided by Windows
 		case "$a,$b" in
 		*.exe:,*|*.dll:,*) current="${a%:}";;
 		dll,name:) # `objdump -p` / pe-imports.ps1 output
