@@ -89,6 +89,12 @@ test ! -f "/$MSYSTEM_LOWER/bin/git.exe" ||
 grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" ||
 EXCLUDE_LIBSSP='\|ssp'
 
+# On clangarm64, libunwind and libwinpthread-1 are pulled in by the toolchain's
+# package closure but are not statically imported by any shipped binary.
+EXCLUDE_CLANGARM64_RUNTIME=
+test aarch64 != "$ARCH" ||
+EXCLUDE_CLANGARM64_RUNTIME='^/clangarm64/bin/lib\(unwind\|winpthread-1\)\.dll$'
+
 this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
 
@@ -237,6 +243,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(autopoint\|[a-z]*-config\)$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(asprintf\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(atomic\|charset\|gomp\|systre'"$EXCLUDE_LIBSSP"'\)-[0-9]*\.dll$' \
+	${EXCLUDE_CLANGARM64_RUNTIME:+-e "$EXCLUDE_CLANGARM64_RUNTIME"} \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\|zip\)[^/]*\.exe$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/recode-sr-latin.exe$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(cert\|p11\|psk\|srp\)tool.exe$' \
