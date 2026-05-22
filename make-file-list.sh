@@ -309,6 +309,7 @@ else
 		-e '^/\(mingw\|clang\)[^/]*/bin/.*-\(inflate\|deflate\)hd\.exe$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/\(gettext\.sh\|gettextize\)$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/\(gitk\|git-upload-archive\.exe\)$' \
+		-e '^/\(mingw\|clang\)[^/]*/bin/libc++\.dll$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/libgcc_s_seh-.*\.dll$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/libjemalloc\.dll$' \
 		-e '^/\(mingw\|clang\)[^/]*/bin/lib\(ffi\|gmp\|gomp\|jansson\|metalink\|minizip\|tasn1\)-.*\.dll$' \
