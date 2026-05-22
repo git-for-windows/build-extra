@@ -399,3 +399,35 @@ jobs:
       - name: check for missing DLLs (MinGit)
         shell: bash
         run: MINIMAL_GIT=1 ./check-for-missing-dlls.sh
+      - name: Set up Copilot CLI
+        if: failure() && matrix.arch.name == 'aarch64'
+        shell: bash
+        run: npm install -g @github/copilot
+      - name: Run Copilot CLI to debug failure
+        if: failure() && matrix.arch.name == 'aarch64'
+        shell: bash
+        timeout-minutes: 90
+        env:
+          GH_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+          COPILOT_MODEL: claude-opus-4.7
+        run: |
+          prompt="$(cat check-for-missing-dlls-copilot-prompt.md)" &&
+          copilot -p "$prompt" \
+            --yolo \
+            ${COPILOT_MODEL:+--model "$COPILOT_MODEL"}
+      - name: Archive Copilot session state
+        if: always() && matrix.arch.name == 'aarch64'
+        shell: bash
+        run: |
+          if test -d ~/.copilot; then
+            tar czf copilot-session.tar.gz -C "$USERPROFILE" .copilot
+          fi
+      - name: Upload debug artifacts
+        if: always() && matrix.arch.name == 'aarch64'
+        uses: actions/upload-artifact@v7
+        with:
+          name: check-for-missing-dlls-arm64-debug
+          path: |
+            copilot-diagnosis.md
+            copilot-session.tar.gz
+            check-dlls-*.log
