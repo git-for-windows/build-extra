@@ -345,12 +345,13 @@ const
     GE_VisualStudioCodeInsiders = 4;
     GE_SublimeText              = 5;
     GE_Atom                     = 6;
-    GE_VSCodium                 = 7;
-    GE_Notepad                  = 8;
-    GE_Wordpad                  = 9;
-    GE_MicrosoftEdit            = 10;
-    GE_CustomEditor             = 11;
-    GE_MaxEditor                = 11;
+    GE_Pulsar                   = 7;
+    GE_VSCodium                 = 8;
+    GE_Notepad                  = 9;
+    GE_Wordpad                  = 10;
+    GE_MicrosoftEdit            = 11;
+    GE_CustomEditor             = 12;
+    GE_MaxEditor                = 12;
 
     // Git Path options.
     GP_BashOnly       = 1;
@@ -472,6 +473,7 @@ var
     VisualStudioCodeInsidersPath:String;
     SublimeTextPath:String;
     AtomPath:String;
+    PulsarPath:String;
     VSCodiumPath:String;
     MicrosoftEditPath:String;
     CustomEditorPath:String;
@@ -1987,6 +1989,7 @@ begin
         end;
     end;
     EditorAvailable[GE_Atom]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\atom.exe\shell\open\command','',AtomPath);
+    EditorAvailable[GE_Pulsar]:=RegQueryStringValue(HKEY_CURRENT_USER,'Software\Classes\Applications\pulsar.exe\shell\open\command','',PulsarPath);
     EditorAvailable[GE_CustomEditor]:=True;
     EditorAvailable[GE_VSCodium]:=RegQueryStringValue(HKEY_LOCAL_MACHINE,'SOFTWARE\Classes\Applications\VSCodium.exe\shell\open\command','',VSCodiumPath);
     if (not EditorAvailable[GE_VSCodium]) then begin
@@ -2007,6 +2010,8 @@ begin
         SublimeTextPath:=ExtractCommandPath(SublimeTextPath);
     if (EditorAvailable[GE_Atom]) then
         AtomPath:=ExtractCommandPath(AtomPath);
+    if (EditorAvailable[GE_Pulsar]) then
+        PulsarPath:=ExtractCommandPath(PulsarPath);
     if (EditorAvailable[GE_VSCodium]) then
         VSCodiumPath:=ExtractCodeCLIPath(VSCodiumPath, 'bin\codium');
 
@@ -2014,7 +2019,7 @@ begin
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use the Nano editor by default');
     Data:='<A HREF=https://www.nano-editor.org/dist/v2.8/nano.html>GNU nano</A> is a small and friendly text editor running in the console'+#13+'window.';
-    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode] and not EditorAvailable[GE_VisualStudioCodeInsiders] and not EditorAvailable[GE_SublimeText] and not EditorAvailable[GE_Atom]) and not EditorAvailable[GE_VSCodium] then
+    if (not EditorAvailable[GE_NotepadPlusPlus] and not EditorAvailable[GE_VisualStudioCode] and not EditorAvailable[GE_VisualStudioCodeInsiders] and not EditorAvailable[GE_SublimeText] and not EditorAvailable[GE_Atom] and not EditorAvailable[GE_Pulsar]) and not EditorAvailable[GE_VSCodium] then
         Data:=Data+#13+#13+'This is the recommended option for end users if no GUI editors are installed.';
     CreateItemDescription(EditorPage,Data,Top,Left,LblEditor[GE_Nano],False);
     EditorAvailable[GE_Nano]:=True;
@@ -2061,25 +2066,30 @@ begin
 
     // 8th choice
     Top:=TopOfLabels;
+    CbbEditor.Items.Add('Use Pulsar as Git'+#39+'s default editor');
+    CreateItemDescription(EditorPage,'<A HREF=https://pulsar-edit.dev/>Pulsar</A> is a community-led fork of the discontinued Atom editor with integration'+#13+'for Git and Github.'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use Pulsar as its default editor.',Top,Left,LblEditor[GE_Pulsar],False);
+
+    // 9th choice
+    Top:=TopOfLabels;
     CbbEditor.Items.Add('Use VSCodium as Git'+#39+'s default editor');
     if (VSCodiumUserInstallation=False) then
         CreateItemDescription(EditorPage,'<A HREF=https://vscodium.com///>VSCodium</A> provides Free/Libre Open Source Software Binaries of VSCode with the same features, but without telemetry/tracking of Microsoft or any non-floss code parts. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+#13+'Use this option to let Git use VSCodium as its default editor.',Top,Left,LblEditor[GE_VSCodium],False)
     else
         CreateItemDescription(EditorPage,'<A HREF=https://vscodium.com///>VSCodium</A> provides Free/Libre Open Source Software Binaries of VSCode with the same features, but without telemetry/tracking of Microsoft or any non-floss code parts. It comes with built-in support for JavaScript,'+#13+'TypeScript and Node.js and has a rich ecosystem of extensions for other'+#13+'languages (such as C++, C#, Java, Python, PHP, Go) and runtimes (such as'+#13+'.NET and Unity).'+#13+'<RED>(WARNING!) This will be installed only for this user.</RED>'+#13+#13+'Use this option to let Git use VSCodium as its default editor.',Top,Left,LblEditor[GE_VSCodium],False);
 
-    // 9th choice
+    // 10th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Notepad as Git'+#39+'s default editor');
     CreateItemDescription(EditorPage,'Notepad is a simple GUI editor that comes with Windows.',Top,Left,LblEditor[GE_Notepad],False);
     EditorAvailable[GE_Notepad]:=True;
 
-    // 10th choice
+    // 11th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Wordpad as Git'+#39+'s default editor');
     CreateItemDescription(EditorPage,'Wordpad is a basic word processor that comes with Windows.'+#13+'It can also be used as a text editor.',Top,Left,LblEditor[GE_Wordpad],False);
     EditorAvailable[GE_Wordpad]:=True;
 
-    // 11th choice
+    // 12th choice
     Top:=TopOfLabels;
     CbbEditor.Items.Add('Use Microsoft Edit as Git'+#39+'s default editor');
     CreateItemDescription(EditorPage,'<RED>(NEW!)</RED> <A HREF=https://github.com/microsoft/edit>Edit</A> is an open source terminal-based text editor which is based on the'+#13+'classic MS-DOS text editor.',Top,Left,LblEditor[GE_MicrosoftEdit],False);
@@ -2135,6 +2145,12 @@ begin
     'Atom': begin
             if EditorAvailable[GE_Atom] then
                 CbbEditor.ItemIndex:=GE_Atom
+            else
+                CbbEditor.ItemIndex:=GE_VIM;
+        end;
+    'Pulsar': begin
+            if EditorAvailable[GE_Pulsar] then
+                CbbEditor.ItemIndex:=GE_Pulsar
             else
                 CbbEditor.ItemIndex:=GE_VIM;
         end;
@@ -3585,6 +3601,9 @@ begin
     end else if ((CbbEditor.ItemIndex=GE_Atom)) and (AtomPath<>'') then begin
         if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+AtomPath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
             LogError('Could not set Atom as core.editor in the gitconfig.');
+    end else if ((CbbEditor.ItemIndex=GE_Pulsar)) and (PulsarPath<>'') then begin
+        if not ExecAsOriginalUser(AppDir + '\{#MINGW_BITNESS}\bin\git.exe','config --global core.editor "\"'+PulsarPath+'\" --wait"','',SW_HIDE,ewWaitUntilTerminated, i) then
+            LogError('Could not set Pulsar as core.editor in the gitconfig.');
     end else if ((CbbEditor.ItemIndex=GE_VSCodium)) and (VSCodiumPath<>'') then begin
         if (VSCodiumUserInstallation=False) then
             GitSystemConfigSet('core.editor','"'+VSCodiumPath+'" --wait')
@@ -3660,6 +3679,8 @@ begin
         Data:='SublimeText';
     end else if (CbbEditor.ItemIndex=GE_Atom) then begin
         Data:='Atom';
+    end else if (CbbEditor.ItemIndex=GE_Pulsar) then begin
+        Data:='Pulsar';
     end else if (CbbEditor.ItemIndex=GE_VSCodium) then begin
         Data:='VSCodium';
     end else if (CbbEditor.ItemIndex=GE_Notepad) then begin
