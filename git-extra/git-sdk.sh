@@ -319,7 +319,7 @@ sdk () {
 				https://github.com/Cygwin/cygwin;; esac
 			case "$remotes" in *"msys2	"*) ;;
 			*) git -C "$src_dir" remote add -f msys2 \
-				https://github.com/Alexpux/Cygwin;; esac
+				https://github.com/msys2/msys2-runtime;; esac
 			case "$remotes" in *"git-for-windows	"*) ;;
 			*) git -C "$src_dir" remote add -f \
 				git-for-windows \
