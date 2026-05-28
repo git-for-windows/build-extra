@@ -22,18 +22,28 @@ die "Could not enumerate system .dll files"
 LF='
 '
 
+ARCH="$(uname -m)" ||
+die "Could not determine architecture"
+
 case "$MSYSTEM" in
 MINGW64) MINGW_PREFIX=mingw64;;
-CLANGARM64) MINGW_PREFIX=clangarm64;;
+CLANGARM64)
+	MINGW_PREFIX=clangarm64
+	ARCH=aarch64
+	;;
 MINGW32) MINGW_PREFIX=mingw32;;
 *)
-	ARCH="$(uname -m)" ||
-	die "Could not determine architecture"
-
 	case "$ARCH" in
 	i686) MINGW_PREFIX=mingw32;;
-	x86_64) MINGW_PREFIX=mingw64;;
-	aarch64) MINGW_PREFIX=clangarm64;;
+	x86_64)
+		case $(uname -s) in
+			*-ARM64)
+				MINGW_PREFIX=clangarm64
+				ARCH=aarch64
+				;;
+			*) MINGW_PREFIX=mingw64;;
+		esac
+		;;
 	*) die "Unhandled architecture: $ARCH";;
 	esac
 	;;
@@ -72,26 +82,21 @@ do
 	paths=$(sed -ne 's,[][],\\&,g' -e "s,^$dir[^/]*\.\(dll\|exe\)$,/&,p" "$tmp_file.all")
 	/usr/bin/objdump -p $paths 2>"$tmp_file" >"$tmp_file.ldd"
 	paths="$(sed -n 's|^/usr/bin/objdump: \([^ :]*\): file format not recognized|\1|p' <"$tmp_file")"
-	test -z "$paths" ||
-	ldd $paths >>"$tmp_file.ldd"
+	if test -n "$paths"
+	then
+		powershell.exe -NoProfile -ExecutionPolicy Bypass \
+			-File "$thisdir/pe-imports.ps1" $paths >>"$tmp_file.ldd" ||
+		die "pe-imports.ps1 failed to parse PE imports"
+	fi
 
 	tr A-Z\\r a-z\ <"$tmp_file.ldd" |
-	grep -e '^.dll name:' -e '^[^ ]*\.\(dll\|exe\):' -e '\.dll =>' |
+	grep -e '^.dll name:' -e '^[^ ]*\.\(dll\|exe\):' |
 	while read a b c d
 	do
+		case "$c" in api-ms-*) continue;; esac # API set, always provided by Windows
 		case "$a,$b" in
 		*.exe:,*|*.dll:,*) current="${a%:}";;
-		*.dll,"=>") # `ldd` output
-			echo "$a" >>"$used_dlls_file"
-			case "$sys_dlls$LF$dlls" in
-			*"/$a$LF"*) ;; # okay, it's included
-			*)
-				echo "$current is missing $a" >&2
-				echo "$a" >>"$missing_dlls_file"
-				;;
-			esac
-			;;
-		dll,name:) # `objdump -p` output
+		dll,name:) # `objdump -p` / pe-imports.ps1 output
 			echo "$c" >>"$used_dlls_file"
 			case "$sys_dlls$LF$dlls" in
 			*"/$c$LF"*) ;; # okay, it's included
@@ -119,10 +124,10 @@ grep '\.dll$' "$tmp_file.all" |
 		-e '^usr/lib/openssl/engines' \
 		-e '^usr/lib/sasl2/' \
 		-e '^usr/lib/coreutils/libstdbuf.dll' \
-		-e '^mingw../bin/libcurl\(\|-openssl\)-4.dll' \
-		-e '^mingw../bin/\(atlassian\|azuredevops\|bitbucket\|gcmcore.*\|github\|gitlab\|microsoft\|newtonsoft\|system\..*\|webview2loader\|avalonia\|.*harfbuzzsharp\|microcom\|.*skiasharp\|av_libglesv2\|msalruntime\(\|_x86\|arm64\)\)\.' \
-		-e '^mingw../lib/ossl-modules/' \
-		-e '^mingw../lib/\(engines\|reg\|thread\)' |
+		-e "^$MINGW_PREFIX/bin/libcurl\(\|-openssl\)-4.dll" \
+		-e "^$MINGW_PREFIX/bin/\(atlassian\|azuredevops\|bitbucket\|gcmcore.*\|github\|gitlab\|microsoft\|newtonsoft\|system\..*\|webview2loader\|avalonia\|.*harfbuzzsharp\|microcom\|.*skiasharp\|av_libglesv2\|msalruntime\(\|_x86\|_arm64\)\)\." \
+		-e "^$MINGW_PREFIX/lib/ossl-modules/" \
+		-e "^$MINGW_PREFIX/lib/\(engines\|reg\|thread\)" |
 	sed 's/^/unused dll: /' |
 	tee "$unused_dlls_file" >&2
 
