@@ -76,14 +76,6 @@ arch_url () { # <architecture>
 	echo "$base_url/$(map_arch $1)"
 }
 
-arch_to_mingw () { # <arch>
-	case "$arch" in
-	i686) echo mingw32;;
-	aarch64) echo aarch64;;
-	*) echo mingw64;;
-	esac
-}
-
 package_list () { # db.tar.xz
 	tar tf "$1" |
 	sed -ne '/ /d' -e 's/\/$//p'
