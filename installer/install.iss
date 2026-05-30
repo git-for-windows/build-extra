@@ -88,6 +88,9 @@ UninstallDisplayIcon={app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 #ifndef COMPILE_FROM_IDE
 VersionInfoVersion={#FILE_VERSION}
 #endif
+#ifdef ARCHS_ALLOWED
+ArchitecturesAllowed={#ARCHS_ALLOWED}
+#endif
 
 ; Cosmetic
 SetupIconFile={#SourcePath}\..\git.ico
