@@ -249,6 +249,7 @@ quick_action () { # <action> <file>...
 		mingw-w64-*.pkg.tar.xz|mingw-w64-*.pkg.tar.zst)
 			arch=${file##mingw-w64-}
 			arch=${arch#clang-}
+			arch=${arch#ucrt-}
 			arch=${arch%%-*}
 			key=${arch}_mingw
 			;;
@@ -283,10 +284,11 @@ quick_action () { # <action> <file>...
 			file=${file%-[0-9]*-[0-9]*}
 			key=${arch}_msys
 			;;
-		mingw-w64-i686-*|mingw-w64-x86_64-*|mingw-w64-clang-aarch64-*)
+		mingw-w64-i686-*|mingw-w64-x86_64-*|mingw-w64-ucrt-x86_64-*|mingw-w64-clang-aarch64-*)
 			test remove = "$label" || die "Cannot add $path"
 			arch=${file#mingw-w64-}
 			arch=${arch#clang-}
+			arch=${arch#ucrt-}
 			arch=${arch%%-*}
 			file=${file%-any}
 			file=${file%-[0-9]*-[0-9]*}
@@ -367,9 +369,12 @@ quick_action () { # <action> <file>...
 		*,) db2=;;
 		i686,*) db2=mingw32;;
 		*aarch64*) db2=clangarm64;;
-		*) db2=mingw64;;
+		*)
+			db2=mingw64
+			db3=ucrt64
+			;;
 		esac
-		for db in git-for-windows-$arch ${db2:+git-for-windows-$db2}
+		for db in git-for-windows-$arch ${db2:+git-for-windows-$db2} ${db3:+git-for-windows-$db3}
 		do
 			# The Pacman repository on Azure Blobs still uses the old naming scheme
 			case "$db" in
@@ -419,17 +424,20 @@ quick_action () { # <action> <file>...
 				cp git-for-windows-$arch.db.tar.xz.sig git-for-windows-$arch.db.sig
 			}
 		 } &&
-		 if test -n "$db2"
-		 then
-			$action $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
-			{ test ! -h git-for-windows-$db2.db || rm git-for-windows-$db2.db; } &&
-			cp git-for-windows-$db2.db.tar.xz git-for-windows-$db2.db && {
-				test -z "$sign_option" || {
-					{ test ! -h git-for-windows-$db2.db.sig || rm git-for-windows-$db2.db.sig; } &&
-					cp git-for-windows-$db2.db.tar.xz.sig git-for-windows-$db2.db.sig
+		 for db in $db2 $db3
+		 do
+		 	if test -n "$db"
+		 	then
+				$action $sign_option git-for-windows-$db.db.tar.xz $mingw &&
+				{ test ! -h git-for-windows-$db.db || rm git-for-windows-$db.db; } &&
+				cp git-for-windows-$db.db.tar.xz git-for-windows-$db.db && {
+					test -z "$sign_option" || {
+						{ test ! -h git-for-windows-$db.db.sig || rm git-for-windows-$db.db.sig; } &&
+						cp git-for-windows-$db.db.tar.xz.sig git-for-windows-$db.db.sig
+					}
 				}
-			}
-		 fi &&
+			fi
+		 done &&
 
 		 # Remove the existing versions from the Git branch
 		 printf '%s\n' $msys $mingw |
