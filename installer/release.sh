@@ -127,7 +127,7 @@ MINGW64)
 CLANGARM64)
 	BITNESS=64
 	ARCH=aarch64
-	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX 'arm64'"
+	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX 'arm64'$LF#define ARCHS_ALLOWED 'arm64 and x64compatible'"
 	;;
 *)
 	die "Unhandled MSYSTEM: $MSYSTEM"
