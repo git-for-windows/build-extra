@@ -15,7 +15,7 @@ case "$(file --brief --mime-type "$1")" in
 		out=$(antiword -m UTF-8 "$1") && sed "s/\^M$//" <<<$out || cat "$1"
 		;;
 	application/vnd.openxmlformats-officedocument.wordprocessingml.* | application/vnd.ms-word.*.macroenabled.12)
-		docx2txt.pl "$1" - || cat "$1"
+		docx2txt.exe <"$1" || docx2txt.pl "$1" - || cat "$1"
 		;;
 	application/pdf)
 		out=$(pdftotext -q -layout -enc UTF-8 "$1" -) && sed "s/(\^M$)|(^\^L)//" <<<$out || cat "$1"
