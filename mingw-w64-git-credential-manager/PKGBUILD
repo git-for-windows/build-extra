@@ -19,16 +19,16 @@ makedepends=('markdown'
 groups=('VCS')
 options=('!strip')
 
-case "$MINGW_PACKAGE_PREFIX" in
-  mingw-w64-i686)
+case "$CARCH" in
+  i686)
     _arch=x86
     _sha=82c5cd4753eb4ab78fdbbd87b565a2199a493f695d2620728875fc35a0e1b713
     ;;
-  mingw-w64-x86_64)
+  x86_64)
     _arch=x64
     _sha=86c53aaa403d570b11fd48f17a277cd822b41b76c4e6b35f78344ad7c887b6c9
     ;;
-  mingw-w64-clang-aarch64)
+  aarch64)
     _arch=arm64
     _sha=75ee79ea8a0da0f998735735cc693b97872e43f09dd1b91faba7f86055ad598d
     ;;
