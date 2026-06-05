@@ -180,6 +180,7 @@ package_git-extra() {
 package_mingw-w64-x86_64-git-extra() {
   conflicts=('git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-i686-git-extra')
   provides=('git-extra')
+  depends+=("${MINGW_PACKAGE_PREFIX}-docx2txt-rs")
   package
 }
 
@@ -192,5 +193,6 @@ package_mingw-w64-i686-git-extra() {
 package_mingw-w64-clang-aarch64-git-extra() {
   conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-i686-git-extra')
   provides=('git-extra')
+  depends+=("${MINGW_PACKAGE_PREFIX}-docx2txt-rs")
   package
 }
