@@ -30,15 +30,14 @@ die () {
 
 mode=
 case "$1" in
-lock|unlock|break_lock|quick_add|quick_remove)
+quick_add|quick_remove)
 	mode="$1"
 	shift
 	;;
 *)
-	die "Usage:\n%s\n%s\n%s\n" \
+	die "Usage:\n%s\n%s\n" \
 		" $0 quick_add <package>..." \
-		" $0 quick_remove <package>..." \
-		" $0 ( lock | unlock <id> | break_lock )"
+		" $0 quick_remove <package>..."
 	;;
 esac
 
@@ -54,26 +53,12 @@ MSYS|MINGW*)
 	this_script_dir="$(cd "$(dirname "$0")" && pwd -P)"
 	;;
 esac
-base_url=https://wingit.blob.core.windows.net
 mirror=/var/local/pacman-mirror
 
 architectures="i686 x86_64 aarch64"
 
 arch_dir () { # <architecture>
 	echo "$mirror/$1"
-}
-
-map_arch () { # <architecture>
-	# Azure Blobs does not allow underlines, but dashes in container names
-	case "$1" in
-	x86_64) echo "x86-64";;
-	clang-aarch64) echo "aarch64";;
-	*) echo "$1";;
-	esac
-}
-
-arch_url () { # <architecture>
-	echo "$base_url/$(map_arch $1)"
 }
 
 arch_to_mingw () { # <arch>
@@ -212,13 +197,6 @@ quick_action () { # <action> <file>...
 	*) die "Unknown action '$action'";;
 	esac
 
-	if test -z "$PACMANDRYRUN$azure_blobs_token"
-	then
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	fi
-
 	if test -z "$PACMANDRYRUN$GITHUB_TOKEN"
 	then
 		die 'Need `GITHUB_TOKEN` to upload the files to `git-for-windows/pacman-repo`'
@@ -350,11 +328,7 @@ quick_action () { # <action> <file>...
 		fi
 	done
 
-	# Acquire lease
-	PACMAN_DB_LEASE="$(lock)" ||
-	die 'Could not obtain a lock for uploading'
-
-	# Verify that the package databases are synchronized and add or remove files
+	# Add or remove files
 	sign_option=
 	test -z "$GPGKEY" || sign_option=--sign
 	dbs=
@@ -379,45 +353,21 @@ quick_action () { # <action> <file>...
 		esac
 		for db in git-for-windows-$arch ${db2:+git-for-windows-$db2}
 		do
-			# The Pacman repository on Azure Blobs still uses the old naming scheme
-			case "$db" in
-			git-for-windows-$arch) remote_db=git-for-windows;;
-			git-for-windows-clangarm64) remote_db=git-for-windows-aarch64;;
-			*) remote_db=$db;;
-			esac
-
 			for infix in db files
 			do
 				file=$db.$infix.tar.xz
-				remote_file=$remote_db.$infix.tar.xz
-
-				echo "Downloading current $arch/$file..." >&2
-				curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$remote_file" || return 1
-
 				dbs="$dbs $arch/$file $arch/${file%.tar.xz}"
-				if test -n "$sign_option"
-				then
-					curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$remote_file.sig" ||
-					return 1
-					gpg --verify "$dir/$arch/$file.sig" ||
-					die "Could not verify GPG signature: $dir/$arch/$file"
+				test -z "$sign_option" ||
+				dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
 
-					dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
-				fi
-
+				# Guard against duplicate package versions sneaking
+				# into the database (a problem that has bitten us in
+				# the past, unrelated to which backend hosts the repo).
 				sanitize_db "$dir/$arch/$file" || return 1
-				test ! -f "$dir/$arch/${file%.tar.xz}" ||
-				sanitize_db "$dir/$arch/${file%.tar.xz}" || return 1
 			done
 		done
 
 		(cd "$dir/$arch" &&
-		 # Verify that the package databases are synchronized
-		 git update-index --refresh &&
-		 git diff-files --quiet &&
-		 git diff-index --quiet HEAD -- ||
-		 die "The package databases in $arch differ between Azure Blobs and pacman-repo"
-
 		 # Now add or remove the files to the Pacman database
 		 $action $sign_option git-for-windows-$arch.db.tar.xz $msys $mingw &&
 		 { test ! -h git-for-windows-$arch.db || rm git-for-windows-$arch.db; } &&
@@ -634,40 +584,6 @@ quick_action () { # <action> <file>...
 		die "Could not publish release $id ($json)"
 	fi
 
-	# Upload the file(s) and the appropriate index(es)
-	(cd "$dir" &&
-	 for path in $(test remove = "$label" || echo $all_files) $dbs
-	 do
-		# The Pacman repository on Azure Blobs still uses the old naming scheme
-		remote_path="$(echo "$path" | sed \
-			-e 's,/git-for-windows-\(x86_64\|aarch64\|i686\)\.,/git-for-windows.,' \
-			-e 's,/git-for-windows-clangarm64\.,/git-for-windows-aarch64.,')"
-		test "$path" = "$remote_path" || {
-			echo "Renaming '$path' to old-style '$remote_path'..." >&2 &&
-			mv -i "$path" "$remote_path" &&
-			path="$remote_path"
-		} ||
-		die "Could not rename $path to $remote_path"
-
-		# Upload the 64-bit database with the lease
-		action=upload
-		test x86_64/git-for-windows.db != $path || action="upload-with-lease ${PACMAN_DB_LEASE:-<lease>}"
-
-		if test -n "$PACMANDRYRUN"
-		then
-			echo "upload: wingit-snapshot-helper.sh wingit $(map_arch ${path%%/*}) <token> $action $dir/$path" >&2
-		else
-			"$this_script_dir"/wingit-snapshot-helper.sh wingit $(map_arch ${path%%/*}) "$azure_blobs_token" $action "$path"
-		fi ||
-		die "Could not upload $path"
-	 done) ||
-	die "Could not upload $all_files $dbs"
-
-	# Release the lease, i.e. finalize the transaction
-	unlock "$PACMAN_DB_LEASE" ||
-	die 'Could not release lock for uploading\n'
-	PACMAN_DB_LEASE=
-
 	if test -n "$PACMANDRYRUN"
 	then
 		echo "Leaving temporary directory $dir/ for inspection" >&2
@@ -686,65 +602,6 @@ quick_add () {
 
 quick_remove () {
 	quick_action remove "$@"
-}
-
-lock () { #
-	test -z "$PACMANDRYRUN" || {
-		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> lock git-for-windows.db" >&2
-		return
-	}
-
-	test -n "$azure_blobs_token" || {
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	}
-
-	echo "Trying to lock for upload..." >&2
-	counter=0
-	while test $counter -lt 7200
-	do
-		"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
-			"$azure_blobs_token" \
-			lock --duration=-1 git-for-windows.db &&
-		break
-
-		echo "Waiting 60 seconds ($counter in total so far)..." >&2
-		sleep 60
-		counter=$(($counter+60))
-	done
-}
-
-unlock () { # <lease-ID>
-	test -z "$PACMANDRYRUN" || {
-		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> unlock ${1:-<lease>} git-for-windows.db" >&2
-		return
-	}
-
-	test -n "$azure_blobs_token" || {
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	}
-
-	"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
-		"$azure_blobs_token" unlock "$1" git-for-windows.db
-}
-
-break_lock () { #
-	test -z "$PACMANDRYRUN" || {
-		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> break-lock git-for-windows.db" >&2
-		return
-	}
-
-	test -n "$azure_blobs_token" || {
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	}
-
-	"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
-		"$azure_blobs_token" break-lock git-for-windows.db
 }
 
 "$mode" "$@"
