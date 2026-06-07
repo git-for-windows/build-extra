@@ -670,7 +670,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
-			if test x86_64 = $architecture
+			if test x86_64 = $architecture &&
+				git -C "$git_sdk_path" rev-parse -q --verify \
+					HEAD:.sparse/makepkg-git-i686 >/dev/null
 			then
 				printf '\n' >>"$sparse_checkout_file" &&
 				git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file"
