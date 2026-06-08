@@ -389,7 +389,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	done
 }
 
-create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--architecture=(x86_64|i686|aarch64|auto)] [--bitness=(32|64)] [--force] <name>
+create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--architecture=(x86_64|i686|aarch64|ucrt64|auto)] [--bitness=(32|64)] [--force] <name>
 	git_sdk_path=/
 	output_path=
 	force=
@@ -490,6 +490,11 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	fi
 
 	case "$architecture" in
+	ucrt64)
+		MSYSTEM=UCRT64
+		PREFIX="/ucrt64"
+		SDK_REPO="git-sdk-64"
+		;;
 	x86_64)
 		MSYSTEM=MINGW64
 		PREFIX="/mingw64"
