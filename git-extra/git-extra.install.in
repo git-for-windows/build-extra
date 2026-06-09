@@ -58,22 +58,8 @@ GITATTRIBUTES
 	grep -q '^# Fixup git-bash in non login env' /etc/bash.bashrc ||
 	printf "\n# Fixup git-bash in non login env\nshopt -q login_shell || . /etc/profile.d/git-prompt.sh\n" >> /etc/bash.bashrc
 
-	uname_m="$(uname -m)"
-	case "$uname_m" in
-	i686)
-		arch=i686
-		otherarch=x86_64
-		otherpacman=git-for-windows-mingw64
-		;;
-	x86_64)
-		arch=x86_64
-		otherarch=i686
-		otherpacman=git-for-windows-mingw32
-		;;
-	esac
-
 	! grep -q '^\[git-for-windows\]$' etc/pacman.conf ||
-	sed -i -e 's/^\(\[git-for-windows\)\(\]\)$/\1-'"$arch"'\2/' etc/pacman.conf
+	sed -i -e 's/^\(\[git-for-windows\)\(\]\)$/\1-@@MSYSTEM_CARCH@@\2/' etc/pacman.conf
 
 	! grep -q wingit.blob.core.windows.net etc/pacman.conf ||
 	sed -i -e '/https:\/\/wingit\.blob\.core\.windows\.net\//{
@@ -82,15 +68,15 @@ GITATTRIBUTES
 	}' etc/pacman.conf
 
 	grep -q git-for-windows[^-] etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i[git-for-windows-'"$arch"']\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/'$arch'\n' etc/pacman.conf
+	sed -i -e '/^\[mingw32\]/i[git-for-windows-@@MSYSTEM_CARCH@@]\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/@@MSYSTEM_CARCH@@\n' etc/pacman.conf
 
 	! grep -A2 git-for-windows[^-] etc/pacman.conf |
 	grep -q '^SigLevel = Optional' ||
-	sed -i -e '/\[git-for-windows-'"$arch"'\]/{N;N;s/\nSigLevel = Optional//}' \
+	sed -i -e '/\[git-for-windows-@@MSYSTEM_CARCH@@\]/{N;N;s/\nSigLevel = Optional//}' \
 		etc/pacman.conf
 
-	grep -q "$otherpacman" etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i['$otherpacman']\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/'$otherarch'\n' etc/pacman.conf
+	grep -q "@@OTHER_ARCH_DB@@" etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i[@@OTHER_ARCH_DB@@]\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/@@OTHER_ARCH@@\n' etc/pacman.conf
 
 	test -z "$(find /clangarm64 -type f -print -quit 2>/dev/null)" || # if /clangarm64 exists and contains at least one file
 	grep -q "git-for-windows-aarch64" etc/pacman.conf || # then add Git for Windows' aarch64 repository (unless it's already added)
