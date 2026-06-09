@@ -14,12 +14,11 @@ license=('GPL')
 groups=('VCS')
 depends=('git-for-windows-keyring' 'diffutils')
 optdepends=('vim' 'filesystem')
-install='git-extra.install'
 pkgver() {
   cd "$startdir"
   test ! -f "$(git rev-parse --git-path shallow)" || git -c http.sslbackend fetch --unshallow
-  rev="$(git rev-list -1 HEAD -- . ':(exclude)./git-extra.install')"
-  while test -z "$(git show $rev . ':(exclude)./git-extra.install' |
+  rev="$(git rev-list -1 HEAD -- .)"
+  while test -z "$(git show $rev -- . |
     sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]pkgver=/d' -e "/^[-+] *'[0-9a-f]\{64\}'$/d" -e '/^[-+]/p')"
   do
     rev="$(git rev-list -1 $rev^ -- .)"
@@ -27,7 +26,8 @@ pkgver() {
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $rev -- .)" \
     "$(git rev-parse --short=9 $rev)"
 }
-source=('inputrc'
+source=('git-extra.install.in'
+        'inputrc'
         'vimrc'
         'vi'
         'git.nanorc'
@@ -62,7 +62,8 @@ source=('inputrc'
         'git-askpass.c'
         'git-askpass.h'
         'git-askpass.rc')
-sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
+sha256sums=('ccea52171c49febf939171681579b5988a7a6edac834aa810165dacd9b885130'
+            '8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             'e36a3b93b8a33b0a74619f2449ed6d56ed54e4e2938b97070bce4926f1f44054'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
             '17c90698d4dd52dd9f383e72aee54ecea0f62520baf56722de5c83285507c0d9'
@@ -99,9 +100,6 @@ sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             '0dd30dc3acd406e70b5ff08fb0bf180ec3782119455989af18c05cf59d09df64')
 
 prepare() {
-  test $startdir/$_realname.install -nt $startdir/$_realname.install.in &&
-  test $startdir/$_realname.install -nt $startdir/gitconfig &&
-  test $startdir/$_realname.install -nt $startdir/gitattributes ||
   sed -e "/^@@GITCONFIG@@$/r $startdir/gitconfig" \
         -e "/^@@GITCONFIG@@$/d" \
         -e "/^@@GITATTRIBUTES@@$/r $startdir/gitattributes" \
@@ -125,6 +123,7 @@ check() {
 }
 
 package() {
+  install='git-extra.install'
   builddir=build-${MINGW_CHOST}
   install -d -m755 $pkgdir/etc/profile.d
   install -d -m755 $pkgdir/usr/share/bash-completion/completions
