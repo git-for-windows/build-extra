@@ -62,7 +62,7 @@ source=('git-extra.install.in'
         'git-askpass.c'
         'git-askpass.h'
         'git-askpass.rc')
-sha256sums=('35e2b56687c90b9de1325d5810ac8be5622041572951db4c547aabcbcdb90c00'
+sha256sums=('2da2a86b4a81d2aebf5b34ff43f1edb6e8a5de0fc94353960a2ed6fe5457408b'
             '8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             'e36a3b93b8a33b0a74619f2449ed6d56ed54e4e2938b97070bce4926f1f44054'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
@@ -111,6 +111,15 @@ prepare() {
     ;;
   esac
 
+  case "$MSYSTEM" in
+  CLANGARM64)
+    handle_clangarm64="/@@\(END\|\)IF_CLANGARM64@@/d"
+    ;;
+  *)
+    handle_clangarm64="/@@IF_CLANGARM64@@/,/@@ENDIF_CLANGARM64/d"
+    ;;
+  esac
+
   sed -e "/^@@GITCONFIG@@$/r $startdir/gitconfig" \
         -e "/^@@GITCONFIG@@$/d" \
         -e "/^@@GITATTRIBUTES@@$/r $startdir/gitattributes" \
@@ -119,6 +128,7 @@ prepare() {
         -e "s|@@MSYSTEM_CARCH@@|$MSYSTEM_CARCH|g" \
         -e "s|@@OTHER_ARCH@@|$otherarch|g" \
         -e "s|@@OTHER_ARCH_DB@@|$otherpacman|g" \
+        -e "$handle_clangarm64" \
         <$startdir/$_realname.install.in >$startdir/$_realname.install
 }
 
