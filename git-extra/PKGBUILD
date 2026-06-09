@@ -8,7 +8,7 @@ pkgver=1.1.696.db26e322c
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'clangarm64')
+mingw_arch=('mingw32' 'mingw64' 'clangarm64' 'ucrt64')
 url="https://github.com/git-for-windows/build-extra"
 license=('GPL')
 groups=('VCS')
@@ -195,20 +195,26 @@ package() {
 # Therefore, we need to mark it as conflicting.
 
 package_mingw-w64-x86_64-git-extra() {
-  conflicts=('git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-i686-git-extra')
+  conflicts=('git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-i686-git-extra' 'mingw-w64-ucrt-x86_64-git-extra')
+  provides=('git-extra')
+  package
+}
+
+package_mingw-w64-ucrt-x86_64-git-extra() {
+  conflicts=('git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-i686-git-extra' 'mingw-w64-x86_64-git-extra')
   provides=('git-extra')
   depends+=("${MINGW_PACKAGE_PREFIX}-docx2txt-rs")
   package
 }
 
 package_mingw-w64-i686-git-extra() {
-  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-clang-aarch64-git-extra')
+  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-ucrt-x86_64-git-extra')
   provides=('git-extra')
   package
 }
 
 package_mingw-w64-clang-aarch64-git-extra() {
-  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-i686-git-extra')
+  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-i686-git-extra' 'mingw-w64-ucrt-x86_64-git-extra')
   provides=('git-extra')
   depends+=("${MINGW_PACKAGE_PREFIX}-docx2txt-rs")
   package
