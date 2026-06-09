@@ -62,7 +62,7 @@ source=('git-extra.install.in'
         'git-askpass.c'
         'git-askpass.h'
         'git-askpass.rc')
-sha256sums=('c4c11aeb31005047d8fd5817475aba08fb10f12f161d6c06f9e73136da7a8a42'
+sha256sums=('3cad6c57a68e34476e73eaa8f2bd4c37342009936af8945b0fc365f6c1e174a2'
             '8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             'e36a3b93b8a33b0a74619f2449ed6d56ed54e4e2938b97070bce4926f1f44054'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
@@ -125,6 +125,7 @@ prepare() {
         -e "/^@@GITATTRIBUTES@@$/r $startdir/gitattributes" \
         -e "/^@@GITATTRIBUTES@@$/d" \
 	-e "s|@@MINGW_PREFIX@@|$MINGW_PREFIX|g" \
+	-e "s|@@MINGW_CHOST@@|$MINGW_CHOST|g" \
         -e "s|@@MSYSTEM_CARCH@@|$MSYSTEM_CARCH|g" \
         -e "s|@@OTHER_ARCH@@|$otherarch|g" \
         -e "s|@@OTHER_ARCH_DB@@|$otherpacman|g" \
