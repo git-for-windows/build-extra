@@ -18,26 +18,23 @@ GITATTRIBUTES
 		-e 's/^\*\.DOT\(.*\)/&\n*.dotm\1\n*.DOTM\1/' \
 		"$ETC_GITATTRIBUTES"
 
-	for dir in mingw32 mingw64 clangarm64
-	do
-		# Drop git-wrapper in place of builtins "to save space"
-		git_wrapper=/$dir/share/git/git-wrapper.exe
-		if test -f $git_wrapper &&
-			! cmp -s $git_wrapper /$dir/bin/git-receive-pack.exe
-		then
-			for b in $(cat /$dir/share/git/builtins.txt)
-			do
-				rm /$dir/libexec/git-core/$b &&
-				ln $git_wrapper /$dir/libexec/git-core/$b
+	# Drop git-wrapper in place of builtins "to save space"
+	git_wrapper=@@MINGW_PREFIX@@/share/git/git-wrapper.exe
+	if test -f $git_wrapper &&
+		! cmp -s $git_wrapper @@MINGW_PREFIX@@/bin/git-receive-pack.exe
+	then
+		for b in $(cat @@MINGW_PREFIX@@/share/git/builtins.txt)
+		do
+			rm @@MINGW_PREFIX@@/libexec/git-core/$b &&
+			ln $git_wrapper @@MINGW_PREFIX@@/libexec/git-core/$b
 
-				if test -x /$dir/bin/$b
-				then
-					rm /$dir/bin/$b &&
-					ln $git_wrapper /$dir/bin/$b
-				fi
-			done
-		fi
-	done
+			if test -x @@MINGW_PREFIX@@/bin/$b
+			then
+				rm @@MINGW_PREFIX@@/bin/$b &&
+				ln $git_wrapper @@MINGW_PREFIX@@/bin/$b
+			fi
+		done
+	fi
 
 	grep -q '^db_home: env windows' /etc/nsswitch.conf ||
 	sed -i 's/^\(db_home: \)\(windows \)\?\([^w]\)/\1env windows \3/' \
