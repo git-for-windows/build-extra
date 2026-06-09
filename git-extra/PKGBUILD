@@ -62,7 +62,7 @@ source=('git-extra.install.in'
         'git-askpass.c'
         'git-askpass.h'
         'git-askpass.rc')
-sha256sums=('451bbbd61c34f16b9d30c51214afce9a1b5f2549bb9e90ac24abb8d2ec54f4d8'
+sha256sums=('317fd5eaff95e943133bb40937d6cae6e006e077b1a2b4ee104adb93db84d5d7'
             '8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             'e36a3b93b8a33b0a74619f2449ed6d56ed54e4e2938b97070bce4926f1f44054'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'

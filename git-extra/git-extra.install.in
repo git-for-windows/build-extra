@@ -21,7 +21,7 @@ GITATTRIBUTES
 	# Drop git-wrapper in place of builtins "to save space"
 	git_wrapper=@@MINGW_PREFIX@@/share/git/git-wrapper.exe
 	if test -f $git_wrapper &&
-		! cmp -s $git_wrapper @@MINGW_PREFIX@@/bin/git-receive-pack.exe
+		! cmp -s $git_wrapper @@MINGW_PREFIX@@/libexec/git-core/git-receive-pack.exe
 	then
 		for b in $(cat @@MINGW_PREFIX@@/share/git/builtins.txt)
 		do
