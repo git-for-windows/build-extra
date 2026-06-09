@@ -231,16 +231,10 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 
 	# Undo the damage of
 	# https://github.com/mirror/mingw-w64/commit/69effce76945e
-	for dir in mingw32 mingw64
-	do
-		case "$dir" in
-		*32) header=/$dir/i686-w64-mingw32/include/pthread_unistd.h;;
-		*64) header=/$dir/x86_64-w64-mingw32/include/pthread_unistd.h;;
-		esac
-		test ! -e $header ||
-		grep -q '^#define _POSIX_THREAD_SAFE_FUNCTIONS' $header ||
-		sed -i '$i#undef _POSIX_THREAD_SAFE_FUNCTIONS\n#define _POSIX_THREAD_SAFE_FUNCTIONS 200112L\n' $header
-	done
+	header=@@MINGW_PREFIX@@/@@MINGW_CHOST@@/include/pthread_unistd.h
+	test ! -e $header ||
+	grep -q '^#define _POSIX_THREAD_SAFE_FUNCTIONS' $header ||
+	sed -i '$i#undef _POSIX_THREAD_SAFE_FUNCTIONS\n#define _POSIX_THREAD_SAFE_FUNCTIONS 200112L\n' $header
 
 	# We do not actually need the http.sslCAInfo setting anymore, as the
 	# cURL we ship with Git for Windows was patched to find the location of
