@@ -2,8 +2,7 @@
 
 _realname="git-extra"
 pkgbase="mingw-w64-${_realname}"
-pkgname=($_realname
-        "${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
 pkgver=1.1.696.db26e322c
 pkgrel=1
@@ -169,13 +168,6 @@ package() {
 # The old and new package name can't be installed simultaneously, as it installs things like
 # /etc/profile.d/git-sdk.sh which aren't specific to MINGW prefixes like /mingw64 or /mingw32.
 # Therefore, we need to mark it as conflicting.
-package_git-extra() {
-  # As we publish to two separate repositories (git-for-windows and git-for-windows-mingw32), we need
-  # to specifically specify the architecture for both on the legacy package.
-  arch=('i686' 'x86_64')
-  conflicts=('mingw-w64-clang-aarch64-git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-i686-git-extra')
-  package
-}
 
 package_mingw-w64-x86_64-git-extra() {
   conflicts=('git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-i686-git-extra')
