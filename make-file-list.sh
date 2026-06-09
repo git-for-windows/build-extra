@@ -9,6 +9,10 @@ test -n "$ARCH" ||
 die "Need ARCH to be set"
 
 case "$ARCH" in
+ucrt64)
+	MSYSTEM_LOWER=ucrt64
+	PACMAN_ARCH=ucrt-x86_64
+	;;
 x86_64)
 	MSYSTEM_LOWER=mingw64
 	PACMAN_ARCH=x86_64

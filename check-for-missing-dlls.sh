@@ -27,6 +27,10 @@ die "Could not determine architecture"
 
 case "$MSYSTEM" in
 MINGW64) MINGW_PREFIX=mingw64;;
+UCRT64)
+	MINGW_PREFIX=ucrt64
+	ARCH=ucrt64
+	;;
 CLANGARM64)
 	MINGW_PREFIX=clangarm64
 	ARCH=aarch64
