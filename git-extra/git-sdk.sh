@@ -75,6 +75,7 @@ sdk () {
 		case "$MSYSTEM" in
 		MINGW32) shortcut_suffix=" 32-bit";;
 		MINGW64) shortcut_suffix=" 64-bit";;
+		UCRT64) shortcut_suffix=" ucrt64";;
 		CLANGARM64) shortcut_suffix=" arm64";;
 		MSYS)
 			case "$(uname -m)" in
@@ -225,6 +226,10 @@ sdk () {
 			then
 				MSYSTEM=CLANGARM64
 				MINGW_MOUNT_POINT=/clangarm64
+			elif test -d /ucrt64
+			then
+				MSYSTEM=UCRT64
+				MINGW_MOUNT_POINT=/ucrt64
 			else
 				MSYSTEM=MINGW64
 				MINGW_MOUNT_POINT=/mingw64
@@ -391,7 +396,7 @@ sdk () {
 			then
 				case "$MSYSTEM" in
 				MSYS) sdk makepkg -f;;
-				CLANGARM*|MINGW*) MINGW_ARCH=${MSYSTEM,,} sdk makepkg-mingw -f;;
+				CLANGARM*|MINGW*|UCRT*) MINGW_ARCH=${MSYSTEM,,} sdk makepkg-mingw -f;;
 				esac
 				return $?
 			fi
