@@ -389,7 +389,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	done
 }
 
-create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--architecture=(x86_64|i686|aarch64|auto)] [--bitness=(32|64)] [--force] <name>
+create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--architecture=(x86_64|i686|aarch64|ucrt64|auto)] [--bitness=(32|64)] [--force] <name>
 	git_sdk_path=/
 	output_path=
 	force=
@@ -490,6 +490,11 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	fi
 
 	case "$architecture" in
+	ucrt64)
+		MSYSTEM=UCRT64
+		PREFIX="/ucrt64"
+		SDK_REPO="git-sdk-64"
+		;;
 	x86_64)
 		MSYSTEM=MINGW64
 		PREFIX="/mingw64"
@@ -670,7 +675,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
-			if test x86_64 = $architecture
+			if test x86_64 = $architecture &&
+				git -C "$git_sdk_path" rev-parse -q --verify \
+					HEAD:.sparse/makepkg-git-i686 >/dev/null
 			then
 				printf '\n' >>"$sparse_checkout_file" &&
 				git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file"
