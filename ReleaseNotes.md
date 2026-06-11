@@ -47,6 +47,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [Bash v5.3.12](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=ecb2456d6357bfd3b2965aafe2f2021d1ced5b72).
 * The FSCache now [accelerates more `git add` scenarios](https://github.com/git-for-windows/git/pull/6216).
 * Comes with [OpenSSL v3.5.7](https://www.openssl.org/news/openssl-3.5-notes.html).
+* The diff helper handling Word documents was [ported](https://github.com/git-for-windows/build-extra/pull/708) from Perl to Rust.
 
 ### Bug Fixes
 
