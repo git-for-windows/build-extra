@@ -54,6 +54,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * A [regression in v2.54.0](https://github.com/git-for-windows/git/issues/6210) that could cause endless "Unlink of file '.git/objects/pack/pack-<hash>.idx' failed. Should I try again?" loops on older Windows 10 versions during `git fetch` operations [was fixed](https://github.com/git-for-windows/git/pull/6215).
 * A [bug](https://github.com/msys2/msys2-runtime/issues/338) that prevented proper shutdown of processes launched via Git Bash under certain circumstances [was fixed](https://github.com/msys2/msys2-runtime/pull/339).
 * A bug was [fixed](https://github.com/git-for-windows/git/pull/6250) which could cause parallel checkouts to fail under certain circumstances when the FSCache is enabled.
+* Git Bash (MinTTY) now respects screen scaling settings [under more circumstances](https://github.com/git-for-windows/git/issues/6085).
 
 ## Changes since Git for Windows v2.53.0(3) (April 14th 2026)
 
