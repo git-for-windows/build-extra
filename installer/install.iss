@@ -2553,8 +2553,10 @@ begin
 #endif
 
     PageIDBeforeInstall:=CurrentCustomPageID;
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
     if (PageIDBeforeInstall=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
         PageIDBeforeInstall:=PageIDBeforeInstall-1;
+#endif
 
     (*
      * Create a custom page for finding the processes that lock a module.
@@ -2630,9 +2632,12 @@ begin
             Result:=False
         else
             Result:=(PageID<>wpInfoBefore) and (PageID<>wpFinished);
-    end else if (PageID=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
+    end
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
+    else if (PageID=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
         // Skip experimental options page if all options are hidden
         Result:=True
+#endif
     else
         Result:=False;
 #ifdef DEBUG_WIZARD_PAGE
