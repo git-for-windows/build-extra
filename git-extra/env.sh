@@ -12,6 +12,14 @@ test -n "$SSH_ASKPASS" || {
 			export SSH_ASKPASS=/mingw64/libexec/git-core/git-gui--askpass
 		fi
 		;;
+	UCRT64)
+		export DISPLAY=needs-to-be-defined
+		if [ -f /ucrt64/bin/git-askpass.exe ]; then
+			export SSH_ASKPASS=/ucrt64/bin/git-askpass.exe
+		else
+			export SSH_ASKPASS=/ucrt64/libexec/git-core/git-gui--askpass
+		fi
+		;;
 	MINGW32)
 		export DISPLAY=needs-to-be-defined
 		if [ -f /mingw32/bin/git-askpass.exe ]; then
