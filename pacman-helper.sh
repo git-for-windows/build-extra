@@ -340,9 +340,9 @@ quick_action () { # <action> <file>...
 		die "Could not update $dir/$arch"
 
 		case "$arch,$mingw" in
-		*,) db2=;;
-		i686,*) db2=mingw32;;
-		*aarch64*) db2=clangarm64;;
+		*,) db2=; db3=;;
+		i686,*) db2=mingw32; db3=;;
+		*aarch64*) db2=clangarm64; db3=;;
 		*)
 			db2=mingw64
 			db3=ucrt64
