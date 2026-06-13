@@ -1917,6 +1917,7 @@ var
     LblInfo:TLabel;
     AslrSetting: AnsiString;
     WasFSMonitorEnabled:Boolean;
+    Dummy:array of TLabel;
 begin
     SanitizeGitEnvironmentVariables();
 
@@ -2415,6 +2416,9 @@ begin
 
     // 3rd choice
     RdbGitPullBehavior[GP_GitPullFFOnly]:=CreateRadioButton(GitPullBehaviorPage,'Only ever fast-forward','Fast-forward to the fetched branch. Fail if that is not possible.'+#13+'This is the standard behavior of `git pull`.',TabOrder,Top,Left);
+
+    // Footer note
+    CreateItemDescription(GitPullBehaviorPage,'Need help choosing? Read <A HREF=https://gitforwindows.org/choosing-the-default-behavior-of-git-pull.html>this guide</A>.',Top,Left,Dummy,True);
 
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Git Pull Behavior Option','Merge') of
