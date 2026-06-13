@@ -46,10 +46,10 @@ Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-su
 * Comes with [Git Credential Manager v2.8.0](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.8.0).
 * Comes with [cURL v8.20.0](https://curl.se/changes.html#8_20_0).
 * Comes with [less 702](http://www.greenwoodsoftware.com/less/news.702.html).
-* Comes with [Bash v5.3.12](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=ecb2456d6357bfd3b2965aafe2f2021d1ced5b72).
 * The FSCache now [accelerates more `git add` scenarios](https://github.com/git-for-windows/git/pull/6216).
 * Comes with [OpenSSL v3.5.7](https://www.openssl.org/news/openssl-3.5-notes.html).
 * The diff helper handling Word documents was [ported](https://github.com/git-for-windows/build-extra/pull/708) from Perl to Rust.
+* Comes with [Bash v5.3.15](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=b460816602167718f78a6233164e8875f49b75b2).
 
 ### Bug Fixes
 
