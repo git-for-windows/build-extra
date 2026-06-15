@@ -88,16 +88,24 @@ fi
 
 # Newer `git.exe` no longer link to `libssp-0.dll` that has been made obsolete
 # by recent GCC updates
-EXCLUDE_LIBSSP=
-test ! -f "/$MSYSTEM_LOWER/bin/git.exe" ||
-grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" ||
-EXCLUDE_LIBSSP='\|ssp'
-
-# On clangarm64, libunwind and libwinpthread-1 are pulled in by the toolchain's
-# package closure but are not statically imported by any shipped binary.
-EXCLUDE_CLANGARM64_RUNTIME=
-test aarch64 != "$ARCH" ||
-EXCLUDE_CLANGARM64_RUNTIME='^/clangarm64/bin/lib\(unwind\|winpthread-1\)\.dll$'
+EXCLUDE_MINGW_W64_DLLS=
+test ! -f "/$MSYSTEM_LOWER/bin/git.exe" || {
+	grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" ||
+	EXCLUDE_MINGW_W64_DLLS='\|ssp'
+	# libwinpthread-1 may be pulled in by the toolchain's
+	# package closure but at the same time not be a dependency of git.exe.
+	# It still is a dependency of libgcc_s_seh-1.dll, though, which is a
+	# dependency of non-MinGit bits such as WhoUses.exe (but not with clang),
+	# or libgcc_s_dw2-1.dll, which is still a hard dependency of plenty of
+	# i686 DLLs/EXEs.
+	case "$MSYSTEM_LOWER,$MINIMAL_GIT" in
+	mingw64,|mingw32,*) ;; # have bits that need winpthread
+	*)
+		grep -q libwinpthread-1.dll "/$MSYSTEM_LOWER/bin/git.exe" ||
+		EXCLUDE_MINGW_W64_DLLS='\|winpthread'
+		;;
+	esac
+}
 
 this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
@@ -245,9 +253,8 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/\(mingw\|clang\)[^/]*/itcl/' \
 	-e '^/\(mingw\|clang\)[^/]*/t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(autopoint\|[a-z]*-config\)$' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(asprintf\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(atomic\|charset\|gomp\|systre'"$EXCLUDE_LIBSSP"'\)-[0-9]*\.dll$' \
-	${EXCLUDE_CLANGARM64_RUNTIME:+-e "$EXCLUDE_CLANGARM64_RUNTIME"} \
+	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(asprintf\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13]\|quadmath\|stdc++\|unwind\|zip\)[^/]*\.dll$' \
+	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(atomic\|charset\|gomp\|systre'"$EXCLUDE_MINGW_W64_DLLS"'\)-[0-9]*\.dll$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\|zip\)[^/]*\.exe$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/recode-sr-latin.exe$' \
 	-e '^/\(mingw\|clang\)[^/]*/bin/\(cert\|p11\|psk\|srp\)tool.exe$' \
