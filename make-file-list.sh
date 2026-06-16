@@ -130,7 +130,7 @@ pacman_list () {
 		sed 's/[<>=].*//' |
 		grep -v "^\\($(echo $PACKAGE_EXCLUDES | sed \
 			-e 's/ /\\|/g' \
-			-e 's/mingw-w64-/&\\(i686\\|x86_64\\|clang-aarch64\\)-/g')\\)\$" |
+			-e 's/mingw-w64-/&\\(i686\\|x86_64\\|ucrt-x86_64\\|clang-aarch64\\)-/g')\\)\$" |
 		sort |
 		uniq) &&
 
