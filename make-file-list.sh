@@ -448,7 +448,7 @@ fi
 
 EXTRA_DLL_FILES=
 case $MSYSTEM_LOWER in
-mingw*)
+mingw*|ucrt64)
 	PDFTOTEXT_FILES="$MSYSTEM_LOWER/bin/pdftotext.exe
 $MSYSTEM_LOWER/bin/libstdc++-6.dll"
 	if test i686 = "$ARCH" &&
