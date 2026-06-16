@@ -18,26 +18,23 @@ GITATTRIBUTES
 		-e 's/^\*\.DOT\(.*\)/&\n*.dotm\1\n*.DOTM\1/' \
 		"$ETC_GITATTRIBUTES"
 
-	for dir in mingw32 mingw64 clangarm64
-	do
-		# Drop git-wrapper in place of builtins "to save space"
-		git_wrapper=/$dir/share/git/git-wrapper.exe
-		if test -f $git_wrapper &&
-			! cmp -s $git_wrapper /$dir/bin/git-receive-pack.exe
-		then
-			for b in $(cat /$dir/share/git/builtins.txt)
-			do
-				rm /$dir/libexec/git-core/$b &&
-				ln $git_wrapper /$dir/libexec/git-core/$b
+	# Drop git-wrapper in place of builtins "to save space"
+	git_wrapper=@@MINGW_PREFIX@@/share/git/git-wrapper.exe
+	if test -f $git_wrapper &&
+		! cmp -s $git_wrapper @@MINGW_PREFIX@@/libexec/git-core/git-receive-pack.exe
+	then
+		for b in $(cat @@MINGW_PREFIX@@/share/git/builtins.txt)
+		do
+			rm @@MINGW_PREFIX@@/libexec/git-core/$b &&
+			ln $git_wrapper @@MINGW_PREFIX@@/libexec/git-core/$b
 
-				if test -x /$dir/bin/$b
-				then
-					rm /$dir/bin/$b &&
-					ln $git_wrapper /$dir/bin/$b
-				fi
-			done
-		fi
-	done
+			if test -x @@MINGW_PREFIX@@/bin/$b
+			then
+				rm @@MINGW_PREFIX@@/bin/$b &&
+				ln $git_wrapper @@MINGW_PREFIX@@/bin/$b
+			fi
+		done
+	fi
 
 	grep -q '^db_home: env windows' /etc/nsswitch.conf ||
 	sed -i 's/^\(db_home: \)\(windows \)\?\([^w]\)/\1env windows \3/' \
@@ -61,22 +58,8 @@ GITATTRIBUTES
 	grep -q '^# Fixup git-bash in non login env' /etc/bash.bashrc ||
 	printf "\n# Fixup git-bash in non login env\nshopt -q login_shell || . /etc/profile.d/git-prompt.sh\n" >> /etc/bash.bashrc
 
-	uname_m="$(uname -m)"
-	case "$uname_m" in
-	i686)
-		arch=i686
-		otherarch=x86_64
-		otherpacman=git-for-windows-mingw64
-		;;
-	x86_64)
-		arch=x86_64
-		otherarch=i686
-		otherpacman=git-for-windows-mingw32
-		;;
-	esac
-
 	! grep -q '^\[git-for-windows\]$' etc/pacman.conf ||
-	sed -i -e 's/^\(\[git-for-windows\)\(\]\)$/\1-'"$arch"'\2/' etc/pacman.conf
+	sed -i -e 's/^\(\[git-for-windows\)\(\]\)$/\1-@@MSYSTEM_CARCH@@\2/' etc/pacman.conf
 
 	! grep -q wingit.blob.core.windows.net etc/pacman.conf ||
 	sed -i -e '/https:\/\/wingit\.blob\.core\.windows\.net\//{
@@ -85,19 +68,20 @@ GITATTRIBUTES
 	}' etc/pacman.conf
 
 	grep -q git-for-windows[^-] etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i[git-for-windows-'"$arch"']\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/'$arch'\n' etc/pacman.conf
+	sed -i -e '/^\[mingw32\]/i[git-for-windows-@@MSYSTEM_CARCH@@]\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/@@MSYSTEM_CARCH@@\n' etc/pacman.conf
 
 	! grep -A2 git-for-windows[^-] etc/pacman.conf |
 	grep -q '^SigLevel = Optional' ||
-	sed -i -e '/\[git-for-windows-'"$arch"'\]/{N;N;s/\nSigLevel = Optional//}' \
+	sed -i -e '/\[git-for-windows-@@MSYSTEM_CARCH@@\]/{N;N;s/\nSigLevel = Optional//}' \
 		etc/pacman.conf
 
-	grep -q "$otherpacman" etc/pacman.conf ||
-	sed -i -e '/^\[mingw32\]/i['$otherpacman']\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/'$otherarch'\n' etc/pacman.conf
+	grep -q "@@OTHER_ARCH_DB@@" etc/pacman.conf ||
+	sed -i -e '/^\[mingw32\]/i[@@OTHER_ARCH_DB@@]\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/@@OTHER_ARCH@@\n' etc/pacman.conf
 
-	test -z "$(find /clangarm64 -type f -print -quit 2>/dev/null)" || # if /clangarm64 exists and contains at least one file
+	@@IF_CLANGARM64@@
 	grep -q "git-for-windows-aarch64" etc/pacman.conf || # then add Git for Windows' aarch64 repository (unless it's already added)
 	sed -i -e '/^\[clangarm64]/i[git-for-windows-aarch64]\nServer = https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads/aarch64\n' etc/pacman.conf
+	@@ENDIF_CLANGARM64@@
 
 	! grep -q 'https://dl.bintray.com/\$repo/pacman/\$arch' etc/pacman.conf ||
 	sed -i -e 's/https:\/\/dl\.bintray\.com\/\$repo\/pacman\/\$arch/https:\/\/wingit.blob.core.windows.net\/'$arch'/g' etc/pacman.conf
@@ -192,15 +176,15 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	pacman-key --list-keys BB3AA74136C569BB >/dev/null ||
 	pacman-key --populate git-for-windows
 
-	# .bat files in /mingw{32,64}/bin are non-portable because they
+	# .bat files in $MINGW_PREFIX/bin are non-portable because they
 	# typically contain absolute paths
-	find /mingw*/bin/ -name \*.bat -exec rm {} \;
+	find @@MINGW_PREFIX@@/bin/ -name \*.bat -exec rm {} \;
 
 	# absolute paths in the she-bang lines must be POSIX paths, not
 	# Windows paths, otherwise the SDK won't be portable
 	root="$(cygpath -am / | sed 's/\/$//')" &&
 	rootw="$(echo "$root" | sed "s/\//\\\\&/g")" &&
-	for s in $(grep -l "#\!$root/" $(find /mingw*/bin/ -size -17k -type f))
+	for s in $(grep -l "#\!$root/" $(find @@MINGW_PREFIX@@/bin/ -size -17k -type f))
 	do
 		sed -i "1s/#\!$rootw/#\!/" $s || break
 	done
@@ -247,16 +231,10 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 
 	# Undo the damage of
 	# https://github.com/mirror/mingw-w64/commit/69effce76945e
-	for dir in mingw32 mingw64
-	do
-		case "$dir" in
-		*32) header=/$dir/i686-w64-mingw32/include/pthread_unistd.h;;
-		*64) header=/$dir/x86_64-w64-mingw32/include/pthread_unistd.h;;
-		esac
-		test ! -e $header ||
-		grep -q '^#define _POSIX_THREAD_SAFE_FUNCTIONS' $header ||
-		sed -i '$i#undef _POSIX_THREAD_SAFE_FUNCTIONS\n#define _POSIX_THREAD_SAFE_FUNCTIONS 200112L\n' $header
-	done
+	header=@@MINGW_PREFIX@@/@@MINGW_CHOST@@/include/pthread_unistd.h
+	test ! -e $header ||
+	grep -q '^#define _POSIX_THREAD_SAFE_FUNCTIONS' $header ||
+	sed -i '$i#undef _POSIX_THREAD_SAFE_FUNCTIONS\n#define _POSIX_THREAD_SAFE_FUNCTIONS 200112L\n' $header
 
 	# We do not actually need the http.sslCAInfo setting anymore, as the
 	# cURL we ship with Git for Windows was patched to find the location of
@@ -267,12 +245,12 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 
 	# We no longer want to configure `color.diff`, `color.status` and `color.branch`
 	# by default.
-	test ! -f /etc/gitconfig || # just a little defensive programming
-	test -z "$(sed -n '/^\[color\]/{N;/\(diff\|status\|branch\) = auto/p}' </etc/gitconfig)" || {
-		git config -f /etc/gitconfig color.ui auto &&
+	test ! -f $ETC_GITCONFIG || # just a little defensive programming
+	test -z "$(sed -n '/^\[color\]/{N;/\(diff\|status\|branch\) = auto/p}' <$ETC_GITCONFIG)" || {
+		git config -f $ETC_GITCONFIG color.ui auto &&
 		for key in diff status branch
 		do
-			git config -f /etc/gitconfig --unset color.$key # ignore errors, e.g. if already unset
+			git config -f $ETC_GITCONFIG --unset color.$key # ignore errors, e.g. if already unset
 		done
 	}
 

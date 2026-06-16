@@ -2,25 +2,23 @@
 
 _realname="git-extra"
 pkgbase="mingw-w64-${_realname}"
-pkgname=($_realname
-        "${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
-pkgver=1.1.696.db26e322c
+pkgver=1.1.709.fa78d67ca
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('any')
-mingw_arch=('mingw32' 'mingw64' 'clangarm64')
+mingw_arch=('mingw32' 'mingw64' 'clangarm64' 'ucrt64')
 url="https://github.com/git-for-windows/build-extra"
 license=('GPL')
 groups=('VCS')
 depends=('git-for-windows-keyring' 'diffutils')
 optdepends=('vim' 'filesystem')
-install='git-extra.install'
 pkgver() {
   cd "$startdir"
   test ! -f "$(git rev-parse --git-path shallow)" || git -c http.sslbackend fetch --unshallow
-  rev="$(git rev-list -1 HEAD -- . ':(exclude)./git-extra.install')"
-  while test -z "$(git show $rev . ':(exclude)./git-extra.install' |
+  rev="$(git rev-list -1 HEAD -- .)"
+  while test -z "$(git show $rev -- . |
     sed -n -e '1,/^@@/d' -e '/^[-+]pkgver=/d' -e '/^[-+]pkgver=/d' -e "/^[-+] *'[0-9a-f]\{64\}'$/d" -e '/^[-+]/p')"
   do
     rev="$(git rev-list -1 $rev^ -- .)"
@@ -28,7 +26,8 @@ pkgver() {
   printf "%s.%s.%s" "${_ver_base}" "$(git rev-list --count $rev -- .)" \
     "$(git rev-parse --short=9 $rev)"
 }
-source=('inputrc'
+source=('git-extra.install.in'
+        'inputrc'
         'vimrc'
         'vi'
         'git.nanorc'
@@ -63,7 +62,8 @@ source=('inputrc'
         'git-askpass.c'
         'git-askpass.h'
         'git-askpass.rc')
-sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
+sha256sums=('463c956c0b38db5f1fa7d343af1059b4381f6ac5d05b39a2227cb029d442318d'
+            '8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             'e36a3b93b8a33b0a74619f2449ed6d56ed54e4e2938b97070bce4926f1f44054'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
             '17c90698d4dd52dd9f383e72aee54ecea0f62520baf56722de5c83285507c0d9'
@@ -76,13 +76,13 @@ sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             '8433a9e72b3bc9c3bc7903b54b868399bdb17a6c8de4af4dd5450dd42859c898'
             'e14a655b778db71b89f6b6b65af39c61994b53654325e84a10753957452f17bb'
             'a7540390bf956f33f6497a87c8986e124a8ecdacad26d0f75695c83dc2410d96'
-            '32c9a549ecb1c9e06622221dae98a000ac2ce9c2be97d5d0c4f80610af3dc55c'
+            '851bec0cf0b15e82684581e3ed9aaafb7a6b63269eb6f8908d5a9a64d3b8d1cd'
             '02d38e480a1ec4227e94a5aa073945901680aa3387e3386f8b77f10426ebbc75'
             'dcbd1b981d5b899afe30151a5f5a27ea52025ff1335f131af1b5891f62ddd55b'
             '683ab066be19cb4defec470ebd53f165ca5dbf761fd40c13aee8abe31ba42803'
             '1cf2c13fb97c51375a76ed479362c3cbcdb51ab4d3a745e8d2c3a780badd8d46'
             '4e9d036e63632491ccd825d0a5d3791ad6614a7a9263934b83a572524dbc1634'
-            'd9be882f292f23219332770902404d899420c8e069c7cd56cd89eff98e654631'
+            '43fe1b2d4f8124f7c9f627df62f28eaad295927b79793120757914f62287bb3e'
             '22f41610dea842890955032af30efdb60e80f310e95a04e57ab36b10e0376923'
             '8120b41b869693e07acc4707a0ab45505e7c5e4156a3a44b19152f1f425df85f'
             '15b40ab72dea884f659cfbe441e9a40b2d8d63e490a3c14824a55607368e476d'
@@ -100,13 +100,36 @@ sha256sums=('8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             '0dd30dc3acd406e70b5ff08fb0bf180ec3782119455989af18c05cf59d09df64')
 
 prepare() {
-  test $startdir/$_realname.install -nt $startdir/$_realname.install.in &&
-  test $startdir/$_realname.install -nt $startdir/gitconfig &&
-  test $startdir/$_realname.install -nt $startdir/gitattributes ||
+  case "$MSYSTEM_CARCH" in
+  i686)
+    otherarch=x86_64
+    otherpacman=git-for-windows-mingw64
+    ;;
+  x86_64)
+    otherarch=i686
+    otherpacman=git-for-windows-mingw32
+    ;;
+  esac
+
+  case "$MSYSTEM" in
+  CLANGARM64)
+    handle_clangarm64="/@@\(END\|\)IF_CLANGARM64@@/d"
+    ;;
+  *)
+    handle_clangarm64="/@@IF_CLANGARM64@@/,/@@ENDIF_CLANGARM64/d"
+    ;;
+  esac
+
   sed -e "/^@@GITCONFIG@@$/r $startdir/gitconfig" \
         -e "/^@@GITCONFIG@@$/d" \
         -e "/^@@GITATTRIBUTES@@$/r $startdir/gitattributes" \
         -e "/^@@GITATTRIBUTES@@$/d" \
+	-e "s|@@MINGW_PREFIX@@|$MINGW_PREFIX|g" \
+	-e "s|@@MINGW_CHOST@@|$MINGW_CHOST|g" \
+        -e "s|@@MSYSTEM_CARCH@@|$MSYSTEM_CARCH|g" \
+        -e "s|@@OTHER_ARCH@@|$otherarch|g" \
+        -e "s|@@OTHER_ARCH_DB@@|$otherpacman|g" \
+        -e "$handle_clangarm64" \
         <$startdir/$_realname.install.in >$startdir/$_realname.install
 }
 
@@ -126,6 +149,7 @@ check() {
 }
 
 package() {
+  install='git-extra.install'
   builddir=build-${MINGW_CHOST}
   install -d -m755 $pkgdir/etc/profile.d
   install -d -m755 $pkgdir/usr/share/bash-completion/completions
@@ -169,29 +193,28 @@ package() {
 # The old and new package name can't be installed simultaneously, as it installs things like
 # /etc/profile.d/git-sdk.sh which aren't specific to MINGW prefixes like /mingw64 or /mingw32.
 # Therefore, we need to mark it as conflicting.
-package_git-extra() {
-  # As we publish to two separate repositories (git-for-windows and git-for-windows-mingw32), we need
-  # to specifically specify the architecture for both on the legacy package.
-  arch=('i686' 'x86_64')
-  conflicts=('mingw-w64-clang-aarch64-git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-i686-git-extra')
+
+package_mingw-w64-x86_64-git-extra() {
+  conflicts=('git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-i686-git-extra' 'mingw-w64-ucrt-x86_64-git-extra')
+  provides=('git-extra')
   package
 }
 
-package_mingw-w64-x86_64-git-extra() {
-  conflicts=('git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-i686-git-extra')
+package_mingw-w64-ucrt-x86_64-git-extra() {
+  conflicts=('git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-i686-git-extra' 'mingw-w64-x86_64-git-extra')
   provides=('git-extra')
   depends+=("${MINGW_PACKAGE_PREFIX}-docx2txt-rs")
   package
 }
 
 package_mingw-w64-i686-git-extra() {
-  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-clang-aarch64-git-extra')
+  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-ucrt-x86_64-git-extra')
   provides=('git-extra')
   package
 }
 
 package_mingw-w64-clang-aarch64-git-extra() {
-  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-i686-git-extra')
+  conflicts=('git-extra' 'mingw-w64-x86_64-git-extra' 'mingw-w64-i686-git-extra' 'mingw-w64-ucrt-x86_64-git-extra')
   provides=('git-extra')
   depends+=("${MINGW_PACKAGE_PREFIX}-docx2txt-rs")
   package
