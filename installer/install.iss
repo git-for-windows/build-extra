@@ -2406,16 +2406,16 @@ begin
      * Create a custom page for the default behavior of `git pull`.
      *)
 
-    GitPullBehaviorPage:=CreatePage(PrevPageID,'Choose the default behavior of `git pull`','What should `git pull` do by default?',TabOrder,Top,Left);
+    GitPullBehaviorPage:=CreatePage(PrevPageID,'Choose the default behavior of `git pull`','Pulling always attempts a fast-forward first.',TabOrder,Top,Left);
 
     // 1st choice
-    RdbGitPullBehavior[GP_GitPullMerge]:=CreateRadioButton(GitPullBehaviorPage,'Fast-forward or merge','Fast-forward the current branch to the fetched branch when possible,'+#13+'otherwise create a merge commit.',TabOrder,Top,Left);
+    RdbGitPullBehavior[GP_GitPullMerge]:=CreateRadioButton(GitPullBehaviorPage,'Merge','Create a merge commit to combine branches. This preserves the history of parallel work.',TabOrder,Top,Left);
 
     // 2nd choice
-    RdbGitPullBehavior[GP_GitPullRebase]:=CreateRadioButton(GitPullBehaviorPage,'Rebase','Rebase the current branch onto the fetched branch. If there are no local'+#13+'commits to rebase, this is equivalent to a fast-forward.',TabOrder,Top,Left);
+    RdbGitPullBehavior[GP_GitPullRebase]:=CreateRadioButton(GitPullBehaviorPage,'Rebase','Rewrite your local commits on top of the remote branch, keeping a single linear timeline.',TabOrder,Top,Left);
 
     // 3rd choice
-    RdbGitPullBehavior[GP_GitPullFFOnly]:=CreateRadioButton(GitPullBehaviorPage,'Only ever fast-forward','Fast-forward to the fetched branch. Fail if that is not possible.'+#13+'This is the standard behavior of `git pull`.',TabOrder,Top,Left);
+    RdbGitPullBehavior[GP_GitPullFFOnly]:=CreateRadioButton(GitPullBehaviorPage,'Fast-forward only','Safely abort if a fast-forward is not possible.'+#13+'This is the default behavior of `git pull`.',TabOrder,Top,Left);
 
     // Footer note
     CreateItemDescription(GitPullBehaviorPage,'Need help choosing? Read <A HREF=https://gitforwindows.org/choosing-the-default-behavior-of-git-pull.html>this guide</A>.',Top,Left,Dummy,True);
@@ -2557,8 +2557,10 @@ begin
 #endif
 
     PageIDBeforeInstall:=CurrentCustomPageID;
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
     if (PageIDBeforeInstall=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
         PageIDBeforeInstall:=PageIDBeforeInstall-1;
+#endif
 
     (*
      * Create a custom page for finding the processes that lock a module.
@@ -2634,9 +2636,12 @@ begin
             Result:=False
         else
             Result:=(PageID<>wpInfoBefore) and (PageID<>wpFinished);
-    end else if (PageID=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
+    end
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
+    else if (PageID=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
         // Skip experimental options page if all options are hidden
         Result:=True
+#endif
     else
         Result:=False;
 #ifdef DEBUG_WIZARD_PAGE
