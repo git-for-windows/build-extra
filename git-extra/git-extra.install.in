@@ -25,6 +25,7 @@ GITATTRIBUTES
 	then
 		for b in $(cat @@MINGW_PREFIX@@/share/git/builtins.txt)
 		do
+			test ! -f @@MINGW_PREFIX@@/libexec/git-core/$b ||
 			rm @@MINGW_PREFIX@@/libexec/git-core/$b &&
 			ln $git_wrapper @@MINGW_PREFIX@@/libexec/git-core/$b
 
