@@ -35,17 +35,17 @@ case "$MSYSTEM" in
 MINGW32)
 	ARCH=i686
 	ARTIFACT_SUFFIX="32-bit"
-	PACMAN_ARCH=i686
+	MINGW_PACKAGE_PREFIX=mingw-w64-i686
 	;;
 MINGW64)
 	ARCH=x86_64
 	ARTIFACT_SUFFIX="64-bit"
-	PACMAN_ARCH=x86_64
+	MINGW_PACKAGE_PREFIX=mingw-w64-x86_64
 	;;
 CLANGARM64)
 	ARCH=aarch64
 	ARTIFACT_SUFFIX=arm64
-	PACMAN_ARCH=clang-aarch64
+	MINGW_PACKAGE_PREFIX=mingw-w64-clang-aarch64
 	;;
 *)
 	die "Unhandled MSYSTEM: $MSYSTEM"
@@ -115,11 +115,11 @@ die "Could not generate system config"
 # Make the archive
 
 type 7z ||
-pacman -Sy --noconfirm mingw-w64-$PACMAN_ARCH-7zip ||
+pacman -Sy --noconfirm $MINGW_PACKAGE_PREFIX-7zip ||
 die "Could not install 7-Zip"
 
 echo "$LIST" | sort >"$SCRIPT_PATH"/sorted-all &&
-pacman -Ql mingw-w64-$PACMAN_ARCH-git |
+pacman -Ql $MINGW_PACKAGE_PREFIX-git |
 sed 's|^[^ ]* /||' |
 grep "^$MSYSTEM_LOWER/libexec/git-core/.*\.exe$" |
 sort >"$SCRIPT_PATH"/sorted-libexec-exes &&
