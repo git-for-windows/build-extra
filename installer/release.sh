@@ -126,6 +126,12 @@ MINGW64)
 	ARCH=x86_64
 	MINGW_PACKAGE_PREFIX=mingw-w64-x86_64
 	;;
+UCRT64)
+	BITNESS=64
+	ARCH=ucrt64
+	MINGW_PACKAGE_PREFIX=mingw-w64-ucrt-x86_64
+	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX 'ucrt64'"
+	;;
 CLANGARM64)
 	BITNESS=64
 	ARCH=aarch64

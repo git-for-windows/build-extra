@@ -47,6 +47,11 @@ CLANGARM64)
 	ARTIFACT_SUFFIX=arm64
 	MINGW_PACKAGE_PREFIX=mingw-w64-clang-aarch64
 	;;
+UCRT64)
+	ARCH=ucrt64
+	ARTIFACT_SUFFIX="ucrt64"
+	PACMAN_ARCH=ucrt-x86_64
+	;;
 *)
 	die "Unhandled MSYSTEM: $MSYSTEM"
 	;;
