@@ -365,6 +365,12 @@ jobs:
             msystem: MINGW64
             sdk-repo: git-sdk-64
             runner: windows-latest
+          - name: ucrt64
+            mingw-prefix: ucrt64
+            msystem: UCRT64
+            sdk-repo: git-sdk-64
+            sdk-branch: ucrt64
+            runner: windows-latest
           - name: aarch64
             mingw-prefix: clangarm64
             msystem: CLANGARM64
@@ -376,7 +382,8 @@ jobs:
       - name: initialize bare SDK clone
         shell: bash
         run: |
-          git clone --bare --depth=1 --single-branch --branch=main --filter=blob:none \
+          git clone --bare --depth=1 --single-branch \
+            --branch=${{ matrix.arch.sdk-branch || 'main' }} --filter=blob:none \
             https://github.com/git-for-windows/${{ matrix.arch.sdk-repo }} .sdk
       - name: build build-installers-${{ matrix.arch.name }} artifact
         shell: bash
