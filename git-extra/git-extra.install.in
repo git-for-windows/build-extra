@@ -85,7 +85,7 @@ GITATTRIBUTES
 	@@ENDIF_CLANGARM64@@
 
 	! grep -q 'https://dl.bintray.com/\$repo/pacman/\$arch' etc/pacman.conf ||
-	sed -i -e 's/https:\/\/dl\.bintray\.com\/\$repo\/pacman\/\$arch/https:\/\/wingit.blob.core.windows.net\/'$arch'/g' etc/pacman.conf
+	sed -i -e 's/https:\/\/dl\.bintray\.com\/\$repo\/pacman\/\$arch/https:\/\/wingit.blob.core.windows.net\/@@MSYSTEM_CARCH@@/g' etc/pacman.conf
 
 	! grep -q 'https://dl.bintray.com/git-for-windows/pacman/i686' etc/pacman.conf ||
 	sed -i -e 's/https:\/\/dl\.bintray\.com\/git-for-windows\/pacman\/i686/https:\/\/wingit.blob.core.windows.net\/i686/g' etc/pacman.conf
@@ -96,9 +96,9 @@ GITATTRIBUTES
 	# The main pacman database was renamed from `git-for-windows` to `git-for-windows-<arch>`
 	for ext in db db.sig files files.sig
 	do
-		if ! test -f var/lib/pacman/sync/git-for-windows-$arch.$ext
+		if ! test -f var/lib/pacman/sync/git-for-windows-@@MSYSTEM_CARCH@@.$ext
 		then
-			mv var/lib/pacman/sync/git-for-windows.$ext var/lib/pacman/sync/git-for-windows-$arch.$ext
+			mv var/lib/pacman/sync/git-for-windows.$ext var/lib/pacman/sync/git-for-windows-@@MSYSTEM_CARCH@@.$ext
 		elif test -f var/lib/pacman/sync/git-for-windows.$ext
 		then
 			rm var/lib/pacman/sync/git-for-windows.$ext
@@ -267,7 +267,7 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	sed -i -e 's|"[CD]:/[^"]*/usr/|"/usr/|g' /etc/xml/catalog
 
 	# Remove work around for an outdated i686 gnupg/gnutls build that depended on a hence-updated libunistring
-	if test i686 = $arch -a -e /usr/bin/msys-unistring-2.dll &&
+	if test i686 = "@@MSYSTEM_CARCH@@" -a -e /usr/bin/msys-unistring-2.dll &&
 		! pacman -Qoq /usr/bin/msys-unistring-2.dll >/dev/null 2>&1 &&
 		! grep -q msys-unistring-2 /usr/bin/msys-gnutls-30.dll 2>&1 >/dev/null
 	then
