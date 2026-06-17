@@ -119,14 +119,17 @@ case "$MSYSTEM" in
 MINGW32)
 	BITNESS=32
 	ARCH=i686
+	MINGW_PACKAGE_PREFIX=mingw-w64-i686
 	;;
 MINGW64)
 	BITNESS=64
 	ARCH=x86_64
+	MINGW_PACKAGE_PREFIX=mingw-w64-x86_64
 	;;
 CLANGARM64)
 	BITNESS=64
 	ARCH=aarch64
+	MINGW_PACKAGE_PREFIX=mingw-w64-clang-aarch64
 	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX 'arm64'$LF#define ARCHS_ALLOWED 'arm64 and x64compatible'"
 	;;
 *)
@@ -145,7 +148,7 @@ fi ||
 die "Could not generate release notes"
 
 test ! -d /var/lib/pacman/local/ ||
-if grep -q edit-git-bash /var/lib/pacman/local/mingw-w64-$ARCH-git-[1-9]*/files
+if grep -q edit-git-bash /var/lib/pacman/local/$MINGW_PACKAGE_PREFIX-git-[1-9]*/files
 then
 	INCLUDE_EDIT_GIT_BASH=
 else
