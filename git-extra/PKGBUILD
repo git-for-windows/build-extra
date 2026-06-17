@@ -4,7 +4,7 @@ _realname="git-extra"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
-pkgver=1.1.709.fa78d67ca
+pkgver=1.1.712.2bfdfef45
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('any')
@@ -62,7 +62,7 @@ source=('git-extra.install.in'
         'git-askpass.c'
         'git-askpass.h'
         'git-askpass.rc')
-sha256sums=('463c956c0b38db5f1fa7d343af1059b4381f6ac5d05b39a2227cb029d442318d'
+sha256sums=('b6448dac5fe317ada8a0b8e73c86b907467bf339f0449fb0a2595debe59eedfe'
             '8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             'e36a3b93b8a33b0a74619f2449ed6d56ed54e4e2938b97070bce4926f1f44054'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
