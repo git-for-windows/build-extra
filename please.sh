@@ -796,7 +796,7 @@ find_mspdb_dll () { #
 	return 1
 }
 
-build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--skip-test-artifacts] [--skip-doc-man] [--skip-doc-html] [--force] [<revision>]
+build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--only-ucrt64] [--skip-test-artifacts] [--skip-doc-man] [--skip-doc-html] [--force] [<revision>]
 	output_path=
 	sed_makepkg_e=
 	force=
@@ -813,6 +813,10 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 		;;
 	--only-aarch64)
 		MINGW_ARCH=clangarm64
+		export MINGW_ARCH
+		;;
+	--only-ucrt64)
+		MINGW_ARCH=ucrt64
 		export MINGW_ARCH
 		;;
 	--skip-test-artifacts)
