@@ -1,0 +1,1077 @@
+; Reusable library functions for the Git for Windows installer UI tests.
+;
+; Adapted from the MSYS2 runtime's ui-test-library.ahk, trimmed to only
+; what is needed for mintty and Windows Terminal based testing of an
+; installed Git for Windows.
+
+logFile := ''
+
+; Timeout in seconds for WinWait('ahk_class TkTopLevel'). On ARM64
+; runners, wish.exe under x64 emulation can take over 130 seconds
+; for a cold start.
+tkWaitTimeout := 180
+
+SetLogFile(path) {
+    global logFile
+    logFile := path
+}
+
+Info(text) {
+    global logFile, cannotWriteToStdout
+    if logFile != ''
+        FileAppend text '`n', logFile
+    if !IsSet(cannotWriteToStdout)
+    {
+        try
+            FileAppend text '`n', '*'
+        catch as e {
+            if e.__Class == 'OSError' && e.Number == 6
+                cannotWriteToStdout := false
+            else
+                throw e
+        }
+    }
+}
+
+minttyToClose := 0
+childPid := 0
+ExitWithError(error) {
+    Info 'Error: ' error
+    if minttyToClose != 0
+        CloseMinTTYWindow('ahk_id ' minttyToClose)
+    else if childPid != 0
+        ProcessClose childPid
+    ExitApp 1
+}
+
+RunWaitOne(command) {
+    SavedClipboard := ClipboardAll()
+    shell := ComObject("WScript.Shell")
+    exec := shell.Run(A_ComSpec ' /S /C "' command ' | clip"', 0, true)
+    if exec != 0
+        ExitWithError 'Error executing command: ' command
+    Result := RegExReplace(A_Clipboard, '`r?`n$', '')
+    A_Clipboard := SavedClipboard
+    return Result
+}
+
+; Read ~/.minttyrc and return a Map of key=value pairs.
+ReadMinTTYRC() {
+    home := EnvGet('HOME')
+    if home == ''
+        home := EnvGet('USERPROFILE')
+    path := home . '\.minttyrc'
+    if !FileExist(path)
+        ExitWithError '~/.minttyrc not found at: ' path '`n'
+            . 'The UI tests require KeyFunctions and SaveFilename settings in ~/.minttyrc.'
+    settings := Map()
+    Loop Read path
+    {
+        line := Trim(A_LoopReadLine)
+        if line == '' || SubStr(line, 1, 1) == '#'
+            continue
+        eq := InStr(line, '=')
+        if eq > 0
+            settings[SubStr(line, 1, eq - 1)] := SubStr(line, eq + 1)
+    }
+    return settings
+}
+
+; Verify that a required setting exists in the minttyrc Map.
+; If missing, exit with a clear error message showing the expected format.
+RequireMinTTYRCSetting(settings, key, example) {
+    if !settings.Has(key)
+        ExitWithError 'Missing required setting in ~/.minttyrc: ' key '`n'
+            . 'Please add a line like:`n  ' key '=' example
+}
+
+; Trigger Ctrl+F5 to export mintty screen as HTML, return the raw HTML.
+CaptureRawHtmlFromMintty(exportFile, winTitle := '') {
+    if FileExist(exportFile)
+        FileDelete exportFile
+    if winTitle != ''
+        WinActivate winTitle
+    Send '^{F5}'
+    deadline := A_TickCount + 3000
+    while !FileExist(exportFile) && A_TickCount < deadline
+        Sleep 50
+    if !FileExist(exportFile)
+        return ''
+    Sleep 100
+    return FileRead(exportFile)
+}
+
+; Capture mintty screen as plain text (HTML tags stripped, entities decoded).
+CaptureBufferFromMintty(exportFile, winTitle := '') {
+    html := CaptureRawHtmlFromMintty(exportFile, winTitle)
+    if html == ''
+        return ''
+    ; Extract body content only (skip CSS in <style>)
+    if RegExMatch(html, 'si)<body[^>]*>(.*)</body>', &m)
+        html := m[1]
+    ; Replace <br> (including <br\n>) with newlines before stripping tags.
+    text := RegExReplace(html, '<br\s*/?>', '`n')
+    ; Strip remaining HTML tags
+    text := RegExReplace(text, '<[^>]+>', '')
+    ; Decode common HTML entities
+    text := StrReplace(text, '&lt;', '<')
+    text := StrReplace(text, '&gt;', '>')
+    text := StrReplace(text, '&amp;', '&')
+    return text
+}
+
+; Wait for a regex to match in the mintty buffer. Returns the match object
+; on success, exits with error on timeout.
+WaitForRegExInMintty(exportFile, regex, errorMessage, successMessage, timeout := 5000, winTitle := '') {
+    deadline := timeout + A_TickCount
+    while true
+    {
+        capturedText := CaptureBufferFromMintty(exportFile, winTitle)
+        if RegExMatch(capturedText, regex, &matchObj)
+        {
+            Info(successMessage)
+            return matchObj
+        }
+        Sleep 200
+        if A_TickCount > deadline {
+            Info('Captured text:`n' . capturedText)
+            ExitWithError errorMessage
+        }
+    }
+}
+
+; Close a MinTTY window, handling the "close running processes?"
+; confirmation dialog if it appears.
+CloseMinTTYWindow(winId) {
+    global minttyToClose
+    minttyPid := WinGetPID(winId)
+    WinClose(winId)
+    Sleep 500
+    ; Click the OK button repeatedly until the dialog is gone.
+    ; A single ControlClick sometimes visually activates the button
+    ; but does not dismiss the dialog, likely a Tk/Win32 focus race.
+    deadline := A_TickCount + 5000
+    while A_TickCount < deadline
+    {
+        dialogHwnd := WinExist('ahk_class #32770 ahk_pid ' minttyPid)
+        if !dialogHwnd
+            break
+        ControlClick('Button1', 'ahk_id ' dialogHwnd)
+        Sleep 150
+    }
+    WinWaitClose(winId, , 3)
+    minttyToClose := 0
+}
+
+; Wait for an exit-code file to appear on disk (written by a shell
+; command like `echo $? >file`), read it, and verify it is '0'.
+WaitForExitCode(label, exitFile, timeout := 5000) {
+    deadline := A_TickCount + timeout
+    while !FileExist(exitFile) && A_TickCount < deadline
+        Sleep 200
+    if !FileExist(exitFile)
+        ExitWithError label ' exit code file was not written'
+    code := Trim(FileRead(exitFile), ' `t`r`n')
+    if code != '0'
+        ExitWithError label ' exited with code ' code
+    Info label ' closed with exit code 0'
+}
+
+; Quit a pager (less) running inside a terminal window. On ARM64
+; runners, SendEvent('{Text}q') (VK_PACKET) has been observed to be
+; swallowed by less's alternate-screen mode under x64 emulation.
+; Send (SendInput / real VK_Q) is more reliable.
+QuitPager(winId) {
+    WinActivate(winId)
+    Send 'q'
+    Sleep 500
+}
+
+; Wait for a new TkTopLevel window to appear, set a fixed size,
+; verify its screenshot matches a reference image, then close it.
+; Returns the window handle (already closed).
+VerifyTkScreenshot(label, thumbFile, referenceFile, maxDiff := 0.15) {
+    hwnd := WinWait('ahk_class TkTopLevel', , tkWaitTimeout)
+    if !hwnd
+        ExitWithError label ': Tk window did not appear'
+    Info label ': window appeared'
+    WinMove(100, 100, 800, 600, 'ahk_id ' hwnd)
+    WinActivate('ahk_id ' hwnd)
+    diffRatio := CaptureUntilMatchesReference(hwnd, 80, 60, thumbFile, referenceFile, maxDiff)
+    Info label ': screenshot diff ratio: ' diffRatio
+    WinClose('ahk_id ' hwnd)
+    WinWaitClose('ahk_id ' hwnd, , 5)
+    Info label ': closed'
+    return hwnd
+}
+
+; Launch an application via the Start Menu and wait for a new window
+; of the given class to appear. Returns the window handle.
+; titleFilter, if non-empty, requires the new window's title to contain
+; the given substring.
+LaunchViaStartMenu(searchText, windowClass, titleFilter := '', timeout := 20000) {
+    winSpec := 'ahk_class ' windowClass
+    existing := Map()
+    for h in WinGetList(winSpec)
+        existing[h] := true
+
+    ; Dismiss any stale Start Menu state before opening a fresh one.
+    SendEvent('{Escape}')
+    Sleep 500
+
+    SendEvent('{LWin}')
+    deadline := A_TickCount + 5000
+    while A_TickCount < deadline
+    {
+        try {
+            if WinGetProcessName('A') == 'SearchHost.exe'
+                break
+        }
+        Sleep 100
+    }
+    if A_TickCount >= deadline
+    {
+        ; Retry once: the shell may need a nudge.
+        Info 'Start Menu did not appear on first try, retrying...'
+        SendEvent('{LWin}')
+        deadline := A_TickCount + 5000
+        while A_TickCount < deadline
+        {
+            try {
+                if WinGetProcessName('A') == 'SearchHost.exe'
+                    break
+            }
+            Sleep 100
+        }
+    }
+    if A_TickCount >= deadline
+    {
+        Info 'Start Menu did not appear. Active window: '
+        try
+            Info '  exe=' WinGetProcessName('A') ' title=' WinGetTitle('A') ' class=' WinGetClass('A')
+        catch
+            Info '  (no active window)'
+        LogAllWindows('  ')
+        CaptureScreen(A_ScriptDir . '\start-menu-failure.png')
+        ExitWithError 'Start Menu did not appear'
+    }
+    Info 'Start Menu opened'
+
+    SendInput(searchText)
+    ; Give the search index time to find and highlight the result,
+    ; then send Enter. Retry up to twice if the target window has
+    ; not appeared, but wait substantially between retries to avoid
+    ; launching multiple instances on a busy machine.
+    hwnd := 0
+    retries := 3
+    deadline := A_TickCount + timeout
+    loop retries
+    {
+        Sleep 2000
+        SendEvent('{Enter}')
+        ; Wait up to 5 seconds for the window to appear after each Enter.
+        innerDeadline := A_TickCount + 5000
+        while A_TickCount < innerDeadline && A_TickCount < deadline
+        {
+            for h in WinGetList(winSpec)
+            {
+                if !existing.Has(h)
+                && (titleFilter == '' || InStr(WinGetTitle('ahk_id ' h), titleFilter))
+                {
+                    hwnd := h
+                    break 3
+                }
+            }
+            Sleep 200
+        }
+        ; If SearchHost is no longer active, the Start Menu closed
+        ; without launching anything (user may have pressed Escape).
+        try {
+            if WinGetProcessName('A') != 'SearchHost.exe'
+                break
+        }
+    }
+    if !hwnd
+        ExitWithError searchText ' window did not appear after Start Menu launch'
+    WinActivate('ahk_id ' hwnd)
+    Info searchText ' launched, hwnd: ' hwnd
+    return hwnd
+}
+
+; --- Windows Terminal support ---
+
+; Read the Windows Terminal settings.json and extract the exportBuffer
+; configuration. Returns a Map with keys 'exportFile' and 'hotkey'.
+; Returns an empty Map if exportBuffer is not configured with a path.
+ReadWindowsTerminalExportBufferConfig() {
+    result := Map()
+    localAppData := EnvGet('LOCALAPPDATA')
+    ; Check all known settings.json locations per
+    ; https://learn.microsoft.com/en-us/windows/terminal/install
+    for settingsPath in [
+        localAppData . '\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState\settings.json',
+        localAppData . '\Packages\Microsoft.WindowsTerminalPreview_8wekyb3d8bbwe\LocalState\settings.json',
+        localAppData . '\Microsoft\Windows Terminal\settings.json'
+    ]
+    {
+        if !FileExist(settingsPath)
+            continue
+        json := FileRead(settingsPath)
+
+        ; Find the exportBuffer action and extract its path.
+        if !RegExMatch(json, 's)"action"\s*:\s*"exportBuffer"[^}]*"path"\s*:\s*"([^"]+)"', &m)
+            continue
+        exportPath := m[1]
+
+        ; Find the id for this action.
+        if !RegExMatch(json, 's)"action"\s*:\s*"exportBuffer"[^}]*\}[^}]*"id"\s*:\s*"([^"]+)"', &idMatch)
+            continue
+        actionId := idMatch[1]
+
+        ; Find the key binding for this id.
+        if !RegExMatch(json, '"id"\s*:\s*"' actionId '"[^}]*"keys"\s*:\s*"([^"]+)"', &keyMatch)
+        && !RegExMatch(json, '"keys"\s*:\s*"([^"]+)"[^}]*"id"\s*:\s*"' actionId '"', &keyMatch)
+            continue
+
+        result['exportFile'] := StrReplace(exportPath, '/', '\')
+        result['hotkey'] := keyMatch[1]
+        return result
+    }
+    return result
+}
+
+; Convert a Windows Terminal key binding string (e.g., "ctrl+shift+e")
+; to an AHK Send string (e.g., "^+e").
+WindowsTerminalHotkeyToAHK(wtKey) {
+    ahk := ''
+    parts := StrSplit(wtKey, '+')
+    key := parts[parts.Length]
+    loop parts.Length - 1
+    {
+        switch StrLower(parts[A_Index]) {
+        case 'ctrl': ahk .= '^'
+        case 'shift': ahk .= '+'
+        case 'alt': ahk .= '!'
+        case 'win': ahk .= '#'
+        }
+    }
+    ; Handle function keys and special keys.
+    if RegExMatch(key, '^f\d+$')
+        ahk .= '{' key '}'
+    else
+        ahk .= key
+    return ahk
+}
+
+; Capture the Windows Terminal buffer via the exportBuffer action.
+CaptureBufferFromWindowsTerminal(exportFile, hotkey, winTitle := '') {
+    if FileExist(exportFile)
+        FileDelete exportFile
+    if winTitle != ''
+        WinActivate winTitle
+    Sleep 200
+    Send hotkey
+    deadline := A_TickCount + 3000
+    while !FileExist(exportFile) && A_TickCount < deadline
+        Sleep 50
+    if !FileExist(exportFile)
+        return ''
+    Sleep 100
+    return FileRead(exportFile)
+}
+
+; Wait for a regex to match in the Windows Terminal buffer.
+WaitForRegExInWindowsTerminal(exportFile, hotkey, regex, errorMessage, successMessage, timeout := 5000, winTitle := '') {
+    deadline := timeout + A_TickCount
+    while true
+    {
+        capturedText := CaptureBufferFromWindowsTerminal(exportFile, hotkey, winTitle)
+        if RegExMatch(capturedText, regex, &matchObj)
+        {
+            Info(successMessage)
+            return matchObj
+        }
+        Sleep 200
+        if A_TickCount > deadline {
+            Info('Captured text:`n' . capturedText)
+            ExitWithError errorMessage
+        }
+    }
+}
+
+; Initialize GDI+ and return the token. Call ShutdownGdiPlus(token)
+; when done.
+StartupGdiPlus() {
+    DllCall('LoadLibrary', 'str', 'gdiplus')
+    input := Buffer(24, 0)
+    NumPut('uint', 1, input)
+    token := 0
+    DllCall('gdiplus\GdiplusStartup', 'ptr*', &token, 'ptr', input, 'ptr', 0)
+    return token
+}
+
+ShutdownGdiPlus(token) {
+    DllCall('gdiplus\GdiplusShutdown', 'ptr', token)
+}
+
+; Get the CLSID for the GDI+ PNG encoder.
+; This is a well-known constant: {557cf406-1a04-11d3-9a73-0000f81ef32e}
+GetPngEncoderClsid() {
+    clsid := Buffer(16)
+    NumPut('uint', 0x557cf406, clsid, 0)
+    NumPut('ushort', 0x1a04, clsid, 4)
+    NumPut('ushort', 0x11d3, clsid, 6)
+    NumPut('uchar', 0x9a, clsid, 8)
+    NumPut('uchar', 0x73, clsid, 9)
+    NumPut('uchar', 0x00, clsid, 10)
+    NumPut('uchar', 0x00, clsid, 11)
+    NumPut('uchar', 0xf8, clsid, 12)
+    NumPut('uchar', 0x1e, clsid, 13)
+    NumPut('uchar', 0xf3, clsid, 14)
+    NumPut('uchar', 0x2e, clsid, 15)
+    return clsid
+}
+
+; Capture a window, downscale to thumbW x thumbH, and save as PNG.
+; Uses GDI+ HighQualityBicubic interpolation for Lanczos-like quality.
+; The window must be visible and unobscured since we capture from screen
+; (Tk windows do not support PrintWindow).
+CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, outFile) {
+    ; Get window rectangle on screen.
+    rc := Buffer(16)
+    DllCall('GetWindowRect', 'ptr', hwnd, 'ptr', rc)
+    x := NumGet(rc, 0, 'int')
+    y := NumGet(rc, 4, 'int')
+    w := NumGet(rc, 8, 'int') - x
+    h := NumGet(rc, 12, 'int') - y
+    if w <= 0 || h <= 0
+        ExitWithError 'Window has zero size'
+
+    ; Capture from the screen DC via BitBlt.
+    hdcScreen := DllCall('GetDC', 'ptr', 0, 'ptr')
+    hdcMem := DllCall('CreateCompatibleDC', 'ptr', hdcScreen, 'ptr')
+    hbm := DllCall('CreateCompatibleBitmap', 'ptr', hdcScreen, 'int', w, 'int', h, 'ptr')
+    hOld := DllCall('SelectObject', 'ptr', hdcMem, 'ptr', hbm, 'ptr')
+    ; SRCCOPY = 0x00CC0020
+    DllCall('BitBlt', 'ptr', hdcMem, 'int', 0, 'int', 0, 'int', w, 'int', h,
+        'ptr', hdcScreen, 'int', x, 'int', y, 'uint', 0x00CC0020)
+    DllCall('SelectObject', 'ptr', hdcMem, 'ptr', hOld)
+    DllCall('DeleteDC', 'ptr', hdcMem)
+    DllCall('ReleaseDC', 'ptr', 0, 'ptr', hdcScreen)
+
+    ; Convert HBITMAP to GDI+ Bitmap.
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromHBITMAP', 'ptr', hbm, 'ptr', 0, 'ptr*', &pBitmap)
+    DllCall('DeleteObject', 'ptr', hbm)
+
+    ; Create a thumbnail bitmap and draw with high quality.
+    pThumb := 0
+    DllCall('gdiplus\GdipCreateBitmapFromScan0', 'int', thumbW, 'int', thumbH,
+        'int', 0, 'int', 0x26200A, 'ptr', 0, 'ptr*', &pThumb)
+    pGraphics := 0
+    DllCall('gdiplus\GdipGetImageGraphicsContext', 'ptr', pThumb, 'ptr*', &pGraphics)
+    ; InterpolationModeHighQualityBicubic = 7
+    DllCall('gdiplus\GdipSetInterpolationMode', 'ptr', pGraphics, 'int', 7)
+    DllCall('gdiplus\GdipDrawImageRectI', 'ptr', pGraphics, 'ptr', pBitmap,
+        'int', 0, 'int', 0, 'int', thumbW, 'int', thumbH)
+
+    ; Save as PNG.
+    pngClsid := GetPngEncoderClsid()
+    DllCall('gdiplus\GdipSaveImageToFile', 'ptr', pThumb, 'wstr', outFile, 'ptr', pngClsid, 'ptr', 0)
+
+    ; Cleanup.
+    DllCall('gdiplus\GdipDeleteGraphics', 'ptr', pGraphics)
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pThumb)
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+}
+
+; Compare two PNG files pixel-by-pixel. Returns a value 0.0..1.0
+; representing the fraction of pixels that differ by more than
+; `tolerance` (0-255) in any channel.
+CompareImages(file1, file2, tolerance := 10) {
+    gdipToken := StartupGdiPlus()
+    pBmp1 := 0
+    pBmp2 := 0
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file1, 'ptr*', &pBmp1)
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file2, 'ptr*', &pBmp2)
+    w1 := 0
+    h1 := 0
+    w2 := 0
+    h2 := 0
+    DllCall('gdiplus\GdipGetImageWidth', 'ptr', pBmp1, 'uint*', &w1)
+    DllCall('gdiplus\GdipGetImageHeight', 'ptr', pBmp1, 'uint*', &h1)
+    DllCall('gdiplus\GdipGetImageWidth', 'ptr', pBmp2, 'uint*', &w2)
+    DllCall('gdiplus\GdipGetImageHeight', 'ptr', pBmp2, 'uint*', &h2)
+    if w1 != w2 || h1 != h2
+    {
+        DllCall('gdiplus\GdipDisposeImage', 'ptr', pBmp1)
+        DllCall('gdiplus\GdipDisposeImage', 'ptr', pBmp2)
+        ShutdownGdiPlus(gdipToken)
+        return 1.0
+    }
+    diffCount := 0
+    loop h1 {
+        y := A_Index - 1
+        loop w1 {
+            x := A_Index - 1
+            c1 := 0
+            c2 := 0
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBmp1, 'int', x, 'int', y, 'uint*', &c1)
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBmp2, 'int', x, 'int', y, 'uint*', &c2)
+            r1 := (c1 >> 16) & 0xFF
+            g1 := (c1 >> 8) & 0xFF
+            b1 := c1 & 0xFF
+            r2 := (c2 >> 16) & 0xFF
+            g2 := (c2 >> 8) & 0xFF
+            b2 := c2 & 0xFF
+            if Abs(r1 - r2) > tolerance || Abs(g1 - g2) > tolerance || Abs(b1 - b2) > tolerance
+                diffCount++
+        }
+    }
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBmp1)
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBmp2)
+    ShutdownGdiPlus(gdipToken)
+    return diffCount / (w1 * h1)
+}
+
+; Capture the entire primary screen to a PNG file. Useful for diagnostics.
+CaptureScreen(outFile) {
+    w := SysGet(78)  ; SM_CXVIRTUALSCREEN
+    h := SysGet(79)  ; SM_CYVIRTUALSCREEN
+    if w <= 0 || h <= 0
+        w := 1920, h := 1080
+    hdcScreen := DllCall('GetDC', 'ptr', 0, 'ptr')
+    hdcMem := DllCall('CreateCompatibleDC', 'ptr', hdcScreen, 'ptr')
+    hbm := DllCall('CreateCompatibleBitmap', 'ptr', hdcScreen, 'int', w, 'int', h, 'ptr')
+    hOld := DllCall('SelectObject', 'ptr', hdcMem, 'ptr', hbm, 'ptr')
+    DllCall('BitBlt', 'ptr', hdcMem, 'int', 0, 'int', 0, 'int', w, 'int', h,
+        'ptr', hdcScreen, 'int', 0, 'int', 0, 'uint', 0x00CC0020)
+    DllCall('SelectObject', 'ptr', hdcMem, 'ptr', hOld)
+    DllCall('DeleteDC', 'ptr', hdcMem)
+    DllCall('ReleaseDC', 'ptr', 0, 'ptr', hdcScreen)
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromHBITMAP', 'ptr', hbm, 'ptr', 0, 'ptr*', &pBitmap)
+    DllCall('DeleteObject', 'ptr', hbm)
+    pngClsid := GetPngEncoderClsid()
+    DllCall('gdiplus\GdipSaveImageToFile', 'ptr', pBitmap, 'wstr', outFile, 'ptr', pngClsid, 'ptr', 0)
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+}
+
+; Log all visible windows (for diagnostics).
+LogAllWindows(prefix := '') {
+    for h in WinGetList() {
+        try {
+            title := WinGetTitle(h)
+            if title != '' {
+                cls := WinGetClass(h)
+                exe := WinGetProcessName(h)
+                Info prefix . 'window: cls=' cls ' exe=' exe ' title=' title
+            }
+        }
+    }
+}
+
+; Best-effort dismissal of any active Windows Out-Of-Box-Experience flow.
+;
+; The GitHub-hosted `windows-11-arm` runner image has been observed to
+; surface a fresh OOBE "Choose privacy settings for your device" page
+; instead of a logged-in desktop, which occludes the shell and breaks
+; LaunchViaStartMenu(). Reboot is NOT an option (these runners are
+; ephemeral; rebooting kills the runner agent and the job with it),
+; so we dismiss OOBE in-process by walking through its pages with
+; {Enter} (each page's default button is Next/Accept), then escalating
+; to taskkill on the known OOBE host processes, then restarting
+; Explorer to refresh the shell.
+;
+; Always returns without raising. If OOBE persists, the subsequent
+; LaunchViaStartMenu() call will fail with its own diagnostics
+; (active-window scan + screenshot), which then drives the Copilot
+; CLI failure-debug step.
+DismissOOBE() {
+    if !IsOOBEActive()
+        return
+    Info 'OOBE detected; attempting dismissal'
+    CaptureScreen(A_ScriptDir . '\oobe-before.png')
+    LogAllWindows('  oobe-before: ')
+
+    ; Phase 1: keyboard walkthrough. The default button on each OOBE
+    ; page is Next/Accept, so {Enter} advances. The long sleep between
+    ; presses absorbs page transitions and animations. Log title+class
+    ; of each iteration so a post-mortem can see exactly which OOBE
+    ; pages were encountered.
+    loop 20
+    {
+        hwnd := FindOOBEWindow()
+        if !hwnd
+            break
+        try {
+            Info '  oobe-walkthrough iter ' A_Index
+                . ': cls=' WinGetClass('ahk_id ' hwnd)
+                . ' title=' WinGetTitle('ahk_id ' hwnd)
+        }
+        try WinActivate('ahk_id ' hwnd)
+        Sleep 500
+        SendEvent('{Enter}')
+        Sleep 1500
+    }
+    CaptureScreen(A_ScriptDir . '\oobe-after-keyboard.png')
+    if !IsOOBEActive()
+    {
+        Info 'OOBE dismissed via keyboard walkthrough'
+        return
+    }
+
+    ; Phase 2: close the Shell_OOBEProxy window directly. On the
+    ; windows-11-arm runner image the OOBE proxy is hosted by
+    ; explorer.exe itself, so taskkilling OOBE child processes
+    ; (Phase 3 below) only tears down the inner web view; explorer
+    ; re-creates the proxy on demand. WinClose'ing the proxy window
+    ; itself reliably removes it without restarting explorer
+    ; (verified: window does not respawn within 5s).
+    Info 'Closing Shell_OOBEProxy window directly'
+    loop 5
+    {
+        hwnd := FindOOBEWindow()
+        if !hwnd
+            break
+        try {
+            Info '  oobe-winclose iter ' A_Index
+                . ': cls=' WinGetClass('ahk_id ' hwnd)
+                . ' title=' WinGetTitle('ahk_id ' hwnd)
+        }
+        try WinClose('ahk_id ' hwnd)
+        Sleep 1500
+    }
+    if !IsOOBEActive()
+    {
+        Info 'OOBE dismissed via WinClose'
+        return
+    }
+
+    ; Phase 3: taskkill OOBE host processes. This catches the case
+    ; where Shell_OOBEProxy is gone but WWAHost.exe (the WebView2
+    ; host for the actual OOBE pages) is still running with a cloaked
+    ; Windows.UI.Core.CoreWindow holding foreground focus. Verified
+    ; on windows-11-arm on 2026-05-22: killing WWAHost.exe removes
+    ; the foreground OOBE window and restores normal shell input.
+    Info 'OOBE still active after WinClose; killing OOBE processes'
+    for procName in OOBEProcessNames()
+    {
+        try Run('taskkill /F /IM "' procName '"', , 'Hide')
+    }
+    Sleep 2000
+    CaptureScreen(A_ScriptDir . '\oobe-after-taskkill.png')
+    if !IsOOBEActive()
+        Info 'OOBE dismissed via taskkill'
+    else
+        Info 'OOBE STILL active after taskkill; leaving for the next step to surface'
+    LogAllWindows('  oobe-after: ')
+    ; Intentionally do NOT restart explorer.exe here: on the
+    ; windows-11-arm runner image a fresh explorer respawns the
+    ; Shell_OOBEProxy "Microsoft account" window within ~5 seconds,
+    ; which then blocks {LWin} in LaunchViaStartMenu(). Verified by
+    ; installer/ui-tests/diagnose-hang.ahk on 2026-05-20.
+}
+
+; Return the HWND of any active OOBE window, or 0 if none found.
+; Identifies OOBE by the Shell_OOBEProxy window class OR by ownership
+; of one of the well-known OOBE host processes.
+;
+; NOTE: this only returns windows enumerated by WinGetList(); on
+; windows-11-arm the actual OOBE WebView lives in WWAHost.exe with a
+; cloaked Windows.UI.Core.CoreWindow that WinGetList() skips, so this
+; function CAN return 0 while OOBE is still on screen. Use
+; IsOOBEActive() for "is any OOBE process still alive?" checks.
+FindOOBEWindow() {
+    for h in WinGetList()
+    {
+        try {
+            cls := WinGetClass(h)
+            if cls == 'Shell_OOBEProxy'
+                return h
+            exe := StrLower(WinGetProcessName(h))
+            for procName in OOBEProcessNames()
+                if exe == StrLower(procName)
+                    return h
+        }
+    }
+    return 0
+}
+
+; The list of process names that host OOBE pages on Windows 10/11.
+OOBEProcessNames() {
+    return [
+        'oobenetworkconnectionflow.exe',
+        'OOBE.exe',
+        'oobeldr.exe',
+        'oobesetup.exe',
+        'WWAHost.exe',
+        'UserOOBEBroker.exe'
+    ]
+}
+
+; True if any OOBE window OR any OOBE host process owns the
+; foreground active window. Checking the foreground catches the
+; cloaked WWAHost.exe CoreWindow that FindOOBEWindow() misses.
+IsOOBEActive() {
+    if FindOOBEWindow()
+        return true
+    try {
+        exe := StrLower(WinGetProcessName('A'))
+        for procName in OOBEProcessNames()
+            if exe == StrLower(procName)
+                return true
+    }
+    return false
+}
+
+; Restart Explorer to give the test a clean shell after OOBE goes away.
+; The workflow already restarts Explorer once before launching the AHK
+; script, but that restart happens BEFORE OOBE may have spawned new
+; child windows that hold references to the old explorer instance.
+RestartExplorerForOOBE() {
+    Info 'Restarting Explorer to refresh shell after OOBE dismissal'
+    try Run('taskkill /F /IM explorer.exe', , 'Hide')
+    Sleep 2000
+    try Run('explorer.exe', , 'Hide')
+    Sleep 3000
+}
+
+; Capture a window screenshot, retrying until it matches a reference
+; image within the given diff threshold. This handles applications that
+; render progressively (like gitk loading commits) by comparing each
+; capture against what we expect rather than against the previous frame
+; (which would falsely stabilize on two identical loading screens).
+; Returns the actual diff ratio on success.
+CaptureUntilMatchesReference(hwnd, thumbW, thumbH, outFile, referenceFile, maxDiff, timeout := 30000) {
+    deadline := A_TickCount + timeout
+    while A_TickCount < deadline
+    {
+        CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, outFile)
+        diffRatio := CompareImages(outFile, referenceFile, 10)
+        if diffRatio <= maxDiff
+            return diffRatio
+        Sleep 2000
+    }
+    ExitWithError 'Window screenshot did not match reference within ' timeout 'ms (last diff=' diffRatio ')'
+}
+
+; Verify a gitk window by analyzing its screenshot structurally rather
+; than comparing pixel-by-pixel against a reference image. This makes
+; the test independent of system-specific font metrics, window chrome,
+; and theme colors that vary across Windows versions.
+;
+; Checks performed on the 80x60 thumbnail:
+;  1. Window rendered (not blank/uniform)
+;  2. Commit graph decorations visible (colored pixels on the left)
+;  3. Commit list text visible (darker-than-background rows in center)
+;  4. At least minCommitRows commit entries rendered
+;  5. A selection highlight row exists
+VerifyGitkLayout(label, thumbFile, timeout := 30000) {
+    hwnd := WinWait('ahk_class TkTopLevel', , 15)
+    if !hwnd
+        ExitWithError label ': Tk window did not appear'
+    Info label ': window appeared'
+    WinMove(100, 100, 800, 600, 'ahk_id ' hwnd)
+    WinActivate('ahk_id ' hwnd)
+
+    thumbW := 80
+    thumbH := 60
+    deadline := A_TickCount + timeout
+    lastErr := 'no capture attempted'
+    while A_TickCount < deadline {
+        CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, thumbFile)
+        lastErr := CheckGitkStructure(thumbFile, thumbW, thumbH)
+        if lastErr = '' {
+            Info label ': layout verification passed'
+            WinClose('ahk_id ' hwnd)
+            WinWaitClose('ahk_id ' hwnd, , 5)
+            Info label ': closed'
+            return hwnd
+        }
+        Info label ': retry (' lastErr ')'
+        Sleep 2000
+    }
+    ExitWithError label ': layout check failed after ' timeout 'ms: ' lastErr
+}
+
+; Analyze a gitk screenshot for expected structure.
+; Returns empty string on success, or an error description.
+CheckGitkStructure(file, w, h) {
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file, 'ptr*', &pBitmap)
+    if !pBitmap {
+        ShutdownGdiPlus(gdipToken)
+        return 'failed to load ' file
+    }
+
+    ; Per-row analysis over the thumbnail.
+    graphRows := 0
+    textRows := 0
+    highlightRows := 0
+    nonBlankRows := 0
+
+    loop h {
+        y := A_Index - 1
+        leftColored := false
+        centerTextPixels := 0
+        highlightPixels := 0
+        rowIsBlank := true
+
+        loop w {
+            x := A_Index - 1
+            argb := 0
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBitmap,
+                'int', x, 'int', y, 'uint*', &argb)
+            r := (argb >> 16) & 0xFF
+            g := (argb >> 8) & 0xFF
+            b := argb & 0xFF
+            avg := (r + g + b) // 3
+            chroma := Max(Abs(r - g), Abs(g - b), Abs(r - b))
+
+            if avg < 230 || chroma > 25
+                rowIsBlank := false
+
+            ; Left 10 columns: graph decorations are distinctly colored.
+            if x < 10 && chroma > 40
+                leftColored := true
+
+            ; Center columns 15..65: commit text is darker than white
+            ; background but lighter than a selection highlight.
+            if x >= 15 && x <= 65 {
+                if avg >= 140 && avg <= 210
+                    centerTextPixels++
+                if avg < 130
+                    highlightPixels++
+            }
+        }
+
+        if !rowIsBlank
+            nonBlankRows++
+        if leftColored
+            graphRows++
+        ; A row counts as "text" when enough center pixels are text-like.
+        if centerTextPixels >= 10
+            textRows++
+        if highlightPixels >= 10
+            highlightRows++
+    }
+
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+
+    if nonBlankRows < h * 0.3
+        return 'window mostly blank (' nonBlankRows '/' h ' non-blank rows)'
+    if graphRows < 3
+        return 'too few graph rows (' graphRows '), need >= 3'
+    if textRows < 5
+        return 'too few commit text rows (' textRows '), need >= 5'
+    if highlightRows < 1
+        return 'no selection highlight found'
+
+    return ''
+}
+
+; Verify a git gui window by analyzing its screenshot structurally.
+; Checks that the window has rendered content typical of git gui:
+;  1. Window is not blank/uniform
+;  2. Colored staging area visible (yellow/green region on the left)
+;  3. Distinct horizontal regions (menu bar, staging, commit area)
+;  4. Title does not contain "Error" or "not a git repository"
+VerifyGitGuiLayout(label, thumbFile, timeout := 30000) {
+    hwnd := WinWait('ahk_class TkTopLevel', , 15)
+    if !hwnd
+        ExitWithError label ': Tk window did not appear'
+    Info label ': window appeared'
+
+    ; Check title for errors before anything else.
+    title := WinGetTitle('ahk_id ' hwnd)
+    if InStr(title, 'Error') || InStr(title, 'not a git repository')
+        ExitWithError label ': title indicates error: ' title
+
+    WinMove(100, 100, 800, 600, 'ahk_id ' hwnd)
+    WinActivate('ahk_id ' hwnd)
+
+    thumbW := 80
+    thumbH := 60
+    deadline := A_TickCount + timeout
+    lastErr := 'no capture attempted'
+    while A_TickCount < deadline {
+        CaptureAndDownscaleWindow(hwnd, thumbW, thumbH, thumbFile)
+        lastErr := CheckGitGuiStructure(thumbFile, thumbW, thumbH)
+        if lastErr = '' {
+            Info label ': layout verification passed'
+            WinClose('ahk_id ' hwnd)
+            WinWaitClose('ahk_id ' hwnd, , 5)
+            Info label ': closed'
+            return hwnd
+        }
+        Info label ': retry (' lastErr ')'
+        Sleep 2000
+    }
+    ExitWithError label ': layout check failed after ' timeout 'ms: ' lastErr
+}
+
+; Analyze a git gui screenshot for expected structure.
+; Returns empty string on success, or an error description.
+CheckGitGuiStructure(file, w, h) {
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file, 'ptr*', &pBitmap)
+    if !pBitmap {
+        ShutdownGdiPlus(gdipToken)
+        return 'failed to load ' file
+    }
+
+    ; Analyze the thumbnail for git gui's characteristic layout:
+    ; - Colored rows (yellow/green staging area)
+    ; - Light rows (white diff/commit area)
+    ; - Dark or text-like rows (menu bar, labels)
+    nonBlankRows := 0
+    coloredRows := 0
+    lightRows := 0
+
+    loop h {
+        y := A_Index - 1
+        rowIsBlank := true
+        coloredPixels := 0
+        lightPixels := 0
+
+        loop w {
+            x := A_Index - 1
+            argb := 0
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBitmap,
+                'int', x, 'int', y, 'uint*', &argb)
+            r := (argb >> 16) & 0xFF
+            g := (argb >> 8) & 0xFF
+            b := argb & 0xFF
+            avg := (r + g + b) // 3
+            chroma := Max(Abs(r - g), Abs(g - b), Abs(r - b))
+
+            if avg < 230 || chroma > 25
+                rowIsBlank := false
+
+            ; Colored pixels: staging area has yellow/green hues
+            if chroma > 30 && avg > 100 && avg < 230
+                coloredPixels++
+
+            ; Light pixels: white/near-white areas (diff pane, empty areas)
+            if avg > 230 && chroma < 15
+                lightPixels++
+        }
+
+        if !rowIsBlank
+            nonBlankRows++
+        if coloredPixels >= 5
+            coloredRows++
+        if lightPixels >= w // 2
+            lightRows++
+    }
+
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+
+    if nonBlankRows < h * 0.3
+        return 'window mostly blank (' nonBlankRows '/' h ' non-blank rows)'
+    if coloredRows < 2
+        return 'too few colored rows (' coloredRows '), need >= 2 (staging area)'
+    if lightRows < 3
+        return 'too few light rows (' lightRows '), need >= 3 (diff/commit area)'
+
+    return ''
+}
+
+; Scan a Git GUI chooser screenshot for the recent repo link row.
+; The link is rendered as colored text (typically blue) against a
+; neutral background. The scan groups contiguous blue rows into bands
+; and returns the y coordinate of the LAST band whose peak blue-pixel
+; count is above a noise threshold (the recent-repo link sits below
+; the Create/Clone/Open links). Bands with only a handful of blue
+; pixels are bleed-through from windows behind the chooser captured
+; via BitBlt from the screen DC and are discarded. Returns -1 if no
+; sufficiently strong band is found.
+FindChooserLinkRow(file, w, h) {
+    gdipToken := StartupGdiPlus()
+    pBitmap := 0
+    DllCall('gdiplus\GdipCreateBitmapFromFile', 'wstr', file, 'ptr*', &pBitmap)
+    if !pBitmap {
+        ShutdownGdiPlus(gdipToken)
+        return -1
+    }
+
+    ; The chooser's content area ends well before the captured bitmap's
+    ; bottom edge: the bottom-most widgets (Quit button etc.) sit at
+    ; roughly y = h - 40, with a small margin below them. The capture
+    ; can include a narrow strip of pixels from BEHIND the chooser
+    ; (e.g. desktop accent colour bleeding through during the BitBlt
+    ; from the screen DC), which presents as a solid blue band in the
+    ; last ~10 rows. Clamp the scan to the upper 90% so that band is
+    ; never considered.
+    scanLimit := h - (h // 10)
+
+    bands := []
+    bStart := -1
+    bEnd := -1
+    bMax := 0
+    loop scanLimit {
+        y := A_Index - 1
+        bluePixels := 0
+        loop w {
+            x := A_Index - 1
+            argb := 0
+            DllCall('gdiplus\GdipBitmapGetPixel', 'ptr', pBitmap,
+                'int', x, 'int', y, 'uint*', &argb)
+            r := (argb >> 16) & 0xFF
+            g := (argb >> 8) & 0xFF
+            b := argb & 0xFF
+            ; Link text is blue: high blue, lower red and green.
+            if b > 100 && b > r + 30 && b > g + 30
+                bluePixels++
+        }
+        ; A row only counts as part of a link band if it has
+        ; substantially more blue pixels than the noise floor. The
+        ; chooser's window border / DWM frame contributes a constant
+        ; ~7-8 blue pixels per row across hundreds of rows; treating
+        ; that as part of a band would bridge the real link band to
+        ; whatever noise sits below it, yielding one mega-band whose
+        ; midpoint lands in dead space. Real link-text rows have 60+
+        ; blue pixels (typically 100-250), so a threshold of 30
+        ; cleanly separates link rows from border bleed.
+        if bluePixels >= 30 {
+            if bStart < 0 {
+                bStart := y
+                bEnd := y
+                bMax := bluePixels
+            } else if y - bEnd <= 2 {
+                bEnd := y
+                bMax := Max(bMax, bluePixels)
+            } else {
+                bands.Push({y1: bStart, y2: bEnd, max: bMax})
+                bStart := y
+                bEnd := y
+                bMax := bluePixels
+            }
+        }
+    }
+    if bStart >= 0
+        bands.Push({y1: bStart, y2: bEnd, max: bMax})
+
+    DllCall('gdiplus\GdipDisposeImage', 'ptr', pBitmap)
+    ShutdownGdiPlus(gdipToken)
+
+    ; The recent-repo link is the last band that has a substantial
+    ; blue-pixel run. Real link bands have dozens to hundreds of blue
+    ; pixels per row; bleed-through has at most a handful.
+    i := bands.Length
+    while i >= 1 {
+        if bands[i].max >= 20
+            return (bands[i].y1 + bands[i].y2) // 2
+        i--
+    }
+    return -1
+}
