@@ -79,8 +79,48 @@ call_gpg () {
 repo_add () {
 	if test ! -s "$this_script_dir/repo-add"
 	then
-		# Make sure that GPGKEY is used unquoted
-		 sed 's/"\(\${\?GPGKEY}\?\)"/\1/g' </usr/bin/repo-add >"$this_script_dir/repo-add"
+		# The `build-installers` SDK that is used by the
+		# `pacman-packages` action of
+		# `git-for-windows/git-for-windows-automation` does not ship
+		# `vercmp.exe`. Inject a small Bash function of the same name
+		# (`repo-add` is a Bash script, so it picks it up at the call
+		# site without any PATH manipulation), and make sure that
+		# `GPGKEY` is used unquoted.
+		{
+			sed '1q' </usr/bin/repo-add &&
+			cat <<\VERCMP_EOF &&
+vercmp () {
+    [[ "$1" = "$2" ]] && { echo 0; return; }
+    local -a sa=( ${1//[^0-9A-Za-z]/ } )
+    local -a sb=( ${2//[^0-9A-Za-z]/ } )
+    local n=${#sa[@]}
+    (( ${#sb[@]} < n )) && n=${#sb[@]}
+    local i
+    for (( i = 0; i < n; i++ )); do
+        [[ "${sa[i]}" = "${sb[i]}" ]] && continue
+        if [[ "${sa[i]}" =~ ^[0-9]+$ && "${sb[i]}" =~ ^[0-9]+$ ]]; then
+            (( 10#${sa[i]} > 10#${sb[i]} )) && echo 1 || echo -1
+            return
+        fi
+        [[ "${sa[i]}" =~ ^[0-9]+$ ]] && { echo  1; return; }
+        [[ "${sb[i]}" =~ ^[0-9]+$ ]] && { echo -1; return; }
+        [[ "${sa[i]}" > "${sb[i]}" ]] && echo 1 || echo -1
+        return
+    done
+    (( ${#sa[@]} == ${#sb[@]} )) && { echo 0; return; }
+    local extra sign
+    if (( ${#sa[@]} > ${#sb[@]} )); then
+        extra=${sa[n]}
+        sign=1
+    else
+        extra=${sb[n]}
+        sign=-1
+    fi
+    [[ "$extra" =~ ^[A-Za-z] ]] && echo $(( -sign )) || echo $sign
+}
+VERCMP_EOF
+			sed '1d; s/"\(\${\?GPGKEY}\?\)"/\1/g' </usr/bin/repo-add
+		} >"$this_script_dir/repo-add"
 	fi &&
 	"$this_script_dir/repo-add" "$@"
 }
