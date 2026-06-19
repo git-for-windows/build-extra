@@ -250,7 +250,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	architectures="i686 x86_64 aarch64"
 
 	versions="$(case $# in 0) pacman -Q;; 1) cat "$1";; esac |
-		sed 's/^\(mingw-w64\)\(-clang-[^-]*\|-[^-]*\)/\1/' | sort | uniq)"
+		sed 's/^\(mingw-w64\)\(-clang-[^-]*\|-ucrt-[^-]*\|-[^-]*\)/\1/' | sort | uniq)"
 	test -n "$versions" ||
 	die 'Could not obtain package versions\n'
 
@@ -293,6 +293,11 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 				oarch=aarch64
 				mingw_package_prefix=mingw-w64-clang-aarch64
 				artifact_suffix=arm64
+				;;
+			ucrt64)
+				oarch=x86_64
+				mingw_package_prefix=mingw-w64-ucrt-x86_64
+				artifact_suffix=ucrt64
 				;;
 			*)
 				die "Unhandled architecture: $arch"
