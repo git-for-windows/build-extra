@@ -148,7 +148,8 @@ fi ||
 die "Could not generate release notes"
 
 test ! -d /var/lib/pacman/local/ ||
-if grep -q edit-git-bash /var/lib/pacman/local/$MINGW_PACKAGE_PREFIX-git-[1-9]*/files
+if grep -q edit-git-bash /var/lib/pacman/local/$MINGW_PACKAGE_PREFIX-git-for-windows-addons-[1-9]*/files ||
+	grep -q edit-git-bash /var/lib/pacman/local/$MINGW_PACKAGE_PREFIX-git-[1-9]*/files
 then
 	INCLUDE_EDIT_GIT_BASH=
 else
