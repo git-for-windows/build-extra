@@ -29,6 +29,13 @@ sf_repos_url=http://sourceforge.net/projects/msys2/files/REPOS
 msys_sf_source_url=$sf_repos_url/MSYS2/Sources
 mingw_sf_source_url=$sf_repos_url/MINGW/Sources
 azure_blobs_source_url=https://wingit.blob.core.windows.net/sources
+pacman_repo_url=https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads
+
+# When $GITHUB_TOKEN is non-empty, pass it via Basic Auth so the otherwise
+# strictly rate-limited raw.githubusercontent.com (and api.github.com release
+# download) endpoints accept more requests.
+github_curl_auth=
+test -z "$GITHUB_TOKEN" || github_curl_auth="-u x-access-token:$GITHUB_TOKEN"
 
 cd "$(dirname "$0")" ||
 die "Could not change directory to build-extra/"
@@ -210,6 +217,20 @@ do
 	if test ! -f "$dir/$filename"
 	then
 
+		# Try to find the source package via the x86_64 versions index
+		release_url=
+		if test "$name" != "$w64"
+		then
+			x64_pkgname=mingw-w64-x86_64-$w64
+		else
+			x64_pkgname=$name
+		fi
+		release_tag="$(curl $github_curl_auth -Lsf \
+			"$pacman_repo_url/x86_64/$x64_pkgname.versions.json" |
+			sed -n 's/^ *"'"$version"'": *"\([^"]*\)".*/\1/p')"
+		test -z "$release_tag" ||
+		release_url=https://github.com/git-for-windows/pacman-repo/releases/download/$release_tag/$filename
+
 		case "$name" in
 		git-extra|mingw-w64-x86_64-git-extra|mingw-w64-i686-git-extra|mingw-w64-x86_64-git|mingw-w64-i686-git|msys2-runtime|mingw-w64-x86_64-git-credential-manager|mingw-w64-i686-git-credential-manager|mingw-w64-x86_64-git-credential-manager-core|mingw-w64-i686-git-credential-manager-core|mingw-w64-i686-git-lfs|mingw-w64-x86_64-git-lfs|curl|mingw-w64-i686-curl|mingw-w64-x86_64-curl|mingw-w64-i686-wintoast|mingw-w64-x86_64-wintoast|bash|heimdal|perl|openssh)
 			url="$azure_blobs_source_url/$filename"
@@ -269,13 +290,14 @@ do
 			;;
 		esac
 
-		echo "Downloading $url"
+		echo "Downloading ${release_url:-$url}"
 		test -s "$dir/$filename" ||
+		{ test -z "$release_url" || curl $github_curl_auth -sfLo "$dir/$filename" "$release_url"; } ||
 		curl -sfLo "$dir/$filename" "$url" ||
 		curl -sfLo "$dir/$filename" "$sf1_url" ||
 		curl -sfLo "$dir/$filename" "$sf2_url" ||
 		curl -sfLo "$dir/$filename" "$sf3_url" ||
-		die "Could not download $filename from $url ($sf1_url $sf2_url $sf3_url)" >&2
+		die "Could not download $filename from ${release_url:+$release_url }$url ($sf1_url $sf2_url $sf3_url)" >&2
 
 		test -s "$dir/$filename" ||
 		die "Empty file: $dir/$filename"

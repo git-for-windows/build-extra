@@ -88,6 +88,9 @@ UninstallDisplayIcon={app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 #ifndef COMPILE_FROM_IDE
 VersionInfoVersion={#FILE_VERSION}
 #endif
+#ifdef ARCHS_ALLOWED
+ArchitecturesAllowed={#ARCHS_ALLOWED}
+#endif
 
 ; Cosmetic
 SetupIconFile={#SourcePath}\..\git.ico
@@ -1914,6 +1917,7 @@ var
     LblInfo:TLabel;
     AslrSetting: AnsiString;
     WasFSMonitorEnabled:Boolean;
+    Dummy:array of TLabel;
 begin
     SanitizeGitEnvironmentVariables();
 
@@ -2402,16 +2406,19 @@ begin
      * Create a custom page for the default behavior of `git pull`.
      *)
 
-    GitPullBehaviorPage:=CreatePage(PrevPageID,'Choose the default behavior of `git pull`','What should `git pull` do by default?',TabOrder,Top,Left);
+    GitPullBehaviorPage:=CreatePage(PrevPageID,'Choose the default behavior of `git pull`','Pulling always attempts a fast-forward first.',TabOrder,Top,Left);
 
     // 1st choice
-    RdbGitPullBehavior[GP_GitPullMerge]:=CreateRadioButton(GitPullBehaviorPage,'Fast-forward or merge','Fast-forward the current branch to the fetched branch when possible,'+#13+'otherwise create a merge commit.',TabOrder,Top,Left);
+    RdbGitPullBehavior[GP_GitPullMerge]:=CreateRadioButton(GitPullBehaviorPage,'Merge','Create a merge commit to combine branches. This preserves the history of parallel work.',TabOrder,Top,Left);
 
     // 2nd choice
-    RdbGitPullBehavior[GP_GitPullRebase]:=CreateRadioButton(GitPullBehaviorPage,'Rebase','Rebase the current branch onto the fetched branch. If there are no local'+#13+'commits to rebase, this is equivalent to a fast-forward.',TabOrder,Top,Left);
+    RdbGitPullBehavior[GP_GitPullRebase]:=CreateRadioButton(GitPullBehaviorPage,'Rebase','Rewrite your local commits on top of the remote branch, keeping a single linear timeline.',TabOrder,Top,Left);
 
     // 3rd choice
-    RdbGitPullBehavior[GP_GitPullFFOnly]:=CreateRadioButton(GitPullBehaviorPage,'Only ever fast-forward','Fast-forward to the fetched branch. Fail if that is not possible.'+#13+'This is the standard behavior of `git pull`.',TabOrder,Top,Left);
+    RdbGitPullBehavior[GP_GitPullFFOnly]:=CreateRadioButton(GitPullBehaviorPage,'Fast-forward only','Safely abort if a fast-forward is not possible.'+#13+'This is the default behavior of `git pull`.',TabOrder,Top,Left);
+
+    // Footer note
+    CreateItemDescription(GitPullBehaviorPage,'Need help choosing? Read <A HREF=https://gitforwindows.org/choosing-the-default-behavior-of-git-pull.html>this guide</A>.',Top,Left,Dummy,True);
 
     // Restore the setting chosen during a previous install.
     case ReplayChoice('Git Pull Behavior Option','Merge') of
@@ -2432,7 +2439,7 @@ begin
     RdbGitCredentialManager[GCM]:=CreateRadioButton(GitCredentialManagerPage,'Git Credential Manager','Use the <A HREF=https://github.com/GitCredentialManager/git-credential-manager>cross-platform Git Credential Manager</A>.'+#13+'See more information about the future of Git Credential Manager <A HREF=https://github.com/GitCredentialManager/git-credential-manager/blob/HEAD/docs/faq.md#about-the-project>here</A>.',TabOrder,Top,Left);
 
     // No credential helper
-    RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.',TabOrder,Top,Left);
+    RdbGitCredentialManager[GCM_None]:=CreateRadioButton(GitCredentialManagerPage,'None','Do not use a credential helper.'+#13+#13+'Note: Select only for headless environments, SSH-only workflows,'+#13+'or custom credential helpers. Otherwise, Git will prompt for'+#13+'credentials on every HTTPS operation.',TabOrder,Top,Left);
 
     // Restore the settings chosen during a previous install, if .NET Framework 4.7.2
     // or later is available.
@@ -2550,8 +2557,10 @@ begin
 #endif
 
     PageIDBeforeInstall:=CurrentCustomPageID;
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
     if (PageIDBeforeInstall=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
         PageIDBeforeInstall:=PageIDBeforeInstall-1;
+#endif
 
     (*
      * Create a custom page for finding the processes that lock a module.
@@ -2627,9 +2636,12 @@ begin
             Result:=False
         else
             Result:=(PageID<>wpInfoBefore) and (PageID<>wpFinished);
-    end else if (PageID=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
+    end
+#ifdef HAVE_EXPERIMENTAL_OPTIONS
+    else if (PageID=ExperimentalOptionsPage.ID) and IsHiddenExperimentalOptionsPageEmpty then
         // Skip experimental options page if all options are hidden
         Result:=True
+#endif
     else
         Result:=False;
 #ifdef DEBUG_WIZARD_PAGE

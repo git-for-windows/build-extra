@@ -265,6 +265,12 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	unpack=$dir/.unpack
 	url=https://raw.githubusercontent.com/git-for-windows/pacman-repo/refs/heads
 
+	# When $GITHUB_TOKEN is non-empty, pass it via Basic Auth so the otherwise
+	# strictly rate-limited raw.githubusercontent.com (and api.github.com
+	# release download) endpoints accept more requests.
+	github_curl_auth=
+	test -z "$GITHUB_TOKEN" || github_curl_auth="-u x-access-token:$GITHUB_TOKEN"
+
 	mkdir -p "$dir" ||
 	die "Could not create '%s'\n" "$dir"
 
@@ -336,14 +342,25 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 				die 'Could not copy %s (%d)\n' "$tar" $?
 			else
 				echo "Retrieving $tar..." >&2
-				curl -sfo "$dir/$tar" $url/$oarch/$tar
+				pkgname="${tar%-*-*-*.pkg.tar.*}"
+				remainder="${tar#"$pkgname"-}"
+				verrel="${remainder%-*.pkg.tar.*}"
+				release_tag="$(curl $github_curl_auth -Lsf \
+					"$url/$oarch/$pkgname.versions.json" |
+					sed -n 's/^ *"'"$verrel"'": *"\([^"]*\)".*/\1/p')"
+				if test -n "$release_tag"
+				then
+					tar_url=https://github.com/git-for-windows/pacman-repo/releases/download/$release_tag/$tar
+				else
+					tar_url=$url/$oarch/$tar
+				fi
+				curl $github_curl_auth -Lsfo "$dir/$tar" $tar_url
 				case $? in
 				0) ;; # okay
 				56)
 					while test 56 = $?
 					do
-						curl -sfo "$dir/$tar" \
-							$url/$oarch/$tar ||
+						curl $github_curl_auth -Lsfo "$dir/$tar" $tar_url ||
 						die "curl error %s (%d)\n" \
 							"$tar" $?
 					done
@@ -372,7 +389,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	done
 }
 
-create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--architecture=(x86_64|i686|aarch64|auto)] [--bitness=(32|64)] [--force] <name>
+create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--architecture=(x86_64|i686|aarch64|ucrt64|auto)] [--bitness=(32|64)] [--force] <name>
 	git_sdk_path=/
 	output_path=
 	force=
@@ -473,6 +490,11 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	fi
 
 	case "$architecture" in
+	ucrt64)
+		MSYSTEM=UCRT64
+		PREFIX="/ucrt64"
+		SDK_REPO="git-sdk-64"
+		;;
 	x86_64)
 		MSYSTEM=MINGW64
 		PREFIX="/mingw64"
@@ -653,7 +675,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
-			if test x86_64 = $architecture
+			if test x86_64 = $architecture &&
+				git -C "$git_sdk_path" rev-parse -q --verify \
+					HEAD:.sparse/makepkg-git-i686 >/dev/null
 			then
 				printf '\n' >>"$sparse_checkout_file" &&
 				git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file"
@@ -898,7 +922,7 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 		export SIGNTOOL="git ${d:+--git-dir="$d"} signtool"
 	 fi &&
 	 cd ${git_src_dir%/src/git}/ &&
-	 MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw $maybe_sync $force -p PKGBUILD.$tag &&
+	 _DEFAULT_EDITOR=vim MAKEFLAGS=${MAKEFLAGS:--j$(nproc)} makepkg-mingw $maybe_sync $force -p PKGBUILD.$tag &&
 	 if test -n "$src_pkg"
 	 then
 		git --git-dir src/git/.git archive --prefix git/ -o git-$tag.tar.gz $tag &&
@@ -913,7 +937,7 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 	die "Could not build mingw-w64-git\n"
 
 	test -z "$output_path" || {
-		pkgpattern="$(sed -n '/^pkgver=/{N;s/pkgver=\(.*\).pkgrel=\(.*\)/\1-\2/p}' <${git_src_dir%/src/git}/PKGBUILD.$tag)" &&
+		pkgpattern="$(bash -c "cd ${git_src_dir%/src/git}/ && . PKGBUILD.$tag && echo \$pkgver-\$pkgrel")" &&
 		mkdir -p "$output_path" &&
 		{ test -z "$src_pkg" || cp ${git_src_dir%/src/git}/*-"$pkgpattern".src.tar.gz "$output_path/"; } &&
 		cp ${git_src_dir%/src/git}/*-"$pkgpattern"-any.pkg.tar.xz ${git_src_dir%/src/git}/PKGBUILD.$tag "$output_path/"

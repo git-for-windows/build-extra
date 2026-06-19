@@ -1,5 +1,5 @@
-# Git for Windows v2.53.0 Release Notes
-Latest update: February 2nd 2026
+# Git for Windows v2.54.0 Release Notes
+Latest update: April 20th 2026
 
 ## Introduction
 
@@ -36,18 +36,66 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
-## Changes since Git for Windows v2.53.0 (February 2nd 2026)
+## Changes since Git for Windows v2.54.0 (April 20th 2026)
+
+Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support will be dropped after Git for Windows v2.55.
 
 ### New Features
 
+* Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.9](https://sourceware.org/pipermail/cygwin-announce/2026-April/012969.html).
+* Comes with [Git Credential Manager v2.8.0](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.8.0).
+* Comes with [cURL v8.20.0](https://curl.se/changes.html#8_20_0).
+* Comes with [less 702](http://www.greenwoodsoftware.com/less/news.702.html).
+* The FSCache now [accelerates more `git add` scenarios](https://github.com/git-for-windows/git/pull/6216).
+* Comes with [OpenSSL v3.5.7](https://www.openssl.org/news/openssl-3.5-notes.html).
+* The diff helper handling Word documents was [ported](https://github.com/git-for-windows/build-extra/pull/708) from Perl to Rust.
+* Comes with [Bash v5.3.15](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=b460816602167718f78a6233164e8875f49b75b2).
+
+### Bug Fixes
+
+* A [regression in v2.54.0](https://github.com/git-for-windows/git/issues/6210) that could cause endless "Unlink of file '.git/objects/pack/pack-<hash>.idx' failed. Should I try again?" loops on older Windows 10 versions during `git fetch` operations [was fixed](https://github.com/git-for-windows/git/pull/6215).
+* A [bug](https://github.com/msys2/msys2-runtime/issues/338) that prevented proper shutdown of processes launched via Git Bash under certain circumstances [was fixed](https://github.com/msys2/msys2-runtime/pull/339).
+* A bug was [fixed](https://github.com/git-for-windows/git/pull/6250) which could cause parallel checkouts to fail under certain circumstances when the FSCache is enabled.
+* Git Bash (MinTTY) now respects screen scaling settings [under more circumstances](https://github.com/git-for-windows/git/issues/6085).
+
+## Changes since Git for Windows v2.53.0(3) (April 14th 2026)
+
+Due to persistent maintenance challenges, `git svn` is no longer included in Git for Windows. Users who still need this command are highly encouraged to use [a Linux version of git svn via the Windows Subsystem for Linux](https://learn.microsoft.com/en-us/windows/wsl/) instead, or switch to a regular MSYS2 setup: install [MSYS2](https://www.msys2.org/), then run the following command in the MSYS2 UCRT64 Bash: `pacman -Sy mingw-w64-ucrt-x86_64-git-svn`. After that, the `git svn` command will be available in that Bash. On Windows/ARM64, you will want to use the CLANGARM64 variant instead (and install `mingw-w64-clang-aarch64-git-svn`).
+
+### New Features
+
+* Comes with [Git v2.54.0](https://github.com/git/git/blob/v2.54.0/Documentation/RelNotes/2.54.0.adoc).
 * Comes with [Bash v5.3.9](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=637f5c8696a6adc9b4519f1cd74aa78492266b7f).
-* Comes with [Git Credential Manager v2.7.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.7.2).
+* Comes with [Git Credential Manager v2.7.3](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.7.3).
 * Comes with [MinTTY v3.8.2](https://github.com/mintty/mintty/releases/tag/3.8.2).
 * The shell aliases in Git Bash that ensured that interpreters such as Python and Node.JS are executed via `winpty` are no longer necessary, and have therefore [been dropped](https://github.com/git-for-windows/build-extra/pull/664).
+* Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.7](https://sourceware.org/pipermail/cygwin-announce/2026-March/012878.html).
+* Comes with [cURL v8.19.0](https://curl.se/changes.html#8_19_0).
+* Comes with [OpenSSH v10.3.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_3_P1).
+* Comes with [OpenSSL v3.5.6](https://www.openssl.org/news/openssl-3.5-notes.html).
 
 ### Bug Fixes
 
 * The `iconv` executable, which was [inadvertently dropped](https://github.com/git-for-windows/git/issues/6083) from Git for Windows v2.53.0's installer, [is now included again](https://github.com/git-for-windows/build-extra/pull/678).
+* In some circumstances, when typing while a still-running program is about to terminate, [the typed characters could arrive out of order in Git Bash](https://github.com/git-for-windows/git/issues/5632). This bug [was fixed](https://github.com/git-for-windows/msys2-runtime/pull/124).
+* Similar to how `git clean` already avoids traversing NTFS junctions, `git worktree remove` [now does the same](https://github.com/git-for-windows/git/pull/6151).
+* The number of CPU cores is [now detected correctly](https://github.com/git-for-windows/git/pull/6108) on multi-socket systems.
+* When fetching/pushing via Secure Channel (the default TLS/SSL method), the timeout to renegotiate (e.g. using client certificates) was recently reduced to 7 seconds, which was too short. It has been [extended to 60 seconds](https://github.com/git-for-windows/MINGW-packages/pull/192).
+* The recent security bug fix that disables NTLM by default missed the NTLM fallback in the Kerberos protocol. This fallback [is now disabled](https://github.com/git-for-windows/MINGW-packages/pull/193), following the cURL project's guidance.
+* A _really_ old bug which prevented Kerberos authentication from working with the default [`http.emptyAuth`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-httpemptyAuth) ("auto"), [was fixed](https://github.com/git-for-windows/git/pull/6170).
+* The `git instaweb` command [is no longer distributed with Git for Windows](https://github.com/git-for-windows/build-extra/pull/689) because it would require GitWeb (which has not been distributed with Git for Windows for quite a few years).
+
+## Changes since Git for Windows v2.53.0(2) (March 10th 2026)
+
+This is a security fix release, addressing CVE-2026-32631.
+
+* [CVE-2026-32631](https://github.com/git-for-windows/git/security/advisories/GHSA-9j5h-h4m7-85hx), Git for Windows: When a user clones a repository containing symbolic links pointing to network drives, Git follows those symlinks during checkout, causing Windows to transparently perform NTLM authentication and disclose the user's NTLMv2 hash to an attacker-controlled server. Since NTLM hashing is weak, the captured hash can potentially be brute-forced to recover the user's credentials. This is addressed by preventing `git clone` from following symbolic links that point to network drives during checkout.
+
+## Changes since Git for Windows v2.53.0 (February 2nd 2026)
+
+This is a security fix release, addressing CVE-2025-66413.
+
+* [CVE-2025-66413](https://github.com/git-for-windows/git/security/advisories/GHSA-hv9c-4jm9-jh3x), Git for Windows: When a user clones a repository from an attacker-controlled server, Git may attempt NTLM authentication and disclose the user's NTLMv2 hash to the remote server. Since NTLM hashing is weak, the captured hash can potentially be brute-forced to recover the user's credentials. This is addressed by disabling NTLM authentication by default.
 
 ## Changes since Git for Windows v2.52.0 (November 17th 2025)
 

@@ -9,6 +9,10 @@ test -n "$ARCH" ||
 die "Need ARCH to be set"
 
 case "$ARCH" in
+ucrt64)
+	MSYSTEM_LOWER=ucrt64
+	PACMAN_ARCH=ucrt-x86_64
+	;;
 x86_64)
 	MSYSTEM_LOWER=mingw64
 	PACMAN_ARCH=x86_64
@@ -51,7 +55,8 @@ then
 		mingw-w64-libsystre mingw-w64-libtre-git mingw-w64-p11-kit
 		mingw-w64-tcl mingw-w64-tk mingw-w64-wineditline gdbm icu libdb
 		libedit libgdbm perl perl-.* mingw-w64-tzdata
-		mingw-w64-git-svn subversion libserf apr apr-util expat libexpat liblz4"
+		mingw-w64-git-svn subversion libserf apr apr-util expat libexpat liblz4
+		vim nano"
 fi
 if test -z "$INCLUDE_GIT_UPDATE"
 then
@@ -83,10 +88,24 @@ fi
 
 # Newer `git.exe` no longer link to `libssp-0.dll` that has been made obsolete
 # by recent GCC updates
-EXCLUDE_LIBSSP=
-test ! -f "/$MSYSTEM_LOWER/bin/git.exe" ||
-grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" ||
-EXCLUDE_LIBSSP='\|ssp'
+EXCLUDE_MINGW_W64_DLLS=
+test ! -f "/$MSYSTEM_LOWER/bin/git.exe" || {
+	grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" ||
+	EXCLUDE_MINGW_W64_DLLS='\|ssp'
+	# libwinpthread-1 may be pulled in by the toolchain's
+	# package closure but at the same time not be a dependency of git.exe.
+	# It still is a dependency of libgcc_s_seh-1.dll, though, which is a
+	# dependency of non-MinGit bits such as WhoUses.exe (but not with clang),
+	# or libgcc_s_dw2-1.dll, which is still a hard dependency of plenty of
+	# i686 DLLs/EXEs.
+	case "$MSYSTEM_LOWER,$MINIMAL_GIT" in
+	mingw64,|mingw32,*) ;; # have bits that need winpthread
+	*)
+		grep -q libwinpthread-1.dll "/$MSYSTEM_LOWER/bin/git.exe" ||
+		EXCLUDE_MINGW_W64_DLLS='\|winpthread'
+		;;
+	esac
+}
 
 this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
@@ -111,7 +130,7 @@ pacman_list () {
 		sed 's/[<>=].*//' |
 		grep -v "^\\($(echo $PACKAGE_EXCLUDES | sed \
 			-e 's/ /\\|/g' \
-			-e 's/mingw-w64-/&\\(i686\\|x86_64\\|clang-aarch64\\)-/g')\\)\$" |
+			-e 's/mingw-w64-/&\\(i686\\|x86_64\\|ucrt-x86_64\\|clang-aarch64\\)-/g')\\)\$" |
 		sort |
 		uniq) &&
 
@@ -184,14 +203,15 @@ G4W_PACKAGE=mingw-w64-$PACMAN_ARCH-git-for-windows-addons ||
 G4W_PACKAGE=mingw-w64-$PACMAN_ARCH-git
 
 packages="$G4W_PACKAGE mingw-w64-$PACMAN_ARCH-git-credential-manager
-mingw-w64-$PACMAN_ARCH-git-extra openssh $UTIL_PACKAGES $LIBCURL_EXTRA"
+mingw-w64-$PACMAN_ARCH-git-extra openssh msys2-runtime $UTIL_PACKAGES $LIBCURL_EXTRA"
 if test -z "$MINIMAL_GIT"
 then
 	packages="$packages mingw-w64-$PACMAN_ARCH-git-doc-html ncurses mintty vim nano
-		winpty less gnupg tar diffutils iconv patch dos2unix which subversion perl-JSON
+		winpty less gnupg tar diffutils patch dos2unix which subversion perl-JSON
 		mingw-w64-$PACMAN_ARCH-tk mingw-w64-$PACMAN_ARCH-connect docx2txt
 		mingw-w64-$PACMAN_ARCH-antiword mingw-w64-$PACMAN_ARCH-odt2txt ssh-pageant
 		mingw-w64-$PACMAN_ARCH-git-lfs mingw-w64-$PACMAN_ARCH-xz tig $GIT_UPDATE_EXTRA_PACKAGES"
+	test i686 = "$ARCH" || packages="$packages iconv"
 fi
 
 I686_EXCLUDE=
@@ -209,48 +229,49 @@ pacman_list $packages "$@" |
 
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '/man/' -e '/pkgconfig/' -e '/emacs/' \
-	-e '^/usr/lib/python' -e '^/usr/lib/ruby' -e '^/\(mingw\|clang\)[^/]*/lib/python' \
+	-e '^/usr/lib/python' -e '^/usr/lib/ruby' -e "^/$MSYSTEM_LOWER/lib/python" \
 	-e '^/usr/share/subversion' \
-	-e '^/etc/skel/' -e '^/\(mingw\|clang\)[^/]*/etc/skel/' \
+	-e '^/etc/skel/' -e "^/$MSYSTEM_LOWER/etc/skel/" \
 	-e '^/etc/sshd_config' \
 	-e '^/usr/bin/svn' \
 	-e '^/usr/bin/xml.*exe$' \
 	-e '^/usr/bin/xslt.*$' \
 	-e '^/usr/bin/b*zmore$' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/.*zstd\.exe$' \
-	-e '^/\(mingw\|clang\)[^/]*/share/doc/openssl/' \
-	-e '^/\(mingw\|clang\)[^/]*/share/doc/gettext/' \
-	-e '^/\(mingw\|clang\)[^/]*/share/doc/lib' \
-	-e '^/\(mingw\|clang\)[^/]*/share/doc/pcre2\?/' \
-	-e '^/\(mingw\|clang\)[^/]*/share/doc/git-doc/.*\.txt$' \
-	-e '^/\(mingw\|clang\)[^/]*/share/doc/zstd/' \
-	-e '^/\(mingw\|clang\)[^/]*/lib/gettext/' -e '^/\(mingw\|clang\)[^/]*/share/gettext/' \
-	-e '^/usr/include/' -e '^/\(mingw\|clang\)[^/]*/include/' \
+	-e "^/$MSYSTEM_LOWER/bin/.*zstd\\.exe$" \
+	-e "^/$MSYSTEM_LOWER/share/doc/openssl/" \
+	-e "^/$MSYSTEM_LOWER/share/doc/gettext/" \
+	-e "^/$MSYSTEM_LOWER/share/doc/lib" \
+	-e "^/$MSYSTEM_LOWER/share/doc/pcre2\\?/" \
+	-e "^/$MSYSTEM_LOWER/share/doc/git-doc/.*\\.txt$" \
+	-e "^/$MSYSTEM_LOWER/share/doc/zstd/" \
+	-e "^/$MSYSTEM_LOWER/lib/gettext/" -e "^/$MSYSTEM_LOWER/share/gettext/" \
+	-e '^/usr/include/' -e "^/$MSYSTEM_LOWER/include/" \
 	-e '^/usr/share/doc/' \
-	-e '^/usr/share/info/' -e '^/\(mingw\|clang\)[^/]*/share/info/' \
-	-e '^/\(mingw\|clang\)[^/]*/share/git-doc/technical/' \
-	-e '^/\(mingw\|clang\)[^/]*/lib/cmake/' \
-	-e '^/\(mingw\|clang\)[^/]*/itcl/' \
-	-e '^/\(mingw\|clang\)[^/]*/t\(cl\|k\)[^/]*/\(demos\|msgs\|encoding\|tzdata\)/' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/\(autopoint\|[a-z]*-config\)$' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(asprintf\|gettext\|gnutls\|gnutlsxx\|gmpxx\|pcre[013-9a-oq-z]\|pcre2-[13]\|quadmath\|stdc++\|zip\)[^/]*\.dll$' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/lib\(atomic\|charset\|gomp\|systre'"$EXCLUDE_LIBSSP"'\)-[0-9]*\.dll$' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/\(asn1\|gnutls\|idn\|mini\|msg\|nettle\|ngettext\|ocsp\|pcre\|rtmp\|xgettext\|zip\)[^/]*\.exe$' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/recode-sr-latin.exe$' \
-	-e '^/\(mingw\|clang\)[^/]*/bin/\(cert\|p11\|psk\|srp\)tool.exe$' \
-	-e '^/\(mingw\|clang\)[^/]*/.*/git-\(remote-testsvn\|shell\)\.exe$' \
-	-e '^/\(mingw\|clang\)[^/]*/.*/git-cvsserver.*$' \
-	-e '^/\(mingw\|clang\)[^/]*/.*/gitweb/' \
-	-e '^/\(mingw\|clang\)[^/]*/lib/\(dde\|itcl\|sqlite\|tdbc\)' \
-	-e '^/\(mingw\|clang\)[^/]*/libexec/git-core/git-archimport$' \
-	-e '^/\(mingw\|clang\)[^/]*/share/doc/git-doc/git-archimport' \
-	-e '^/\(mingw\|clang\)[^/]*/libexec/git-core/git-cvsimport$' \
-	-e '^/\(mingw\|clang\)[^/]*/share/doc/git-doc/git-cvsexport' \
-	-e '^/\(mingw\|clang\)[^/]*/libexec/git-core/git-cvsexport' \
-	-e '^/\(mingw\|clang\)[^/]*/share/doc/git-doc/git-cvsimport' \
+	-e '^/usr/share/info/' -e "^/$MSYSTEM_LOWER/share/info/" \
+	-e "^/$MSYSTEM_LOWER/share/git-doc/technical/" \
+	-e "^/$MSYSTEM_LOWER/lib/cmake/" \
+	-e "^/$MSYSTEM_LOWER/itcl/" \
+	-e "^/$MSYSTEM_LOWER/t\\(cl\\|k\\)[^/]*/\\(demos\\|msgs\\|encoding\\|tzdata\\)/" \
+	-e "^/$MSYSTEM_LOWER/bin/\\(autopoint\\|[a-z]*-config\\)$" \
+	-e "^/$MSYSTEM_LOWER/bin/lib\\(asprintf\\|gettext\\|gnutls\\|gnutlsxx\\|gmpxx\\|pcre[013-9a-oq-z]\\|pcre2-[13]\\|quadmath\\|stdc++\\|unwind\\|zip\\)[^/]*\\.dll$" \
+	-e "^/$MSYSTEM_LOWER/bin/lib\\(atomic\\|charset\\|gomp\\|systre$EXCLUDE_MINGW_W64_DLLS\\)-[0-9]*\\.dll$" \
+	-e "^/$MSYSTEM_LOWER/bin/\\(asn1\\|gnutls\\|idn\\|mini\\|msg\\|nettle\\|ngettext\\|ocsp\\|pcre\\|rtmp\\|xgettext\\|zip\\)[^/]*\\.exe$" \
+	-e "^/$MSYSTEM_LOWER/bin/recode-sr-latin.exe$" \
+	-e "^/$MSYSTEM_LOWER/bin/\\(cert\\|p11\\|psk\\|srp\\)tool.exe$" \
+	-e "^/$MSYSTEM_LOWER/.*/git-\\(remote-testsvn\\|shell\\)\\.exe$" \
+	-e "^/$MSYSTEM_LOWER/.*/git-cvsserver.*$" \
+	-e "^/$MSYSTEM_LOWER/.*/gitweb/" \
+	-e "^/$MSYSTEM_LOWER/.*/git-instaweb" \
+	-e "^/$MSYSTEM_LOWER/lib/\\(dde\\|itcl\\|sqlite\\|tdbc\\)" \
+	-e "^/$MSYSTEM_LOWER/libexec/git-core/git-archimport$" \
+	-e "^/$MSYSTEM_LOWER/share/doc/git-doc/git-archimport" \
+	-e "^/$MSYSTEM_LOWER/libexec/git-core/git-cvsimport$" \
+	-e "^/$MSYSTEM_LOWER/share/doc/git-doc/git-cvsexport" \
+	-e "^/$MSYSTEM_LOWER/libexec/git-core/git-cvsexport" \
+	-e "^/$MSYSTEM_LOWER/share/doc/git-doc/git-cvsimport" \
 	-e "^\\($(echo $EXCLUDE_MISSING_BUILTINS | sed 's/ /\\|/g')\\)\$" \
-	-e '^/\(mingw\|clang\)[^/]*/share/gtk-doc/' \
-	-e '^/\(mingw\|clang\)[^/]*/share/nghttp2/' \
+	-e "^/$MSYSTEM_LOWER/share/gtk-doc/" \
+	-e "^/$MSYSTEM_LOWER/share/nghttp2/" \
 	-e '^/usr/bin/msys-\(db\|curl\|icu\|gfortran\|stdc++\|quadmath\)[^/]*\.dll$' \
 	-e '^/usr/bin/msys-\('"$I686_EXCLUDE"'fdisk\|gettextpo\|gmpxx\|gnutlsxx\|gomp\|xml2\|xslt\|exslt\)-.*\.dll$' \
 	-e '^/usr/bin/msys-\(hdb\|history8\|kadm5\|kdc\|otp\|sl\).*\.dll$' \
@@ -264,6 +285,8 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/lib/\(itcl\|tdbc\|pkcs11/p11-kit-client\|thread\)' \
 	-e '^/usr/lib/ssh/sshd\($\|-\)' \
 	-e '^/usr/share.*/magic$' \
+	-e '^/usr/lib/perl5/core_perl/auto/DB_File/' \
+	-e '^/usr/lib/perl5/core_perl/DB_File\.pm$' \
 	-e '^/usr/share/perl5/core_perl/Unicode/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
 	-e '^/usr/share/perl5/core_perl/Locale/' \
@@ -280,8 +303,8 @@ then
 	cat
 else
 	grep -v \
-		-e '^/\(mingw\|clang\)[^/]*/share/locale/' \
-		-e '^/\(mingw\|clang\)[^/]*/share/git\(k\|-gui\)/lib/msgs/' \
+		-e "^/$MSYSTEM_LOWER/share/locale/" \
+		-e "^/$MSYSTEM_LOWER/share/git\\(k\\|-gui\\)/lib/msgs/" \
 		-e '^/usr/share/locale/'
 fi |
 if test -z "$MINIMAL_GIT"
@@ -292,38 +315,39 @@ else
 		-e '^/etc/\(DIR_COLORS\|inputrc\|vimrc\)$' \
 		-e '^/etc/profile\.d/\(aliases\|env\|git-prompt\)\.sh$' \
 		-e '^/git-\(bash\|cmd\)\.exe$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/\(certtool\.exe\|create-shortcut\.exe\)$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/\(curl\.exe\|envsubst\.exe\|gettext\.exe\)$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/.*-\(inflate\|deflate\)hd\.exe$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/\(gettext\.sh\|gettextize\)$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/\(gitk\|git-upload-archive\.exe\)$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/libgcc_s_seh-.*\.dll$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/libjemalloc\.dll$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/lib\(ffi\|gmp\|gomp\|jansson\|metalink\|minizip\|tasn1\)-.*\.dll$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/libvtv.*\.dll$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/libpcre\(2-\)\?posix.*\.dll$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/\(.*\.def\|update-ca-trust\)$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/\(openssl\|p11tool\|pkcs1-conv\)\.exe$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/\(psktool\|recode-.*\|sexp.*\|srp.*\)\.exe$' \
-		-e '^/\(mingw\|clang\)[^/]*/bin/\(WhoUses\|xmlwf\)\.exe$' \
-		-e '^/\(mingw\|clang\)[^/]*/etc/pki' -e '^/\(mingw\|clang\)[^/]*/lib/p11-kit/' \
+		-e "^/$MSYSTEM_LOWER/bin/\\(certtool\\.exe\\|create-shortcut\\.exe\\)$" \
+		-e "^/$MSYSTEM_LOWER/bin/\\(curl\\.exe\\|envsubst\\.exe\\|gettext\\.exe\\)$" \
+		-e "^/$MSYSTEM_LOWER/bin/.*-\\(inflate\\|deflate\\)hd\\.exe$" \
+		-e "^/$MSYSTEM_LOWER/bin/\\(gettext\\.sh\\|gettextize\\)$" \
+		-e "^/$MSYSTEM_LOWER/bin/\\(gitk\\|git-upload-archive\\.exe\\)$" \
+		-e "^/$MSYSTEM_LOWER/bin/libc++\\.dll$" \
+		-e "^/$MSYSTEM_LOWER/bin/libgcc_s_seh-.*\\.dll$" \
+		-e "^/$MSYSTEM_LOWER/bin/libjemalloc\\.dll$" \
+		-e "^/$MSYSTEM_LOWER/bin/lib\\(ffi\\|gmp\\|gomp\\|jansson\\|metalink\\|minizip\\|tasn1\\)-.*\\.dll$" \
+		-e "^/$MSYSTEM_LOWER/bin/libvtv.*\\.dll$" \
+		-e "^/$MSYSTEM_LOWER/bin/libpcre\\(2-\\)\\?posix.*\\.dll$" \
+		-e "^/$MSYSTEM_LOWER/bin/\\(.*\\.def\\|update-ca-trust\\)$" \
+		-e "^/$MSYSTEM_LOWER/bin/\\(openssl\\|p11tool\\|pkcs1-conv\\)\\.exe$" \
+		-e "^/$MSYSTEM_LOWER/bin/\\(psktool\\|recode-.*\\|sexp.*\\|srp.*\\)\\.exe$" \
+		-e "^/$MSYSTEM_LOWER/bin/\\(WhoUses\\|xmlwf\\)\\.exe$" \
+		-e "^/$MSYSTEM_LOWER/etc/pki" -e "^/$MSYSTEM_LOWER/lib/p11-kit/" \
 		-e '/git-\(add--interactive\|archimport\|citool\|cvs.*\)$' \
-		-e '/git-\(gui.*\|instaweb\|p4\|relink\)$' \
+		-e '/git-\(gui.*\|p4\|relink\)$' \
 		-e '/git-\(send-email\|svn\)$' \
-		-e '/\(mingw\|clang\)[^/]*/libexec/git-core/git-\(imap-send\|daemon\)\.exe$' \
-		-e '/\(mingw\|clang\)[^/]*/libexec/git-core/git-remote-ftp.*\.exe$' \
-		-e '/\(mingw\|clang\)[^/]*/libexec/git-core/git-http-backend\.exe$' \
-		-e "/\(mingw\|clang\)[^/]*/libexec/git-core/git-\\($(sed \
+		-e "^/$MSYSTEM_LOWER/libexec/git-core/git-\\(imap-send\\|daemon\\)\\.exe$" \
+		-e "^/$MSYSTEM_LOWER/libexec/git-core/git-remote-ftp.*\\.exe$" \
+		-e "^/$MSYSTEM_LOWER/libexec/git-core/git-http-backend\\.exe$" \
+		-e "/$MSYSTEM_LOWER/libexec/git-core/git-\\($(sed \
 			-e 's/^git-//' -e 's/\.exe$//' -e 's/$/\\/' \
 				</$MSYSTEM_LOWER/share/git/builtins.txt |
 			tr '\n' '|')\\)\\.exe\$" \
-		-e '^/\(mingw\|clang\)[^/]*/share/doc/nghttp2/' \
-		-e '^/\(mingw\|clang\)[^/]*/share/gettext-' \
-		-e '^/\(mingw\|clang\)[^/]*/share/git/\(builtins\|compat\|completion\)' \
-		-e '^/\(mingw\|clang\)[^/]*/share/git/.*\.ico$' \
-		-e '^/\(mingw\|clang\)[^/]*/share/\(git-gui\|gitweb\)/' \
-		-e '^/\(mingw\|clang\)[^/]*/share/perl' \
-		-e '^/\(mingw\|clang\)[^/]*/share/pki/' \
+		-e "^/$MSYSTEM_LOWER/share/doc/nghttp2/" \
+		-e "^/$MSYSTEM_LOWER/share/gettext-" \
+		-e "^/$MSYSTEM_LOWER/share/git/\\(builtins\\|compat\\|completion\\)" \
+		-e "^/$MSYSTEM_LOWER/share/git/.*\\.ico$" \
+		-e "^/$MSYSTEM_LOWER/share/git-gui/" \
+		-e "^/$MSYSTEM_LOWER/share/perl" \
+		-e "^/$MSYSTEM_LOWER/share/pki/" \
 		-e '/zsh/' \
 		-e '^/usr/bin/\(astextplain\|bashbug\|c_rehash\|egrep\)$' \
 		-e '^/usr/bin/\(fgrep\|findssl\.sh\|igawk\|notepad\)$' \
@@ -424,7 +448,7 @@ fi
 
 EXTRA_DLL_FILES=
 case $MSYSTEM_LOWER in
-mingw*)
+mingw*|ucrt64)
 	PDFTOTEXT_FILES="$MSYSTEM_LOWER/bin/pdftotext.exe
 $MSYSTEM_LOWER/bin/libstdc++-6.dll"
 	if test i686 = "$ARCH" &&
@@ -460,4 +484,9 @@ usr/bin/tmux.exe
 $(ldd /usr/bin/tmux.exe | sed -n 's/.*> \/\(.*msys-event[^ ]*\).*/\1/p')
 EOF
 
-test -z "$INCLUDE_OBJDUMP" || echo usr/bin/objdump.exe
+test -z "$INCLUDE_OBJDUMP" || {
+	echo usr/bin/objdump.exe
+	test -n "$MINIMAL_GIT" &&
+	grep -q msys-zstd-1 /usr/bin/objdump.exe 2>/dev/null &&
+	echo usr/bin/msys-zstd-1.dll
+}

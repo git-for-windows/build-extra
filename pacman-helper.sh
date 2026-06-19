@@ -30,15 +30,14 @@ die () {
 
 mode=
 case "$1" in
-lock|unlock|break_lock|quick_add|quick_remove)
+quick_add|quick_remove)
 	mode="$1"
 	shift
 	;;
 *)
-	die "Usage:\n%s\n%s\n%s\n" \
+	die "Usage:\n%s\n%s\n" \
 		" $0 quick_add <package>..." \
-		" $0 quick_remove <package>..." \
-		" $0 ( lock | unlock <id> | break_lock )"
+		" $0 quick_remove <package>..."
 	;;
 esac
 
@@ -54,34 +53,12 @@ MSYS|MINGW*)
 	this_script_dir="$(cd "$(dirname "$0")" && pwd -P)"
 	;;
 esac
-base_url=https://wingit.blob.core.windows.net
 mirror=/var/local/pacman-mirror
 
 architectures="i686 x86_64 aarch64"
 
 arch_dir () { # <architecture>
 	echo "$mirror/$1"
-}
-
-map_arch () { # <architecture>
-	# Azure Blobs does not allow underlines, but dashes in container names
-	case "$1" in
-	x86_64) echo "x86-64";;
-	clang-aarch64) echo "aarch64";;
-	*) echo "$1";;
-	esac
-}
-
-arch_url () { # <architecture>
-	echo "$base_url/$(map_arch $1)"
-}
-
-arch_to_mingw () { # <arch>
-	case "$arch" in
-	i686) echo mingw32;;
-	aarch64) echo aarch64;;
-	*) echo mingw64;;
-	esac
 }
 
 package_list () { # db.tar.xz
@@ -123,6 +100,15 @@ repo_remove () {
 		*) echo "$arg";;
 		esac
 	done)
+}
+
+update_versions_json () { # <file> <version> <tagname>
+	{
+		test ! -f "$1" ||
+		sed -n 's/^ *\("[^"]*": *"[^"]*"\).*/ \1/p' "$1"
+		printf ' "%s": "%s"\n' "$2" "$3"
+	} | sort -u | sed '$!s/$/,/' |
+	{ printf '{\n'; cat; printf '}\n'; } >"$1.tmp" && mv "$1.tmp" "$1"
 }
 
 sanitize_db () { # <file>...
@@ -203,13 +189,6 @@ quick_action () { # <action> <file>...
 	*) die "Unknown action '$action'";;
 	esac
 
-	if test -z "$PACMANDRYRUN$azure_blobs_token"
-	then
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	fi
-
 	if test -z "$PACMANDRYRUN$GITHUB_TOKEN"
 	then
 		die 'Need `GITHUB_TOKEN` to upload the files to `git-for-windows/pacman-repo`'
@@ -225,7 +204,7 @@ quick_action () { # <action> <file>...
 	git -C "$dir" config set core.sparseCheckout true &&
 	git -C "$dir" config set core.sparseCheckoutCone false &&
 	mkdir -p "$dir"/.git/info &&
-	printf '%s\n' '/git-*.db*' '/git-*.files*' >"$dir"/.git/info/sparse-checkout &&
+	printf '%s\n' '/git-*.db*' '/git-*.files*' '/*.versions.json' >"$dir"/.git/info/sparse-checkout &&
 	printf '%s\n' '/git-for-windows.db*' '/git-for-windows.files*' >"$dir"/.git/info/exclude &&
 	mkdir "$dir/sources" ||
 	die "Could not create temporary directory"
@@ -248,6 +227,7 @@ quick_action () { # <action> <file>...
 		mingw-w64-*.pkg.tar.xz|mingw-w64-*.pkg.tar.zst)
 			arch=${file##mingw-w64-}
 			arch=${arch#clang-}
+			arch=${arch#ucrt-}
 			arch=${arch%%-*}
 			key=${arch}_mingw
 			;;
@@ -282,10 +262,11 @@ quick_action () { # <action> <file>...
 			file=${file%-[0-9]*-[0-9]*}
 			key=${arch}_msys
 			;;
-		mingw-w64-i686-*|mingw-w64-x86_64-*|mingw-w64-clang-aarch64-*)
+		mingw-w64-i686-*|mingw-w64-x86_64-*|mingw-w64-ucrt-x86_64-*|mingw-w64-clang-aarch64-*)
 			test remove = "$label" || die "Cannot add $path"
 			arch=${file#mingw-w64-}
 			arch=${arch#clang-}
+			arch=${arch#ucrt-}
 			arch=${arch%%-*}
 			file=${file%-any}
 			file=${file%-[0-9]*-[0-9]*}
@@ -341,16 +322,13 @@ quick_action () { # <action> <file>...
 		fi
 	done
 
-	# Acquire lease
-	PACMAN_DB_LEASE="$(lock)" ||
-	die 'Could not obtain a lock for uploading'
-
-	# Verify that the package databases are synchronized and add or remove files
+	# Add or remove files
 	sign_option=
 	test -z "$GPGKEY" || sign_option=--sign
 	dbs=
 	to_push=
 	>"$dir/release_notes.txt"
+	tagname="$(TZ=UTC date +%Y-%m-%dT%H-%M-%S.%NZ)"
 	for arch in $architectures
 	do
 		eval "msys=\$${arch}_msys"
@@ -362,52 +340,31 @@ quick_action () { # <action> <file>...
 		die "Could not update $dir/$arch"
 
 		case "$arch,$mingw" in
-		*,) db2=;;
-		i686,*) db2=mingw32;;
-		*aarch64*) db2=clangarm64;;
-		*) db2=mingw64;;
+		*,) db2=; db3=;;
+		i686,*) db2=mingw32; db3=;;
+		*aarch64*) db2=clangarm64; db3=;;
+		*)
+			db2=mingw64
+			db3=ucrt64
+			;;
 		esac
-		for db in git-for-windows-$arch ${db2:+git-for-windows-$db2}
+		for db in git-for-windows-$arch ${db2:+git-for-windows-$db2} ${db3:+git-for-windows-$db3}
 		do
-			# The Pacman repository on Azure Blobs still uses the old naming scheme
-			case "$db" in
-			git-for-windows-$arch) remote_db=git-for-windows;;
-			git-for-windows-clangarm64) remote_db=git-for-windows-aarch64;;
-			*) remote_db=$db;;
-			esac
-
 			for infix in db files
 			do
 				file=$db.$infix.tar.xz
-				remote_file=$remote_db.$infix.tar.xz
-
-				echo "Downloading current $arch/$file..." >&2
-				curl -sfo "$dir/$arch/$file" "$(arch_url $arch)/$remote_file" || return 1
-
 				dbs="$dbs $arch/$file $arch/${file%.tar.xz}"
-				if test -n "$sign_option"
-				then
-					curl -sfo "$dir/$arch/$file.sig" "$(arch_url $arch)/$remote_file.sig" ||
-					return 1
-					gpg --verify "$dir/$arch/$file.sig" ||
-					die "Could not verify GPG signature: $dir/$arch/$file"
+				test -z "$sign_option" ||
+				dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
 
-					dbs="$dbs $arch/$file.sig $arch/${file%.tar.xz}.sig"
-				fi
-
+				# Guard against duplicate package versions sneaking
+				# into the database (a problem that has bitten us in
+				# the past, unrelated to which backend hosts the repo).
 				sanitize_db "$dir/$arch/$file" || return 1
-				test ! -f "$dir/$arch/${file%.tar.xz}" ||
-				sanitize_db "$dir/$arch/${file%.tar.xz}" || return 1
 			done
 		done
 
 		(cd "$dir/$arch" &&
-		 # Verify that the package databases are synchronized
-		 git update-index --refresh &&
-		 git diff-files --quiet &&
-		 git diff-index --quiet HEAD -- ||
-		 die "The package databases in $arch differ between Azure Blobs and pacman-repo"
-
 		 # Now add or remove the files to the Pacman database
 		 $action $sign_option git-for-windows-$arch.db.tar.xz $msys $mingw &&
 		 { test ! -h git-for-windows-$arch.db || rm git-for-windows-$arch.db; } &&
@@ -417,17 +374,20 @@ quick_action () { # <action> <file>...
 				cp git-for-windows-$arch.db.tar.xz.sig git-for-windows-$arch.db.sig
 			}
 		 } &&
-		 if test -n "$db2"
-		 then
-			$action $sign_option git-for-windows-$db2.db.tar.xz $mingw &&
-			{ test ! -h git-for-windows-$db2.db || rm git-for-windows-$db2.db; } &&
-			cp git-for-windows-$db2.db.tar.xz git-for-windows-$db2.db && {
-				test -z "$sign_option" || {
-					{ test ! -h git-for-windows-$db2.db.sig || rm git-for-windows-$db2.db.sig; } &&
-					cp git-for-windows-$db2.db.tar.xz.sig git-for-windows-$db2.db.sig
+		 for db in $db2 $db3
+		 do
+		 	if test -n "$db"
+		 	then
+				$action $sign_option git-for-windows-$db.db.tar.xz $mingw &&
+				{ test ! -h git-for-windows-$db.db || rm git-for-windows-$db.db; } &&
+				cp git-for-windows-$db.db.tar.xz git-for-windows-$db.db && {
+					test -z "$sign_option" || {
+						{ test ! -h git-for-windows-$db.db.sig || rm git-for-windows-$db.db.sig; } &&
+						cp git-for-windows-$db.db.tar.xz.sig git-for-windows-$db.db.sig
+					}
 				}
-			}
-		 fi &&
+			fi
+		 done &&
 
 		 # Remove the existing versions from the Git branch
 		 printf '%s\n' $msys $mingw |
@@ -452,6 +412,16 @@ quick_action () { # <action> <file>...
 		 case "$label" in
 		 add)
 			git add --sparse $msys $mingw \*.sig ':(exclude)*.old.sig' &&
+			for file in $msys $mingw
+			do
+				pkgname="${file%-*-*-*.pkg.tar.*}" &&
+				remainder="${file#"$pkgname"-}" &&
+				verrel="${remainder%-*.pkg.tar.*}" &&
+				update_versions_json "$pkgname.versions.json" \
+					"$verrel" "$tagname" ||
+				die "Could not update %s\n" "$pkgname.versions.json"
+			done &&
+			git add --sparse '*.versions.json' &&
 			msg="$(printf 'Update %s package(s)\n\n%s\n' \
 				$(printf '%s\n' $msys $mingw | wc -l) \
 				"$(printf '%s\n' $msys $mingw |
@@ -501,6 +471,17 @@ quick_action () { # <action> <file>...
 					echo "Rebasing $arch" >&2
 					(cd "$dir/$arch" &&
 					 git -C "$dir/$arch" checkout HEAD^ -- 'git-for-windows*.db*' 'git-for-windows*.files*' &&
+					 # Revert .versions.json to parent state; re-inserted after rebase
+					 git diff-tree --no-commit-id -r --name-only HEAD -- '*.versions.json' |
+					 while IFS= read -r vjson
+					 do
+						if git cat-file -e "HEAD^:$vjson" 2>/dev/null
+						then
+							git checkout HEAD^ -- "$vjson"
+						else
+							git rm --cached -- "$vjson"
+						fi || exit 1
+					 done &&
 					 git -C "$dir/$arch" commit --amend --no-edit &&
 					 git -C "$dir/$arch" rebase origin/$arch &&
 
@@ -532,7 +513,22 @@ quick_action () { # <action> <file>...
 							}
 						}
 					 fi &&
-					 git -C "$dir/$arch" commit --amend --no-edit -- 'git-for-windows*.db*' 'git-for-windows*.files*') ||
+					 # Re-insert .versions.json entries after rebase
+					 case "$label" in
+					 add)
+						for file in $msys $mingw
+						do
+							pkgname="${file%-*-*-*.pkg.tar.*}" &&
+							remainder="${file#"$pkgname"-}" &&
+							verrel="${remainder%-*.pkg.tar.*}" &&
+							update_versions_json "$pkgname.versions.json" \
+								"$verrel" "$tagname" ||
+							die "Could not update %s\n" "$pkgname.versions.json"
+						done &&
+						git add --sparse '*.versions.json'
+						;;
+					 esac &&
+					 git -C "$dir/$arch" commit --amend --no-edit -- 'git-for-windows*.db*' 'git-for-windows*.files*' '*.versions.json') ||
 					die "Could not update $dir/$arch"
 				done
 				git -C "$dir" -c "$extra_header" push origin $to_push && break
@@ -547,7 +543,6 @@ quick_action () { # <action> <file>...
 
 	# Mirror the deployment to a new GitHub Release
 	# at `git-for-windows/pacman-repo`
-	tagname="$(TZ=UTC date +%Y-%m-%dT%H-%M-%S.%NZ)"
 	if test -n "$PACMANDRYRUN"
 	then
 		echo "Would create a GitHub Release '$tagname' at git-for-windows/pacman-repo" >&2
@@ -589,40 +584,6 @@ quick_action () { # <action> <file>...
 		die "Could not publish release $id ($json)"
 	fi
 
-	# Upload the file(s) and the appropriate index(es)
-	(cd "$dir" &&
-	 for path in $(test remove = "$label" || echo $all_files) $dbs
-	 do
-		# The Pacman repository on Azure Blobs still uses the old naming scheme
-		remote_path="$(echo "$path" | sed \
-			-e 's,/git-for-windows-\(x86_64\|aarch64\|i686\)\.,/git-for-windows.,' \
-			-e 's,/git-for-windows-clangarm64\.,/git-for-windows-aarch64.,')"
-		test "$path" = "$remote_path" || {
-			echo "Renaming '$path' to old-style '$remote_path'..." >&2 &&
-			mv -i "$path" "$remote_path" &&
-			path="$remote_path"
-		} ||
-		die "Could not rename $path to $remote_path"
-
-		# Upload the 64-bit database with the lease
-		action=upload
-		test x86_64/git-for-windows.db != $path || action="upload-with-lease ${PACMAN_DB_LEASE:-<lease>}"
-
-		if test -n "$PACMANDRYRUN"
-		then
-			echo "upload: wingit-snapshot-helper.sh wingit $(map_arch ${path%%/*}) <token> $action $dir/$path" >&2
-		else
-			"$this_script_dir"/wingit-snapshot-helper.sh wingit $(map_arch ${path%%/*}) "$azure_blobs_token" $action "$path"
-		fi ||
-		die "Could not upload $path"
-	 done) ||
-	die "Could not upload $all_files $dbs"
-
-	# Release the lease, i.e. finalize the transaction
-	unlock "$PACMAN_DB_LEASE" ||
-	die 'Could not release lock for uploading\n'
-	PACMAN_DB_LEASE=
-
 	if test -n "$PACMANDRYRUN"
 	then
 		echo "Leaving temporary directory $dir/ for inspection" >&2
@@ -630,6 +591,7 @@ quick_action () { # <action> <file>...
 	fi
 
 	# Remove the temporary directory
+	chmod -R +w "$dir/.git/objects" &&
 	rm -r "$dir" ||
 	die "Could not remove $dir/"
 }
@@ -640,65 +602,6 @@ quick_add () {
 
 quick_remove () {
 	quick_action remove "$@"
-}
-
-lock () { #
-	test -z "$PACMANDRYRUN" || {
-		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> lock git-for-windows.db" >&2
-		return
-	}
-
-	test -n "$azure_blobs_token" || {
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	}
-
-	echo "Trying to lock for upload..." >&2
-	counter=0
-	while test $counter -lt 7200
-	do
-		"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
-			"$azure_blobs_token" \
-			lock --duration=-1 git-for-windows.db &&
-		break
-
-		echo "Waiting 60 seconds ($counter in total so far)..." >&2
-		sleep 60
-		counter=$(($counter+60))
-	done
-}
-
-unlock () { # <lease-ID>
-	test -z "$PACMANDRYRUN" || {
-		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> unlock ${1:-<lease>} git-for-windows.db" >&2
-		return
-	}
-
-	test -n "$azure_blobs_token" || {
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	}
-
-	"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
-		"$azure_blobs_token" unlock "$1" git-for-windows.db
-}
-
-break_lock () { #
-	test -z "$PACMANDRYRUN" || {
-		echo "upload: wingit-snapshot-helper.sh wingit x86-64 <token> break-lock git-for-windows.db" >&2
-		return
-	}
-
-	test -n "$azure_blobs_token" || {
-		azure_blobs_token="$(cat "$HOME"/.azure-blobs-token)" &&
-		test -n "$azure_blobs_token" ||
-		die "Could not read token from ~/.azure-blobs-token"
-	}
-
-	"$this_script_dir"/wingit-snapshot-helper.sh wingit x86-64 \
-		"$azure_blobs_token" break-lock git-for-windows.db
 }
 
 "$mode" "$@"
