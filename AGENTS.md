@@ -87,6 +87,8 @@ the git-sdk-64/32/arm64 repos (`update-via-pacman.ps1`).
 | `please.sh`            | SDK artifact creation and PDB bundling            |
 | `shears.sh`            | "Git garden shears" for merging-rebases           |
 | `make-file-list.sh`    | Generates file lists for installer artifacts (see below) |
+| `check-for-missing-dlls.sh` | Verifies DLL dependencies in installer file lists |
+| `pe-imports.ps1`       | PowerShell PE import-table parser (fallback for `objdump`) |
 | `add-release-note.js`  | Adds entries to `ReleaseNotes.md` (Node.js)       |
 | `render-release-notes.sh` | Converts `ReleaseNotes.md` to HTML             |
 | `pacman-helper.sh`     | Helper for Pacman package operations              |
@@ -165,11 +167,15 @@ repos ([git-sdk-64](https://github.com/git-for-windows/git-sdk-64),
 [git-sdk-32](https://github.com/git-for-windows/git-sdk-32),
 [git-sdk-arm64](https://github.com/git-for-windows/git-sdk-arm64)).
 It calls `make-file-list.sh` to obtain the installer file list, then
-for every `.dll`/`.exe` in that list it checks (via `objdump -p` and
-`ldd`) that all DLL dependencies are satisfied by either a system DLL
-or another DLL in the file list.  MSYS2 binaries (`usr/*`) are checked
-against `usr/bin/*.dll`; MinGW binaries (`$MINGW_PREFIX/*`) are checked
-against `$MINGW_PREFIX/bin/*.dll`.
+for every `.dll`/`.exe` in that list it checks that all DLL dependencies
+are satisfied by either a system DLL or another DLL in the file list.
+Dependencies are extracted via `objdump -p`; binaries that `objdump`
+cannot parse (e.g. ARM64 PE files on an x86_64 host) fall back to
+`pe-imports.ps1`, a PowerShell script that reads the PE import table
+directly.  Windows API-set DLLs (`api-ms-*`) are skipped automatically.
+MSYS2 binaries (`usr/*`) are checked against `usr/bin/*.dll`; MinGW
+binaries (`$MINGW_PREFIX/*`) are checked against
+`$MINGW_PREFIX/bin/*.dll`.
 
 ## Building and Testing
 
@@ -321,8 +327,9 @@ from `*.inc.iss` files.
 
 Follow the Arch Linux / MSYS2 `PKGBUILD` conventions. Each package
 directory contains a `PKGBUILD` and optionally a `.install` script for
-post-install hooks. Checksums must be updated whenever source archives
-change.
+post-install hooks (in `git-extra/`, the `.install` file is generated from
+`.install.in` at build time and is not tracked). Checksums must be updated
+whenever source archives change.
 
 ## Platform Considerations
 
@@ -336,8 +343,15 @@ Git for Windows supports three architectures:
 | i686         | `mingw-w64-i686`          | `MINGW32`   | `git-sdk-32`   |
 | aarch64      | `mingw-w64-clang-aarch64` | `CLANGARM64`| `git-sdk-arm64` |
 
-The CI workflow matrix covers x86_64 and aarch64 (and i686 for selected
-jobs).
+A fourth variant, UCRT64 (`mingw-w64-ucrt-x86_64`, `MSYSTEM=UCRT64`), is
+being introduced to replace MINGW64 on x86_64; MSYS2 deprecated the
+MINGW64 environment in early 2026 and the SDK is migrating accordingly
+(see git-for-windows/git-sdk-64#117).  The CI workflow and
+`make-file-list.sh`/`check-for-missing-dlls.sh`/`please.sh` already accept
+`--architecture=ucrt64`.
+
+The CI workflow matrix covers x86_64, aarch64, and ucrt64 (and i686 for
+selected jobs).
 
 ### MinGW vs MSYS2
 
