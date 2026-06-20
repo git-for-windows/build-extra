@@ -131,15 +131,30 @@ repo_remove () {
 		# Make sure that GPGKEY is used unquoted
 		 sed 's/"\(\${\?GPGKEY}\?\)"/\1/g' </usr/bin/repo-remove >"$this_script_dir/repo-remove"
 	fi &&
-	"$this_script_dir/repo-remove" $(for arg
-	do
-		# repo-remove only accepts package _names_, but we are potentially given _files_.
-		# Handle this by distilling the package names from filenames.
-		case "$arg" in
-		*.pkg.tar.xz|*.pkg.tar.zst) echo "${arg%-*-*-*}";;
-		*) echo "$arg";;
-		esac
-	done)
+	# repo-remove only accepts package _names_, but we are potentially given
+	# _files_; distill the names from the file names. Furthermore, repo-remove
+	# fails the _entire_ operation (modifying nothing) when _any_ of the given
+	# names is absent from the database, e.g. a freshly-initialized, still-empty
+	# ucrt64 database. To allow removing a package even when it is not present in
+	# a given database, drop the names the database does not contain and skip the
+	# call altogether when nothing is left to remove.
+	dbfile="$1" &&
+	shift &&
+	present=" $(package_list "$dbfile" | sed 's/-[^-]*-[^-]*$//' | tr '\n' ' ')" &&
+	names= &&
+	{
+		for arg
+		do
+			case "$arg" in
+			*.pkg.tar.xz|*.pkg.tar.zst) name="${arg%-*-*-*}";;
+			*) name="$arg";;
+			esac
+			case "$present" in
+			*" $name "*) names="$names $name";;
+			esac
+		done
+	} &&
+	{ test -z "$names" || "$this_script_dir/repo-remove" "$dbfile" $names; }
 }
 
 update_versions_json () { # <file> <version> <tagname>
