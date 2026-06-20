@@ -281,17 +281,17 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 		case $arch in
 			x86_64)
 				oarch=x86_64
-				pacman_arch=x86_64
+				mingw_package_prefix=mingw-w64-x86_64
 				artifact_suffix=64-bit
 				;;
 			i686)
 				oarch=i686
-				pacman_arch=i686
+				mingw_package_prefix=mingw-w64-i686
 				artifact_suffix=32-bit
 				;;
 			aarch64)
 				oarch=aarch64
-				pacman_arch=clang-aarch64
+				mingw_package_prefix=mingw-w64-clang-aarch64
 				artifact_suffix=arm64
 				;;
 			*)
@@ -324,7 +324,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 			fi
 			case "$package" in
 			mingw-w64-*)
-				tar=mingw-w64-$pacman_arch-${package#mingw-w64-}-$version-any.pkg.tar.xz
+				tar=$mingw_package_prefix-${package#mingw-w64-}-$version-any.pkg.tar.xz
 				dir2="/usr/src/MINGW-packages/$name"
 				;;
 			*)
