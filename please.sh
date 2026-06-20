@@ -298,6 +298,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 				oarch=x86_64
 				mingw_package_prefix=mingw-w64-ucrt-x86_64
 				artifact_suffix=ucrt64
+				packages="$(echo "$packages" | sed 's/ mingw-w64-openssl-pdb//')"
 				;;
 			*)
 				die "Unhandled architecture: $arch"
