@@ -73,9 +73,11 @@ ARCH="$(uname -m)"
 case "$ARCH" in
 i686)
 	BITNESS=32
+	MINGW_PACKAGE_PREFIX=mingw-w64-i686
 	;;
 x86_64)
 	BITNESS=64
+	MINGW_PACKAGE_PREFIX=mingw-w64-x86_64
 	;;
 *)
 	die "Unhandled architecture: $ARCH"
@@ -117,7 +119,7 @@ test -z "$MINIMAL_GIT" || {
 	mv "$SPEC" "$SPEC".unmoved &&
 	sed -e '/tools\\mingw..\\libexec\\git-core\\\(scalar\|git\(\|-upload-pack\)\).exe/d' \
 	    -e 's%\( target="tools\\mingw[36][24]\\\)libexec\\git-core\\\('"$(\
-	        pacman -Ql mingw-w64-$ARCH-git |
+	        pacman -Ql $MINGW_PACKAGE_PREFIX-git |
 	        sed -n 's|^[^ ]* /mingw../libexec/git-core/\(.*\.exe\)$|\1\\|p' |
 	        tr '\n' '|')"'\)"%\1bin\\\2"%' <"$SPEC".unmoved >"$SPEC" &&
 	git diff --no-index "$SPEC.unmoved" "$SPEC" |

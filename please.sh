@@ -250,7 +250,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 	architectures="i686 x86_64 aarch64"
 
 	versions="$(case $# in 0) pacman -Q;; 1) cat "$1";; esac |
-		sed 's/^\(mingw-w64\)\(-clang-[^-]*\|-[^-]*\)/\1/' | sort | uniq)"
+		sed 's/^\(mingw-w64\)\(-clang-[^-]*\|-ucrt-[^-]*\|-[^-]*\)/\1/' | sort | uniq)"
 	test -n "$versions" ||
 	die 'Could not obtain package versions\n'
 
@@ -281,18 +281,24 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 		case $arch in
 			x86_64)
 				oarch=x86_64
-				pacman_arch=x86_64
+				mingw_package_prefix=mingw-w64-x86_64
 				artifact_suffix=64-bit
 				;;
 			i686)
 				oarch=i686
-				pacman_arch=i686
+				mingw_package_prefix=mingw-w64-i686
 				artifact_suffix=32-bit
 				;;
 			aarch64)
 				oarch=aarch64
-				pacman_arch=clang-aarch64
+				mingw_package_prefix=mingw-w64-clang-aarch64
 				artifact_suffix=arm64
+				;;
+			ucrt64)
+				oarch=x86_64
+				mingw_package_prefix=mingw-w64-ucrt-x86_64
+				artifact_suffix=ucrt64
+				packages="$(echo "$packages" | sed 's/ mingw-w64-openssl-pdb//')"
 				;;
 			*)
 				die "Unhandled architecture: $arch"
@@ -324,7 +330,7 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 			fi
 			case "$package" in
 			mingw-w64-*)
-				tar=mingw-w64-$pacman_arch-${package#mingw-w64-}-$version-any.pkg.tar.xz
+				tar=$mingw_package_prefix-${package#mingw-w64-}-$version-any.pkg.tar.xz
 				dir2="/usr/src/MINGW-packages/$name"
 				;;
 			*)
@@ -796,7 +802,7 @@ find_mspdb_dll () { #
 	return 1
 }
 
-build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--skip-test-artifacts] [--skip-doc-man] [--skip-doc-html] [--force] [<revision>]
+build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--only-ucrt64] [--skip-test-artifacts] [--skip-doc-man] [--skip-doc-html] [--force] [<revision>]
 	output_path=
 	sed_makepkg_e=
 	force=
@@ -813,6 +819,10 @@ build_mingw_w64_git () { # [--only-i686] [--only-x86_64] [--only-aarch64] [--ski
 		;;
 	--only-aarch64)
 		MINGW_ARCH=clangarm64
+		export MINGW_ARCH
+		;;
+	--only-ucrt64)
+		MINGW_ARCH=ucrt64
 		export MINGW_ARCH
 		;;
 	--skip-test-artifacts)
