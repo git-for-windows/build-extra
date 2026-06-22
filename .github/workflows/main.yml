@@ -9,7 +9,7 @@ jobs:
   determine-packages:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
       - name: determine packages to build
@@ -85,7 +85,7 @@ jobs:
             runner: windows-11-arm
     runs-on: ${{ matrix.architecture.runner }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - uses: git-for-windows/setup-git-for-windows-sdk@v2
         with:
           flavor: full
@@ -141,7 +141,7 @@ jobs:
               name: aarch64
     runs-on: ${{ matrix.architecture.runner }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: initialize bare SDK clone
         shell: bash
         run: |
@@ -265,7 +265,7 @@ jobs:
               sdk-repo: git-sdk-32
     runs-on: ${{ matrix.arch.runner }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: initialize bare SDK clone
         shell: bash
         run: |
@@ -378,7 +378,7 @@ jobs:
             runner: windows-11-arm
     runs-on: ${{ matrix.arch.runner }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
       - name: initialize bare SDK clone
         shell: bash
         run: |
