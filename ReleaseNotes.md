@@ -57,6 +57,7 @@ Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-su
 * A [bug](https://github.com/msys2/msys2-runtime/issues/338) that prevented proper shutdown of processes launched via Git Bash under certain circumstances [was fixed](https://github.com/msys2/msys2-runtime/pull/339).
 * A bug was [fixed](https://github.com/git-for-windows/git/pull/6250) which could cause parallel checkouts to fail under certain circumstances when the FSCache is enabled.
 * Git Bash (MinTTY) now respects screen scaling settings [under more circumstances](https://github.com/git-for-windows/git/issues/6085).
+* A couple of bugs revolving around _very_ large clones/packfiles/objects [were fixed](https://github.com/git-for-windows/git/pull/6289).
 
 ## Changes since Git for Windows v2.53.0(3) (April 14th 2026)
 
