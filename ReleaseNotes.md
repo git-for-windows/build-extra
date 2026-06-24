@@ -58,6 +58,7 @@ Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-su
 * A bug was [fixed](https://github.com/git-for-windows/git/pull/6250) which could cause parallel checkouts to fail under certain circumstances when the FSCache is enabled.
 * Git Bash (MinTTY) now respects screen scaling settings [under more circumstances](https://github.com/git-for-windows/git/issues/6085).
 * A couple of bugs revolving around _very_ large clones/packfiles/objects [were fixed](https://github.com/git-for-windows/git/pull/6289).
+* Following [TortoiseGit v2.19](https://groups.google.com/g/tortoisegit-announce/c/31zdmOBi4vY), `.git` file validations have been tightened. As a consequence, access to remote repositories via UNC file paths needs to be allowed explicitly via the `safe.directory` configuration.
 
 ## Changes since Git for Windows v2.53.0(3) (April 14th 2026)
 
