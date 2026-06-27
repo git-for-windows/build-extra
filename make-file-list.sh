@@ -99,7 +99,7 @@ test ! -f "/$MSYSTEM_LOWER/bin/git.exe" || {
 	# or libgcc_s_dw2-1.dll, which is still a hard dependency of plenty of
 	# i686 DLLs/EXEs.
 	case "$MSYSTEM_LOWER,$MINIMAL_GIT" in
-	mingw64,|mingw32,*) ;; # have bits that need winpthread
+	mingw64,|ucrt64,|mingw32,*) ;; # have bits that need winpthread
 	*)
 		grep -q libwinpthread-1.dll "/$MSYSTEM_LOWER/bin/git.exe" ||
 		EXCLUDE_MINGW_W64_DLLS='\|winpthread'
