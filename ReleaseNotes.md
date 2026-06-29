@@ -42,6 +42,7 @@ Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-su
 
 ### New Features
 
+* Comes with [Git v2.55.0](https://github.com/git/git/blob/v2.55.0/Documentation/RelNotes/2.55.0.adoc).
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.9](https://sourceware.org/pipermail/cygwin-announce/2026-April/012969.html).
 * Comes with [Git Credential Manager v2.8.0](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.8.0).
 * Comes with [less 702](http://www.greenwoodsoftware.com/less/news.702.html).
