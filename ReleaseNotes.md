@@ -36,6 +36,12 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.55.0 (June 29th 2026)
+
+### Bug Fixes
+
+* NTLM opt-in support, which had been [prematurely disabled](https://github.com/git-for-windows/git/issues/6308) altogether (a glimpse into this fall when [NTLM _will be_ disabled, no opt-in possible](https://curl.se/dev/deprecate.html#:~:text=in%20September%202026.-,drop%20NTLM%20support,-The%20NTLM%20authentication)) was fixed by [temporarily enabling optional NTLM support again](https://github.com/git-for-windows/MINGW-packages/pull/208).
+
 ## Changes since Git for Windows v2.54.0 (April 20th 2026)
 
 Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support will be dropped after Git for Windows v2.55.
