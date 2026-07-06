@@ -36,6 +36,12 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.55.0(2) (July 2nd 2026)
+
+### New Features
+
+* Comes with [OpenSSH v10.4.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_4_P1).
+
 ## Changes since Git for Windows v2.55.0 (June 29th 2026)
 
 Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support will be dropped after Git for Windows v2.55.
