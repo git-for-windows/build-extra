@@ -41,6 +41,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### New Features
 
 * Comes with [OpenSSH v10.4.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_4_P1).
+* The experimental `git survey` command (which was never upstreamed to the core Git project) was deprecated and [converted into a small shim on top of `git repo structure`](https://github.com/git-for-windows/git/pull/6268). In the future, `git repo structure` should be used instead, as the `git survey` command will be retired eventually.
 
 ## Changes since Git for Windows v2.55.0 (June 29th 2026)
 
