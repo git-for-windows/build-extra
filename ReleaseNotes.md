@@ -42,6 +42,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * Comes with [Git Credential Manager v2.9.0](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v2.9.0).
 
+### Bug Fixes
+
+* Fixes heap overflows in the credential helper `wincred`, see [GHSA-rxqw-wxqg-g7hw](https://github.com/git-for-windows/git/security/advisories/GHSA-rxqw-wxqg-g7hw) for full details.
+
 ## Changes since Git for Windows v2.55.0 (June 29th 2026)
 
 Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support will be dropped after Git for Windows v2.55.
