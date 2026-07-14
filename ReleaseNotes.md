@@ -43,6 +43,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [OpenSSH v10.4.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_4_P1).
 * The experimental `git survey` command (which was never upstreamed to the core Git project) was deprecated and [converted into a small shim on top of `git repo structure`](https://github.com/git-for-windows/git/pull/6268). In the future, `git repo structure` should be used instead, as the `git survey` command will be retired eventually.
 
+### Bug Fixes
+
+* The long-standing [bug](https://github.com/git-for-windows/git/issues/5303) where Git Bash's screen was cleared after `git.exe` called `vim` (e.g. to edit a commit message) [was fixed](https://github.com/git-for-windows/msys2-runtime/pull/131).
+
 ## Changes since Git for Windows v2.55.0 (June 29th 2026)
 
 Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support will be dropped after Git for Windows v2.55.
