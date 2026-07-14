@@ -53,13 +53,13 @@ build() {
 }
 
 prepare() {
-  mkdir -p "${srcdir}/${_arch}"
-  unzip "${srcdir}/${zip_name}" -d "${srcdir}/${_arch}"
+  mkdir -p "${srcdir}/${MINGW_PACKAGE_PREFIX#mingw-w64-}"
+  unzip "${srcdir}/${zip_name}" -d "${srcdir}/${MINGW_PACKAGE_PREFIX#mingw-w64-}"
 }
 
 package() {
   prefix="$pkgdir/${MINGW_PREFIX}"
-  bindir="${srcdir}/${_arch}"
+  bindir="${srcdir}/${MINGW_PACKAGE_PREFIX#mingw-w64-}"
   install -d -m755 "${prefix}"/bin
   install -m755 "$bindir"/*.{dll,exe,config} "${prefix}"/bin
   install -d -m755 "${prefix}"/doc/git-credential-manager
