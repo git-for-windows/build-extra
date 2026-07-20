@@ -54,6 +54,25 @@ begin
     Result[i]:=#0;
 end;
 
+// Search for the last occurence of a substring in another string or zero if not found.
+// RPos exists as a preprocessor function in innosetup, but not as a scripting function.
+function RPos(SubStr, S: AnyString): Integer;
+var
+    Len,i:Longint;
+begin
+    Len:=Length(SubStr);
+    
+    i:=Length(S)-Len+1;
+    while i>0 do begin
+        If (SameStr(SubStr,Copy(S,i,Len))) then begin
+            Result:=i;
+            Exit;
+        end;
+    end;
+
+    Result:=0;
+end;
+
 function AppendToArray(var AnArray:TArrayOfString;Str:String):Integer;
 begin
     Result:=GetArrayLength(AnArray)+1;
