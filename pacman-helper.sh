@@ -502,7 +502,7 @@ quick_action () { # <action> <file>...
 	then
 		echo "Would push $to_push to git-for-windows/pacman-repo" >&2
 	else
-		auth="$(printf 'PAT:%s' "$GITHUB_TOKEN" | base64)" &&
+		auth="$(printf 'PAT:%s' "$GITHUB_TOKEN" | base64 -w0)" &&
 		if test true = "$GITHUB_ACTIONS"
 		then
 			echo "::add-mask::$auth"
