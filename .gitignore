@@ -13,7 +13,9 @@ edit-git-bash.exe
 /git-for-windows-keyring/git-for-windows-keyring-*.src.tar.gz
 /installer/InnoSetup/Examples/
 /installer/InnoSetup/Compil32.exe
+/installer/InnoSetup/ISIDE.exe
 /installer/InnoSetup/isscint.dll
+/installer/InnoSetup/isscint-x64.dll
 /installer/ReleaseNotes.html
 /installer/config.iss
 /installer/install.log
