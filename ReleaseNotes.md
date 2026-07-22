@@ -40,6 +40,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support will be dropped after Git for Windows v2.55.
 
+This is a security fix release, addressing CVE-2026-62960.
+
+* [CVE-2026-62960](https://github.com/git-for-windows/git/security/advisories/GHSA-xrpg-8j9v-v282), Git for Windows: Attacker-controlled servers may advertise bundle URIs that point to network shares, causing Windows to transparently perform NTLM authentication and disclose the user's NTLMv2 hash. Since NTLM hashing is weak, the captured hash can potentially be brute-forced to recover the user's credentials. This is addressed by limiting the bundle URIs that `git clone` respects by the same [`protocol.<name>.allow`](https://git-scm.com/docs/git-config#Documentation/git-config.txt-protocolnameallow) rules as usual, which excludes `file://` URIs by default.
+
 ## Changes since Git for Windows v2.55.0(2) (July 2nd 2026)
 
 ### New Features
