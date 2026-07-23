@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8" />
-<title>Inno Setup 6 Revision History</title>
+<title>Inno Setup 7 Revision History</title>
 <base href="https://jrsoftware.org/" />
 <style type="text/css">
     :root {
@@ -36,7 +36,7 @@
 </head>
 <body>
 
-<div class="bluehead"><span class="head1">Inno Setup 6</span><br /><span class="head2">Revision History</span></div>
+<div class="bluehead"><span class="head1">Inno Setup 7</span><br /><span class="head2">Revision History</span></div>
 
 <p>Copyright © 1997-2026 <a href="./">Jordan Russell</a>. All rights reserved.<br />
 Portions Copyright © 2000-2026 Martijn Laan. All rights reserved.<br />
@@ -46,11 +46,218 @@ For conditions of distribution and use, see <a href="files/is/license.txt">LICEN
 <p><b>Want to be notified by e-mail of new Inno Setup releases?</b> <a href="ismail.php">Subscribe</a> to the Inno Setup Mailing List!</p>
 
 <details open="">
+<summary>Inno Setup 7.0</summary>
+
+<p><a name="7.0.2"></a><span class="ver">7.0.2 </span><span class="date">(2026-07-13)</span></p>
+
+<p><b>Using Inno Setup commercially?</b> Please <a href="https://jrsoftware.org/isorder.php">purchase a license</a>.</p>
+
+<ul>
+  <li>Added new <a href="https://jrsoftware.org/ishelp/index.php?topic=securitymeasures">Security Measures</a> help topic, which also includes a <a href="https://jrsoftware.org/ishelp/index.php?topic=securitymeasures&amp;anchor=supplychain">Supply-chain security</a> section and links to our <a href="https://jrsoftware.org/isdl-verify.php">Verifying Inno Setup Downloads</a> page.<br/>
+      The security measures, the supply-chain security, and the download verification are not new, but they are now documented and linked in one place.</li>
+  <li>Compilation will now fail with an error if an <tt>.iss</tt>/<tt>.isl</tt> file contains a byte value or sequence that is not valid in the file's code page (character set). Previously, invalid bytes were interpreted as <tt>U+FFFD</tt> characters (the Unicode "replacement character").</li>
+  <li>Pascal Scripting: Improved documentation of support functions <a href="https://jrsoftware.org/ishelp/index.php?topic=isxfunc_registerserver">RegisterServer</a>, <a href="https://jrsoftware.org/ishelp/index.php?topic=isxfunc_registertypelibrary">RegisterTypeLibrary</a>, <a href="https://jrsoftware.org/ishelp/index.php?topic=isxfunc_incrementsharedcount">IncrementSharedCount</a> and <a href="https://jrsoftware.org/ishelp/index.php?topic=isxfunc_applypathredirrules">ApplyPathRedirRules</a> with updated explanations and examples.</li>
+  <li><i>Fixes:</i>
+  <ul>
+    <li>ISCC: Reading the script from standard input by specifying <tt>-</tt> as the script name is now documented again in the help file. Such a script is now assumed to be UTF-8 encoded.</li>
+    <li>When a custom style is active, the <i>Do this for the next conflicts</i> checkbox in the <i>File exists, confirm overwrite</i> and <i>Keep newer file?</i> task dialogs could start checked instead of unchecked (broken since custom styles were introduced in 6.6.0).</li>
+    <li>In previous 7.0 releases, when a 64-bit installer performed a 32-bit DLL registration or shared file reference count operation on a file under <tt>{sys}</tt>, a <tt>SysWOW64</tt> path was erroneously used instead of a <tt>System32</tt> path.</li>
+    <li>Setup no longer clears the read-only attribute of files and directories matching an <tt>[InstallDelete]</tt> entry's wildcard during its initial checks, before installation has started (broken since 5.5.0).</li>
+    <li>In Japanese, Korean, and Chinese, Setup no longer shows the accelerator key as literal text, such as &quot;(&amp;R)&quot;, in a few places.</li>
+    <li>Extracting a <tt>.cab</tt> archive no longer always fails with an error (broken since its introduction in 6.5.0).</li>
+    <li>Pascal Scripting: Selected <tt>TNewCheckListBox</tt> items with a custom <tt>ItemFontStyle</tt> or <tt>SubItemFontStyle</tt> no longer become unreadable after the list loses focus (broken since its introduction in 6.2.0). Thanks to Sergii Leonov for contributing this fix.</li>
+  </ul>
+  </li>
+  <li>Updated the 7-Zip and LZMA SDK source code used by Inno Setup to the latest versions.</li>
+  <li>Added official Lithuanian, Simplified Chinese and Traditional Chinese translations.</li>
+  <li>Improvements and corrections to all other official translations.</li>
+</ul>
+
+<!-- <p>Thank you to everyone who has already <a href="https://jrsoftware.org/isorder.php">purchased a commercial license</a>. Your support is very important to our ongoing development.</p> -->
+
+<p><a name="7.0.1"></a><span class="ver">7.0.1-beta </span><span class="date">(2026-05-26)</span></p>
+
+<ul>
+  <li>Improved the Wine RichEdit workaround added in 7.0.0 to prevent a startup delay when very large texts are used in combination with a dark custom wizard style.</li>
+  <li><i>Fix:</i> Example script <i><a href="https://raw.githubusercontent.com/jrsoftware/issrc/refs/heads/main/Examples/PowerShell.iss">PowerShell.iss</a></i> now uses an absolute path to load <tt>powershell.exe</tt>, for security reasons. If you used the demonstrated technique in your own scripts, <b>you should make the same changes</b>.</li>
+  <li>ISPP:
+  <ul>
+    <li><i>Fix:</i> A user defined function which has no parameters compiles again (broken in 7.0.0). Example: <tt>#define MyAppName() "My Program"</tt>.</li>
+    <li>Added new predefined variable <tt>SysPath</tt>.</li>
+  </ul>
+  </li>
+</ul>
+
+<p><a name="7.0.0"></a><span class="ver">7.0.0-beta </span><span class="date">(2026-05-18)</span></p>
+
+<p>We are proud to announce Inno Setup 7, which includes a 64-bit edition, as well as a 32-bit edition.</p>
+
+<p>Both editions of Inno Setup 7 can build either 32-bit or 64-bit installers, and they can be installed side by side, and they can coexist alongside Inno Setup 6.</p>
+
+<p>Additionally, support for extended-length paths was added, removing <tt>MAX_PATH</tt> limitations.</p>
+
+<p>Great care has been taken to ensure maximum backward compatibility with Inno Setup 6, including backward compatibility for the extended-length path support, and compatibility between 32-bit and 64-bit installers.</p>
+
+<p>This work would <b>not</b> have been possible without the support provided through the purchase of commercial licenses. <b>Using Inno Setup commercially?</b> Please <a href="https://jrsoftware.org/isorder.php">purchase a license</a>.</p>
+
+<p>Commercial licenses include two years of updates, both major and minor. If you purchased a commercial license recently, you are all set to use Inno Setup 7 as well.</p>
+
+<span class="head2">64-bit Installers</span>
+
+<p>Building 32-bit installers is the default in both editions. Set new <tt>[Setup]</tt> section directive <a href="https://jrsoftware.org/ishelp/index.php?topic=setup_setuparchitecture">SetupArchitecture</a> to <tt>x64</tt> to build a 64-bit x64 installer instead of a 32-bit x86 installer. This also changes the default values of <tt>ArchitecturesAllowed</tt> and <tt>ArchitecturesInstallIn64BitMode</tt> to <tt>x64compatible</tt>, making 64-bit installers default to <a href="https://jrsoftware.org/ishelp/index.php?topic=32vs64bitinstalls">64-bit install mode</a>.</p>
+
+<p>Key benefits and differences:</p>
+<ul>
+  <li>64-bit installers allow a maximum dictionary size for compression methods <tt>lzma</tt> and <tt>lzma2</tt> of 3.8 GB instead of 1 GB. Review the memory requirements listed in the <a href="https://jrsoftware.org/ishelp/index.php?topic=setup_compression">Compression help topic</a> before using large dictionary sizes.</li>
+  <li>64-bit installers have high-entropy ASLR enabled by default. This can help satisfy organizational policies or third-party requirements that mandate 64-bit executables.</li>
+  <li>64-bit installers fully support <a href="https://jrsoftware.org/ishelp/index.php?topic=32vs64bitinstalls">32-bit install mode</a>, and vice versa. To use a 64-bit installer while remaining in 32-bit install mode (for example, because you have been deploying 64-bit applications in 32-bit mode inadvertently), set <tt>ArchitecturesInstallIn64BitMode</tt> to a blank value to override the new default.</li>
+  <li>Existing installations made by 32-bit installers can be updated by 64-bit installers without issue, and vice versa.</li>
+  <li>64-bit Pascal Scripting notes:
+  <ul>
+    <li>In 32-bit installers, type <tt>Extended</tt> is 10 bytes, while in 64-bit installers it is 8 bytes and just an alias for type <tt>Double</tt>.</li>
+    <li>In 32-bit installers, types <tt>NativeInt</tt> and <tt>NativeUInt</tt> are 4 bytes, while in 64-bit installers they are 8 bytes. The same is true for all types derived from them, such as <tt>HWND</tt>.<br/>
+        Example script <i><a href="https://raw.githubusercontent.com/jrsoftware/issrc/refs/heads/main/Examples/CodeDll.iss">CodeDll.iss</a></i> demonstrates how to support both 32-bit and 64-bit installers from a single script.<br/>
+        Please note: Even though types like <tt>HWND</tt> are 8 bytes (64-bit) in 64-bit processes, <a href="https://learn.microsoft.com/en-us/windows/win32/winprog64/interprocess-communication">64-bit Windows uses 32-bit handle values for interoperability</a>. When sharing a handle between 32-bit and 64-bit applications, only the lower 32 bits are significant, so it is safe to truncate from 64-bit to 32-bit or sign extend from 32-bit to 64-bit.</li>
+        <li>In both 32-bit and 64-bit installers, Pascal Script records are always "packed". When calling a Windows API or external DLL function that expects aligned records, you may need to add manual padding fields. Even if this was not needed in a 32-bit installer, it may be needed in a 64-bit installer because alignment rules and field sizes differ.</li>
+    <li>You cannot load 32-bit DLLs in 64-bit installers because Windows does not allow 64-bit processes to load 32-bit DLLs (and vice versa). However, you can always launch both 32-bit and 64-bit EXEs using the <tt>Exec</tt> function or the <tt>[Run]</tt> section.</li>
+    <li>In 32-bit installers, <tt>CreateCallback</tt> does not support callback parameters passed by value when their type is larger than 4 bytes, such as <tt>Int64</tt>, <tt>UInt64</tt>, <tt>Double</tt>, <tt>Extended</tt>, and <tt>Currency</tt>. In 64-bit installers, larger by-value parameter types are supported.</li>
+  </ul>
+  </li>
+  <li>64-bit type libraries (.tlb) can now only be (un)registered by 64-bit installers, and 32-bit type libraries only by 32-bit installers.<br/>
+      Support for (un)registering 64-bit type libraries from a 32-bit installer has been dropped.</li>
+  <li><tt>{sysnative}</tt> is not accessible to 64-bit installers or any other 64-bit applications, so use its value only to, for example, pass it to a 32-bit application.</li>
+  <li>In our tests on 'Windows Server 2016 Datacenter Server Core' and 'Windows Server 2025 Datacenter: Azure Edition Core', with all WOW64 features disabled and removed using DISM, 64-bit installers still function correctly, even when run in 32-bit install mode.</li>
+</ul>
+
+<p>Related changes made in both editions:</p>
+<ul>
+  <li>Added new <a href="https://jrsoftware.org/ishelp/index.php?topic=pathredir">System Path Redirection</a> help topic.</li>
+  <li>Added new <a href="https://jrsoftware.org/ishelp/index.php?topic=entrybitness">Entry Bitness</a> help topic.</li>
+  <li>Pascal Scripting:
+  <ul>
+    <li>Removed support function <tt>EnableFsRedirection</tt>. Use new support function <tt>ApplyPathRedirRulesForCurrentProcess</tt> instead, or a 64-bit installer. 32-bit installers can also use <tt>{sysnative}</tt> instead.<br/>
+        Use new support functions <tt>ExecWithNativeSysDir</tt>, <tt>ExecAndLogOutputWithNativeSysDir</tt>, or <tt>ExecAndCaptureOutputWithNativeSysDir</tt> to launch an executable located in the 64-bit System directory from a 32-bit installer.</li>
+    <li>Removed parameter <tt>DisableFsRedir</tt> from support function <tt>RegisterExtraCloseApplicationsResource</tt>. Use <tt>ApplyPathRedirRulesForCurrentProcess</tt> instead to register a 64-bit file from a 32-bit installer, or vice versa.</li>
+    <li>Added support functions <tt>ApplyPathRedirRules</tt> and <tt>IsCurrentProcess64Bit</tt>.</li>
+    <li>Added types <tt>UInt64</tt>, <tt>NativeInt</tt>, <tt>NativeUInt</tt>, <tt>LONG</tt>, <tt>ULONG</tt>, <tt>LONG_PTR</tt>, <tt>ULONG_PTR</tt>, <tt>THandle</tt>, <tt>HANDLE</tt>, <tt>COLORREF</tt>, <tt>HWND</tt>, <tt>HDC</tt>, <tt>HBITMAP</tt>, <tt>HFONT</tt>, <tt>HKEY</tt>, <tt>HINSTANCE</tt>, <tt>HMODULE</tt>, <tt>LRESULT</tt>, <tt>WPARAM</tt>, <tt>LPARAM</tt>, <tt>SIZE_T</tt>, and <tt>SSIZE_T</tt>.<br/>
+        These new types complement the following similar types which were already available: <tt>Int64</tt>, <tt>DWORD_PTR</tt>, <tt>INT_PTR</tt>, and <tt>UINT_PTR</tt>.<br/>
+        <i>If your script already included a custom definition of one of the new types, you should simply remove this definition.</i></li>
+  </ul>
+  </li>
+</ul>
+
+<span class="head2">64-bit Compiler IDE and ISCC</span>
+
+<p>Install the 64-bit edition of Inno Setup 7 to run 64-bit versions of the Compiler IDE and ISCC. Both editions read the same scripts and defaults, and either can build 32-bit or 64-bit installers.</p>
+
+<p>To check which edition you installed, click the "Inno Setup Compiler" shortcut in the Start Menu. The 32-bit edition displays "32-bit" in the title bar, while the 64-bit edition does not.</p>
+
+<p>Using the 64-bit edition is recommended.</p>
+
+<p>Key benefits and differences:</p>
+<ul>
+  <li>Either edition can generate installers of either architecture: 32-bit compilers can build 64-bit installers, and vice versa.</li>
+  <li>Both editions can be installed side by side and include the same examples and help files.</li>
+  <li>64-bit compilers generally achieve faster LZMA compression while maintaining full compatibility with existing scripts.<br/>
+      On Arm64-based Windows 11, they use an ARM64EC binary (<tt>islzma-Arm64EC.dll</tt>) for native performance.</li>
+  <li>The <tt>[Setup]</tt> directive <tt>LZMAUseSeparateProcess</tt> is ignored by 64-bit compilers, because 64-bit processes can directly allocate more memory, eliminating the need for an out-of-process compressor.</li>
+</ul>
+
+<span class="head2">Extended-length Path Support</span>
+
+<p>Setup and Uninstall now work with extended-length paths (also known as super paths) throughout, removing <tt>MAX_PATH</tt> limitations.</p>
+
+<p>This applies to both 32-bit and 64-bit installers.</p>
+
+<p>Related changes:</p>
+<ul>
+  <li>Logged paths are now extended-length paths. The end user is still shown normal paths.<br/>
+  A normal path looks like this: <tt>c:\Program Files\My Program</tt><br/>
+  The extended-length version of the same path looks like this: <tt>\\?\c:\Program Files\My Program</tt></li>
+  <li>Constants like <tt>{app}</tt>, <tt>{autopf}</tt>, and <tt>{tmp}</tt> still return normal paths.</li>
+  <li>Pascal Scripting:
+  <ul>
+    <li>Added support functions <tt>PathConvertNormalToSuper</tt> and <tt>PathConvertSuperToNormal</tt>.</li>
+    <li>Support function <tt>IsWildcard</tt> now only checks the last path component, avoiding false positives on extended-length path prefixes.</li>
+  </ul>
+  </li>
+</ul>
+
+<span class="head2">Security improvements</span>
+
+<ul>
+  <li>As a proactive security measure, the compiler no longer allows <tt>.isl</tt> message files specified in the <tt>[Languages]</tt> section to contain compiler directives such as <tt>#include</tt>. Compilation will abort with an error if any <tt>#</tt> lines are encountered. Also, ISPP is not enabled and cannot be enabled (<tt>#preproc ispp</tt> isn't allowed), so any inline ISPP directives (<tt>{#...}</tt>) are not processed.</li>
+</ul>
+
+<span class="head2">Other changes</span>
+
+<p>Additionally, the following changes have been made in both editions:</p>
+<ul>
+  <li>Compiler IDE:
+  <ul>
+    <li>The Compiler IDE has been renamed from <tt>Compil32.exe</tt> to <tt>ISIDE.exe</tt>.</li>
+    <li>Added autocompletion support for ISPP support functions and predefined variables in ISPP expression directives such as <tt>#define</tt>, <tt>#if</tt>, <tt>#emit</tt>, and <tt>#expr</tt>.<br/>
+        Parameter hints and mouseover tooltips showing the prototype of ISPP support functions are now also available on such lines for quick reference to the function's parameter names, types, and order.</li>
+    <li>Added autocompletion support for ISPP <tt>#pragma</tt> sub-directives such as <tt>warning</tt>, <tt>message</tt>, and <tt>option</tt>.</li>
+    <li>Fixed autocompletion for section names, constants, and ISPP directives breaking after the mouse hovered over the <tt>[Code]</tt> section.</li>
+    <li>Parameter hints are now also updated when using the left and right arrow keys, and after Backspace or Delete.</li>
+    <li><i>Find in Files</i>, <i>Replace All</i>, and <i>Select All Find Matches</i> could enter an infinite loop, or miss a valid match at the end of the text, when using a regular expression that matches zero-length text (for example <tt>^</tt> or <tt>\b</tt>).</li>
+  </ul>
+  </li>
+  <li><tt>[Setup]</tt> section:
+  <ul>
+    <li>A new custom style is now available built-in and directly supported by the <tt>WizardStyle</tt> directive: <tt>stellar</tt>. <tt>stellar</tt> is an alternative light-only style with white foreground text, ideally suited to be combined with a <a href="https://jrsoftware.org/ishelp/index.php?topic=setup_wizardbackcolor">custom darker background color</a> or <a href="https://jrsoftware.org/ishelp/index.php?topic=setup_wizardbackimagefile">image</a>. For example:
+        <pre><code class="innosetup"><span class="key">WizardStyle</span>=modern stellar excludelightcontrols</code></pre>
+        <a href="https://jrsoftware.org/images/is-welcome-stellar-org-150.png">Example screenshot of Setup using the Stellar style, at 150% DPI</a>.<br/>
+        <a href="https://jrsoftware.org/images/is-welcome-stellar-backimage-org-150.png">Example screenshot of Setup using the Stellar style, a custom background image, and the <tt>excludelightcontrols</tt> modifier, at 150% DPI</a>.<br/>
+    </li>
+    <li>Directive <tt>AppVerName</tt> now defaults to <tt><i>AppName</i> <i>AppVersion</i></tt> (just a space separating the values) rather than <tt><i>AppName</i> version <i>AppVersion</i></tt> (localized).<br/>
+        If you prefer to keep the word "version" (localized), use the <tt>NameAndVersion</tt> custom message: <tt>AppVerName={cm:NameAndVersion,My Program,1.5}</tt></li>
+    <li>Directive <tt>ArchiveExtraction</tt> can now also be set to <tt>auto</tt>, the new default, which automatically selects the appropriate method based on entries in the <tt>[Files]</tt> section.<br/>
+        If it selects <tt>basic</tt> because no entry uses the <tt>extractarchive</tt> flag, but you still use support function <tt>ExtractArchive</tt> or <tt>CreateExtractionPage</tt>, you must still manually set the correct method.</li>
+    <li>Directive <tt>TimeStampsInUTC</tt> now defaults to <tt>yes</tt>.</li>
+  </ul>
+  </li>
+  <li>Pascal Scripting:
+  <ul>
+    <li>Added new optional <tt>OnLog</tt> parameter to the <tt>[Run]</tt> section. When combined with the <tt>logoutput</tt> flag, it specifies the name of a procedure that is to be called for each line of the program's output instead of directly including it in the log file.<br/>
+      See updated <i><a href="https://raw.githubusercontent.com/jrsoftware/issrc/refs/heads/main/Examples/PowerShell.iss">PowerShell.iss</a></i> example script.</li>
+    <li>Added support functions <tt>StrToUInt64</tt>, <tt>StrToUInt64Def</tt>, and <tt>UIntToStr</tt>.</li>
+    <li>Support functions <tt>Chr</tt> and <tt>StringOfChar</tt> now correctly accept ordinal values greater than 255 and wide chars.</li>
+    <li>Support function <tt>FloatToStr</tt> no longer outputs unnecessary trailing zeros.</li>
+    <li>Using <tt>Exit</tt> within a <tt>try..finally</tt> block now works correctly when the <tt>finally</tt> block contains function calls.</li>
+    <li>Multiple statements in the <tt>else</tt> block of a <tt>case</tt> statement now no longer require using <tt>begin</tt>/<tt>end</tt>.</li>
+    <li>It's now possible to specify the <tt>safecall</tt> calling convention in interfaces, simplifying method declarations and eliminating the need to call <tt>OleCheck</tt> manually. See updated <i><a href="https://raw.githubusercontent.com/jrsoftware/issrc/refs/heads/main/Examples/CodeAutomation2.iss">CodeAutomation2.iss</a></i> example script.</li>
+    <li>To suppress compiler warnings for a line in a <tt>[Code]</tt> section, you can now include a <tt>{$NOWARN}</tt> marker anywhere on that line. It is recognized even inside comments.</li>
+    <li>Improved the <tt>as</tt> operator to perform the same runtime type check as the <tt>is</tt> operator.</li>
+    <li>Fixed a runtime type mismatch when assigning between open and dynamic arrays.</li>
+    <li>Fixed support functions <tt>InitializeBitmapButtonFromIcon</tt> (broken since its introduction) and <tt>InitializeBitmapImageFromIcon</tt> (broken since 6.5.0).</li>
+  </ul>
+  </li>
+  <li>ISPP:
+  <ul>
+    <li>Renamed (previously undocumented) support functions <tt>GetFileCompany</tt>, <tt>GetFileDescription</tt>, <tt>GetFileCopyright</tt>, <tt>GetFileOriginalFilename</tt>, and <tt>GetFileProductVersion</tt> to <tt>GetFileCompanyString</tt>, <tt>GetFileDescriptionString</tt>, <tt>GetFileCopyrightString</tt>, <tt>GetFileOriginalFilenameString</tt>, and <tt>GetFileProductVersionString</tt> respectively, making them consistent with the existing (also previously undocumented) <tt>GetFileVersionString</tt>. The old names still work.</li>
+    <li>Documented the difference between <tt>GetFileVersionString</tt> and <tt>GetVersionNumbersString</tt>.</li>
+    <li>Fixed handling of relative filenames by support functions <tt>ReadIni</tt>, <tt>WriteIni</tt>, and <tt>Is64BitPEImage</tt> to be the same as other file-related support functions.</li>
+  </ul>
+  </li>
+  <li>Split the help text shown by the <tt>/HELP</tt> command line parameter across two message boxes for easier reading.</li>
+  <li>Added workaround for limitations in Wine's RichEdit implementation that caused text displayed by the <tt>[Setup]</tt> section directives <tt>LicenseFile</tt>, <tt>InfoBeforeFile</tt>, and <tt>InfoAfterFile</tt> to show with unchanged foreground colors when a custom wizard style is active.</li>
+  <li>Updated ISCC to no longer create the Inno Setup registry key when only reading from it.</li>
+  <li>Updated the 7-Zip, LZMA SDK, Scintilla, and zlib source code used by Inno Setup to the latest versions.</li>
+  <li>The <tt>full</tt> archive extraction method now supports .zst (Zstandard) archives.</li>
+  <li>The Inno Setup source code now contains SPDX SBOM metadata.</li>
+  <li><i>Fix:</i> <tt>[Files]</tt> section entries with the <tt>extractarchive</tt> flag could fail to extract any files from an archive if the first entry in the archive didn't match.<br/>
+      For example, if the archive contained a file in a subdirectory as its first entry (for example, <tt>subdir\file1.txt</tt> followed by <tt>file2.txt</tt>) and <tt>recursesubdirs</tt> was not used, no files would be extracted at all, not even <tt>file2.txt</tt>.</li>
+  <li>Many other minor improvements and fixes.</li>
+</ul>
+
+
+</details>
+<details>
 <summary>Inno Setup 6.7</summary>
 
 <p><a name="6.7.3"></a><span class="ver">6.7.3 </span><span class="date">(2026-05-26)</span></p>
-
-<p><b>Using Inno Setup commercially?</b> Please <a href="https://jrsoftware.org/isorder.php">purchase a license</a>.</p>
 
 <ul>
   <li>Changes backported from <a href="https://jrsoftware.org/isdl.php#v7">Inno Setup 7</a>:
@@ -584,7 +791,7 @@ If you were already using 9-point <i>Segoe UI</i>, you will notice a change in s
     <li>Example section:
       <pre><code class="innosetup"><span class="sec">[Files]</span>
 <span class="key">Source</span>: "MyProg.exe"; <span class="key">DestDir</span>: "<span class="con">{app}</span>"; \
-  <span class="key">ISSigAllowedKeys</span>: "exesigner bosskey"; <span class="key">Flags</span>: issigverify 
+  <span class="key">ISSigAllowedKeys</span>: "exesigner bosskey"; <span class="key">Flags</span>: issigverify
 <span class="key">Source</span>: "MyProg.chm"; <span class="key">DestDir</span>: "<span class="con">{app}</span>"; \
   <span class="key">ISSigAllowedKeys</span>: "docsigner bosskey"; <span class="key">Flags</span>: issigverify
 <span class="key">Source</span>: "<span class="con">{src}</span>\Extra\*.chm"; <span class="key">DestDir</span>: "<span class="con">{app}</span>"; \
@@ -776,7 +983,7 @@ issigtool --key-file="MyKey.ispublickey" verify "MyProg.dll"</code></pre>
   <li>Added dark mode support to autocompletion lists and also added a minimum width.</li>
   <li>Added new <i>Show whitespace</i> option. Disabled by default.</li>
   <li>Improved brace highlighting.</li>
-  <li>Fixed an issue when the <i>Auto indent mode</i> and <i>Allow cursor to move beyond end of lines</i> options are both enabled.</li>  
+  <li>Fixed an issue when the <i>Auto indent mode</i> and <i>Allow cursor to move beyond end of lines</i> options are both enabled.</li>
 </ul>
 <p>Other Compiler IDE changes:</p>
 <ul>
@@ -865,8 +1072,8 @@ issigtool --key-file="MyKey.ispublickey" verify "MyProg.dll"</code></pre>
   <li>Added support for UTF-8 encoded files without a BOM for .iss script files, .isl messages files, <tt>LicenseFile</tt>, <tt>InfoBeforeFile</tt>,  <tt>InfoAfterFile</tt>, and ISPP's <tt>#file</tt>.</li>
   <li>Compiler IDE changes:
   <ul>
-  <li>New script files are now saved as UTF-8 without a BOM by default, 
-bringing the IDE into line with most other text editors. Existing files 
+  <li>New script files are now saved as UTF-8 without a BOM by default,
+bringing the IDE into line with most other text editors. Existing files
 are still saved as they were until the save encoding is changed manually
  using the <i>Save Encoding</i> submenu of the <i>File</i> menu.</li>
   <li>Added new <i>UTF-8 with BOM</i> menu item to the <i>Save Encoding</i> submenu of the <i>File</i> menu to save new files with a BOM anyway.</li>
@@ -882,10 +1089,10 @@ are still saved as they were until the save encoding is changed manually
 </ul>
 <p><span class="head2">Support for Arm64 systems improved, and related enhancements</span></p>
 <ul>
-  <li>Setup now officially supports the installation of x64 apps on 
-Arm64 Windows 11 systems, which are able to run x64 binaries via 
-emulation. To enable your x64 app installers to run properly on Arm64 
-Windows 11, some minor changes may be needed in your scripts. Most 
+  <li>Setup now officially supports the installation of x64 apps on
+Arm64 Windows 11 systems, which are able to run x64 binaries via
+emulation. To enable your x64 app installers to run properly on Arm64
+Windows 11, some minor changes may be needed in your scripts. Most
 importantly:
   <ol>
     <li>In <tt>ArchitecturesAllowed</tt> and <tt>ArchitecturesInstallIn64BitMode</tt>, change any use of <tt>x64</tt> to <tt>x64compatible</tt>.</li>
@@ -894,9 +1101,9 @@ importantly:
   </ol>
   <div class="limargins">The key difference between <tt>x64</tt>/<tt>IsX64</tt> and the new <tt>x64compatible</tt>/<tt>IsX64Compatible</tt> is that the latter matches both x64 Windows and Arm64 Windows 11.</div>
   In most cases, <b>you should make the above changes</b>, because otherwise, users on Arm64 systems may not be able to run your installers. For example, an <tt>ArchitecturesAllowed=x64</tt>
- setting will only allow the installer to run on x64 Windows — not on 
-Arm64 Windows 11. Or, if you ship x86 and x64 versions of your app in 
-the same installer, the 32-bit x86 version may be chosen instead of the 
+ setting will only allow the installer to run on x64 Windows — not on
+Arm64 Windows 11. Or, if you ship x86 and x64 versions of your app in
+the same installer, the 32-bit x86 version may be chosen instead of the
 expected x64 version when running on Arm64 Windows 11.</li>
   <li>The <tt>[Setup]</tt> section directives <tt>ArchitecturesAllowed</tt> and <tt>ArchitecturesInstallIn64BitMode</tt> have been enhanced:
   <ul>
@@ -924,9 +1131,9 @@ expected x64 version when running on Arm64 Windows 11.</li>
   </ul>
   Note that all of the above remains unsupported on Arm64 Windows 10.
   </li>
-  <li>Setup now logs the machine types supported by the system — that 
-is, what types of EXEs can be executed, either natively or via 
-emulation. For example, when running on an Arm64 Windows 11 system, it 
+  <li>Setup now logs the machine types supported by the system — that
+is, what types of EXEs can be executed, either natively or via
+emulation. For example, when running on an Arm64 Windows 11 system, it
 logs: <tt>Machine types supported by system: x86 x64 Arm32 Arm64</tt>.</li>
   <li>The <tt>OnlyOnTheseArchitectures</tt> message is not used anymore. Instead, the <tt>WindowsVersionNotSupported</tt> message is now shown when Setup is started on an architecture that is not allowed by the <tt>ArchitecturesAllowed</tt> expression. (But please do not remove the message from translation files.)</li>
   <li>Pascal Scripting change: Added new <tt>IsArm32Compatible</tt>, <tt>IsX64Compatible</tt>, <tt>IsX64OS</tt>, <tt>IsX86Compatible</tt>, and <tt>IsX86OS</tt> support functions. The <tt>IsX64</tt> support function still exists but is now deprecated as explained above. Example testing all architecture identifiers:
@@ -955,41 +1162,41 @@ end;</pre>
 </ul>
 <p><span class="head2">Support for Windows Vista, Windows Server 2008, and the Itanium architecture removed</span></p>
 <ul>
-  <li><b>OS requirements change:</b> Windows Vista and Windows Server 
-2008 are no longer supported. Windows 7 and Windows Server 2008 R2 are 
+  <li><b>OS requirements change:</b> Windows Vista and Windows Server
+2008 are no longer supported. Windows 7 and Windows Server 2008 R2 are
 now the minimum supported operating systems. <tt>[Setup]</tt> section directive <tt>MinVersion</tt> still defaults to <tt>6.1sp1</tt>, so by default Setup will still not run versions of Windows 7 and Windows Server 2008 R2 which have not been updated.</li>
   <li>The defunct Itanium architecture is no longer supported. The <tt>ia64</tt> architecture identifier has been removed, and Setup will display the <tt>WindowsVersionNotSupported</tt> error message if it's started on an Itanium system.</li>
-  <li>Removed <tt>[Icons]</tt> section flag <tt>foldershortcut</tt> 
-which was already ignored except when running on Windows Vista or 
-Windows Server 2008, as folder shortcuts do not expand properly on the 
+  <li>Removed <tt>[Icons]</tt> section flag <tt>foldershortcut</tt>
+which was already ignored except when running on Windows Vista or
+Windows Server 2008, as folder shortcuts do not expand properly on the
 Start Menu anymore.</li>
 </ul>
 <p><span class="head2">Compiler IDE changes</span></p>
 <ul>
-  <li>Added toolbar buttons and shortcuts to navigate back (Alt+Left) 
-and forward (Alt+Right). Navigating by pressing the mouse X buttons is 
-also supported. A navigation item is added when changing tabs or moving 
-at least 11 lines at once, similar to Visual Studio 2022.<br>Because of 
-this Alt+Right can no longer be used to initiate auto complete, instead 
+  <li>Added toolbar buttons and shortcuts to navigate back (Alt+Left)
+and forward (Alt+Right). Navigating by pressing the mouse X buttons is
+also supported. A navigation item is added when changing tabs or moving
+at least 11 lines at once, similar to Visual Studio 2022.<br>Because of
+this Alt+Right can no longer be used to initiate auto complete, instead
 the existing Ctrl+Space or new Ctrl+I alternative must be used. To still
- be able to also use Alt+Right for this activate Visual Studio-style 
+ be able to also use Alt+Right for this activate Visual Studio-style
 shortcuts, see below.</li>
   <li>Added support for Visual Studio-style shortcuts (like Ctrl+- to navigate back, Ctrl+B to compile and F5 to run) to the <i>Build</i> and <i>Run</i> menus. To activate this use the <i>Options</i> menu item in the <i>Tools</i> menu to set the new <i>Key Map</i> option to <i>Visual Studio</i>.</li>
-  <li>Added multiple selection support (Ctrl+Click or Ctrl+Drag). 
-Typing, backspace, delete, undo, redo, copy, and paste all work with 
-multiple selections added this way or via the pre-existing support for 
+  <li>Added multiple selection support (Ctrl+Click or Ctrl+Drag).
+Typing, backspace, delete, undo, redo, copy, and paste all work with
+multiple selections added this way or via the pre-existing support for
 performing rectangular block selection (Alt+Shift+Arrow or Alt+Drag).</li>
   <li>Added a shortcut to revert multiple selections into a single one or a single selection into an empty one (Esc).</li>
   <li>Added dark mode support to the title bar on Windows 10 Version 2004 and later.
   </li><li>Added dark mode support to the main menu bar on all versions of Windows.
-  </li><li>Added dark mode support to the menus on Windows 10 Version 
-1903 and later up to Windows 11 Version 23H2 which is currently the 
+  </li><li>Added dark mode support to the menus on Windows 10 Version
+1903 and later up to Windows 11 Version 23H2 which is currently the
 latest version of Windows 11.
-  </li><li>Updated the icons used by the editor's gutter, including the 
-automatic use of higher quality versions in a widened gutter on higher 
+  </li><li>Updated the icons used by the editor's gutter, including the
+automatic use of higher quality versions in a widened gutter on higher
 DPI settings.
-  </li><li>Lines with a breakpoint are now displayed as normal lines 
-with syntax highlighting, instead of as white text on a red background. 
+  </li><li>Lines with a breakpoint are now displayed as normal lines
+with syntax highlighting, instead of as white text on a red background.
 The editor's gutter still displays an icon on such lines.</li>
   <li>Breakpoints are now preserved on a per-file basis between sessions.</li>
   <li>Added new <i>Delete All Breakpoints</i> (Shift+Ctrl+F5) menu item to the <i>Run</i> menu.</li>
@@ -997,20 +1204,20 @@ The editor's gutter still displays an icon on such lines.</li>
   <li>Added new <i>Highlight occurrences of current selection</i> and <i>Highlight occurrences of current word</i> options. The first is enabled by default and the second is disabled by default.</li>
   <li>The <i>Allow cursor to move beyond end of lines</i> option ("virtual space") is now disabled by default, consistent with most other editors.</li>
   <li>When the <i>Allow cursor to move beyond end of lines</i> option is
- enabled, pressing the left arrow key while the cursor is at the start 
-of a line no longer moves the cursor to the end of the previous line 
-unless the Ctrl key is also pressed, just like in Notepad++, Visual 
+ enabled, pressing the left arrow key while the cursor is at the start
+of a line no longer moves the cursor to the end of the previous line
+unless the Ctrl key is also pressed, just like in Notepad++, Visual
 Studio, and RAD Studio.</li>
   <li>The New Script Wizard now offers an option to import a Windows registry .reg file.</li>
   <li>The New Script Wizard now automatically sets <tt>ArchitecturesInstallIn64BitMode</tt> and <tt>ArchitecturesAllowed</tt> to <tt>x64compatible</tt>
- if it detects that the chosen main executable file is 64-bit. The 
-default main executable file is now the 64-bit MyProg-x64.exe example 
+ if it detects that the chosen main executable file is 64-bit. The
+default main executable file is now the 64-bit MyProg-x64.exe example
 executable instead of 32-bit MyProg.exe.</li>
   <li>Added new <i>Generate [Registry] Entries</i> (Shift+Ctrl+R) menu item to the <i>Tools</i> menu to import a Windows registry .reg file as extra entries to the <tt>[Registry]</tt> section at the cursor position, or to a new section.</li>
   <li>Added new <i>Generate [Files] Entries</i> (Shift+Ctrl+I) menu item to the <i>Tools</i> menu to design and insert extra entries to the <tt>[Files]</tt> section at the cursor position, or to a new section.</li>
   <li>The <i>Generate MsgBox/TaskDialogMsgBox Call</i> tool (previously named <i>MsgBox/TaskDialogMsgBox Designer</i>)
- now respects the tab width and tab character settings, indents the 
-generated Pascal script one extra level, and warns if the cursor 
+ now respects the tab width and tab character settings, indents the
+generated Pascal script one extra level, and warns if the cursor
 position is not in the [Code] section.</li>
   <li>Minor theme color tweaks such as a different background color for the selected text.</li>
 </ul>
@@ -1018,21 +1225,21 @@ position is not in the [Code] section.</li>
 <ul>
   <li>Added new <tt>[Run]</tt> and <tt>[UninstallRun]</tt> section flag <tt>logoutput</tt>. Instructs Setup and Uninstall to log the output of the executed program or batch file. Cannot be combined with the <tt>nowait</tt>, <tt>runasoriginaluser</tt>, <tt>shellexec</tt>, and <tt>waituntilidle</tt> flags. Has no effect if logging is not enabled.</li>
   <li>Added new <tt>[Setup]</tt> section directive <tt>UninstallLogging</tt>, which defaults to <tt>no</tt>. If set to <tt>yes</tt>, the uninstaller will always create a log file if it is launched from the <i>Add/Remove Programs</i> Control Panel applet. Equivalent to passing /LOG on the command line.</li>
-  <li>Digital signing change: Sign Tool output is now always logged in 
-the Compiler IDE's "Compiler Output" view, making it easier to debug 
-issues. Because of this, sign tools that are console programs will now 
-always run hidden, as their output is being captured and they would 
+  <li>Digital signing change: Sign Tool output is now always logged in
+the Compiler IDE's "Compiler Output" view, making it easier to debug
+issues. Because of this, sign tools that are console programs will now
+always run hidden, as their output is being captured and they would
 display nothing in their window.</li>
-  <li>Pascal Scripting change: Added new <tt>ExecAndLogOutput</tt> 
-support function. Can be used to log the output of the executed program 
-or batch file to Setup and Uninstall's log, or to receive the output 
+  <li>Pascal Scripting change: Added new <tt>ExecAndLogOutput</tt>
+support function. Can be used to log the output of the executed program
+or batch file to Setup and Uninstall's log, or to receive the output
 line by line in your own <tt>[Code]</tt> function, for example to read the first non-empty line from the output as shown in the help file and the new <i>PowerShell.iss</i> example script.</li>
   <li>ISPP changes:
     <ul>
     <li>Output of programs or batch files executed using the <tt>Exec</tt> support function is now always logged in the Compiler IDE's "Compiler Output" view.</li>
-    <li>Added new support function <tt>ExecAndGetFirstLine</tt> to 
-execute a program or batch file and read the first non-empty line from 
-its output which can then be placed or used in the script as shown in 
+    <li>Added new support function <tt>ExecAndGetFirstLine</tt> to
+execute a program or batch file and read the first non-empty line from
+its output which can then be placed or used in the script as shown in
 the new <i>PowerShell.iss</i> example script.</li>
     </ul>
     </li>
@@ -1042,30 +1249,30 @@ the new <i>PowerShell.iss</i> example script.</li>
   <li>Console-mode compiler (ISCC) change: Added support for Unicode output.</li>
   <li>Added new <tt>[Files]</tt> section flag <tt>signcheck</tt>. Instructs the compiler to check the original source files for a digital signature before storing them.</li>
   <li>During startup Setup would always ask Windows to create any missing <tt>{usercf}</tt>, <tt>{userpf}</tt>, and <tt>{usersavedgames}</tt>
- folders. It no longer does until the script asks for the folder. Note 
-that scripts running in administrative install mode should not do this 
+ folders. It no longer does until the script asks for the folder. Note
+that scripts running in administrative install mode should not do this
 because it violates the <a href="https://jrsoftware.org/ishelp/index.php?topic=setup_useduserareaswarning">used user areas warning</a>.</li>
   <li>Changes to further help protect against potential DLL preloading attacks.</li>
   <li>Added support for IIS group users identifiers (<tt>iisiusrs</tt>) for use in <tt>Permissions</tt> parameters.</li>
   <li>ISPP changes:
     <ul>
-    <li>Added support function <tt>AddQuotes</tt> to add a quote 
+    <li>Added support function <tt>AddQuotes</tt> to add a quote
 character to the left and right sides of a string if the string contains
  a space and it didn't have quotes already.</li>
-    <li>Support function <tt>Exec</tt> no longer requires the filename 
-parameter to be quoted if it contains spaces. Additionally it now 
-supports "&gt;" as a filename and now includes special 
+    <li>Support function <tt>Exec</tt> no longer requires the filename
+parameter to be quoted if it contains spaces. Additionally it now
+supports "&gt;" as a filename and now includes special
 platform-independent support for .bat and .cmd files, both just like for
  example the <tt>[Run]</tt> section.</li>
     </ul>
-  </li>  
-  <li>Pascal Scripting changes: 
+  </li>
+  <li>Pascal Scripting changes:
     <ul>
-    <li>Added support functions <tt>UTF8Encode</tt> and <tt>UTF8Decode</tt> to encode a Unicode string into a UTF-8 encoded ANSI string and vice versa.</li>
+    <li>Added support functions <tt>Utf8Encode</tt> and <tt>Utf8Decode</tt> to encode a Unicode string into a UTF-8 encoded ANSI string and vice versa.</li>
     <li>Added support functions <tt>LoadStringFromLockedFile</tt> and <tt>LoadStringsFromLockedFile</tt> to read strings from a file even if it's already opened for writing by another program.</li>
     <li>Added support class <tt>TNewLinkLabel</tt> which can display multi-line text with embedded links and internally uses a Windows SysLink control. See the <i>CodeClasses.iss</i> example script for examples.</li>
     <li><tt>TWizardForm</tt>: Added new <tt>AdjustLinkLabelHeight</tt> function.</li>
-    <li><tt>TDownloadPage</tt>: Added new <tt>ShowBaseNameInsteadOfUrl</tt> property.</li>
+    <li><tt>TDownloadWizardPage</tt>: Added new <tt>ShowBaseNameInsteadOfUrl</tt> property.</li>
     <li>It is now possible to write <tt>var S: set of AnsiChar; begin S := ['a', 'b']; end;</tt>. In previous versions this would result in a type mismatch error.
     </li><li>It is now possible to write <tt>Stream.ReadBuffer(S, Length(S));</tt> when S is of type <tt>AnsiString</tt>. In previous versions this would compile but not work at run time. Same applies to <tt>Read</tt>, <tt>Write</tt>, and <tt>WriteBuffer</tt>: all four functions now accept any type of string.</li>
     <li>Added example which downloads and unzips a Zip file to the <i>CodeAutomation.iss</i> example script.</li>
@@ -1077,8 +1284,8 @@ platform-independent support for .bat and .cmd files, both just like for
   <li>Added official Korean translation.</li>
   <li>Inno Setup is now built using Delphi 11.3 Alexandria instead of Delphi 10.3 Rio.</li>
   <li>Inno Setup's Delphi projects have been recreated as new clean projects and have been added to a <i>Projects\Projects.groupproj</i>
- project group. This makes it a lot easier to get started with working 
-with the Inno Setup source code and making contributions, even with the 
+ project group. This makes it a lot easier to get started with working
+with the Inno Setup source code and making contributions, even with the
 free Delphi Community Edition.</li>
   <li>Minor tweaks and documentation improvements.</li>
 </ul>
