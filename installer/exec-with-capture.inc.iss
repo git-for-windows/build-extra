@@ -1,7 +1,9 @@
 [Code]
 
 type
+#if Ver < EncodeVer(7, 0, 0)
     HANDLE = LongInt;
+#endif
     SECURITY_ATTRIBUTES = record
         nLength:DWORD;
         lpSecurityDescriptor:LongInt;

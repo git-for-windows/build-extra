@@ -36,6 +36,21 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.55.0(4) (August 11th 2026)
+
+Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support will be dropped after Git for Windows v2.55.
+
+### New Features
+
+* The experimental `git survey` command (which was never upstreamed to the core Git project) was deprecated and [converted into a small shim on top of `git repo structure`](https://github.com/git-for-windows/git/pull/6268). In the future, `git repo structure` should be used instead, as the `git survey` command will be retired eventually.
+* Git for Windows' installer [is now a 64-bit executable](https://github.com/git-for-windows/build-extra/pull/726) (x64 instead of 86).
+* Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.10](https://inbox.sourceware.org/cygwin-announce/f9d2b89b-c99c-4d02-b0cf-61adea84566b@dronecode.org.uk/).
+* Comes with [OpenSSH v10.5.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_5_P1).
+
+### Bug Fixes
+
+* The long-standing [bug](https://github.com/git-for-windows/git/issues/5303) where Git Bash's screen was cleared after `git.exe` called `vim` (e.g. to edit a commit message) [was fixed](https://github.com/git-for-windows/msys2-runtime/pull/131).
+
 ## Changes since Git for Windows v2.55.0(3) (July 14th 2026)
 
 Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support will be dropped after Git for Windows v2.55.

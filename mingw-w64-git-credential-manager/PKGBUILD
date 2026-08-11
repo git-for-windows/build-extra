@@ -5,7 +5,7 @@ pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
 replaces=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
-pkgver=2.8.0
+pkgver=2.9.1
 pkgrel=1
 _realver=$pkgver
 _realtag=v${pkgver}
@@ -22,19 +22,19 @@ options=('!strip')
 case "$CARCH" in
   i686)
     _arch=x86
-    _sha=82c5cd4753eb4ab78fdbbd87b565a2199a493f695d2620728875fc35a0e1b713
+    _sha=076d120618e876f06cf47cdb79aabda2d4afe89701a2b4e81f441d8b20200d35
     ;;
   x86_64)
     _arch=x64
-    _sha=86c53aaa403d570b11fd48f17a277cd822b41b76c4e6b35f78344ad7c887b6c9
+    _sha=7dea2afd3b9ea22109d25f95066025d70e57281d96062605304f89fcca41b535
     ;;
   aarch64)
     _arch=arm64
-    _sha=75ee79ea8a0da0f998735735cc693b97872e43f09dd1b91faba7f86055ad598d
+    _sha=1b573743a6162415d8398cbd9e2201aa8c43fd291bf45c242a5a12fa5ded3bd1
     ;;
   *)
     _arch=x86
-    _sha=82c5cd4753eb4ab78fdbbd87b565a2199a493f695d2620728875fc35a0e1b713
+    _sha=076d120618e876f06cf47cdb79aabda2d4afe89701a2b4e81f441d8b20200d35
     ;;
 esac
 
@@ -46,20 +46,20 @@ source=("${zip_url}" "$src_zip_url")
 noextract=("${zip_name}")
 
 sha256sums=("$_sha"
-            '5b9cd57ca3bcda385d23fef7e805a6e06a0b49365a340b8cee86f236707f5817')
+            '9840032828f0e489277244a1e9dfc9db141dad4f6be692fb31ba46d8058ddf53')
 
 build() {
   markdown "${srcdir}/git-credential-manager-${_realtag#v}/README.md" > "${srcdir}/git-credential-manager-${_realtag#v}/git-credential-manager.html"
 }
 
 prepare() {
-  mkdir -p "${srcdir}/${_arch}"
-  unzip "${srcdir}/${zip_name}" -d "${srcdir}/${_arch}"
+  mkdir -p "${srcdir}/${MINGW_PACKAGE_PREFIX#mingw-w64-}"
+  unzip "${srcdir}/${zip_name}" -d "${srcdir}/${MINGW_PACKAGE_PREFIX#mingw-w64-}"
 }
 
 package() {
   prefix="$pkgdir/${MINGW_PREFIX}"
-  bindir="${srcdir}/${_arch}"
+  bindir="${srcdir}/${MINGW_PACKAGE_PREFIX#mingw-w64-}"
   install -d -m755 "${prefix}"/bin
   install -m755 "$bindir"/*.{dll,exe,config} "${prefix}"/bin
   install -d -m755 "${prefix}"/doc/git-credential-manager
