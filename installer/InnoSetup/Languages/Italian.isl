@@ -9,7 +9,7 @@
 ; Setup adds the periods automatically (appending a period would result in
 ; two periods being displayed).
 ;
-; Italian.isl - Last Update: 01.07.2026 by bovirus (bovirus@gmail.com)
+; Italian.isl - Last Update: 28.07.2026 by bovirus (bovirus@gmail.com)
 ;
 ; Translator name:   bovirus
 ; Translator e-mail: bovirus@gmail.com
@@ -46,7 +46,7 @@ ConfirmTitle=Conferma
 ErrorTitle=Errore
 
 ; *** SetupLdr messages
-SetupLdrStartupMessage=Questa è l'installazione di %1.%n%nVuoi continuare?
+SetupLdrStartupMessage=Installazione di %1.%n%nVuoi continuare?
 LdrCannotCreateTemp=Impossibile creare un file temporaneo.%n%nInstallazione annullata.
 LdrCannotExecTemp=Impossibile eseguire un file nella cartella temporanea.%n%nInstallazione annullata.
 HelpTextNote=
@@ -67,8 +67,8 @@ WinVersionTooLowError=Questo programma richiede %1 versione %2 o successiva.
 WinVersionTooHighError=Questo programma non può essere installato su %1 versione %2 o successiva.
 AdminPrivilegesRequired=Per installare questo programma sono richiesti privilegi di amministratore.
 PowerUserPrivilegesRequired=Per poter installare questo programma sono richiesti i privilegi di amministratore o di Power Users.
-SetupAppRunningError=%1 è attualmente in esecuzione.%n%nChiudi adesso tutte le istanze del programma e poi seleziona "OK", o seleziona "Annulla" per uscire.
-UninstallAppRunningError=%1 è attualmente in esecuzione.%n%nChiudi adesso tutte le istanze del programma e poi seleziona "OK", o seleziona "Annulla" per uscire.
+SetupAppRunningError=L'installazione ha rilevato che %1 è attualmente in esecuzione.%n%nChiudi adesso tutte le istanze del programma e poi seleziona "OK" per continuare o "Annulla" per uscire.
+UninstallAppRunningError=La disinstallazione ha rilevato che %1 è attualmente in esecuzione.%n%nChiudi adesso tutte le istanze del programma e poi seleziona "OK" per continuare o "Annulla" per uscire.
 
 ; *** Startup questions
 PrivilegesRequiredOverrideTitle=Seleziona modo installazione
@@ -89,9 +89,9 @@ ExitSetupTitle=Uscita dall'installazione
 ExitSetupMessage=L'installazione non è stata completata.%n%nUscendo dall'installazione in questo momento, il programma non sarà installato.%n%nÈ possibile eseguire l'installazione in un secondo tempo.%n%nVuoi uscire dall'installazione?
 AboutSetupMenuItem=&Informazioni sull'installazione...
 AboutSetupTitle=Informazioni sull'installazione
-AboutSetupMessage=%1 versione %2%n%3%n%n%1 sito web:%n%4
+AboutSetupMessage=%1 %2%n%3%n%n%1 sito web:%n%4
 AboutSetupNote=
-TranslatorNote=Traduzione italiana a cura di Rinaldo M. aka Whiteshark e bovirus (v. 12.06.2025)
+TranslatorNote=Traduzione italiana (v. 28.07.2026) a cura di Rinaldo M. aka Whiteshark e bovirus
 
 ; *** Buttons
 ButtonBack=< &Indietro
@@ -113,7 +113,7 @@ SelectLanguageTitle=Seleziona la lingua dell'installazione
 SelectLanguageLabel=Seleziona la lingua da usare durante l'installazione.
 
 ; *** Common wizard text
-ClickNext=Seleziona "Avanti" per continuare, o "Annulla" per uscire.
+ClickNext=Per continuare seleziona "Avanti" o "Annulla" per uscire.
 BeveledLabel=
 BrowseDialogTitle=Sfoglia cartelle
 BrowseDialogLabel=Seleziona una cartella nell'elenco, e quindi seleziona "OK".
@@ -121,7 +121,7 @@ NewFolderName=Nuova cartella
 
 ; *** "Welcome" wizard page
 WelcomeLabel1=Installazione di [name]
-WelcomeLabel2=[name/ver] sarà installato sul computer.%n%nPrima di procedere chiudi tutte le applicazioni attive.
+WelcomeLabel2=Il programma installerà [name/ver] sul computer.%n%nPrima di procedere chiudi tutte le applicazioni attive.
 
 ; *** "Password" wizard page
 WizardPassword=Password
@@ -140,10 +140,10 @@ LicenseNotAccepted=&Non accetto i termini del contratto di licenza
 ; *** "Information" wizard pages
 WizardInfoBefore=Informazioni
 InfoBeforeLabel=Prima di procedere leggi le importanti informazioni che seguono.
-InfoBeforeClickLabel=Quando sei pronto per proseguire, seleziona "Avanti".
+InfoBeforeClickLabel=Quando sei pronto per proseguire seleziona "Avanti".
 WizardInfoAfter=Informazioni
 InfoAfterLabel=Prima di procedere leggi le importanti informazioni che seguono.
-InfoAfterClickLabel=Quando sei pronto per proseguire, seleziona "Avanti".
+InfoAfterClickLabel=Quando sei pronto per proseguire seleziona "Avanti".
 
 ; *** "User Information" wizard page
 WizardUserInfo=Informazioni utente
@@ -163,7 +163,7 @@ DiskSpaceMBLabel=Sono richiesti almeno [mb] MB di spazio libero nel disco.
 CannotInstallToNetworkDrive=Non è possibile effettuare l'installazione in un disco in rete.
 CannotInstallToUNCPath=Non è possibile effettuare l'installazione in un percorso UNC.
 InvalidPath=Va inserito un percorso completo di lettera di unità; per esempio:%n%nC:\APP%n%no un percorso di rete nella forma:%n%n\\server\condivisione
-InvalidDrive=L'unità o il percorso di rete selezionato non esiste o non è accessibile.%n%nSelezionane un altro.
+InvalidDrive=L'unità o il percorso di rete selezionato non esiste o non è accessibile.%n%nSeleziona un'altra unità o percorso.
 DiskSpaceWarningTitle=Spazio su disco insufficiente
 DiskSpaceWarning=L'installazione richiede per eseguire l'installazione almeno %1 KB di spazio libero, ma l'unità selezionata ha solo %2 KB disponibili.%n%nVuoi continuare comunque?
 DirNameTooLong=Il nome della cartella o il percorso sono troppo lunghi.
@@ -183,7 +183,7 @@ FullInstallation=Installazione completa
 CompactInstallation=Installazione compatta
 CustomInstallation=Installazione personalizzata
 NoUninstallWarningTitle=Componente esistente
-NoUninstallWarning=I seguenti componenti sono già installati nel computer:%n%n%1%n%nDeselezionando questi componenti essi non verranno rimossi.%n%nVuoi continuare comunque?
+NoUninstallWarning=L'installazione ha rilevato che sono già installati nel computer i seguenti componenti:%n%n%1%n%nDeselezionando questi componenti essi non verranno rimossi.%n%nVuoi continuare comunque?
 ComponentSize1=%1 KB
 ComponentSize2=%1 MB
 ComponentsDiskSpaceGBLabel=La selezione attuale richiede almeno [gb] GB di spazio nel disco.
@@ -208,7 +208,7 @@ NoProgramGroupCheck2=&Non creare una cartella nel menu Avvio/Start
 ; *** "Ready to Install" wizard page
 WizardReady=Pronto per l'installazione
 ReadyLabel1=Il programma è pronto per iniziare l'installazione di [name] nel computer.
-ReadyLabel2a=Seleziona "Installa" per continuare con l'installazione, o "Indietro" per rivedere o modificare le impostazioni.
+ReadyLabel2a=Per continuare con l'installazione seleziona "Installa" o "Indietro" per rivedere o modificare le impostazioni.
 ReadyLabel2b=Per procedere con l'installazione seleziona "Installa".
 ReadyMemoUserInfo=Informazioni utente:
 ReadyMemoDir=Cartella di installazione:
@@ -243,7 +243,7 @@ ArchiveUnsupportedFormat=Questo formato archivio non è supportato
 WizardPreparing=Preparazione all'installazione
 PreparingDesc=Preparazione all'installazione di [name] nel computer.
 PreviousInstallNotCompleted=L'installazione/rimozione precedente del programma non è stata completata.%n%nPer completare l'installazione è necessario riavviare il sistema.%n%nDopo il riavvio del sistema esegui di nuovo l'installazione di [name].
-CannotContinue=L'installazione non può continuare. Seleziona "Annulla" per uscire.
+CannotContinue=L'installazione non può continuare. Per uscire seleziona "Annulla".
 ApplicationsFound=Le seguenti applicazioni stanno usando file che devono essere aggiornati dall'installazione.%n%nTi consigliamo di permettere al processo di chiudere automaticamente queste applicazioni.
 ApplicationsFound2=Le seguenti applicazioni stanno usando file che devono essere aggiornati dall'installazione.%n%nTi consigliamo di permettere al processo di chiudere automaticamente queste applicazioni.%n%nAd installazione completata, il processo tenterà di riavviare le applicazioni.
 CloseApplications=Chiudi &automaticamente le applicazioni
@@ -259,7 +259,7 @@ InstallingLabel=Attendi il completamento dell'installazione di [name] nel comput
 FinishedHeadingLabel=Installazione di [name] completata
 FinishedLabelNoIcons=Installazione di [name] completata.
 FinishedLabel=Installazione di [name] completata.%n%nL'applicazione può essere eseguita selezionando le relative icone.
-ClickFinish=Seleziona "Fine" per uscire dall'installazione.
+ClickFinish=Per uscire dall'installazione seleziona "Fine".
 FinishedRestartLabel=Per completare l'installazione di [name], è necessario riavviare il sistema.%n%nVuoi riavviare il sistema?
 FinishedRestartMessage=Per completare l'installazione di [name], è necessario riavviare il sistema.%n%nVuoi riavviare il sistema?
 ShowReadmeCheck=Sì, visualizza ora il file LEGGIMI
@@ -405,7 +405,7 @@ NameAndVersion=%1 versione %2
 AdditionalIcons=Icone aggiuntive:
 CreateDesktopIcon=Crea un'icona sul &desktop
 CreateQuickLaunchIcon=Crea un'icona nella &barra 'Avvio veloce'
-ProgramOnTheWeb=Sito web di %1
+ProgramOnTheWeb=Sito web %1
 UninstallProgram=Disinstalla %1
 LaunchProgram=Esegui %1
 AssocFileExtension=&Associa i file con estensione %2 a %1
