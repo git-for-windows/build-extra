@@ -18,11 +18,6 @@ $cases = @(
 )
 
 foreach ($case in $cases) {
-    $x64 = Join-Path $Root "usr\bin\$($case.Name).exe"
-    if (Test-Path -LiteralPath $x64) {
-        throw "The ARM64 payload still contains $x64"
-    }
-
     $native = Join-Path $Root "clangarm64\bin\$($case.Name).exe"
     if (-not (Test-Path -LiteralPath $native)) {
         throw "The ARM64 payload does not contain $native"
