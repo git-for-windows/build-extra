@@ -64,7 +64,10 @@ jobs:
           show_files artifacts.txt ||
           exit $?
 
-          test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- check-for-missing-dlls.sh)" ||
+          test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- \
+            check-for-missing-dlls.sh check-payload-architecture.sh \
+            arm64-x64-payload-baseline.txt pe-imports.ps1 \
+            t/check-payload-architecture.sh)" ||
           echo "check-for-missing-dlls=true" >>$GITHUB_OUTPUT
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -379,6 +382,10 @@ jobs:
     runs-on: ${{ matrix.arch.runner }}
     steps:
       - uses: actions/checkout@v7
+      - name: test payload architecture check
+        if: matrix.arch.name == 'x86_64'
+        shell: bash
+        run: ./t/check-payload-architecture.sh
       - name: initialize bare SDK clone
         shell: bash
         run: |
@@ -406,3 +413,12 @@ jobs:
       - name: check for missing DLLs (MinGit)
         shell: bash
         run: MINIMAL_GIT=1 ./check-for-missing-dlls.sh
+      - name: inventory ARM64 payload architectures
+        if: matrix.arch.name == 'aarch64'
+        shell: bash
+        run: ./check-payload-architecture.sh
+      - uses: actions/upload-artifact@v7
+        if: matrix.arch.name == 'aarch64' && always()
+        with:
+          name: arm64-payload-architecture
+          path: arm64-payload-architecture.tsv

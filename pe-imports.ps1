@@ -7,6 +7,11 @@
 # https://learn.microsoft.com/en-us/windows/win32/debug/pe-format
 #
 # Usage: powershell.exe -NoProfile -ExecutionPolicy Bypass -File pe-imports.ps1 FILE...
+#        powershell.exe -NoProfile -ExecutionPolicy Bypass -File pe-imports.ps1 -ArchitectureOnly FILE...
+
+param(
+    [switch]$ArchitectureOnly
+)
 
 foreach ($file in $args) {
     try {
@@ -33,6 +38,18 @@ foreach ($file in $args) {
             continue
         }
         $peOffset = $peSignatureOffset + 4
+        $machine = [BitConverter]::ToUInt16($bytes, $peOffset)
+
+        if ($ArchitectureOnly) {
+            switch ($machine) {
+                0x014C { Write-Output "x86" }
+                0x8664 { Write-Output "x64" }
+                0xA641 { Write-Output "arm64ec" }
+                0xAA64 { Write-Output "arm64" }
+                default { Write-Output "unknown-0x$($machine.ToString('X4').ToLowerInvariant())" }
+            }
+            continue
+        }
 
         $numSections = [BitConverter]::ToUInt16($bytes, $peOffset + 2)
         $optHdrSize  = [BitConverter]::ToUInt16($bytes, $peOffset + 16)
