@@ -64,7 +64,10 @@ jobs:
           show_files artifacts.txt ||
           exit $?
 
-          test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- check-for-missing-dlls.sh)" ||
+          test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- \
+            check-for-missing-dlls.sh \
+            t/check-arm64-native-tools.sh \
+            t/check-arm64-native-tools.ps1)" ||
           echo "check-for-missing-dlls=true" >>$GITHUB_OUTPUT
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
@@ -406,3 +409,11 @@ jobs:
       - name: check for missing DLLs (MinGit)
         shell: bash
         run: MINIMAL_GIT=1 ./check-for-missing-dlls.sh
+      - name: check native ARM64 tools from Git Bash
+        if: matrix.arch.name == 'aarch64'
+        shell: bash
+        run: ./t/check-arm64-native-tools.sh
+      - name: check native ARM64 tools from Win32
+        if: matrix.arch.name == 'aarch64'
+        shell: pwsh
+        run: ./t/check-arm64-native-tools.ps1 -Root (Convert-Path sdk-artifact)

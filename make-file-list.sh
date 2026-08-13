@@ -387,6 +387,22 @@ else
 		-e "^\\($(echo $EXTRA_FILE_EXCLUDES |
 			sed 's/ /\\|/g')\\)\$"
 fi |
+if test aarch64 != "$ARCH" || test -n "$MINIMAL_GIT"
+then
+	cat
+else
+	{
+		grep -v \
+			-e '^/usr/bin/\(bunzip2\|bzcat\|bzip2\|bzip2recover\)\.exe$' \
+			-e '^/usr/bin/\(nettle-hash\|nettle-lfib-stream\|nettle-pbkdf2\|pkcs1-conv\|sexp-conv\)\.exe$' \
+			-e '^/usr/bin/\(p11-kit\|trust\)\.exe$'
+		cat <<-EOF
+		/clangarm64/bin/nettle-hash.exe
+		/clangarm64/bin/nettle-lfib-stream.exe
+		/clangarm64/bin/nettle-pbkdf2.exe
+		EOF
+	}
+fi |
 LC_CTYPE=C.UTF-8 grep --perl-regexp -v -e '^/usr/(lib|share)/terminfo/(?!.*/(cygwin|dumb|ms-terminal|screen.*|xterm.*)$)' |
 sed 's/^\///' | sort | uniq
 
