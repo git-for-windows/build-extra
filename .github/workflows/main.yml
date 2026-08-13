@@ -66,6 +66,8 @@ jobs:
 
           test -z "$(git diff ${{github.event.pull_request.base.sha}}.. -- \
             check-for-missing-dlls.sh check-payload-architecture.sh \
+            arm64-payload-architecture-v2.55.0.4.tsv \
+            arm64-payload-baseline-v2.55.0.4.json \
             arm64-x64-payload-baseline.txt pe-imports.ps1 \
             t/check-payload-architecture.sh)" ||
           echo "check-for-missing-dlls=true" >>$GITHUB_OUTPUT

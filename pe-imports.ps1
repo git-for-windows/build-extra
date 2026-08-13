@@ -8,46 +8,81 @@
 #
 # Usage: powershell.exe -NoProfile -ExecutionPolicy Bypass -File pe-imports.ps1 FILE...
 #        powershell.exe -NoProfile -ExecutionPolicy Bypass -File pe-imports.ps1 -ArchitectureOnly FILE...
+#        powershell.exe -NoProfile -ExecutionPolicy Bypass -File pe-imports.ps1 -ArchitectureOnly -FileList FILE
+#
+# -ArchitectureOnly writes one tab-separated FILE/ARCHITECTURE row for
+# every PE file and silently skips non-PE files.
 
+[CmdletBinding(PositionalBinding = $false)]
 param(
-    [switch]$ArchitectureOnly
+    [switch]$ArchitectureOnly,
+    [string]$Root,
+    [string]$FileList,
+    [Parameter(ValueFromRemainingArguments = $true)]
+    [string[]]$Path
 )
 
-foreach ($file in $args) {
+if ($FileList) {
+    $inputFiles = Get-Content -LiteralPath $FileList
+} else {
+    $inputFiles = $Path
+}
+
+foreach ($file in $inputFiles) {
+    if ($Root) {
+        $filePath = Join-Path $Root $file
+    } else {
+        $filePath = $file
+    }
     try {
-        $bytes = [System.IO.File]::ReadAllBytes($file)
+        $stream = [System.IO.File]::OpenRead($filePath)
+        try {
+            $isMZ = $stream.Length -ge 64 -and
+                $stream.ReadByte() -eq 0x4D -and $stream.ReadByte() -eq 0x5A
+        } finally {
+            $stream.Dispose()
+        }
+    } catch {
+        Write-Error "pe-imports: ${file}: cannot read file"
+        continue
+    }
+
+    if (-not $isMZ) {
+        if (-not $ArchitectureOnly) {
+            Write-Error "pe-imports: ${file}: not a PE file"
+        }
+        continue
+    }
+
+    try {
+        $bytes = [System.IO.File]::ReadAllBytes($filePath)
     } catch {
         Write-Error "pe-imports: ${file}: cannot read file"
         continue
     }
 
     try {
-        # `MZ`: DOS stub
-        if ($bytes.Length -lt 64 -or
-            $bytes[0] -ne 0x4D -or $bytes[1] -ne 0x5A) {
-            Write-Error "pe-imports: ${file}: not a PE file"
-            continue
-        }
-
         # Look for `PE\0\0`
         $peSignatureOffset = [BitConverter]::ToInt32($bytes, 0x3C)
         if ($peSignatureOffset + 24 -gt $bytes.Length -or
             $bytes[$peSignatureOffset] -ne 0x50 -or $bytes[$peSignatureOffset+1] -ne 0x45 -or
             $bytes[$peSignatureOffset+2] -ne 0 -or $bytes[$peSignatureOffset+3] -ne 0) {
-            Write-Error "pe-imports: ${file}: bad PE signature"
+            if (-not $ArchitectureOnly) {
+                Write-Error "pe-imports: ${file}: bad PE signature"
+            }
             continue
         }
         $peOffset = $peSignatureOffset + 4
         $machine = [BitConverter]::ToUInt16($bytes, $peOffset)
 
-        if ($ArchitectureOnly) {
+        if ($ArchitectureOnly -and $machine -ne 0x014C) {
             switch ($machine) {
-                0x014C { Write-Output "x86" }
-                0x8664 { Write-Output "x64" }
-                0xA641 { Write-Output "arm64ec" }
-                0xAA64 { Write-Output "arm64" }
-                default { Write-Output "unknown-0x$($machine.ToString('X4').ToLowerInvariant())" }
+                0x8664 { $architecture = "x64" }
+                0xA641 { $architecture = "arm64ec" }
+                0xAA64 { $architecture = "arm64" }
+                default { $architecture = "unknown-0x$($machine.ToString('X4').ToLowerInvariant())" }
             }
+            Write-Output "${file}$([char]9)$architecture$([char]9)0x$($machine.ToString('X4'))"
             continue
         }
 
@@ -61,9 +96,16 @@ foreach ($file in $args) {
             0x10B { $dataDirBase = $optHdrOff + 96 }   # PE32
             0x20B { $dataDirBase = $optHdrOff + 112 }   # PE32+ (x64/ARM64)
             default {
-                Write-Error "pe-imports: ${file}: unknown optional header magic 0x$($magic.ToString('X4'))"
-                continue
+                $dataDirBase = 0
             }
+        }
+        if ($dataDirBase -eq 0) {
+            if ($ArchitectureOnly) {
+                Write-Output "${file}$([char]9)x86$([char]9)0x014C"
+            } else {
+                Write-Error "pe-imports: ${file}: unknown optional header magic 0x$($magic.ToString('X4'))"
+            }
+            continue
         }
         $optHdrEnd = $optHdrOff + $optHdrSize
 
@@ -86,12 +128,6 @@ foreach ($file in $args) {
             $delayDirOff + 8 -le $bytes.Length) {
             $delayImportRVA = [BitConverter]::ToUInt32($bytes, $delayDirOff)
             $delayImportRVASize = [BitConverter]::ToUInt32($bytes, $delayDirOff + 4)
-        }
-
-        if (($importRVA -eq 0 -or $importRVASize -eq 0) -and ($delayImportRVA -eq 0 -or $delayImportRVASize -eq 0)) {
-            # No imports; emit header only so the caller still sees the file.
-            Write-Output "${file}:"
-            continue
         }
 
         # Build section table for RVA-to-file-offset translation.
@@ -118,6 +154,34 @@ foreach ($file in $args) {
                 }
             }
             return -1
+        }
+
+        if ($ArchitectureOnly) {
+            $architecture = "x86"
+            $clrDirOff = $dataDirBase + 112 # Data directory index 14: CLR Runtime Header
+            if ($clrDirOff + 8 -le $optHdrEnd -and
+                $clrDirOff + 8 -le $bytes.Length) {
+                $clrRVA = [BitConverter]::ToUInt32($bytes, $clrDirOff)
+                if ($clrRVA -ne 0) {
+                    $clrOff = & $rvaToOffset $clrRVA
+                    if ($clrOff -ge 0 -and $clrOff + 20 -le $bytes.Length) {
+                        $clrFlags = [BitConverter]::ToUInt32($bytes, $clrOff + 16)
+                        # IL-only images without COMIMAGE_FLAGS_32BITREQUIRED are AnyCPU.
+                        if (($clrFlags -band 0x1) -ne 0 -and
+                            ($clrFlags -band 0x2) -eq 0) {
+                            $architecture = "anycpu"
+                        }
+                    }
+                }
+            }
+            Write-Output "${file}$([char]9)$architecture$([char]9)0x014C"
+            continue
+        }
+
+        if (($importRVA -eq 0 -or $importRVASize -eq 0) -and ($delayImportRVA -eq 0 -or $delayImportRVASize -eq 0)) {
+            # No imports; emit header only so the caller still sees the file.
+            Write-Output "${file}:"
+            continue
         }
 
         # Walk an import descriptor array and emit "DLL Name:" lines.

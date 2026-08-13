@@ -61,10 +61,9 @@ fi
 test -f "$file_list" || die "File list does not exist: $file_list"
 
 sed -e 's/\r$//' -e 's|^\./||' "$file_list" |
-LC_ALL=C sort -u |
-grep -Ei '\.(dll|exe)$' >"$tmp.pe-paths" ||
-die "The installer file list contains no PE files"
+LC_ALL=C sort -u >"$tmp.paths"
 
+: >"$tmp.scan-paths"
 while IFS= read -r path
 do
 	case "$path" in
@@ -76,24 +75,30 @@ do
 	else
 		full_path=$root/$path
 	fi
-	test -f "$full_path" || die "Payload file does not exist: $path"
-	printf '%s\n' "$full_path"
-done <"$tmp.pe-paths" >"$tmp.full-paths"
+	if ! test -f "$full_path"
+	then
+		test -L "$full_path" && continue
+		die "Payload file does not exist: $path"
+	fi
+	printf '%s\n' "$path" >>"$tmp.scan-paths"
+done <"$tmp.paths"
 
 powershell=${POWERSHELL:-powershell.exe}
-xargs -d '\n' -n 100 "$powershell" -NoProfile -ExecutionPolicy Bypass \
+root_windows=$(cygpath -aw "$root") ||
+die "Could not determine the Windows payload root"
+scan_paths_windows=$(cygpath -aw "$tmp.scan-paths") ||
+die "Could not determine the Windows file-list path"
+"$powershell" -NoProfile -ExecutionPolicy Bypass \
 	-File "$thisdir/pe-imports.ps1" -ArchitectureOnly \
-	<"$tmp.full-paths" >"$tmp.architectures" ||
+	-Root "$root_windows" -FileList "$scan_paths_windows" \
+	>"$tmp.path-architectures" ||
 die "Could not inspect payload PE architectures"
-tr -d '\r' <"$tmp.architectures" >"$tmp.architectures.normalized" &&
-mv "$tmp.architectures.normalized" "$tmp.architectures"
+tr -d '\r' <"$tmp.path-architectures" >"$tmp.path-architectures.normalized" &&
+mv "$tmp.path-architectures.normalized" "$tmp.path-architectures"
 
-path_count=$(wc -l <"$tmp.pe-paths" | tr -d ' ')
-architecture_count=$(wc -l <"$tmp.architectures" | tr -d ' ')
-test "$path_count" = "$architecture_count" ||
-die "Parsed $architecture_count of $path_count payload PE files"
-
-paste "$tmp.pe-paths" "$tmp.architectures" >"$tmp.path-architectures"
+architecture_count=$(wc -l <"$tmp.path-architectures" | tr -d ' ')
+test "$architecture_count" -gt 0 ||
+die "The installer file list contains no PE files"
 
 if test -z "$package_list"
 then
@@ -106,7 +111,7 @@ test -f "$package_list" || die "Package list does not exist: $package_list"
 sed -n 's/^\([^ ]*\) \/\(.*\)$/\2	\1/p' "$package_list" |
 LC_ALL=C sort -t '	' -k1,1 >"$tmp.path-packages"
 
-printf 'path\tarchitecture\tpackage\tarea\n' >"$tmp.manifest"
+printf 'path\tarchitecture\tmachine\tpackage\tarea\n' >"$tmp.manifest"
 awk -F '	' '
 	FILENAME == ARGV[1] {
 		package[$1] = $2
@@ -123,7 +128,7 @@ awk -F '	' '
 			area = "root"
 		else
 			area = component[1]
-		printf "%s\t%s\t%s\t%s\n", path, $2, package[path], area
+		printf "%s\t%s\t%s\t%s\t%s\n", path, $2, $3, package[path], area
 	}
 ' "$tmp.path-packages" "$tmp.path-architectures" >>"$tmp.manifest" ||
 die "Could not build payload architecture manifest"
