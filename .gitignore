@@ -66,3 +66,4 @@ edit-git-bash.exe
 !/archive/root/etc/protocols
 !/archive/root/etc/services
 /versions/cached-files/
+.release-notes.stamp
