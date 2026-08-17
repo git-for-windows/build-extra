@@ -74,7 +74,7 @@ MSYSTEM_LOWER=${MSYSTEM,,}
 VERSION=$1
 shift
 TARGET="$output_directory"/PortableGit-"$VERSION"-"$ARTIFACT_SUFFIX".7z.exe
-OPTS7="-m0=lzma -mqs -mlc=8 -mx=9 -md=$MD_ARG -mfb=273 -ms=256M "
+OPTS7="-m0=lzma -mqs -mlc=8 -mx=9 -md=$MD_ARG -mfb=273 -ms=256M -mta- -mtc- "
 TMPPACK=/tmp.7z
 SCRIPT_PATH="$(cd "$(dirname "$0")" && pwd)"
 
@@ -169,6 +169,15 @@ test $ARCH == "aarch64" && TITLE="ARM64"
 type 7z ||
 pacman -Sy --noconfirm $MINGW_PREFIX-7zip ||
 die "Could not install 7-Zip"
+
+# ---- Reproducible: pin file mtimes to $SOURCE_DATE_EPOCH (if set) ----
+# 7z archives embed file timestamps; pinning mtimes makes repeated builds of
+# the same version byte-identical. Skipped when SOURCE_DATE_EPOCH is unset.
+if test -n "$SOURCE_DATE_EPOCH"
+then
+	# shellcheck disable=SC2086
+	"$SCRIPT_PATH/../pin-mtimes.sh" --root="$SCRIPT_PATH/root" $LIST
+fi
 
 echo "Creating archive" &&
 echo $LIST | tr ' ' '\n' >$TMPPACK.list &&

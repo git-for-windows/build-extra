@@ -361,6 +361,36 @@ signtool=
 test -z "$(git config alias.signtool)" ||
 signtool="//Ssigntool=\"git signtool \\\$f\" //DSIGNTOOL"
 
+# ---- Reproducible: pin the mtime of every file to be packaged ----
+# Inno Setup writes file timestamps into the installer; any mtime difference
+# leads to different installer bytes. SOURCE_DATE_EPOCH is expected to be set
+# by the build environment (e.g. CI); skipped for local builds without it.
+# Sources are listed in file-list.iss and install.iss, including the
+# generated files (ReleaseNotes.html, package-versions.txt, ...).
+if test -n "$SOURCE_DATE_EPOCH"
+then
+	files=
+	rel_pwd="${PWD#/}"
+	for iss in file-list.iss install.iss
+	do
+		while IFS= read -r s
+		do
+			case "$s" in
+			\{#SourcePath\}*)
+				# resolve {#SourcePath} against the installer directory
+				s="${s#\{#SourcePath\}}"
+				s="${s#\\}"; s="${s#/}"
+				s="$rel_pwd/${s//\\//}"
+				;;
+			*) s="${s//\\//}" ;;
+			esac
+			test -e "/$s" && files="$files $s"
+		done < <(perl -ne 'if (/^Source: (?:"([^"]+)"|([^;]+));/) { print(defined $1 ? $1 : $2, "\n") }' "$iss")
+	done
+	# shellcheck disable=SC2086
+	"$PWD/../pin-mtimes.sh" $files
+fi
+
 echo "Launching Inno Setup compiler ..." &&
 eval ./InnoSetup/ISCC.exe "$signtool" install.iss >install.log ||
 die "Could not make installer"

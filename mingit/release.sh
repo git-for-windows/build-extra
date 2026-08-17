@@ -177,6 +177,15 @@ esac
 
 test ! -f "$TARGET" || rm "$TARGET" || die "Could not remove $TARGET"
 
+# ---- Reproducible: pin file mtimes to $SOURCE_DATE_EPOCH (if set) ----
+# ZIP archives embed file timestamps; pinning mtimes makes repeated builds of
+# the same version byte-identical. Skipped when SOURCE_DATE_EPOCH is unset.
+if test -n "$SOURCE_DATE_EPOCH"
+then
+	# shellcheck disable=SC2086
+	"$SCRIPT_PATH/../pin-mtimes.sh" --root="$SCRIPT_PATH/root" $LIST
+fi
+
 echo "Creating .zip archive" &&
-(cd / && 7z a -mx9 "$TARGET" $LIST "$SCRIPT_PATH"/root/*) &&
+(cd / && 7z a -mx9 -mta- -mtc- "$TARGET" $LIST "$SCRIPT_PATH"/root/*) &&
 echo "Success! You will find the new MinGit at \"$TARGET\"."
