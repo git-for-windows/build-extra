@@ -50,6 +50,7 @@ Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-su
 ### Bug Fixes
 
 * The long-standing [bug](https://github.com/git-for-windows/git/issues/5303) where Git Bash's screen was cleared after `git.exe` called `vim` (e.g. to edit a commit message) [was fixed](https://github.com/git-for-windows/msys2-runtime/pull/131).
+* The Bash executables in the 64-bit and ARM64 distributions no longer carry an invalid Authenticode signature.
 
 ## Changes since Git for Windows v2.55.0(3) (July 14th 2026)
 
