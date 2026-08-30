@@ -212,26 +212,10 @@ pacman -Sy --noconfirm markdown ||
 pacman -S --noconfirm markdown ||
 die "Could not install markdown"
 
-# Only re-render when the inputs actually changed: compare content
-# fingerprints (sha256sum) instead of mtimes, which are unreliable in
-# clean CI checkouts. The output HTML's hash is part of the fingerprint,
-# so a missing or manually clobbered ReleaseNotes.html is regenerated
-# rather than skipped.
-stamp_file="$OUTPUTDIR${OUTPUTDIR:+/}.release-notes.stamp"
-
-fingerprint () {
-	sha256sum "$SCRIPT_PATH"/ReleaseNotes.md \
-		"$SCRIPT_PATH"/render-release-notes.sh \
-		"$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html" 2>/dev/null |
-		sed 's/ .*//' | tr '\n' ' '
-}
-
-if test ! -f "$stamp_file" ||
-	test ! -f "$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html" ||
-	test "$(cat "$stamp_file" 2>/dev/null)" != "$(fingerprint)"
-then
+test -f "$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html" &&
+test "$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html" -nt "$SCRIPT_PATH"/ReleaseNotes.md &&
+test "$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html" -nt "$SCRIPT_PATH"/render-release-notes.sh || {
 	render_release_notes || die "Could not render $OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html"
-	fingerprint >"$stamp_file"
 	test -z "$COPYCSS" || {
 		test -z "$CSSDIR" && CSSDIR="$OUTPUTDIR" || CSSDIR="$OUTPUTDIR${OUTPUTDIR:+/}$CSSDIR"
 		test -z "$CSSDIR" || test -d "$CSSDIR" || mkdir -p "$CSSDIR"
@@ -239,6 +223,6 @@ then
 		test "x$SCRIPT_PATH" = "x$CSSDIR" ||
 		cp -u "$SCRIPT_PATH"/ReleaseNotes.css "$CSSDIR${CSSDIR:+/}ReleaseNotes.css"
 	}
-fi
+}
 
 test -z "$PREVIEW" || start "$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html"
