@@ -42,6 +42,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * Comes with [Git LFS v3.8.0](https://github.com/git-lfs/git-lfs/releases/tag/v3.8.0).
 
+### Bug Fixes
+
+* The installer [is now _actually_ a 64-bit one](https://github.com/git-for-windows/build-extra/pull/732), which fixes the problem that [the external OpenSSH option was broken in Git for Windows v2.55.0(5)](https://github.com/git-for-windows/git/issues/6374).
+
 ## Changes since Git for Windows v2.55.0(4) (August 11th 2026)
 
 Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support will be dropped after Git for Windows v2.55.
