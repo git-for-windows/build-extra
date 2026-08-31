@@ -53,6 +53,12 @@ SolidCompression=yes
 #define SOURCE_DIR SourcePath+'\..\..\..\..'
 #endif
 SourceDir={#SOURCE_DIR}
+#if BITNESS=='64' && Ver>=EncodeVer(7, 0, 0)
+; Inno Setup 7 builds 32-bit installers unless told otherwise. SETUP_IS_X64
+; lets the Pascal Script code declare Windows API records for 64-bit.
+#define SETUP_IS_X64
+SetupArchitecture=x64
+#endif
 #if BITNESS=='64' || INSTALLER_FILENAME_SUFFIX=='arm64'
 ArchitecturesInstallIn64BitMode=x64 arm64
 #endif
