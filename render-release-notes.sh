@@ -212,9 +212,9 @@ pacman -Sy --noconfirm markdown ||
 pacman -S --noconfirm markdown ||
 die "Could not install markdown"
 
-test -f "$OUTPUTDIR${OUTPUTDIR:+/}Release.html" &&
-test "$OUTPUTDIR${OUTPUTDIR:+/}Release.html" -nt "$SCRIPT_PATH"/ReleaseNotes.md &&
-test "$OUTPUTDIR${OUTPUTDIR:+/}Release.html" -nt "$SCRIPT_PATH"/render-release-notes.sh || {
+test -f "$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html" &&
+test "$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html" -nt "$SCRIPT_PATH"/ReleaseNotes.md &&
+test "$OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html" -nt "$SCRIPT_PATH"/render-release-notes.sh || {
 	render_release_notes || die "Could not render $OUTPUTDIR${OUTPUTDIR:+/}ReleaseNotes.html"
 	test -z "$COPYCSS" || {
 		test -z "$CSSDIR" && CSSDIR="$OUTPUTDIR" || CSSDIR="$OUTPUTDIR${OUTPUTDIR:+/}$CSSDIR"
