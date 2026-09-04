@@ -4,8 +4,8 @@
 
 #include "config.iss"
 
-#if !defined(APP_VERSION) || !defined(BITNESS) || !defined(MINGW_BITNESS)
-#error "config.iss should define APP_VERSION, BITNESS and MINGW_BITNESS"
+#if !defined(APP_VERSION) || !defined(MINGW_BITNESS)
+#error "config.iss should define APP_VERSION and MINGW_BITNESS"
 #endif
 
 #define APP_NAME      'Git'
@@ -25,10 +25,6 @@
 #define DEFAULT_BRANCH_NAME 'master'
 #endif
 
-#ifndef INSTALLER_FILENAME_SUFFIX
-#define INSTALLER_FILENAME_SUFFIX ''
-#endif
-
 [Setup]
 ; Compiler-related
 Compression=lzma2/ultra64
@@ -37,11 +33,7 @@ LZMAUseSeparateProcess=yes
 OutputBaseFilename={#FILENAME_VERSION}
 OutputDir={#GetEnv('TEMP')}
 #else
-#if INSTALLER_FILENAME_SUFFIX!=''
 OutputBaseFilename={#APP_NAME+'-'+FILENAME_VERSION+'-'+INSTALLER_FILENAME_SUFFIX}
-#else
-OutputBaseFilename={#APP_NAME+'-'+FILENAME_VERSION}-{#BITNESS}-bit
-#endif
 #ifdef OUTPUT_DIRECTORY
 OutputDir={#OUTPUT_DIRECTORY}
 #else
@@ -53,15 +45,11 @@ SolidCompression=yes
 #define SOURCE_DIR SourcePath+'\..\..\..\..'
 #endif
 SourceDir={#SOURCE_DIR}
-#if BITNESS=='64' && Ver>=EncodeVer(7, 0, 0)
-; Inno Setup 7 builds 32-bit installers unless told otherwise. SETUP_IS_X64
-; lets the Pascal Script code declare Windows API records for 64-bit.
-#define SETUP_IS_X64
+#if Ver>=EncodeVer(7, 0, 0)
+; Inno Setup 7 builds 32-bit installers unless told otherwise.
 SetupArchitecture=x64
 #endif
-#if BITNESS=='64' || INSTALLER_FILENAME_SUFFIX=='arm64'
 ArchitecturesInstallIn64BitMode=x64 arm64
-#endif
 #ifdef SIGNTOOL
 SignTool=signtool
 #endif
@@ -271,14 +259,6 @@ Type: files; Name: {app}\Git Bash.lnk
 ; Delete a home directory inside the Git for Windows directory.
 Type: dirifempty; Name: {app}\home\{username}
 Type: dirifempty; Name: {app}\home
-
-#if BITNESS=='32'
-; Delete the files required for rebaseall
-Type: files; Name: {app}\bin\msys-2.0.dll
-Type: files; Name: {app}\bin\rebase.exe
-Type: dirifempty; Name: {app}\bin
-Type: files; Name: {app}\etc\rebase.db.i386
-#endif
 
 ; Delete recorded install options
 Type: files; Name: {app}\etc\install-options.txt
@@ -1201,20 +1181,12 @@ begin
 #endif
 #endif
     UpdateInfFilenames;
-#if BITNESS=='32'
-    Result:=True;
-    if not IsX64 then
-        SuppressibleMsgBox('Git for Windows (32-bit) is nearing its end of support.'+#13+'More information at https://gitforwindows.org/32-bit.html',mbError,MB_OK or MB_DEFBUTTON1,IDOK)
-    else if not ParamIsSet('ALLOWINSTALLING32ON64') and (SuppressibleMsgBox('Git for Windows (32-bit) is nearing its end of support. It is recommended to install the 64-bit variant of Git for Windows instead.'+#13+'More information at https://gitforwindows.org/32-bit.html'+#13+'Continue to install the 32-bit variant?',mbError,MB_YESNO or MB_DEFBUTTON2,IDNO)=IDNO) then
-        Result:=False;
-#else
     if not IsWin64 then begin
         LogError('The 64-bit version of Git requires a 64-bit Windows. Aborting.');
         Result:=False;
     end else begin
         Result:=True;
     end;
-#endif
     RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','CurrentVersion',PreviousGitForWindowsVersion);
     // The Windows Terminal profile is new in v2.32.0
     HasUnseenComponents:=IsUpgrade('2.32.0');
