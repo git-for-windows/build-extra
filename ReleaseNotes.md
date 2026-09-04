@@ -43,6 +43,7 @@ Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-su
 ### New Features
 
 * Comes with [Git LFS v3.8.0](https://github.com/git-lfs/git-lfs/releases/tag/v3.8.0).
+* Comes with [cURL v8.22.0](https://curl.se/changes.html#8_22_0).
 
 ### Bug Fixes
 
