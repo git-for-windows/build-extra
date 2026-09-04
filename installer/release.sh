@@ -117,23 +117,19 @@ esac
 # Evaluate architecture
 case "$MSYSTEM" in
 MINGW32)
-	BITNESS=32
-	ARCH=i686
-	MINGW_PACKAGE_PREFIX=mingw-w64-i686
+	die "The 32-bit installer was retired, see https://gitforwindows.org/32-bit.html"
 	;;
 MINGW64)
-	BITNESS=64
 	ARCH=x86_64
 	MINGW_PACKAGE_PREFIX=mingw-w64-x86_64
+	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX '64-bit'"
 	;;
 UCRT64)
-	BITNESS=64
 	ARCH=ucrt64
 	MINGW_PACKAGE_PREFIX=mingw-w64-ucrt-x86_64
 	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX 'ucrt64'"
 	;;
 CLANGARM64)
-	BITNESS=64
 	ARCH=aarch64
 	MINGW_PACKAGE_PREFIX=mingw-w64-clang-aarch64
 	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX 'arm64'$LF#define ARCHS_ALLOWED 'arm64 and x64compatible'"
@@ -261,13 +257,12 @@ test -z "$GITCONFIG_PATH" || {
 	for key in $keys
 	do
 		case "$key" in
-		pack.packsizelimit|diff.astextplain.*|filter.lfs.*|http.sslcainfo)
+		diff.astextplain.*|filter.lfs.*|http.sslcainfo)
 			# set in the system-wide config
 			value="$(git config -f "/$GITCONFIG_PATH" "$key")" &&
 			case "$key$value" in *"'"*) die "Cannot handle $key=$value because of the single quote";; esac &&
 			case "$key" in
 			filter.lfs.*) extra=" IsComponentSelected('gitlfs') And";;
-			pack.packsizelimit) test $BITNESS = 32 || continue; value=2g; extra=;;
 			*) extra=;;
 			esac &&
 			gitconfig="$gitconfig$LF    if$extra not GitSystemConfigSet('$key','$value') then$LF        Result:=False;" ||
@@ -347,10 +342,9 @@ test -z "$include_pdbs" || {
 die "Could not include .pdb files"
 
 etc_gitconfig_dir="${etc_gitconfig%/gitconfig}"
-printf "%s\n%s\n%s\n%s\n%s\n%s%s" \
+printf "%s\n%s\n%s\n%s\n%s%s" \
 	"#define APP_VERSION '$displayver'" \
 	"#define FILENAME_VERSION '$version'" \
-	"#define BITNESS '$BITNESS'" \
 	"#define MINGW_BITNESS '$MSYSTEM_LOWER'" \
 	"#define SOURCE_DIR '$(cygpath -aw /)'" \
 	"#define ETC_GITCONFIG_DIR '${etc_gitconfig_dir//\//\\}'" \

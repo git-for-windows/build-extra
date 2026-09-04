@@ -7,7 +7,9 @@ A setup executable is named as follows
  - followed by the Git for Windows version of the form A.B.C.D where
    A.B.C is the Git version on which the release is based, and
    A.B.C.windows.D is the tag in Git for Windows' repository
- - followed by the "bitness", i.e. "-32-bit" or "-64-bit"
+ - followed by an architecture suffix, i.e. "-arm64" or "-64-bit"
+   (we used to distinguish "x86" and "x86_64" as "32-bit" and "64-bit"
+   and the suffix stuck)
 
 Examples:
 
@@ -52,7 +54,6 @@ Here is a step-by-step instruction for the maintainer:
 
    # ensure current setup is up-to-date (including the Git packages)
    pacman -Syu
-   # on 32-bit, quit all MSys shells and run \autorebase.bat now
 
    # make installer (after updating the release notes)
    /usr/src/build-extra/installer/release.sh <git-for-windows-version>

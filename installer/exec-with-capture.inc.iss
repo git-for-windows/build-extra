@@ -6,12 +6,12 @@ type
 #endif
     SECURITY_ATTRIBUTES = record
         nLength:DWORD;
-#ifdef SETUP_IS_X64
+#if Ver >= EncodeVer(7, 0, 0)
         nLengthPadding:DWORD;
 #endif
         lpSecurityDescriptor:ULONG_PTR;
         bInheritHandle:BOOL;
-#ifdef SETUP_IS_X64
+#if Ver >= EncodeVer(7, 0, 0)
         bInheritHandlePadding:DWORD;
 #endif
     end;
@@ -36,7 +36,7 @@ type
     LPBYTE = ULONG_PTR;
     STARTUPINFO = record
         cb:DWORD;
-#ifdef SETUP_IS_X64
+#if Ver >= EncodeVer(7, 0, 0)
         cbPadding:DWORD;
 #endif
         lpReserved:LPSTR;
@@ -52,7 +52,7 @@ type
         dwFlags:DWORD;
         wShowWindow:WORD;
         cbReserved2:WORD;
-#ifdef SETUP_IS_X64
+#if Ver >= EncodeVer(7, 0, 0)
         cbReserved2Padding:DWORD;
 #endif
         lpReserved2:LPBYTE;
@@ -79,14 +79,14 @@ type
     TMsg = record
         hwnd:HWND;
         message:UINT;
-#ifdef SETUP_IS_X64
+#if Ver >= EncodeVer(7, 0, 0)
         messagePadding:DWORD;
 #endif
         wParam:ULONG_PTR;
         lParam:ULONG_PTR;
         time:DWORD;
         pt:TPoint;
-#ifdef SETUP_IS_X64
+#if Ver >= EncodeVer(7, 0, 0)
         lPrivate:DWORD;
 #endif
     end;
