@@ -47,7 +47,6 @@ SolidCompression=yes
 SourceDir={#SOURCE_DIR}
 ; Inno Setup 7 builds 32-bit installers unless told otherwise.
 SetupArchitecture=x64
-ArchitecturesInstallIn64BitMode=x64 arm64
 #ifdef SIGNTOOL
 SignTool=signtool
 #endif
