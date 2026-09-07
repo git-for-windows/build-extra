@@ -262,7 +262,7 @@ test -z "$GITCONFIG_PATH" || {
 			value="$(git config -f "/$GITCONFIG_PATH" "$key")" &&
 			case "$key$value" in *"'"*) die "Cannot handle $key=$value because of the single quote";; esac &&
 			case "$key" in
-			filter.lfs.*) extra=" IsComponentSelected('gitlfs') And";;
+			filter.lfs.*) extra=" WizardIsComponentSelected('gitlfs') And";;
 			*) extra=;;
 			esac &&
 			gitconfig="$gitconfig$LF    if$extra not GitSystemConfigSet('$key','$value') then$LF        Result:=False;" ||
