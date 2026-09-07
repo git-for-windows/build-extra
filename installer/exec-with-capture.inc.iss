@@ -1,19 +1,12 @@
 [Code]
 
 type
-#if Ver < EncodeVer(7, 0, 0)
-    HANDLE = LongInt;
-#endif
     SECURITY_ATTRIBUTES = record
         nLength:DWORD;
-#ifdef SETUP_IS_X64
         nLengthPadding:DWORD;
-#endif
         lpSecurityDescriptor:ULONG_PTR;
         bInheritHandle:BOOL;
-#ifdef SETUP_IS_X64
         bInheritHandlePadding:DWORD;
-#endif
     end;
 
 function CreatePipe(var hReadPipe,hWritePipe:HANDLE;var lpPipeAttributes:SECURITY_ATTRIBUTES;nSize:DWORD):BOOL;
@@ -36,9 +29,7 @@ type
     LPBYTE = ULONG_PTR;
     STARTUPINFO = record
         cb:DWORD;
-#ifdef SETUP_IS_X64
         cbPadding:DWORD;
-#endif
         lpReserved:LPSTR;
         lpDesktop:LPSTR;
         lpTitle:LPSTR;
@@ -52,9 +43,7 @@ type
         dwFlags:DWORD;
         wShowWindow:WORD;
         cbReserved2:WORD;
-#ifdef SETUP_IS_X64
         cbReserved2Padding:DWORD;
-#endif
         lpReserved2:LPBYTE;
         hStdInput:HANDLE;
         hStdOutput:HANDLE;
@@ -79,16 +68,12 @@ type
     TMsg = record
         hwnd:HWND;
         message:UINT;
-#ifdef SETUP_IS_X64
         messagePadding:DWORD;
-#endif
         wParam:ULONG_PTR;
         lParam:ULONG_PTR;
         time:DWORD;
         pt:TPoint;
-#ifdef SETUP_IS_X64
         lPrivate:DWORD;
-#endif
     end;
 
 const

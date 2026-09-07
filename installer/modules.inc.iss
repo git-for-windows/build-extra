@@ -46,12 +46,6 @@ const
     WAIT_TIMEOUT = $00000102;
     WAIT_FAILED  = $ffffffff;
 type
-#if Ver < EncodeVer(7, 0, 0)
-    HMODULE   = DWORD;
-    LONG      = Longint;
-    ULONG     = Cardinal;
-    ULONG_PTR = DWORD;
-#endif
     BYTE_PTR  = ULONG_PTR;
 
     IdList=array of DWORD;
