@@ -660,9 +660,7 @@ end;
 
 procedure RefreshProcessList(Sender:TObject);
 var
-    Version:TWindowsVersion;
     Modules:TArrayOfString;
-    ProcsCloseRequired,ProcsCloseOptional:ProcessList;
     i:Longint;
     Caption:String;
     ManualClosingRequired:Boolean;
@@ -805,7 +803,6 @@ function GetDefaultsFromGitConfig(WhichOne:String):Boolean;
 var
     ExtraOptions,StdOut,StdErr,Key,Value:String;
     ExitCode:DWORD;
-    Values:TArrayOfString;
     c,i,j,k:Integer;
 begin
     if AppDir='' then begin
@@ -1166,9 +1163,10 @@ begin
 end;
 
 function InitializeSetup:Boolean;
+#if APP_VERSION!='0-test'
 var
     CurrentVersion,Msg:String;
-    ErrorCode:Integer;
+#endif
 begin
 #ifdef INCLUDE_SELF_CHECK
     SelfCheck;
@@ -1330,7 +1328,6 @@ end;
 function EnableSymlinksByDefault():Boolean;
 var
     SymlinksForRegularUsers:Cardinal;
-    Root:Integer;
     ResultCode:Integer;
     Version:TWindowsVersion;
 begin
@@ -1437,8 +1434,8 @@ end;
 function CreateItemDescription(Page:TWizardPage;const Description:String;var Top,Left:Integer;var Labels:array of TLabel;Visible:Boolean):TLabel;
 var
     SubLabel:TLabel;
-    Untagged,RowPrefix,Link:String;
-    RowStart,RowCount,i,j:Integer;
+    Untagged,RowPrefix:String;
+    RowCount,i,j:Integer;
 begin
     Untagged:='';
     Result:=TLabel.Create(Page);
@@ -1644,11 +1641,7 @@ end;
 function PathIsValidExecutable(var Path: String):Boolean;
 var
     Env,Path2,Ext:String;
-    PathExt:String;
-    ExtArray:TArrayOfString;
-    i,Len:Integer;
-    j:Integer;
-    ExtensionFlag:Boolean;
+    i:Integer;
 begin
     Result:=False;
     if Path='' then
@@ -2651,7 +2644,6 @@ end;
 function NextButtonClick(CurPageID:Integer):Boolean;
 var
     i,j:Integer;
-    Version:TWindowsVersion;
     Msg:String;
 begin
     // On a silent install, if your NextButtonClick function returns False
@@ -2795,7 +2787,7 @@ end;
 procedure QueryUninstallValues;
 var
     Domain:Integer;
-    Key,Path:String;
+    Key:String;
 begin
     Key:='Microsoft\Windows\CurrentVersion\Uninstall\Git_is1';
     if RegKeyExists(HKEY_LOCAL_MACHINE,'Software\Wow6432Node\'+Key) then begin
@@ -2948,7 +2940,6 @@ end;
 
 procedure InstallWindowsTerminalFragment;
 var
-    Res:Longint;
     AppPath,JSONDirectory,JSONPath:String;
 begin
     if IsAdminInstallMode() then
@@ -3098,8 +3089,8 @@ end;
 
 procedure CurStepChanged(CurStep:TSetupStep);
 var
-    DllPath,FileName,Cmd,Msg,Ico:String;
-    BuiltIns,ImageNames,EnvPath:TArrayOfString;
+    FileName,Cmd,Msg,Ico:String;
+    BuiltIns,EnvPath:TArrayOfString;
     Count,i:Longint;
     RootKey:Integer;
 begin

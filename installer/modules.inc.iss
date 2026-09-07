@@ -500,8 +500,6 @@ var
     Name:SessionKey;
     Apps:array of RM_UNIQUE_PROCESS;
     Services:TArrayOfString;
-    Path:String;
-    PathLength:DWORD;
     Needed,Have,i:UINT;
     AppList:array of RM_PROCESS_INFO;
     ReasonList:IdList;
