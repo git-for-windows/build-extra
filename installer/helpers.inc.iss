@@ -84,7 +84,7 @@ end;
 // Returns the path to the common or user shell folder as specified in "Param".
 function GetShellFolder(Param:string):string;
 begin
-    if IsAdminLoggedOn then begin
+    if IsAdmin then begin
         Param:='{common'+Param+'}';
     end else begin
         Param:='{user'+Param+'}';
@@ -92,7 +92,7 @@ begin
     Result:=ExpandConstant(Param);
 end;
 
-// As IsComponentSelected() is not supported during uninstall, this work-around
+// As WizardIsComponentSelected() is not supported during uninstall, this work-around
 // simply checks the Registry. This is unreliable if the user runs the installer
 // twice, the first time selecting the component, the second deselecting it.
 function IsComponentInstalled(Component:String):Boolean;

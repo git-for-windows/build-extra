@@ -53,7 +53,7 @@ begin
 
     if not DirExists(Result) then begin
         // Guess something.
-        Result:=ExpandConstant('{pf}\PuTTY\');
+        Result:=ExpandConstant('{commonpf}\PuTTY\');
     end;
 
     Result:=Result+'plink.exe'
