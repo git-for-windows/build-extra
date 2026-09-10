@@ -717,7 +717,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		then
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/$mode >>"$sparse_checkout_file" &&
-			if test x86_64 = $architecture
+			if test x86_64 = $architecture &&
+				git -C "$git_sdk_path" rev-parse -q --verify \
+					HEAD:.sparse/$mode-i686 >/dev/null
 			then
 				printf '\n' >>"$sparse_checkout_file" &&
 				git -C "$git_sdk_path" show HEAD:.sparse/$mode-i686 >>"$sparse_checkout_file"

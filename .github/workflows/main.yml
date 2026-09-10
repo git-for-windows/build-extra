@@ -285,7 +285,7 @@ jobs:
             git --git-dir=.sdk worktree add --detach sdk-artifact
             ;;
           *)
-            ./please.sh create-sdk-artifact \
+            sh -x ./please.sh create-sdk-artifact \
               --architecture=${{ matrix.arch.name }} \
               --sdk=.sdk \
               --out=sdk-artifact \
