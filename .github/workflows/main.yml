@@ -128,8 +128,8 @@ jobs:
           - name: x86_64
             runner: windows-latest
             git-sdk: git-sdk-64
-            mingw-prefix: mingw64
-            msystem: MINGW64
+            mingw-prefix: ucrt64
+            msystem: UCRT64
           - name: aarch64
             runner: windows-11-arm
             git-sdk: git-sdk-arm64
@@ -241,8 +241,8 @@ jobs:
             sdk-repo: git-sdk-32
             runner: windows-latest
           - name: x86_64
-            mingw-prefix: mingw64
-            msystem: MINGW64
+            mingw-prefix: ucrt64
+            msystem: UCRT64
             sdk-repo: git-sdk-64
             runner: windows-latest
           - name: aarch64
@@ -361,15 +361,15 @@ jobs:
             sdk-repo: git-sdk-32
             runner: windows-latest
           - name: x86_64
-            mingw-prefix: mingw64
-            msystem: MINGW64
-            sdk-repo: git-sdk-64
-            runner: windows-latest
-          - name: ucrt64
             mingw-prefix: ucrt64
             msystem: UCRT64
             sdk-repo: git-sdk-64
-            sdk-branch: ucrt64
+            runner: windows-latest
+          - name: mingw64
+            mingw-prefix: mingw64
+            msystem: MINGW64
+            sdk-repo: git-sdk-64
+            sdk-branch: mingw64
             runner: windows-latest
           - name: aarch64
             mingw-prefix: clangarm64
