@@ -51,6 +51,7 @@ An issue with the installer for the previous version (v2.55.0.windows.5) caused 
 
 * The installer [is now _actually_ a 64-bit one](https://github.com/git-for-windows/build-extra/pull/732), which fixes the problem that [the external OpenSSH option was broken in Git for Windows v2.55.0(5)](https://github.com/git-for-windows/git/issues/6374) (see notice above).
 * It is now [finally possible](https://github.com/git-for-windows/git/pull/6353) to commit 4GB objects or larger in Git for Windows.
+* [Fixes](https://github.com/git-for-windows/git/pull/6395) a bug where parallel checkouts could abort with "*** stack smashing detected ***: terminated".
 
 ## Changes since Git for Windows v2.55.0(4) (August 11th 2026)
 
