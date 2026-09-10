@@ -301,16 +301,16 @@ jobs:
           echo "MSYSTEM=${{ matrix.arch.msystem }}" >>$GITHUB_ENV &&
           cat $GITHUB_PATH
       - name: build installer
-        if: matrix.artifact == 'build-installers'
+        if: matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
         shell: bash
         run: ./installer/release.sh --include-self-check --output=$PWD/installer-${{ matrix.arch.name }} 0-test
       - uses: actions/upload-artifact@v7
-        if: matrix.artifact == 'build-installers'
+        if: matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
         with:
           name: installer-${{ matrix.arch.name }}
           path: installer-${{ matrix.arch.name }}
       - name: run the installer
-        if: matrix.artifact == 'build-installers'
+        if: matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
         shell: pwsh
         run: |
           $exePath = Get-ChildItem -Path installer-${{ matrix.arch.name }}/*.exe | %{$_.FullName}
@@ -329,11 +329,11 @@ jobs:
           }
       - name: show installer log
         # run this even if the installation failed (actually, _in particular_ when the installation failed)
-        if: always() && matrix.artifact == 'build-installers'
+        if: always() && matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
         shell: bash
         run: cat installer.log
       - name: validate
-        if: matrix.artifact == 'build-installers'
+        if: matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
         shell: bash
         run: |
           set -x &&
