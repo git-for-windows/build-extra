@@ -10,6 +10,9 @@ type osslsigncode >/dev/null 2>&1 || {
 	if test -x /clangarm64/bin/osslsigncode.exe
 	then
 		PATH=/clangarm64/bin:$PATH
+	elif test -x /ucrt64/bin/osslsigncode.exe
+	then
+		PATH=/ucrt64/bin:$PATH
 	elif test -x /mingw64/bin/osslsigncode.exe
 	then
 		PATH=/mingw64/bin:$PATH

@@ -26,10 +26,12 @@ ARCH="$(uname -m)" ||
 die "Could not determine architecture"
 
 case "$MSYSTEM" in
-MINGW64) MINGW_PREFIX=mingw64;;
+MINGW64)
+	MINGW_PREFIX=mingw64
+	ARCH=mingw64;;
 UCRT64)
 	MINGW_PREFIX=ucrt64
-	ARCH=ucrt64
+	ARCH=x86_64
 	;;
 CLANGARM64)
 	MINGW_PREFIX=clangarm64
@@ -45,7 +47,9 @@ MINGW32) MINGW_PREFIX=mingw32;;
 				MINGW_PREFIX=clangarm64
 				ARCH=aarch64
 				;;
-			*) MINGW_PREFIX=mingw64;;
+			*)
+				MINGW_PREFIX=ucrt64
+				ARCH=x86_64;;
 		esac
 		;;
 	*) die "Unhandled architecture: $ARCH";;

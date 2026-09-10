@@ -399,8 +399,8 @@ quick_action () { # <action> <file>...
 		i686,*) db2=mingw32; db3=;;
 		*aarch64*) db2=clangarm64; db3=;;
 		*)
-			db2=mingw64
-			db3=ucrt64
+			db2=ucrt64
+			db3=mingw64
 			;;
 		esac
 		for db in git-for-windows-$arch ${db2:+git-for-windows-$db2} ${db3:+git-for-windows-$db3}

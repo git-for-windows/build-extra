@@ -120,14 +120,14 @@ MINGW32)
 	die "The 32-bit installer was retired, see https://gitforwindows.org/32-bit.html"
 	;;
 MINGW64)
-	ARCH=x86_64
+	ARCH=mingw64
 	MINGW_PACKAGE_PREFIX=mingw-w64-x86_64
-	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX '64-bit'"
+	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX 'mingw64'"
 	;;
 UCRT64)
-	ARCH=ucrt64
+	ARCH=x86_64
 	MINGW_PACKAGE_PREFIX=mingw-w64-ucrt-x86_64
-	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX 'ucrt64'"
+	inno_defines="$inno_defines$LF#define INSTALLER_FILENAME_SUFFIX '64-bit'"
 	;;
 CLANGARM64)
 	ARCH=aarch64

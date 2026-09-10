@@ -339,18 +339,17 @@ Git for Windows supports three architectures:
 
 | Architecture | `MINGW_PACKAGE_PREFIX`     | `MSYSTEM`   | SDK repo        |
 |--------------|----------------------------|-------------|-----------------|
-| x86_64       | `mingw-w64-x86_64`        | `MINGW64`   | `git-sdk-64`   |
+| x86\_64      | `mingw-w64-ucrt-x86_64`   | `UCRT64`    | `git-sdk-64`   |
 | i686         | `mingw-w64-i686`          | `MINGW32`   | `git-sdk-32`   |
 | aarch64      | `mingw-w64-clang-aarch64` | `CLANGARM64`| `git-sdk-arm64` |
 
-A fourth variant, UCRT64 (`mingw-w64-ucrt-x86_64`, `MSYSTEM=UCRT64`), is
-being introduced to replace MINGW64 on x86_64; MSYS2 deprecated the
-MINGW64 environment in early 2026 and the SDK is migrating accordingly
+A fourth variant, MINGW64 (`mingw-w64-x86_64`, `MSYSTEM=MINGW64`), is
+being phased out, replacing UCRT64 on x86\_64; MSYS2 deprecated the
+MINGW64 environment in early 2026 and the SDK was migrated accordingly
 (see git-for-windows/git-sdk-64#117).  The CI workflow and
-`make-file-list.sh`/`check-for-missing-dlls.sh`/`please.sh` already accept
-`--architecture=ucrt64`.
+`make-file-list.sh`/`check-for-missing-dlls.sh`/`please.sh` target UCRT64.
 
-The CI workflow matrix covers x86_64, aarch64, and ucrt64 (and i686 for
+The CI workflow matrix covers x86_64, aarch64, and mingw64 (and i686 for
 selected jobs).
 
 ### MinGW vs MSYS2

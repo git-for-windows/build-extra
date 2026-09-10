@@ -38,7 +38,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.55.0(5) (August 20th 2026)
 
-Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support will be dropped after Git for Windows v2.55.
+Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support was dropped; In [doing so](https://github.com/git-for-windows/git-sdk-64/pull/117), internal paths changed (`/mingw64/bin/git.exe` does not exist anymore, `/ucrt64/bin/git.exe` takes its role; if this breaks your setups, consider switching to `/cmd/git.exe` instead, which is guaranteed to stay stable).
 
 An issue with the installer for the previous version (v2.55.0.windows.5) caused the "Use external OpenSSH" option to be disabled for some users. This caused the bundled version of OpenSSH to be installed and overwrote any previously-saved choice of external OpenSSH. **If you rely on an external OpenSSH installation, and you updated to v2.55.0(5),** you should consider re-running the latest installer with "Only show new options" unchecked so that you can re-enable the external OpenSSH option. The bundled version of OpenSSH will be uninstalled automatically. If you do not rely on an external OpenSSH installation, or you did not install v2.55.0(5) specifically, you can safely ignore this notice.
 
