@@ -74,8 +74,8 @@ sdk () {
 		esac; do shift; done &&
 		case "$MSYSTEM" in
 		MINGW32) shortcut_suffix=" 32-bit";;
-		MINGW64) shortcut_suffix=" 64-bit";;
-		UCRT64) shortcut_suffix=" ucrt64";;
+		MINGW64) shortcut_suffix=" mingw64";;
+		UCRT64) shortcut_suffix=" 64-bit";;
 		CLANGARM64) shortcut_suffix=" arm64";;
 		MSYS)
 			case "$(uname -m)" in
