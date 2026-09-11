@@ -615,7 +615,7 @@ begin
             // Find out which form to use.
             if (BuiltinFSMonitorStopOption='') then begin
                 BuiltinFSMonitorStopOption:='(huh?)';
-                if not ExecAndCaptureOutput('"'+AppDir+'\cmd\git.exe"', 'fsmonitor--daemon -h', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) or (ExitCode<>129) then begin
+                if not ExecAndCaptureOutput(AppDir+'\cmd\git.exe', 'fsmonitor--daemon -h', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) or (ExitCode<>129) then begin
                     if (i<>1) and (i<>127) then // Suppress message if `git.exe` was not found, or if it does not know about the built-in FSMonitor
                         LogError('Could not get FSMonitor help (exit code '+IntToStr(ExitCode)+'):'+#13+StringJoin(#13,Output.StdOut)+#13+StringJoin(#13,Output.StdErr));
                     Exit;
@@ -764,14 +764,14 @@ var
     Output:TExecOutput;
 begin
     if (Value=#0) then begin
-        if ExecAndCaptureOutput('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe"', 'config --system --unset-all '+Key, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) And ((ExitCode=0) Or (ExitCode=5)) then
+        if ExecAndCaptureOutput(AppDir+'\{#MINGW_BITNESS}\bin\git.exe', 'config --system --unset-all '+Key, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) And ((ExitCode=0) Or (ExitCode=5)) then
             // exit code 5 means it was already unset, so that's okay
             Result:=True
         else begin
             LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(ExitCode)+#13+#10+StringJoin(#13+#10,Output.StdOut)+#13+#10+'stderr:'+#13+#10+StringJoin(#13+#10,Output.StdErr));
             Result:=False
         end
-    end else if ExecAndCaptureOutput('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe"', 'config --system --replace-all '+ShellQuote(Key)+' '+ShellQuote(Value), '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) And (ExitCode=0) then
+    end else if ExecAndCaptureOutput(AppDir+'\{#MINGW_BITNESS}\bin\git.exe', 'config --system --replace-all '+ShellQuote(Key)+' '+ShellQuote(Value), '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) And (ExitCode=0) then
         Result:=True
     else begin
         LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(ExitCode)+#13+#10+StringJoin(#13+#10,Output.StdOut)+#13+#10+'stderr:'+#13+#10+StringJoin(#13+#10,Output.StdErr));
@@ -822,7 +822,7 @@ begin
         end
     end;
 
-    if not ExecAndCaptureOutput('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe"', 'config -l -z '+ExtraOptions, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) then begin
+    if not ExecAndCaptureOutput(AppDir+'\{#MINGW_BITNESS}\bin\git.exe', 'config -l -z '+ExtraOptions, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) then begin
         if FileExists(AppDir+'\{#MINGW_BITNESS}\bin\git.exe') then
             LogError('Unable to get system config (exit code '+IntToStr(ExitCode)+'):'+#13+#10+StringJoin(#13+#10,Output.StdErr));
     end;
@@ -1053,7 +1053,7 @@ begin
     if not PreviousGitVersionInitialized then begin
         PreviousGitVersionInitialized:=True;
         if (RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','InstallPath',Path))
-                and (ExecAndCaptureOutput('"'+Path+'\cmd\git.exe"', 'version', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output))
+                and (ExecAndCaptureOutput(Path+'\cmd\git.exe', 'version', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output))
                 and (ExitCode=0) then begin
             PreviousGitVersion:=Trim(Output.StdOut[0]);
         end;
@@ -2594,7 +2594,7 @@ begin
             if DirExists(AppDir) then begin
                 if not FileExists(ExpandConstant('{tmp}\blocked-file-util.exe')) then
                     ExtractTemporaryFile('blocked-file-util.exe');
-                Cmd:='"'+ExpandConstant('{tmp}\blocked-file-util.exe')+'"';
+                Cmd:=ExpandConstant('{tmp}\blocked-file-util.exe');
                 if not ExecAndCaptureOutput(Cmd, 'blocking-pids "'+AppDir+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, Res, Output) or (Res<>0) then begin
                     Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+StringJoin(#13+#10,Output.StdErr);
                     if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
@@ -2844,7 +2844,7 @@ begin
 
     if UninstallString<>'' then begin
         WizardForm.StatusLabel.Caption:='Removing previous Git version ('+PreviousGitForWindowsVersion+')';
-        if not ExecAndCaptureOutput(UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ErrorCode, Output) then
+        if not ExecAndCaptureOutput(RemoveQuotes(UninstallString),'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ErrorCode, Output) then
             LogError('Could not uninstall previous version (stderr: '+StringJoin(#13+#10,Output.StdErr)+'). Trying to continue anyway.');
     end;
 end;
@@ -3094,7 +3094,7 @@ begin
     // (leaving C:\ProgramData\Scalar in place, in case
     // the user needs to downgrade again to get unblocked)
     WizardForm.StatusLabel.Caption:='Uninstalling .NET-based Scalar';
-    if (not ExecAndCaptureOutput(UninstallScalar, '/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES /LOG', '', SW_SHOWNORMAL, ewWaitUntilTerminated, Res, Output)) or (Res<>0) then
+    if (not ExecAndCaptureOutput(RemoveQuotes(UninstallScalar), '/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES /LOG', '', SW_SHOWNORMAL, ewWaitUntilTerminated, Res, Output)) or (Res<>0) then
         LogError('Could not uninstall Scalar (stderr: '+StringJoin(#13+#10,Output.StdErr)+'). Trying to continue anyway.');
 end;
 
