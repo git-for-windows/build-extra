@@ -620,7 +620,7 @@ begin
                         LogError('Could not get FSMonitor help (exit code '+IntToStr(ExitCode)+'):'+#13+StringJoin(#13,Output.StdOut)+#13+StringJoin(#13,Output.StdErr));
                     Exit;
                 end else begin
-                    StdOut:=StringJoin(#13, Output.StdOut);
+                    StdOut:=StringJoin(#10, Output.StdOut);
                     i:=Pos('stop'+#10,StdOut);
                     if (i=0) then begin
                         LogError('Could not determine stop option from:'+#13+StdOut);
