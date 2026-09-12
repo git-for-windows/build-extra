@@ -845,7 +845,7 @@ begin
     i:=1; j:=i; k:=i;
     while (j<=Length(StdOut)) do begin
         c:=Ord(StdOut[j]);
-        if (c=10) then // found the end of key
+        if (i=k) and (c=10) then // first found LF marks the end of key
             k:=j
         else if (c=0) then begin // found the end of the value
             if (i<>k) then begin // Ignore keys without values (LF is missing)
