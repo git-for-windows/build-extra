@@ -801,7 +801,7 @@ end;
 
 function GetDefaultsFromGitConfig(WhichOne:String):Boolean;
 var
-    InstalledGitExe,ExtraOptions,Key,Value:String;
+    InstalledGitExe,ExtraOptions,StdOut,Key,Value:String;
     ExitCode,c,i,j,k:Integer;
     Output:TExecOutput;
 begin
@@ -837,27 +837,18 @@ begin
     if not ExecAndCaptureOutput(InstalledGitExe, 'config -l -z '+ExtraOptions, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) then
         LogError('Unable to get system config (exit code '+IntToStr(ExitCode)+'):'+#13+#10+StringJoin(#13+#10,Output.StdErr));
 
-    // git config -l -z outputs NUL-delimited key/value pairs, with a LF that denotes end of key
-    // ExecAndCaptureOutput splits the Output by lines. So each String in Output.StdOut could
-    // contain up to one Value followed by zero or more Keys, separated by NUL bytes.
-    Value:='';
-    j:=0;
-    while (j<Length(Output.StdOut)) do begin
-        c:=RPos(#0,Output.StdOut[j]);
-        k:=Length(Output.StdOut[j]);
-        if (c=0) then //No NUL in this Line, we've got a (potentially partial) value
-            if (Value='') then
-                Value:=Copy(Output.StdOut[j], 1, k)
-            else
-                Value:=Value+#10+Copy(Output.StdOut[j], 1, k)
-        else begin
-            i:=Pos(#0,Output.StdOut[j])
-            if (i>1) then
-                if (Value='') then
-                    Value:=Copy(Output.StdOut[j], 1, i)
-                else
-                    Value:=Value+#10+Copy(Output.StdOut[j], 1, i);
-            if (Value<>'') then begin // Ignore keys without values
+    // Split NUL-delimited key/value pairs, extract LF that denotes end of key
+    StdOut:=StringJoin(#10,Output.StdOut);
+    Value:=StdOut;
+    i:=1; j:=i; k:=i;
+    while (j<=Length(StdOut)) do begin
+        c:=Ord(StdOut[j]);
+        if (c=10) then
+            k:=j
+        else if (c=0) then begin
+            if (i<>k) then begin // Ignore keys without values
+                Key:=Copy(StdOut,i,k-i);
+                Value:=Copy(StdOut,k+1,j-k-1);
                 case Key of
                     'http.sslbackend':
                         case Value of
@@ -908,8 +899,9 @@ begin
                             RecordInferredDefault('Default Branch Option', Value)
                 end;
             end;
-            Key:=Copy(Output.StdOut[j],c+1,k-c-1);
-            Value:='';
+            i:=j+1;
+            j:=i;
+            k:=i;
         end;
         j:=j+1;
     end;
