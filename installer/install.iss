@@ -801,7 +801,7 @@ end;
 
 function GetDefaultsFromGitConfig(WhichOne:String):Boolean;
 var
-    ExtraOptions,Key,Value:String;
+    InstalledGitExe,ExtraOptions,Key,Value:String;
     ExitCode,c,i,j,k:Integer;
     Output:TExecOutput;
 begin
@@ -809,6 +809,18 @@ begin
         // No previous installation detected, therefore we cannot execute `git config`
         Result:=True;
         Exit;
+    end;
+
+    InstalledGitExe:=AppDir+'\{#MINGW_BITNESS}\bin\git.exe';
+#if MINGW_BITNESS=='ucrt64'
+    if not FileExists(InstalledGitExe) then
+        // It could be an upgrade from MINGW64 to UCRT64
+        InstalledGitExe:=AppDir+'\mingw64\bin\git.exe';
+#endif
+    if not FileExists(InstalledGitExe) then begin
+        // AppDir might be a left-over from an incompletely-removed installation
+        Result:=True;
+        Exit
     end;
 
     case WhichOne of
@@ -822,10 +834,8 @@ begin
         end
     end;
 
-    if not ExecAndCaptureOutput(AppDir+'\{#MINGW_BITNESS}\bin\git.exe', 'config -l -z '+ExtraOptions, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) then begin
-        if FileExists(AppDir+'\{#MINGW_BITNESS}\bin\git.exe') then
-            LogError('Unable to get system config (exit code '+IntToStr(ExitCode)+'):'+#13+#10+StringJoin(#13+#10,Output.StdErr));
-    end;
+    if not ExecAndCaptureOutput(InstalledGitExe, 'config -l -z '+ExtraOptions, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) then
+        LogError('Unable to get system config (exit code '+IntToStr(ExitCode)+'):'+#13+#10+StringJoin(#13+#10,Output.StdErr));
 
     // git config -l -z outputs NUL-delimited key/value pairs, with a LF that denotes end of key
     // ExecAndCaptureOutput splits the Output by lines. So each String in Output.StdOut could
