@@ -46,6 +46,7 @@ An issue with the installer for the previous version (v2.55.0.windows.5) caused 
 
 * Comes with [Git LFS v3.8.0](https://github.com/git-lfs/git-lfs/releases/tag/v3.8.0).
 * Comes with [cURL v8.22.0](https://curl.se/changes.html#8_22_0).
+* Comes with [OpenSSL v3.5.8](https://www.openssl.org/news/openssl-3.5-notes.html).
 
 ### Bug Fixes
 
