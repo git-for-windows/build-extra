@@ -68,6 +68,7 @@ begin
             Result:=i;
             Exit;
         end;
+	i:=i-1;
     end;
 
     Result:=0;
