@@ -837,18 +837,20 @@ begin
     if not ExecAndCaptureOutput(InstalledGitExe, 'config -l -z '+ExtraOptions, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) then
         LogError('Unable to get system config (exit code '+IntToStr(ExitCode)+'):'+#13+#10+StringJoin(#13+#10,Output.StdErr));
 
-    // Split NUL-delimited key/value pairs, extract LF that denotes end of key
+    // `config -l -z` writes `<key>LF<value>NUL` pairs
     StdOut:=StringJoin(#10,Output.StdOut);
     Value:=StdOut;
+    // j iterates through the entire output;
+    // i tracks the start of the key, k of its end
     i:=1; j:=i; k:=i;
     while (j<=Length(StdOut)) do begin
         c:=Ord(StdOut[j]);
-        if (c=10) then
+        if (c=10) then // found the end of key
             k:=j
-        else if (c=0) then begin
-            if (i<>k) then begin // Ignore keys without values
-                Key:=Copy(StdOut,i,k-i);
-                Value:=Copy(StdOut,k+1,j-k-1);
+        else if (c=0) then begin // found the end of the value
+            if (i<>k) then begin // Ignore keys without values (LF is missing)
+                Key:=Copy(StdOut,i,k-i); // skip the LF delimiter
+                Value:=Copy(StdOut,k+1,j-k-1); // skip both LF and NUL delimiters
                 case Key of
                     'http.sslbackend':
                         case Value of
@@ -899,9 +901,9 @@ begin
                             RecordInferredDefault('Default Branch Option', Value)
                 end;
             end;
-            i:=j+1;
+            i:=j+1; // the next key starts after the NUL
             j:=i;
-            k:=i;
+            k:=i; // set the end of the key to the start, to identify value-less entries
         end;
         j:=j+1;
     end;
