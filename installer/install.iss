@@ -615,12 +615,12 @@ begin
             // Find out which form to use.
             if (BuiltinFSMonitorStopOption='') then begin
                 BuiltinFSMonitorStopOption:='(huh?)';
-                if not ExecAndCaptureOutput('"'+AppDir+'\cmd\git.exe"', 'fsmonitor--daemon -h', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) or (ExitCode<>129) then begin
+                if not ExecAndCaptureOutput(AppDir+'\cmd\git.exe', 'fsmonitor--daemon -h', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) or (ExitCode<>129) then begin
                     if (i<>1) and (i<>127) then // Suppress message if `git.exe` was not found, or if it does not know about the built-in FSMonitor
                         LogError('Could not get FSMonitor help (exit code '+IntToStr(ExitCode)+'):'+#13+StringJoin(#13,Output.StdOut)+#13+StringJoin(#13,Output.StdErr));
                     Exit;
                 end else begin
-                    StdOut:=StringJoin(#13, Output.StdOut);
+                    StdOut:=StringJoin(#10, Output.StdOut);
                     i:=Pos('stop'+#10,StdOut);
                     if (i=0) then begin
                         LogError('Could not determine stop option from:'+#13+StdOut);
@@ -764,14 +764,14 @@ var
     Output:TExecOutput;
 begin
     if (Value=#0) then begin
-        if ExecAndCaptureOutput('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe"', 'config --system --unset-all '+Key, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) And ((ExitCode=0) Or (ExitCode=5)) then
+        if ExecAndCaptureOutput(AppDir+'\{#MINGW_BITNESS}\bin\git.exe', 'config --system --unset-all '+Key, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) And ((ExitCode=0) Or (ExitCode=5)) then
             // exit code 5 means it was already unset, so that's okay
             Result:=True
         else begin
             LogError('Unable to unset system config "'+Key+'": exit code '+IntToStr(ExitCode)+#13+#10+StringJoin(#13+#10,Output.StdOut)+#13+#10+'stderr:'+#13+#10+StringJoin(#13+#10,Output.StdErr));
             Result:=False
         end
-    end else if ExecAndCaptureOutput('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe"', 'config --system --replace-all '+ShellQuote(Key)+' '+ShellQuote(Value), '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) And (ExitCode=0) then
+    end else if ExecAndCaptureOutput(AppDir+'\{#MINGW_BITNESS}\bin\git.exe', 'config --system --replace-all '+ShellQuote(Key)+' '+ShellQuote(Value), '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) And (ExitCode=0) then
         Result:=True
     else begin
         LogError('Unable to set system config "'+Key+'":="'+Value+'": exit code '+IntToStr(ExitCode)+#13+#10+StringJoin(#13+#10,Output.StdOut)+#13+#10+'stderr:'+#13+#10+StringJoin(#13+#10,Output.StdErr));
@@ -801,7 +801,7 @@ end;
 
 function GetDefaultsFromGitConfig(WhichOne:String):Boolean;
 var
-    ExtraOptions,Key,Value:String;
+    InstalledGitExe,ExtraOptions,StdOut,Key,Value:String;
     ExitCode,c,i,j,k:Integer;
     Output:TExecOutput;
 begin
@@ -809,6 +809,18 @@ begin
         // No previous installation detected, therefore we cannot execute `git config`
         Result:=True;
         Exit;
+    end;
+
+    InstalledGitExe:=AppDir+'\{#MINGW_BITNESS}\bin\git.exe';
+#if MINGW_BITNESS=='ucrt64'
+    if not FileExists(InstalledGitExe) then
+        // It could be an upgrade from MINGW64 to UCRT64
+        InstalledGitExe:=AppDir+'\mingw64\bin\git.exe';
+#endif
+    if not FileExists(InstalledGitExe) then begin
+        // AppDir might be a left-over from an incompletely-removed installation
+        Result:=True;
+        Exit
     end;
 
     case WhichOne of
@@ -822,32 +834,23 @@ begin
         end
     end;
 
-    if not ExecAndCaptureOutput('"'+AppDir+'\{#MINGW_BITNESS}\bin\git.exe"', 'config -l -z '+ExtraOptions, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) then begin
-        if FileExists(AppDir+'\{#MINGW_BITNESS}\bin\git.exe') then
-            LogError('Unable to get system config (exit code '+IntToStr(ExitCode)+'):'+#13+#10+StringJoin(#13+#10,Output.StdErr));
-    end;
+    if not ExecAndCaptureOutput(InstalledGitExe, 'config -l -z '+ExtraOptions, '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output) then
+        LogError('Unable to get system config (exit code '+IntToStr(ExitCode)+'):'+#13+#10+StringJoin(#13+#10,Output.StdErr));
 
-    // git config -l -z outputs NUL-delimited key/value pairs, with a LF that denotes end of key
-    // ExecAndCaptureOutput splits the Output by lines. So each String in Output.StdOut could
-    // contain up to one Value followed by zero or more Keys, separated by NUL bytes.
-    Value:='';
-    j:=0;
-    while (j<Length(Output.StdOut)) do begin
-        c:=RPos(#0,Output.StdOut[j]);
-        k:=Length(Output.StdOut[j]);
-        if (c=0) then //No NUL in this Line, we've got a (potentially partial) value
-            if (Value='') then
-                Value:=Copy(Output.StdOut[j], 1, k)
-            else
-                Value:=Value+#10+Copy(Output.StdOut[j], 1, k)
-        else begin
-            i:=Pos(#0,Output.StdOut[j])
-            if (i>1) then
-                if (Value='') then
-                    Value:=Copy(Output.StdOut[j], 1, i)
-                else
-                    Value:=Value+#10+Copy(Output.StdOut[j], 1, i);
-            if (Value<>'') then begin // Ignore keys without values
+    // `config -l -z` writes `<key>LF<value>NUL` pairs
+    StdOut:=StringJoin(#10,Output.StdOut);
+    Value:=StdOut;
+    // j iterates through the entire output;
+    // i tracks the start of the key, k of its end
+    i:=1; j:=i; k:=i;
+    while (j<=Length(StdOut)) do begin
+        c:=Ord(StdOut[j]);
+        if (i=k) and (c=10) then // first found LF marks the end of key
+            k:=j
+        else if (c=0) then begin // found the end of the value
+            if (i<>k) then begin // Ignore keys without values (LF is missing)
+                Key:=Copy(StdOut,i,k-i); // skip the LF delimiter
+                Value:=Copy(StdOut,k+1,j-k-1); // skip both LF and NUL delimiters
                 case Key of
                     'http.sslbackend':
                         case Value of
@@ -898,8 +901,9 @@ begin
                             RecordInferredDefault('Default Branch Option', Value)
                 end;
             end;
-            Key:=Copy(Output.StdOut[j],c+1,k-c-1);
-            Value:='';
+            i:=j+1; // the next key starts after the NUL
+            j:=i;
+            k:=i; // set the end of the key to the start, to identify value-less entries
         end;
         j:=j+1;
     end;
@@ -1053,7 +1057,7 @@ begin
     if not PreviousGitVersionInitialized then begin
         PreviousGitVersionInitialized:=True;
         if (RegQueryStringValue(HKEY_LOCAL_MACHINE,'Software\GitForWindows','InstallPath',Path))
-                and (ExecAndCaptureOutput('"'+Path+'\cmd\git.exe"', 'version', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output))
+                and (ExecAndCaptureOutput(Path+'\cmd\git.exe', 'version', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ExitCode, Output))
                 and (ExitCode=0) then begin
             PreviousGitVersion:=Trim(Output.StdOut[0]);
         end;
@@ -2594,7 +2598,7 @@ begin
             if DirExists(AppDir) then begin
                 if not FileExists(ExpandConstant('{tmp}\blocked-file-util.exe')) then
                     ExtractTemporaryFile('blocked-file-util.exe');
-                Cmd:='"'+ExpandConstant('{tmp}\blocked-file-util.exe')+'"';
+                Cmd:=ExpandConstant('{tmp}\blocked-file-util.exe');
                 if not ExecAndCaptureOutput(Cmd, 'blocking-pids "'+AppDir+'"', '', SW_SHOWNORMAL, ewWaitUntilTerminated, Res, Output) or (Res<>0) then begin
                     Msg:='Skipping installation because '+AppDir+' is still in use:'+#13+#10+StringJoin(#13+#10,Output.StdErr);
                     if ParamIsSet('SKIPIFINUSE') or (ExpandConstant('{log}')='') then
@@ -2844,7 +2848,7 @@ begin
 
     if UninstallString<>'' then begin
         WizardForm.StatusLabel.Caption:='Removing previous Git version ('+PreviousGitForWindowsVersion+')';
-        if not ExecAndCaptureOutput(UninstallString,'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ErrorCode, Output) then
+        if not ExecAndCaptureOutput(RemoveQuotes(UninstallString),'/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES', '', SW_SHOWNORMAL, ewWaitUntilTerminated, ErrorCode, Output) then
             LogError('Could not uninstall previous version (stderr: '+StringJoin(#13+#10,Output.StdErr)+'). Trying to continue anyway.');
     end;
 end;
@@ -3094,7 +3098,7 @@ begin
     // (leaving C:\ProgramData\Scalar in place, in case
     // the user needs to downgrade again to get unblocked)
     WizardForm.StatusLabel.Caption:='Uninstalling .NET-based Scalar';
-    if (not ExecAndCaptureOutput(UninstallScalar, '/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES /LOG', '', SW_SHOWNORMAL, ewWaitUntilTerminated, Res, Output)) or (Res<>0) then
+    if (not ExecAndCaptureOutput(RemoveQuotes(UninstallScalar), '/VERYSILENT /SILENT /NORESTART /SUPPRESSMSGBOXES /LOG', '', SW_SHOWNORMAL, ewWaitUntilTerminated, Res, Output)) or (Res<>0) then
         LogError('Could not uninstall Scalar (stderr: '+StringJoin(#13+#10,Output.StdErr)+'). Trying to continue anyway.');
 end;
 
