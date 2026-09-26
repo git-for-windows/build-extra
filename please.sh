@@ -557,13 +557,16 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	fi ||
 	die "Could not remove '%s'\n" "$output_path"
 
-	if test -d "$git_sdk_path"
+	if test -e "$git_sdk_path"
 	then
+		test ! -f "$git_sdk_path" ||
+		git_sdk_path="$(git --git-dir="$git_sdk_path" rev-parse --git-dir)"
 		test ! -f "${git_sdk_path%/}/.git" ||
-		git_sdk_path="$(git -C "${git_sdk_path%/}" rev-parse --git-dir)"
+		git_sdk_path="$(git --git-dir="${git_sdk_path%/}" rev-parse --git-dir)"
 		test ! -d "${git_sdk_path%/}/.git" ||
 		git_sdk_path="${git_sdk_path%/}/.git"
-		test true = "$(git -C "$git_sdk_path" rev-parse --is-inside-git-dir)" ||
+		test true = "$(git -c safe.bareDirectory=all -C "$git_sdk_path" \
+			rev-parse --is-inside-git-dir)" ||
 		die "Not a Git repository: '%s'\n" "$git_sdk_path"
 	else
 		test -z "$architecture" ||
