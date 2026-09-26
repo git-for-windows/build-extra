@@ -399,6 +399,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	git_sdk_path=/
 	output_path=
 	force=
+	reuse=
 	architecture=auto
 	bitness=
 	keep_worktree=
@@ -443,6 +444,10 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		;;
 	--force|-f)
 		force=t
+		;;
+	--reuse)
+		reuse=t
+		keep_worktree=t
 		;;
 	--keep-worktree)
 		keep_worktree=t
@@ -530,8 +535,14 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	*) die "Unhandled artifact: '%s'\n" "$1";;
 	esac
 
-	test ! -d "$output_path" ||
-	if test -z "$force"
+	if test ! -d "$output_path"
+	then
+		test -z "$reuse" ||
+		die "Cannot reuse non-existing directory '%s'\n" "$output_path"
+	elif test -n "$reuse"
+	then
+		echo "Trying to reuse $output_path" >&2
+	elif test -z "$force"
 	then
 		die "Directory exists already: '%s'\n" "$output_path"
 	elif test -f "$output_path/.git"
@@ -570,7 +581,32 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 
 	git -C "$git_sdk_path" config core.repositoryFormatVersion 1 &&
 	git -C "$git_sdk_path" config extensions.worktreeConfig true &&
-	git -C "$git_sdk_path" worktree add --detach --no-checkout "$output_path" HEAD &&
+	if test -n "$reuse"
+	then
+		if test ! -e "$output_path"/.git
+		then
+			wgd="$git_sdk_path/worktrees/${output_path##*/}" &&
+			if test -d "$wgd"
+			then
+				n=1 &&
+				while test -d "$wgd-$n"
+				do
+					n=$(($n+1))
+				done &&
+				wgd="$wgd-$n"
+			fi &&
+			mkdir -p "$wgd/refs" &&
+			git -C "$git_sdk_path" rev-parse HEAD >"$wgd/HEAD" &&
+			echo '../..' >"$wgd/commondir" &&
+			cygpath -am "$output_path/.git" >"$wgd/gitdir" &&
+			echo "gitdir: $wgd" >"$output_path/.git"
+		fi &&
+		git -C "$output_path" ls-files -z |
+		xargs -0r git -C "$output_path" rm --sparse &&
+		git -C "$output_path" update-ref HEAD "$(git -C "$git_sdk_path" rev-parse HEAD)"
+	else
+		git -C "$git_sdk_path" worktree add --detach --no-checkout "$output_path" HEAD
+	fi &&
 	sparse_checkout_file="$(git -C "$output_path" rev-parse --git-path info/sparse-checkout)" &&
 	git -C "$output_path" config --worktree core.sparseCheckout true &&
 	git -C "$output_path" config --worktree core.bare false &&
