@@ -403,6 +403,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	architecture=auto
 	bitness=
 	keep_worktree=
+	head=HEAD
 	while case "$1" in
 	--out|-o)
 		shift
@@ -449,6 +450,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		reuse=t
 		keep_worktree=t
 		;;
+	--head=*)
+		head=${1#*=}
+		;;
 	--keep-worktree)
 		keep_worktree=t
 		;;
@@ -477,19 +481,19 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		esac
 	elif test auto = "$architecture"
 	then
-		if git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:clangarm64 2>/dev/null
+		if git -C "$git_sdk_path" rev-parse --quiet --verify "$head":clangarm64 2>/dev/null
 		then
 			architecture=aarch64
-		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-cygwin 2>/dev/null
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify "$head":usr/i686-pc-cygwin 2>/dev/null
 		then
 			architecture=i686
-		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-msys 2>/dev/null
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify "$head":usr/i686-pc-msys 2>/dev/null
 		then
 			architecture=i686
-		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/x86_64-pc-cygwin 2>/dev/null
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify "$head":usr/x86_64-pc-cygwin 2>/dev/null
 		then
 			architecture=x86_64
-		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/x86_64-pc-msys 2>/dev/null
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify "$head":usr/x86_64-pc-msys 2>/dev/null
 		then
 			architecture=x86_64
 		else
@@ -572,7 +576,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 
 	test full-sdk != "$mode" || {
 		mkdir -p "$output_path" &&
-		git -C "$git_sdk_path" archive --format=tar HEAD -- ':(exclude)ssl' |
+		git -C "$git_sdk_path" archive --format=tar "$head" -- ':(exclude)ssl' |
 		xz -9 >"$output_path"/$SDK_REPO.tar.xz &&
 		echo "$SDK_REPO.tar.xz written to '$output_path'" >&2 ||
 		die "Could not write $SDK_REPO.tar.xz to '%s'\n" "$output_path"
@@ -596,16 +600,16 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 				wgd="$wgd-$n"
 			fi &&
 			mkdir -p "$wgd/refs" &&
-			git -C "$git_sdk_path" rev-parse HEAD >"$wgd/HEAD" &&
+			git -C "$git_sdk_path" rev-parse "$head" >"$wgd/HEAD" &&
 			echo '../..' >"$wgd/commondir" &&
 			cygpath -am "$output_path/.git" >"$wgd/gitdir" &&
 			echo "gitdir: $wgd" >"$output_path/.git"
 		fi &&
 		git -C "$output_path" ls-files -z |
 		xargs -0r git -C "$output_path" rm --sparse &&
-		git -C "$output_path" update-ref HEAD "$(git -C "$git_sdk_path" rev-parse HEAD)"
+		git -C "$output_path" update-ref HEAD "$(git -C "$git_sdk_path" rev-parse "$head")"
 	else
-		git -C "$git_sdk_path" worktree add --detach --no-checkout "$output_path" HEAD
+		git -C "$git_sdk_path" worktree add --detach --no-checkout "$output_path" "$head"
 	fi &&
 	sparse_checkout_file="$(git -C "$output_path" rev-parse --git-path info/sparse-checkout)" &&
 	git -C "$output_path" config --worktree core.sparseCheckout true &&
