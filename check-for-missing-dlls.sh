@@ -92,7 +92,7 @@ do
 	paths="$(sed -n 's|^/usr/bin/objdump: \([^ :]*\): file format not recognized|\1|p' <"$tmp_file")"
 	if test -n "$paths"
 	then
-		powershell.exe -NoProfile -ExecutionPolicy Bypass \
+		pwsh.exe -NoProfile -ExecutionPolicy Bypass \
 			-File "$thisdir/pe-imports.ps1" $paths >>"$tmp_file.ldd" ||
 		die "pe-imports.ps1 failed to parse PE imports"
 	fi
