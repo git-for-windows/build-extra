@@ -54,6 +54,7 @@ An issue with the installer for the previous version (v2.55.0.windows.5) caused 
 * It is now [finally possible](https://github.com/git-for-windows/git/pull/6353) to commit 4GB objects or larger in Git for Windows.
 * [Fixes](https://github.com/git-for-windows/git/pull/6395) a bug where parallel checkouts could abort with "*** stack smashing detected ***: terminated".
 * A [bug](https://github.com/git-for-windows/git/issues/6403) introduced in Git for Windows v2.55.0(5), which caused vim to often open existing files with the first line missing, [was fixed](https://github.com/git-for-windows/msys2-runtime/pull/142).
+* `git difftool` [will no longer crash](https://github.com/git-for-windows/git/pull/6426) upon encountering filenames that are illegal on Windows.
 
 ## Changes since Git for Windows v2.55.0(4) (August 11th 2026)
 
