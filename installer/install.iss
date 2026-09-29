@@ -73,6 +73,7 @@ PrivilegesRequired=lowest
 #else
 PrivilegesRequired=none
 #endif
+PrivilegesRequiredOverridesAllowed=commandline
 UninstallDisplayName={#APP_NAME}
 UninstallDisplayIcon={app}\{#MINGW_BITNESS}\share\git\git-for-windows.ico
 #ifndef COMPILE_FROM_IDE
