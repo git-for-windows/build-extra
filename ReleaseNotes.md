@@ -36,6 +36,12 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.56.0 (September 28th 2026)
+
+### Bug Fixes
+
+* Suppressing the user-wide Git config via `GIT_CONFIG_GLOBAL=NUL` [was broken in v2.56.0](https://github.com/git-for-windows/git/issues/6449) (surprisingly, as a consequence of the MINGW64 -> UCRT64 migration), which [was fixed](https://github.com/git-for-windows/git/pull/6450).
+
 ## Changes since Git for Windows v2.55.0(5) (August 20th 2026)
 
 Following the [MSYS2 project](https://www.msys2.org/news/#2026-02-28-dropping-support-for-windows-81), on which Git for Windows is based, Windows 8.1 support was dropped; In [doing so](https://github.com/git-for-windows/git-sdk-64/pull/117), internal paths changed (`/mingw64/bin/git.exe` does not exist anymore, `/ucrt64/bin/git.exe` takes its role; if this breaks your setups, consider switching to `/cmd/git.exe` instead, which is guaranteed to stay stable).
