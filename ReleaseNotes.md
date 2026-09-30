@@ -38,6 +38,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.56.0 (September 28th 2026)
 
+### New Features
+
+* Comes with [OpenSSL v3.5.9](https://www.openssl.org/news/openssl-3.5-notes.html).
+
 ### Bug Fixes
 
 * Suppressing the user-wide Git config via `GIT_CONFIG_GLOBAL=NUL` [was broken in v2.56.0](https://github.com/git-for-windows/git/issues/6449) (surprisingly, as a consequence of the MINGW64 -> UCRT64 migration), which [was fixed](https://github.com/git-for-windows/git/pull/6450).
