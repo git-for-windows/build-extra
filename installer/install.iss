@@ -3133,12 +3133,12 @@ begin
     AppDir:=ExpandConstant('{app}');
 
     {
-        Copy dlls from "/mingw64/bin" to "/mingw64/libexec/git-core" if they are
+        Copy dlls from "/ucrt64/bin" to "/ucrt64/libexec/git-core" if they are
         conflicting with system ones. For example, if a dll named "ssleay32.dll" in
-        "/mingw64/bin" is also present in "%SystemRoot\System32", the version in
-        "/mingw64/bin" is copied to "/mingw64/libexec/git-core". This call ensures
-        that the dll in "/mingw64/libexec/git-core" is picked first when Windows load
-        dll dependencies for executables in "/mingw64/libexec/git-core".
+        "/ucrt64/bin" is also present in "%SystemRoot\System32", the version in
+        "/ucrt64/bin" is copied to "/ucrt64/libexec/git-core". This call ensures
+        that the dll in "/ucrt64/libexec/git-core" is picked first when Windows load
+        dll dependencies for executables in "/ucrt64/libexec/git-core".
         (See https://github.com/git-for-windows/git/issues/145)
     }
 
