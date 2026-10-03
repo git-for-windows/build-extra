@@ -41,6 +41,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### New Features
 
 * Comes with [OpenSSL v3.5.9](https://www.openssl.org/news/openssl-3.5-notes.html).
+* To help with fixing [stale references to the Git Credential Manager](https://github.com/git-for-windows/git/issues/6455) after Git for Windows v2.56.0's MINGW64 -> UCRT64 migration, [a compatibility shim is now installed](https://github.com/git-for-windows/MINGW-packages/pull/224).
 
 ### Bug Fixes
 
