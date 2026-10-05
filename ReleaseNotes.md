@@ -47,6 +47,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 * Suppressing the user-wide Git config via `GIT_CONFIG_GLOBAL=NUL` [was broken in v2.56.0](https://github.com/git-for-windows/git/issues/6449) (surprisingly, as a consequence of the MINGW64 -> UCRT64 migration), which [was fixed](https://github.com/git-for-windows/git/pull/6450).
 * [Fixed](https://github.com/git-for-windows/MINGW-packages/pull/222) a bug in Git for Windows, v2.56.0, where the x64 Git executables [lost their Authenticode signatures by mistake](https://github.com/git-for-windows/git/issues/6456).
+* An assertion [was fixed](https://github.com/git-for-windows/MINGW-packages/pull/226) that caused pushes to fail when the server requires a client certificate.
 
 ## Changes since Git for Windows v2.55.0(5) (August 20th 2026)
 
