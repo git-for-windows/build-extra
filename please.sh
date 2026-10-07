@@ -399,9 +399,11 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	git_sdk_path=/
 	output_path=
 	force=
+	reuse=
 	architecture=auto
 	bitness=
 	keep_worktree=
+	head=HEAD
 	while case "$1" in
 	--out|-o)
 		shift
@@ -444,6 +446,13 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	--force|-f)
 		force=t
 		;;
+	--reuse)
+		reuse=t
+		keep_worktree=t
+		;;
+	--head=*)
+		head=${1#*=}
+		;;
 	--keep-worktree)
 		keep_worktree=t
 		;;
@@ -472,19 +481,19 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		esac
 	elif test auto = "$architecture"
 	then
-		if git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:clangarm64 2>/dev/null
+		if git -C "$git_sdk_path" rev-parse --quiet --verify "$head":clangarm64 2>/dev/null
 		then
 			architecture=aarch64
-		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-cygwin 2>/dev/null
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify "$head":usr/i686-pc-cygwin 2>/dev/null
 		then
 			architecture=i686
-		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/i686-pc-msys 2>/dev/null
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify "$head":usr/i686-pc-msys 2>/dev/null
 		then
 			architecture=i686
-		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/x86_64-pc-cygwin 2>/dev/null
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify "$head":usr/x86_64-pc-cygwin 2>/dev/null
 		then
 			architecture=x86_64
-		elif git -C "$git_sdk_path" rev-parse --quiet --verify HEAD:usr/x86_64-pc-msys 2>/dev/null
+		elif git -C "$git_sdk_path" rev-parse --quiet --verify "$head":usr/x86_64-pc-msys 2>/dev/null
 		then
 			architecture=x86_64
 		else
@@ -530,8 +539,14 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	*) die "Unhandled artifact: '%s'\n" "$1";;
 	esac
 
-	test ! -d "$output_path" ||
-	if test -z "$force"
+	if test ! -d "$output_path"
+	then
+		test -z "$reuse" ||
+		die "Cannot reuse non-existing directory '%s'\n" "$output_path"
+	elif test -n "$reuse"
+	then
+		echo "Trying to reuse $output_path" >&2
+	elif test -z "$force"
 	then
 		die "Directory exists already: '%s'\n" "$output_path"
 	elif test -f "$output_path/.git"
@@ -542,13 +557,16 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	fi ||
 	die "Could not remove '%s'\n" "$output_path"
 
-	if test -d "$git_sdk_path"
+	if test -e "$git_sdk_path"
 	then
+		test ! -f "$git_sdk_path" ||
+		git_sdk_path="$(git --git-dir="$git_sdk_path" rev-parse --git-dir)"
 		test ! -f "${git_sdk_path%/}/.git" ||
-		git_sdk_path="$(git -C "${git_sdk_path%/}" rev-parse --git-dir)"
+		git_sdk_path="$(git --git-dir="${git_sdk_path%/}" rev-parse --git-dir)"
 		test ! -d "${git_sdk_path%/}/.git" ||
 		git_sdk_path="${git_sdk_path%/}/.git"
-		test true = "$(git -C "$git_sdk_path" rev-parse --is-inside-git-dir)" ||
+		test true = "$(git -c safe.bareDirectory=all -C "$git_sdk_path" \
+			rev-parse --is-inside-git-dir)" ||
 		die "Not a Git repository: '%s'\n" "$git_sdk_path"
 	else
 		test -z "$architecture" ||
@@ -561,7 +579,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 
 	test full-sdk != "$mode" || {
 		mkdir -p "$output_path" &&
-		git -C "$git_sdk_path" archive --format=tar HEAD -- ':(exclude)ssl' |
+		git -C "$git_sdk_path" archive --format=tar "$head" -- ':(exclude)ssl' |
 		xz -9 >"$output_path"/$SDK_REPO.tar.xz &&
 		echo "$SDK_REPO.tar.xz written to '$output_path'" >&2 ||
 		die "Could not write $SDK_REPO.tar.xz to '%s'\n" "$output_path"
@@ -570,7 +588,32 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 
 	git -C "$git_sdk_path" config core.repositoryFormatVersion 1 &&
 	git -C "$git_sdk_path" config extensions.worktreeConfig true &&
-	git -C "$git_sdk_path" worktree add --detach --no-checkout "$output_path" HEAD &&
+	if test -n "$reuse"
+	then
+		if test ! -e "$output_path"/.git
+		then
+			wgd="$git_sdk_path/worktrees/${output_path##*/}" &&
+			if test -d "$wgd"
+			then
+				n=1 &&
+				while test -d "$wgd-$n"
+				do
+					n=$(($n+1))
+				done &&
+				wgd="$wgd-$n"
+			fi &&
+			mkdir -p "$wgd/refs" &&
+			git -C "$git_sdk_path" rev-parse "$head" >"$wgd/HEAD" &&
+			echo '../..' >"$wgd/commondir" &&
+			cygpath -am "$output_path/.git" >"$wgd/gitdir" &&
+			echo "gitdir: $wgd" >"$output_path/.git"
+		fi &&
+		git -C "$output_path" ls-files -z |
+		xargs -0r git -C "$output_path" rm --sparse &&
+		git -C "$output_path" update-ref HEAD "$(git -C "$git_sdk_path" rev-parse "$head")"
+	else
+		git -C "$git_sdk_path" worktree add --detach --no-checkout "$output_path" "$head"
+	fi &&
 	sparse_checkout_file="$(git -C "$output_path" rev-parse --git-path info/sparse-checkout)" &&
 	git -C "$output_path" config --worktree core.sparseCheckout true &&
 	git -C "$output_path" config --worktree core.bare false &&
