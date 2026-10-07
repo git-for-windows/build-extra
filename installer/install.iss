@@ -2474,7 +2474,7 @@ begin
 #endif
         SecurityOptionsPage:=CreatePage(PrevPageID,'Security options','Add mandatory ASLR security exceptions?',TabOrder,Top,Left);
         RdbSecurityOptions[SO_MandatoryASLR]:=CreateCheckBox(SecurityOptionsPage, 'Add mandatory ASLR security exceptions','Add mandatory ASLR security exceptions for the executables in the "usr/bin"'+#13+'directory and Git Bash to function correctly on Windows systems with'+#13+'mandatory ASLR enabled which is a Windows security feature that is'+#13+'disabled by default but appears to be enabled on your system.'+#13++#13+'<RED>WARNING</RED>: If you have installed Git to a path modifiable by an unprivileged user'+#13+'or an external drive this will add mandatory ASLR security exceptions for'+#13+'those paths on which could introduce a security vulnerability!'+#13++#13+'<RED>WARNING</RED>: Doing this significantly slows down the load time of the program'+#13+'settings list in the exploit protection section of the Windows security application'+#13+'but it will load eventually!',TabOrder,Top,Left);
-        RdbSecurityOptions[SO_MandatoryASLR].Checked:=ReplayChoice('Add mandatory ASLR security exceptions','Auto')='Enabled';
+        RdbSecurityOptions[SO_MandatoryASLR].Checked:=ReplayChoice('Add mandatory ASLR security exceptions','Auto')<>'Disabled';
     end;
 
 #ifdef HAVE_EXPERIMENTAL_OPTIONS
