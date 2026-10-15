@@ -41,6 +41,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### New Features
 
 * Comes with [OpenSSH v10.6.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_6_P1).
+* Comes with [cURL v8.23.0](https://curl.se/changes.html#8_23_0).
 
 ## Changes since Git for Windows v2.56.0 (September 28th 2026)
 
