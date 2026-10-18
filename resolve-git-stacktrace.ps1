@@ -7,8 +7,9 @@ Reuses $HOME\windbg\amd64\cdb.exe (or $HOME\windbg\arm64\cdb.exe on ARM64) and
 versioned PDB caches before downloading.
 Missing CDB comes from Microsoft's official WinDbg bundle, without app
 installation. Missing PDBs come from the corresponding GitHub release.
-Opens git.exe as an image, not as a running process. Saves the CDB command
-file and full output, and prints source lines with exact-commit links.
+Opens git.exe as an image, not as a running process, so x64 and ARM64 traces
+can be resolved on either host architecture. Saves the CDB command file and
+full output, and prints source lines with exact-commit links.
 See resolve-git-stacktrace.md for cache locations and manual commands.
 .EXAMPLE
 .\resolve-git-stacktrace.ps1 'git_exe!start_command+0x8fc'
@@ -253,18 +254,26 @@ if ((Split-Path $GitExecutable -Leaf) -ne 'git.exe' -or
     -not $pdbSuffix) {
     throw 'Use the native platform\bin\git.exe, not the cmd\git.exe wrapper.'
 }
-$build = & $GitExecutable version --build-options
-if ($LASTEXITCODE -ne 0) { throw "Could not identify $GitExecutable" }
-$buildText = $build -join "`n"
-$versionMatch = [regex]::Match($buildText,
-    '(?m)^git version (\d+\.\d+\.\d+\.windows\.\d+)\s*$')
-$commitMatch = [regex]::Match($buildText,
-    '(?m)^built from commit: ([0-9a-f]{40})\s*$')
-if (-not $versionMatch.Success -or -not $commitMatch.Success) {
-    throw "Expected an official Git for Windows build identity:`n$buildText"
+$imageText = [Text.Encoding]::ASCII.GetString(
+    [IO.File]::ReadAllBytes($GitExecutable))
+$identityMatch = [regex]::Match($imageText,
+    '\x00(?:(\d+\.\d+\.\d+(?:-rc\d+)?\.windows\.\d+)\x00+([0-9a-f]{40})|' +
+    '([0-9a-f]{40})\x00+(\d+\.\d+\.\d+(?:-rc\d+)?\.windows\.\d+))\x00')
+if (-not $identityMatch.Success) {
+    throw "Expected an official Git for Windows build identity: $GitExecutable"
 }
-$version = $versionMatch.Groups[1].Value
-$commit = $commitMatch.Groups[1].Value
+$version = if ($identityMatch.Groups[1].Success) {
+    $identityMatch.Groups[1].Value
+}
+else {
+    $identityMatch.Groups[4].Value
+}
+$commit = if ($identityMatch.Groups[2].Success) {
+    $identityMatch.Groups[2].Value
+}
+else {
+    $identityMatch.Groups[3].Value
+}
 if ($SelfTest -and ($version -ne $testVersion -or $commit -ne $testCommit)) {
     throw "Self-test requires Git $testVersion built from $testCommit"
 }

@@ -52,9 +52,11 @@ Microsoft's installation reference:
 
 ## PDBs: cache the correct native image's symbols
 
-`git version --build-options` identifies the release version and exact
-source commit. The native image's directory identifies the package flavor,
-for example `ucrt64` or `clangarm64`. The helper retrieves the corresponding
+The embedded version and commit strings inside `git.exe` identify the release
+version and exact source commit without executing the binary, so an ARM64
+`clangarm64\bin\git.exe` can be analyzed on an x64 host (and vice versa).
+The native image's directory identifies the package flavor, for example
+`ucrt64` or `clangarm64`. The helper retrieves the corresponding
 `v<VERSION>` release through `gh api`, selects its matching
 `pdbs-for-git-<SUFFIX>-*.zip` asset (`ucrt64` for `ucrt64`, `arm64` for
 `clangarm64`, `64-bit` for `mingw64`, `32-bit` for `mingw32`), and verifies
