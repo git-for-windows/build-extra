@@ -3,7 +3,8 @@
 .SYNOPSIS
 Resolve Git for Windows stack frames using matching PDBs and portable CDB.
 .DESCRIPTION
-Reuses $HOME\windbg\amd64\cdb.exe and versioned PDB caches before downloading.
+Reuses $HOME\windbg\amd64\cdb.exe (or $HOME\windbg\arm64\cdb.exe on ARM64) and
+versioned PDB caches before downloading.
 Missing CDB comes from Microsoft's official WinDbg bundle, without app
 installation. Missing PDBs come from the corresponding GitHub release.
 Opens git.exe as an image, not as a running process. Saves the CDB command
@@ -60,7 +61,10 @@ function Get-CachedDownload {
 function Get-PortableCdb {
     param([string]$Directory)
 
-    $cdb = Join-Path $Directory 'amd64\cdb.exe'
+    $hostArch = if ($env:PROCESSOR_ARCHITECTURE -eq 'ARM64' -or
+        $env:PROCESSOR_ARCHITEW6432 -eq 'ARM64') { 'arm64' } else { 'x64' }
+    $cdbSubdir = if ($hostArch -eq 'arm64') { 'arm64' } else { 'amd64' }
+    $cdb = Join-Path $Directory "$cdbSubdir\cdb.exe"
     if (-not (Test-Path -LiteralPath $cdb -PathType Leaf)) {
         $downloads = Join-Path $Directory 'downloads'
         $installer = Join-Path $downloads 'windbg.appinstaller'
@@ -72,7 +76,7 @@ function Get-PortableCdb {
             throw "Unexpected WinDbg download manifest: $installer"
         }
         $bundle = Join-Path $downloads "windbg-$($main.Version).msixbundle"
-        $msix = Join-Path $downloads "windbg-x64-$($main.Version).msix"
+        $msix = Join-Path $downloads "windbg-$hostArch-$($main.Version).msix"
         if (-not (Test-Path -LiteralPath $msix -PathType Leaf)) {
             Get-CachedDownload $main.Uri $bundle
             $zip = [IO.Compression.ZipFile]::OpenRead($bundle)
@@ -84,14 +88,14 @@ function Get-PortableCdb {
                 finally { $reader.Dispose() }
                 $packages = @($manifest.Bundle.Packages.Package |
                     Where-Object {
-                        $_.Architecture -eq 'x64' -and
+                        $_.Architecture -eq $hostArch -and
                         $_.Type -eq 'application'
                     })
                 if ($packages.Count -ne 1) {
-                    throw "Expected one x64 application in $bundle"
+                    throw "Expected one $hostArch application in $bundle"
                 }
                 $entry = $zip.GetEntry($packages[0].FileName)
-                if (-not $entry) { throw "x64 package missing: $bundle" }
+                if (-not $entry) { throw "$hostArch package missing: $bundle" }
                 [IO.Compression.ZipFileExtensions]::ExtractToFile($entry, $msix)
             }
             finally { $zip.Dispose() }
@@ -238,9 +242,15 @@ if (-not $GitExecutable) {
 $GitExecutable = (Resolve-Path -LiteralPath $GitExecutable).Path
 $bin = Split-Path $GitExecutable
 $platform = Split-Path (Split-Path $bin) -Leaf
+$pdbSuffix = @{
+    ucrt64 = 'ucrt64'
+    mingw64 = '64-bit'
+    mingw32 = '32-bit'
+    clangarm64 = 'arm64'
+}[$platform]
 if ((Split-Path $GitExecutable -Leaf) -ne 'git.exe' -or
     (Split-Path $bin -Leaf) -ne 'bin' -or
-    $platform -notin @('ucrt64', 'mingw64', 'mingw32', 'clangarm64')) {
+    -not $pdbSuffix) {
     throw 'Use the native platform\bin\git.exe, not the cmd\git.exe wrapper.'
 }
 $build = & $GitExecutable version --build-options
@@ -266,10 +276,10 @@ $pdb = Join-Path $symbols 'git.pdb'
 if (-not (Test-Path -LiteralPath $pdb -PathType Leaf)) {
     $release = Get-CachedGitRelease $version $symbols
     $assets = @($release.assets | Where-Object {
-        $_.name -like "pdbs-for-git-$platform-*.zip"
+        $_.name -like "pdbs-for-git-$pdbSuffix-*.zip"
     })
     if ($assets.Count -ne 1) {
-        throw "Expected one official $platform PDB archive for v$version"
+        throw "Expected one official $pdbSuffix PDB archive for v$version"
     }
     $archive = Get-VerifiedArchive $assets[0] $symbols
     $zip = [IO.Compression.ZipFile]::OpenRead($archive)

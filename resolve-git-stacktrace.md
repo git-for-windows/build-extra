@@ -28,21 +28,22 @@ For a different installation, pass the actual image explicitly:
 ## Portable CDB: download once
 
 The default debugger directory is `$HOME\windbg`; override it with
-`-DebuggerDirectory`. The script checks `amd64\cdb.exe` there first and
-verifies its Microsoft Authenticode signature. Existing CDB is reused
-without package discovery, installation, or update checks.
+`-DebuggerDirectory`. The script checks `amd64\cdb.exe` (or `arm64\cdb.exe` on
+ARM64 Windows) there first and verifies its Microsoft Authenticode signature.
+Existing CDB is reused without package discovery, installation, or update
+checks.
 
 Only when CDB is absent does it fetch
 <https://aka.ms/windbg/download>. That XML app-installer manifest provides
 the current official MSIX bundle URL in `MainBundle.Uri`. The script caches
 the manifest and bundle under `$HOME\windbg\downloads`, reads the embedded
-`AppxMetadata/AppxBundleManifest.xml`, and extracts the x64 application
-package before unpacking it into `$HOME\windbg`. It does not register an
-app, change debugger registrations, or modify `PATH`.
+`AppxMetadata/AppxBundleManifest.xml`, and extracts the host-architecture
+(`x64` or `arm64`) application package before unpacking it into `$HOME\windbg`.
+It does not register an app, change debugger registrations, or modify `PATH`.
 
-The bundle can be large. Cached downloads and the extracted x64 MSIX are
-reused. Do not infer a direct download URL from an embedded package name
-such as `windbg_win-x64.msix`. Interrupted downloads remain as `.partial`
+The bundle can be large. Cached downloads and the extracted host-architecture
+MSIX are reused. Do not infer a direct download URL from an embedded package
+name such as `windbg_win-x64.msix`. Interrupted downloads remain as `.partial`
 files and cause an explicit error rather than being treated as complete.
 Extraction never overwrites existing package files.
 
@@ -53,10 +54,12 @@ Microsoft's installation reference:
 
 `git version --build-options` identifies the release version and exact
 source commit. The native image's directory identifies the package flavor,
-for example `ucrt64`. The helper retrieves the corresponding
-`v<VERSION>` release through `gh api`, selects its
-`pdbs-for-git-<FLAVOR>-*.zip` asset, and verifies the published SHA-256 digest.
-It extracts only `<FLAVOR>/bin/git.pdb`, not `cmd/git.pdb`.
+for example `ucrt64` or `clangarm64`. The helper retrieves the corresponding
+`v<VERSION>` release through `gh api`, selects its matching
+`pdbs-for-git-<SUFFIX>-*.zip` asset (`ucrt64` for `ucrt64`, `arm64` for
+`clangarm64`, `64-bit` for `mingw64`, `32-bit` for `mingw32`), and verifies
+the published SHA-256 digest. It extracts only `<FLAVOR>/bin/git.pdb`, not
+`cmd/git.pdb`.
 
 The cache is `$HOME\windbg\symbols\<FLAVOR>\<VERSION>`. It contains
 `release.json`, the downloaded PDB archive, and `git.pdb`. PDB "installation"
@@ -98,7 +101,7 @@ lines and an actual source-line result for every requested frame.
 For manual analysis, use the printed cache and command-file paths:
 
 ```powershell
-$cdb = "$HOME\windbg\amd64\cdb.exe"
+$cdb = "$HOME\windbg\amd64\cdb.exe" # or arm64\cdb.exe on ARM64 Windows
 $symbols = "$HOME\windbg\symbols\ucrt64\2.56.0.windows.2"
 & $cdb -sins -ses -lines -y $symbols `
     -z 'C:\Program Files\Git\ucrt64\bin\git.exe' `
