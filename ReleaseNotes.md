@@ -38,10 +38,13 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.56.0(2) (October 5th 2026)
 
+This is a security fix release, addressing [the eMudhra Intermediate CA Compromise](https://emudhra.we-have-a-problem.com/). It also addresses Git LFS' [CVE-2026-105803](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-x72p-hmqp-46hw) by upgrading to v3.8.1.
+
 ### New Features
 
 * Comes with [OpenSSH v10.6.P1](https://github.com/openssh/openssh-portable/releases/tag/V_10_6_P1).
 * Comes with [cURL v8.23.0](https://curl.se/changes.html#8_23_0).
+* Comes with [Git LFS v3.8.1](https://github.com/git-lfs/git-lfs/releases/tag/v3.8.1).
 
 ## Changes since Git for Windows v2.56.0 (September 28th 2026)
 
