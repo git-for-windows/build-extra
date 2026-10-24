@@ -36,6 +36,12 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.56.0(3) (October 22nd 2026)
+
+### Bug Fixes
+
+* The executables included in the 32-bit MinGit had corrupt code-signatures, which [has been fixed](https://github.com/git-for-windows/MINGW-packages/pull/231).
+
 ## Changes since Git for Windows v2.56.0(2) (October 5th 2026)
 
 This is a security fix release, addressing [the eMudhra Intermediate CA Compromise](https://emudhra.we-have-a-problem.com/). It also addresses Git LFS' [CVE-2026-105803](https://github.com/git-lfs/git-lfs/security/advisories/GHSA-x72p-hmqp-46hw) by upgrading to v3.8.1.
