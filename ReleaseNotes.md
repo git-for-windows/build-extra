@@ -38,6 +38,8 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 
 ## Changes since Git for Windows v2.56.0(3) (October 22nd 2026)
 
+This is another urgent security bug fix release, addressing [CVE-2026-111497](https://www.cve.org/CVERecord?id=CVE-2026-111497).
+
 ### Bug Fixes
 
 * The executables included in the 32-bit MinGit had corrupt code-signatures, which [has been fixed](https://github.com/git-for-windows/MINGW-packages/pull/231).
