@@ -68,6 +68,10 @@ This addresses the security issues CVE-2026-111760, CVE-2026-113408, CVE-2026-11
 
   In response to CVE-2019-1348, `fast-import` disallows the `export-marks` feature by default. The features `rewrite-submodules-to` and `rewrite-submodules-from` as well as the option `export-pack-edges` that were introduced in the meantime also allow reading from arbitrary paths, and are therefore now also disallowed by default.
 
+### New Features
+
+* Comes with [Git v2.56.1](https://github.com/git/git/blob/v2.56.1/Documentation/RelNotes/2.56.1.adoc).
+
 ## Changes since Git for Windows v2.56.0(3) (October 22nd 2026)
 
 This is another urgent security bug fix release, addressing [CVE-2026-111497](https://www.cve.org/CVERecord?id=CVE-2026-111497).
