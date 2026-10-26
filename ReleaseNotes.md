@@ -36,6 +36,38 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.56.0(4) (October 26th 2026)
+
+This addresses the security issues CVE-2026-111760, CVE-2026-113408, CVE-2026-114466, CVE-2026-114467, CVE-2026-114469 and CVE-2026-105437.
+
+### Security bug fixes
+
+* [CVE-2026-111760](https://github.com/git/git/security/advisories/GHSA-vp2w-7xxj-jvxr):
+
+  Recursive clones are susceptible to Remote Code Execution: an attacker-controlled repository can be crafted in a way that exploits a bug in Git whereby Git can be fooled into overwriting a gitfile (used for submodules) with a symbolic link that then points to a directory with malicious config or hooks. The config or hooks may have attacker-specified code.
+
+* [CVE-2026-113408](https://gitlab.com/gitlab-org/git/-/work_items/809):
+
+  It is possible for a server to advertise an unborn HEAD that contains path-traversal characters (e.g., `refs/heads/../../../TARGET`). With the files ref backend that can lead to ref-updating actions to write to unwanted files.
+
+* [CVE-2026-114467](https://gitlab.com/gitlab-org/git/-/work_items/810):
+
+  When Git strips the GPG signatures from a commit message, it only accounts for two signatures. A commit message containing more than two signatures therefore causes a stack memory corruption.
+
+  This can be triggered when using `git merge` with a tag which contains more than two signatures. As such, this makes way for a DoS attack which can potentially also affect forges when such a tag is pushed to a remote and a merge action is initiated.
+
+* [CVE-2026-114469](https://gitlab.com/gitlab-org/git/-/work_items/811):
+
+  Git rejects patches larger than ~1 GiB, because its patch application code does not work well with large files. That check, however, only considered the size of the patch as it appears in the input, which for binary patches is much smaller than the size of the file the patch describes, as binary patches are compressed and encoded. A binary patch that inflates to a very large size therefore slipped past the check and crashed Git with an out-of-bounds read.
+
+* [CVE-2026-105437](https://gitlab.com/gitlab-org/git/-/work_items/814):
+
+  When merging, Git computes the size of the buffer holding the merge result in a way that can overflow for very large merges, which can be triggered by a large number of conflicts combined with a large `conflict-marker-size`. The resulting buffer can then be too small, and Git writes past its end (and, before and after that, before its start), corrupting the heap.
+
+* [CVE-2026-114466](https://gitlab.com/gitlab-org/git/-/work_items/812):
+
+  In response to CVE-2019-1348, `fast-import` disallows the `export-marks` feature by default. The features `rewrite-submodules-to` and `rewrite-submodules-from` as well as the option `export-pack-edges` that were introduced in the meantime also allow reading from arbitrary paths, and are therefore now also disallowed by default.
+
 ## Changes since Git for Windows v2.56.0(3) (October 22nd 2026)
 
 This is another urgent security bug fix release, addressing [CVE-2026-111497](https://www.cve.org/CVERecord?id=CVE-2026-111497).
