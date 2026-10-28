@@ -36,6 +36,12 @@ Git is licensed under the GNU General Public License version 2.
 
 Git for Windows is distributed with other components yet, such as Bash, zlib, curl, tcl/tk, perl, MSYS2. Each of these components is governed by their respective license.
 
+## Changes since Git for Windows v2.56.0(4) (October 26th 2026)
+
+### New Features
+
+* Comes with [Bash v5.3.20](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=9c465866b7d849378369ef700cbe2965aa9691e3).
+
 ## Changes since Git for Windows v2.56.0(3) (October 22nd 2026)
 
 This is another urgent security bug fix release, addressing [CVE-2026-111497](https://www.cve.org/CVERecord?id=CVE-2026-111497).
