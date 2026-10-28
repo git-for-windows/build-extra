@@ -4,7 +4,7 @@ _realname="git-extra"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
-pkgver=1.1.715.85f886165
+pkgver=1.1.717.ed8ed94de
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('any')
@@ -97,7 +97,7 @@ sha256sums=('b6448dac5fe317ada8a0b8e73c86b907467bf339f0449fb0a2595debe59eedfe'
             '78307cd6c04a16240f68197e9155697bc75d5df8e4c8514ff67712bb93a1cd4a'
             '0b4ffbfcf0ab30e0cbcd03507439e468e4ce6d1ccfd6b8f0b3ce3ab2146dc8ee'
             '51e31c6ce824f66b9a8310f1ac10ccdc06b60967a557c996868bc0d9c9866ccf'
-            '0dd30dc3acd406e70b5ff08fb0bf180ec3782119455989af18c05cf59d09df64')
+            '74f2dab13a560c851456c41d3ee643a1f7f50083dc757d2e1a1baca760fa9a9a')
 
 prepare() {
   case "$MSYSTEM_CARCH" in
