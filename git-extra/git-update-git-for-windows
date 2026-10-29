@@ -156,6 +156,37 @@ ask_to_update () {
 	return "$result"
 }
 
+test "--test-ask-to-update" != "$*" || {
+	git () {
+		return "$expected_status"
+	}
+
+	set_recently_seen () {
+		recorded_version=$1
+	}
+
+	latest=test-version
+	for expected_status in 0 1 2 3 127
+	do
+		recorded_version=
+		ask_to_update "Test prompt"
+		actual_status=$?
+		test "$actual_status" = "$expected_status" || {
+			echo "ask_to_update returned $actual_status instead of $expected_status" >&2
+			exit 1
+		}
+		case "$expected_status" in
+		1) expected_version=$latest;;
+		*) expected_version=;;
+		esac
+		test "$recorded_version" = "$expected_version" || {
+			echo "ask_to_update recorded an unexpected version for status $expected_status" >&2
+			exit 1
+		}
+	done
+	exit 0
+}
+
 # The main function of this script
 
 update_git_for_windows () {
@@ -187,7 +218,7 @@ update_git_for_windows () {
 			"-y, --yes Automatic yes to download and install prompt" \
 			"Return code:" \
 			" 0: no update available" \
-			" 1: update available and user selected not to update" \
+			" 1: update available but not started" \
 			" 2: update available and it was started"
 		return 1
 	done

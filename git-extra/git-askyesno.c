@@ -5,14 +5,15 @@
 
 int wmain(int argc, wchar_t **wargv)
 {
-	int res;
+	int res, title_given = 0;
 	HANDLE mutex = NULL;
 	wchar_t *title = L"Question?", *prompt = NULL, *mutex_name = NULL;
 
 	while (argc > 2) {
-		if (!wcscmp(L"--title", wargv[1]))
+		if (!wcscmp(L"--title", wargv[1]) && !title_given) {
 			title = wargv[2];
-		else if (!wcscmp(L"--mutex", wargv[1]))
+			title_given = 1;
+		} else if (!wcscmp(L"--mutex", wargv[1]))
 			mutex_name = wargv[2];
 		else
 			break;
@@ -67,7 +68,7 @@ int wmain(int argc, wchar_t **wargv)
 		if (error == ERROR_ALREADY_EXISTS) {
 			CloseHandle(mutex);
 			free(prompt);
-			/* No user decision: another prompt holds the mutex. */
+			/* Another instance has an open handle to this mutex. */
 			return 2;
 		}
 	}

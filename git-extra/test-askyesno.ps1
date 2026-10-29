@@ -19,6 +19,7 @@ public static class AskYesNoTest {
     [DllImport("user32.dll")] private static extern bool IsWindowVisible(IntPtr window);
     [DllImport("user32.dll")] private static extern IntPtr GetDlgItem(IntPtr window, int id);
     [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetClassNameW(IntPtr window, StringBuilder name, int count);
+    [DllImport("user32.dll", CharSet = CharSet.Unicode)] private static extern int GetWindowTextW(IntPtr window, StringBuilder text, int count);
     [DllImport("user32.dll", SetLastError = true)] private static extern bool PostMessageW(IntPtr window, uint message, IntPtr wparam, IntPtr lparam);
     public static IntPtr Find(int pid) {
         IntPtr match = IntPtr.Zero;
@@ -45,16 +46,28 @@ public static class AskYesNoTest {
     public static void DismissError(IntPtr window) {
         Respond(window, GetDlgItem(window, 1) != IntPtr.Zero ? 1 : 2);
     }
+    public static string Text(IntPtr window) {
+        var text = new StringBuilder(1024);
+        GetWindowTextW(window, text, text.Capacity);
+        return text.ToString();
+    }
+    public static string Message(IntPtr window) {
+        return Text(GetDlgItem(window, 65535));
+    }
 }
 '@
 
-function Start-Prompt([string] $Mutex = '', [switch] $MutexFirst) {
+function Start-Prompt(
+    [string] $Mutex = '',
+    [switch] $MutexFirst,
+    [string[]] $Question = @('Test', 'prompt:', 'choose No.')
+) {
     $arguments = @('--title', 'git askyesno regression test')
     if ($Mutex) {
         if ($MutexFirst) { $arguments = @('--mutex', $Mutex) + $arguments }
         else { $arguments += @('--mutex', $Mutex) }
     }
-    $arguments += @('Test', 'prompt:', 'choose No.')
+    $arguments += $Question
     $info = New-Object System.Diagnostics.ProcessStartInfo
     $info.FileName = $Executable
     $info.UseShellExecute = $false
@@ -94,6 +107,15 @@ try {
     Close-Prompt $second
     Write-Output 'PASS: legacy callers can show independent dialogs'
 
+    $literal = Start-Prompt -Question @('--title', 'literal title', 'literal question')
+    $window = Wait-Prompt $literal
+    if ([AskYesNoTest]::Text($window) -ne 'git askyesno regression test' -or
+        [AskYesNoTest]::Message($window) -ne '--title literal title literal question') {
+        throw 'A repeated --title option changed the legacy question'
+    }
+    Close-Prompt $literal
+    Write-Output 'PASS: a repeated --title remains part of the legacy question'
+
     $first = Start-Prompt $mutexName
     $null = Wait-Prompt $first
     $second = Start-Prompt $mutexName -MutexFirst
@@ -122,7 +144,11 @@ try {
     Write-Output 'PASS: process termination does not leave a stale mutex'
 
     $invalid = Start-Prompt ($mutexName + '\invalid')
-    [AskYesNoTest]::DismissError((Wait-Prompt $invalid))
+    $window = Wait-Prompt $invalid
+    if ([AskYesNoTest]::Message($window) -notmatch '^Could not create prompt mutex \(error [1-9][0-9]*\)$') {
+        throw 'The mutex error dialog did not report a Windows error code'
+    }
+    [AskYesNoTest]::DismissError($window)
     Assert-Exit $invalid 3
     Write-Output 'PASS: a mutex error returns 3 instead of a user decline'
 } finally {
