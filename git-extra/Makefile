@@ -42,6 +42,16 @@ $(BUILDDIR)/git-askyesno.o: CFLAGS += -DUNICODE
 $(BUILDDIR)/git-askyesno.exe: $(BUILDDIR)/git-askyesno.o
 	$(CC) -municode $(CFLAGS) -o $@ $(LDFLAGS) $^
 
+$(BUILDDIR)/test-askyesno.exe: $(BUILDDIR)/test-askyesno.o
+	$(CC) -municode $(CFLAGS) -o $@ $(LDFLAGS) $^
+
+.PHONY: check
+check: $(BUILDDIR)/git-askyesno.exe $(BUILDDIR)/test-askyesno.exe
+	sh "$(SRCDIR)/git-update-git-for-windows" --test-version-compare
+	sh "$(SRCDIR)/git-update-git-for-windows" --test-ask-to-update
+	sh "$(SRCDIR)/test-askyesno.sh" "$(BUILDDIR)/git-askyesno.exe" \
+		"$(BUILDDIR)/test-askyesno.exe"
+
 $(BUILDDIR)/git-credential-helper-selector.o: CFLAGS += -DUNICODE
 
 $(BUILDDIR)/git-credential-helper-selector.exe: \
@@ -56,6 +66,7 @@ $(BUILDDIR)/git-askpass.exe: \
 	$(BUILDDIR)/git-askpass.res
 	$(CC) -municode $(CFLAGS) -o $@ $(LDFLAGS) $^
 clean:
+	$(RM) $(BUILDDIR)/test-askyesno.exe $(BUILDDIR)/test-askyesno.o
 	$(RM) $(BUILDDIR)/create-shortcut.exe $(BUILDDIR)/create-shortcut.o
 	$(RM) $(BUILDDIR)/WhoUses.exe $(BUILDDIR)/WhoUses.o \
 		$(BUILDDIR)/SystemInfo.o
