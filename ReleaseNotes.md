@@ -41,7 +41,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### New Features
 
 * Comes with [Bash v5.3.20](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=9c465866b7d849378369ef700cbe2965aa9691e3).
-* Comes with [Git Credential Manager v3.0.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v3.0.2).
+* Comes with [Git Credential Manager v3.0.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v3.0.2). Please note that v3.x has some breaking changes that may affect your workflows. Please read more information in [the GCM release notes](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v3.0.2).
 
 ## Changes since Git for Windows v2.56.0(3) (October 22nd 2026)
 
