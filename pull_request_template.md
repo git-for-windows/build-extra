@@ -1,3 +1,9 @@
+<!--
+After the following requirement has been met, please hide the reminder by deleting this line and moving the next line to the end when creating the pull request (PR).  You can also do this later by updating the PR body.
+-->
+
+Learn more about [hiding content with comments](https://docs.github.com/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#hiding-content-with-comments).
+
 A friendly reminder for new contributors:
 
 # What is DCO sign-off?  Why is it required?
