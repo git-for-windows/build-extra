@@ -18,7 +18,11 @@ case "$(file --brief --mime-type "$1")" in
 		docx2txt.exe <"$1" || docx2txt.pl "$1" - || cat "$1"
 		;;
 	application/pdf)
-		out=$(pdftotext -q -layout -enc UTF-8 "$1" -) && sed "s/(\^M$)|(^\^L)//" <<<$out || cat "$1"
+		# pdftotext succeeds with nothing but a form feed for PDFs without a text
+		# layer, e.g. scanned pages; pass those through as well.
+		out=$(pdftotext -q -layout -enc UTF-8 "$1" -) &&
+		case "$out" in *[![:space:]]*) ;; *) false ;; esac &&
+		sed "s/(\^M$)|(^\^L)//" <<<$out || cat "$1"
 		;;
 	# TODO add rtf support
 	application/rtf | text/rtf | text/plain | inode/x-empty)
