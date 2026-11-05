@@ -1,8 +1,4 @@
-<!--
-After the following requirement has been met, please hide the reminder by deleting this line and moving the next line to the end when creating the pull request (PR).  You can also do this later by updating the PR body.
--->
-
-Learn more about [hiding content with comments](https://docs.github.com/get-started/writing-on-github/getting-started-with-writing-and-formatting-on-github/basic-writing-and-formatting-syntax#hiding-content-with-comments).
+The following content, including this paragraph, is [derived](https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/about-issue-and-pull-request-templates#pull-request-templates) from this repository's [pull request (PR) template](https://github.com/git-for-windows/build-extra/blob/main/pull_request_template.md), which may, only after all your commits have met its requirement, be deleted from your PR body.
 
 A friendly reminder for new contributors:
 
