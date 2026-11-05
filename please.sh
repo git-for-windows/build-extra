@@ -731,8 +731,8 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 			fi
 			;;
 		*)
-			printf '\n' >>"$sparse_checkout_file" &&
-			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >>"$sparse_checkout_file" &&
+			git -C "$output_path" checkout -- &&
+			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
 			if test x86_64 = $architecture &&
@@ -744,7 +744,6 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 			fi &&
 			printf '\n# For the /etc/msystem.d/ check\n/etc/msystem.d/\n\n' >>"$sparse_checkout_file" &&
 			printf '\n# markdown, to render the release notes\n/usr/bin/markdown\n\n' >>"$sparse_checkout_file" &&
-			git -C "$output_path" checkout -- &&
 			ARCH=$architecture "$output_path/git-cmd.exe" --command=usr\\bin\\sh.exe -l \
 			"${this_script_path%/*}/make-file-list.sh" | sed -e 's|[][]|\\&|g' -e 's|^|/|' >>"$sparse_checkout_file"
 			;;
