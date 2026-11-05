@@ -633,7 +633,16 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		/usr/bin/msys-gpg*.dll
 		/usr/bin/gpg.exe
 		/usr/bin/gpgconf.exe
+		/usr/bin/gpg-connect-agent.exe
+		/usr/bin/dirmngr.exe
+		/usr/lib/gnupg/keyboxd.exe
 		/usr/bin/msys-gcrypt*.dll
+		/usr/bin/msys-ksba*.dll
+		/usr/bin/msys-hogweed*.dll
+		/usr/bin/msys-idn2*.dll
+		/usr/bin/msys-tasn1*.dll
+		/usr/bin/msys-p11-kit*.dll
+		/usr/bin/msys-ffi*.dll
 		/usr/bin/msys-z.dll
 		/usr/bin/msys-sqlite*.dll
 		/usr/bin/msys-bz2*.dll
@@ -722,6 +731,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 			fi
 			;;
 		*)
+			git -C "$output_path" checkout -- &&
 			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
 			printf '\n' >>"$sparse_checkout_file" &&
 			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
