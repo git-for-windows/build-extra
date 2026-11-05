@@ -4,7 +4,7 @@ _realname="git-extra"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
-pkgver=1.1.717.be427b773
+pkgver=1.1.720.6c2cde9d4
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('any')
@@ -61,7 +61,8 @@ source=('git-extra.install.in'
         'git-credential-helper-selector.rc'
         'git-askpass.c'
         'git-askpass.h'
-        'git-askpass.rc')
+        'git-askpass.rc'
+        'test-askyesno.ps1')
 sha256sums=('b6448dac5fe317ada8a0b8e73c86b907467bf339f0449fb0a2595debe59eedfe'
             '8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             'e36a3b93b8a33b0a74619f2449ed6d56ed54e4e2938b97070bce4926f1f44054'
@@ -84,20 +85,21 @@ sha256sums=('b6448dac5fe317ada8a0b8e73c86b907467bf339f0449fb0a2595debe59eedfe'
             '4e9d036e63632491ccd825d0a5d3791ad6614a7a9263934b83a572524dbc1634'
             '54e106b04fc68c40748708ca8abe7fbac5d7e959f4a30ab19b99183726a34388'
             '22f41610dea842890955032af30efdb60e80f310e95a04e57ab36b10e0376923'
-            '8120b41b869693e07acc4707a0ab45505e7c5e4156a3a44b19152f1f425df85f'
+            '6bc6502df7f12f395f0a4e3328cabeef029fe74b0a0ea2e8ffa96fac3b711189'
             '15b40ab72dea884f659cfbe441e9a40b2d8d63e490a3c14824a55607368e476d'
             'ebd1d20aa94be11c6b9bec7d33614d32016343d282c4716d0561ab41407c99bf'
             '97e89689d91747ddb5ee873ae864aebcbb8d0364a52fa198db1e439ee2965b9b'
             'b2fb7a3894f126c039a5b6916dee3e1741fe7062fdeba7e80889a329fe292852'
             '9371263a66afaee79d3b7362b2bd455af8faa860230491e21df7f9fbe25bbe9b'
-            '0e3af7dacb665306076590ce9aec935929c198cec1bf9c5e161dfe285502ba67'
+            'd1a97709545be846089de69a3a892ad29a2e59a03205cd9c76aedfb2ca19492f'
             'cb27fa8fd043ebe282ee96771de7e3d02af619542a60b54bddfabcd685c1ae0d'
             '32c834074aa725627f4b86db2aa3cb2ed1556cdc7b0256748ed4b700d1a61490'
             'a90c11952519c06aeddb18e5a0bedd79e705099de04d60e892d64198d2119b8b'
             '78307cd6c04a16240f68197e9155697bc75d5df8e4c8514ff67712bb93a1cd4a'
             '0b4ffbfcf0ab30e0cbcd03507439e468e4ce6d1ccfd6b8f0b3ce3ab2146dc8ee'
             '51e31c6ce824f66b9a8310f1ac10ccdc06b60967a557c996868bc0d9c9866ccf'
-            '0dd30dc3acd406e70b5ff08fb0bf180ec3782119455989af18c05cf59d09df64')
+            '0dd30dc3acd406e70b5ff08fb0bf180ec3782119455989af18c05cf59d09df64'
+            'f086c4bcc637858e93ac7556cfad3cee1e8df001f58450a2a7b315d3b3e35b91')
 
 prepare() {
   case "$MSYSTEM_CARCH" in
@@ -145,7 +147,10 @@ build() {
 }
 
 check() {
-  ./git-update-git-for-windows --test-version-compare
+  ./git-update-git-for-windows --test-version-compare &&
+  ./git-update-git-for-windows --test-ask-to-update &&
+  powershell.exe -NoProfile -File "$(cygpath -aw test-askyesno.ps1)" \
+    -Executable "$(cygpath -aw "build-${MINGW_CHOST}/git-askyesno.exe")"
 }
 
 package() {
