@@ -71,3 +71,10 @@ The Git for Windows project aims to provide three different types of installers:
 ## Support scripts/files
 
 The `build-extra` repository is also the home of other resources necessary to develop and maintain Git for Windows. For example, it contains the [Git garden shears](https://github.com/git-for-windows/build-extra/blob/main/shears.sh) that help with updating Git for Windows' source code whenever new upstream Git versions are released ("merging rebase").
+
+To map Git for Windows crash frames to exact source lines, use
+[`resolve-git-stacktrace.ps1`](resolve-git-stacktrace.ps1). It reuses or
+downloads portable CDB (the command-line debugger included with WinDbg)
+and matching release PDBs, and includes a pinned integration self-test.
+See the [usage guide](resolve-git-stacktrace.md) for examples, cache
+locations, and manual debugger commands.
