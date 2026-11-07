@@ -111,7 +111,7 @@ this_script_dir="$(cd "$(dirname "$0")" && pwd -W)" ||
 die "Could not determine this script's dir"
 
 pacman_stderr="/tmp/pacman-stderr.$$.txt"
-trap "rm \"$pacman_stderr\"" EXIT
+trap "rm -f \"$pacman_stderr\"" EXIT
 
 pacman_list () {
 	test -n "$MINIMAL_GIT" ||
@@ -153,13 +153,20 @@ mingw-w64-$PACMAN_ARCH-zstd"
 		grep -v 'database file for .* does not exist' <"$pacman_stderr" >&2
 		test $res = 0
 	fi &&
-	pacman -Ql $package_list 2>"$pacman_stderr" |
-	grep -v '/$' |
-	sed 's/^[^ ]* //'
+	# Capture `pacman -Ql`'s output in a variable (rather than piping it
+	# directly) so that we can catch its exit status: in a pipeline, the
+	# exit status is that of the last command, which would silently
+	# swallow e.g. a failing `pacman -Ql` and let this script emit a
+	# truncated file list.
+	pacman_ql_output="$(pacman -Ql $package_list 2>"$pacman_stderr")"
 	res=$?
 
 	grep -v 'database file for .* does not exist' <"$pacman_stderr" >&2
-	return $res
+	test $res = 0 || return $res
+
+	printf '%s\n' "$pacman_ql_output" |
+	grep -v '/$' |
+	sed 's/^[^ ]* //'
 }
 
 has_pacman_package () {
@@ -230,7 +237,14 @@ then
 	ASSUAN_0_EXCLUDE='\|assuan-0'
 fi
 
-pacman_list $packages "$@" |
+# Capture `pacman_list`'s output in a variable (rather than piping it
+# directly) so that we can catch its exit status: in a pipeline, the exit
+# status is that of the last command, which would silently swallow e.g. a
+# failing `pacman -Ql` and let this script emit a truncated file list.
+pacman_list_output="$(pacman_list $packages "$@")" ||
+die "Could not list the files of the packages"
+
+printf '%s\n' "$pacman_list_output" |
 
 grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '/man/' -e '/pkgconfig/' -e '/emacs/' \
