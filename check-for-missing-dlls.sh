@@ -130,6 +130,7 @@ grep '\.dll$' "$tmp_file.all" |
 		-e '^usr/lib/perl5/' \
 		-e '^usr/lib/gawk/' \
 		-e '^usr/lib/openssl/engines' \
+		-e "^usr/lib/ossl-modules/" \
 		-e '^usr/lib/sasl2/' \
 		-e '^usr/lib/coreutils/libstdbuf.dll' \
 		-e "^$MINGW_PREFIX/bin/libcurl\(\|-openssl\)-4.dll" \
