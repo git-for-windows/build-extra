@@ -208,7 +208,7 @@ pacman_helper () {
 }
 
 bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--arch=<arch>] [<package-versions>]
-	packages="mingw-w64-git-pdb mingw-w64-curl-pdb mingw-w64-openssl-pdb"
+	packages="mingw-w64-git-pdb mingw-w64-curl-pdb"
 
 	artifactsdir=
 	architectures=
@@ -283,7 +283,6 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 				oarch=x86_64
 				mingw_package_prefix=mingw-w64-ucrt-x86_64
 				artifact_suffix=ucrt64
-				packages="$(echo "$packages" | sed 's/ mingw-w64-openssl-pdb//')"
 				;;
 			i686)
 				oarch=i686
