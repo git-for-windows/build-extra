@@ -272,7 +272,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e "^/$MSYSTEM_LOWER/itcl/" \
 	-e "^/$MSYSTEM_LOWER/t\\(cl\\|k\\)[^/]*/\\(demos\\|msgs\\|encoding\\|tzdata\\)/" \
 	-e "^/$MSYSTEM_LOWER/bin/\\(autopoint\\|[a-z]*-config\\)$" \
-	-e "^/$MSYSTEM_LOWER/bin/lib\\(asprintf\\|gettext\\|gnutls\\|gnutlsxx\\|gmpxx\\|pcre[013-9a-oq-z]\\|pcre2-[13]\\|quadmath\\|stdc++\\|unwind\\|zip\\)[^/]*\\.dll$" \
+	-e "^/$MSYSTEM_LOWER/bin/lib\\(asprintf\\|gettext\\|gnutls\\|gnutlsxx\\|gmpxx\\|pcre[013-9a-oq-z]\\|pcre2-[13]\\|quadmath\\|stdc++\\|unwind\\|zip\\|zlibwapi\\)[^/]*\\.dll$" \
 	-e "^/$MSYSTEM_LOWER/bin/lib\\(atomic\\|charset\\|gomp\\|systre$EXCLUDE_MINGW_W64_DLLS\\)-[0-9]*\\.dll$" \
 	-e "^/$MSYSTEM_LOWER/bin/\\(asn1\\|gnutls\\|idn\\|mini\\|msg\\|nettle\\|ngettext\\|ocsp\\|pcre\\|rtmp\\|xgettext\\|zip\\)[^/]*\\.exe$" \
 	-e "^/$MSYSTEM_LOWER/bin/recode-sr-latin.exe$" \
