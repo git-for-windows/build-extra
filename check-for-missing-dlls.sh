@@ -130,9 +130,11 @@ grep '\.dll$' "$tmp_file.all" |
 		-e '^usr/lib/perl5/' \
 		-e '^usr/lib/gawk/' \
 		-e '^usr/lib/openssl/engines' \
+		-e "^usr/lib/ossl-modules/" \
 		-e '^usr/lib/sasl2/' \
 		-e '^usr/lib/coreutils/libstdbuf.dll' \
 		-e "^$MINGW_PREFIX/bin/libcurl\(\|-openssl\)-4.dll" \
+		-e "^$MINGW_PREFIX/bin/\(zlib1\|libz-[0-9]\).dll" \
 		-e "^$MINGW_PREFIX/bin/\(atlassian\|azuredevops\|bitbucket\|gcmcore.*\|github\|gitlab\|microsoft\|newtonsoft\|system\..*\|webview2loader\|avalonia\|.*harfbuzzsharp\|microcom\|.*skiasharp\|av_libglesv2\|msalruntime\(\|_x86\|_arm64\)\)\." \
 		-e "^$MINGW_PREFIX/lib/ossl-modules/" \
 		-e "^$MINGW_PREFIX/lib/\(engines\|reg\|thread\)" |
