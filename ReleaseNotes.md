@@ -43,6 +43,10 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * Comes with [Bash v5.3.20](https://cgit.git.savannah.gnu.org/cgit/bash.git/commit/?id=9c465866b7d849378369ef700cbe2965aa9691e3).
 * Comes with [Git Credential Manager v3.0.2](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v3.0.2). Please note that v3.x has some breaking changes that may affect your workflows. Please read more information in [the GCM release notes](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v3.0.2).
 
+### Bug Fixes
+
+* Checking out repositories with large numbers of symbolic links [used to take an unexpectedly long time](https://github.com/git-for-windows/git/issues/4059), which [has been addressed](https://github.com/git-for-windows/git/pull/6345).
+
 ## Changes since Git for Windows v2.56.0(3) (October 22nd 2026)
 
 This is another urgent security bug fix release, addressing [CVE-2026-111497](https://www.cve.org/CVERecord?id=CVE-2026-111497).
