@@ -718,7 +718,10 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 				/mingw32/bin/libzstd*.dll
 				/mingw32/bin/libffi-[0-9]*.dll
 				EOF
-			fi
+			fi &&
+			printf '%s\n' >>"$sparse_checkout_file" \
+				'# For the /etc/msystem.d/ check' \
+				'/etc/msystem.d/' ''
 			;;
 		*)
 			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
