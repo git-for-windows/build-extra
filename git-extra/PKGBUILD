@@ -4,7 +4,7 @@ _realname="git-extra"
 pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 _ver_base=1.1
-pkgver=1.1.717.be427b773
+pkgver=1.1.720.5a92eb7eb
 pkgrel=1
 pkgdesc="Git for Windows extra files"
 arch=('any')
@@ -62,7 +62,7 @@ source=('git-extra.install.in'
         'git-askpass.c'
         'git-askpass.h'
         'git-askpass.rc')
-sha256sums=('b6448dac5fe317ada8a0b8e73c86b907467bf339f0449fb0a2595debe59eedfe'
+sha256sums=('2c1e3e2862d6b60d434651b68ac5170db40afd1690210d69a042c62525413153'
             '8ed76d1cb069ac8568f21c431f5e23caebea502d932ab4cdff71396f4f0d5b72'
             'e36a3b93b8a33b0a74619f2449ed6d56ed54e4e2938b97070bce4926f1f44054'
             '640d04d2a2da709419188a986d5e5550ad30df23c7ea9be1a389c37a6b917994'
@@ -197,6 +197,7 @@ package() {
 package_mingw-w64-x86_64-git-extra() {
   conflicts=('git-extra' 'mingw-w64-clang-aarch64-git-extra' 'mingw-w64-i686-git-extra' 'mingw-w64-ucrt-x86_64-git-extra')
   provides=('git-extra')
+  depends+=("${MINGW_PACKAGE_PREFIX}-docx2txt-rs")
   package
 }
 

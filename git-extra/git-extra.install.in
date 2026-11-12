@@ -113,6 +113,10 @@ GITATTRIBUTES
 	test ! -f /etc/post-install/05-home-dir.post ||
 	rm /etc/post-install/05-home-dir.post
 
+	! grep -q CHERE_INVOKING /etc/profile.d/000-msys2.sh ||
+	sed -i '/\(Set the user id\|Start MSYS in selected folder\|CHERE_INVOKING\)/,/^fi/d' \
+		/etc/profile.d/000-msys2.sh
+
 	grep -qw usertemp /etc/fstab ||
 	sed -i '$a\
 none /tmp usertemp binary,posix=0,noacl 0 0' /etc/fstab
