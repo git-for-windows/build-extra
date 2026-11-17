@@ -42,6 +42,12 @@ if has("autocmd")
     autocmd BufReadPost *
       \ if line("'\"") > 0 && line("'\"") <= line("$")
       \           && &filetype !~# 'commit\|gitrebase'
+      \           && expand("%") !~ "COMMIT_EDITMSG"
+      \           && expand("%") !~ "MERGE_MSG"
+      \           && expand("%") !~ "TAG_EDITMSG"
+      \           && expand("%") !~ "NOTES_EDITMSG"
+      \           && expand("%") !~ "EDIT_DESCRIPTION"
+      \           && expand("%") !~ "git-rebase-todo"
       \           && expand("%") !~ "ADD_EDIT.patch"
       \           && expand("%") !~ "addp-hunk-edit.diff" |
       \   exe "normal! g`\"" |
