@@ -208,7 +208,7 @@ pacman_helper () {
 }
 
 bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--arch=<arch>] [<package-versions>]
-	packages="mingw-w64-git-pdb mingw-w64-curl-pdb mingw-w64-openssl-pdb"
+	packages="mingw-w64-git-pdb mingw-w64-curl-pdb"
 
 	artifactsdir=
 	architectures=
@@ -283,7 +283,6 @@ bundle_pdbs () { # [--directory=<artifacts-directory] [--unpack=<directory>] [--
 				oarch=x86_64
 				mingw_package_prefix=mingw-w64-ucrt-x86_64
 				artifact_suffix=ucrt64
-				packages="$(echo "$packages" | sed 's/ mingw-w64-openssl-pdb//')"
 				;;
 			i686)
 				oarch=i686
@@ -719,7 +718,10 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 				/mingw32/bin/libzstd*.dll
 				/mingw32/bin/libffi-[0-9]*.dll
 				EOF
-			fi
+			fi &&
+			printf '%s\n' >>"$sparse_checkout_file" \
+				'# For the /etc/msystem.d/ check' \
+				'/etc/msystem.d/' ''
 			;;
 		*)
 			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&

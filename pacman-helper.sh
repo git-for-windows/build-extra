@@ -131,6 +131,8 @@ repo_remove () {
 		# Make sure that GPGKEY is used unquoted
 		 sed 's/"\(\${\?GPGKEY}\?\)"/\1/g' </usr/bin/repo-remove >"$this_script_dir/repo-remove"
 	fi &&
+	sign_opt= &&
+	case "$1" in --sign) sign_opt=$1; shift;; esac &&
 	# repo-remove only accepts package _names_, but we are potentially given
 	# _files_; distill the names from the file names. Furthermore, repo-remove
 	# fails the _entire_ operation (modifying nothing) when _any_ of the given
@@ -154,7 +156,7 @@ repo_remove () {
 			esac
 		done
 	} &&
-	{ test -z "$names" || "$this_script_dir/repo-remove" "$dbfile" $names; }
+	{ test -z "$names" || "$this_script_dir/repo-remove" $sign_opt "$dbfile" $names; }
 }
 
 update_versions_json () { # <file> <version> <tagname>

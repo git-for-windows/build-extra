@@ -658,6 +658,22 @@ begin
 #endif
 end;
 
+
+// Returns true if at least one GPG daemon was shut down successfully
+function ShutdownGPGDaemons():Boolean;
+var
+    i:Integer;
+begin
+    Result:=False;
+    for i:=0 to GetArrayLength(Processes)-1 do begin
+        if Processes[i].ToTerminate and IsGPGDaemonProcess(ChangeFileExt(Processes[i].Name, '')) then begin
+            if ExecSilently('"'+AppDir+'\usr\bin\gpgconf.exe" --kill all','gpg-stop','Could not stop GPG daemons') then
+                Result:=True;
+            Exit;
+        end;
+    end;
+end;
+
 procedure RefreshProcessList(Sender:TObject);
 var
     Modules:TArrayOfString;
@@ -680,7 +696,7 @@ begin
     AppendToArray(Modules,AppDir+'\{#MINGW_BITNESS}\libexec\git-core\zlib1.dll');
     SessionHandle:=FindProcessesUsingModules(Modules,Processes);
 
-    if (GetArrayLength(Processes)>0) and ShutdownFSMonitorDaemons() then begin
+    if (GetArrayLength(Processes)>0) and (ShutdownFSMonitorDaemons() or ShutdownGPGDaemons()) then begin
         // We potentially shut down at least one process, refresh again
         RmEndSession(SessionHandle);
         SessionHandle:=FindProcessesUsingModules(Modules,Processes);

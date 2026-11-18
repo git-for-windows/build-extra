@@ -1,6 +1,7 @@
 *.pdb
 *.sig
 *.swp
+/.vs/
 /ReleaseNotes.html
 edit-git-bash.exe
 /cached-source-packages/

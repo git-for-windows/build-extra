@@ -1,15 +1,15 @@
 [Code]
 
-// This file contains code paths for Windows 95, Windows 2000 and Windows Vista
-// to get a list of processes that use a given module (DLL). For the processes
-// that lock the file, the process ID, the full path to the executable, and file
-// description is returned. This information can then used to present the user a
-// list of processes / applications that she needs to close before a module can
-// be replaced / a replacement will take effect.
+// This file contains code paths to get a list of processes that use a given
+// module (DLL). For the processes that lock the file, the process ID, the full
+// path to the executable, and file description is returned. This information
+// can then used to present the user a list of processes / applications that she
+// needs to close before a module can be replaced / a replacement will take
+// effect.
 //
-// Since Windows Vista, processes that register with the Restart Manager can be
-// asked to be restarted without any user interaction. The "Restartable" flag in
-// the "ProcessEntry" indicates whether this is supported or not.
+// Processes that register with the Restart Manager can be asked to be restarted
+// without any user interaction. The "Restartable" flag in the "ProcessEntry"
+// indicates whether this is supported or not.
 //
 // Please note that this code only works for modules, not for files that are
 // locked by processes in other ways, e.g. by opening them for exclusive read /
@@ -22,9 +22,6 @@
 // [1] http://www.vincenzo.net/isxkb/index.php?title=PSVince
 // [2] http://raz-soft.com/display-english-posts-only/files-in-use-extension-for-inno-setup/
 
-{
-    Common code
-}
 
 const
     // General constants.
@@ -150,151 +147,6 @@ begin
     Result:=Buffer;
 end;
 
-{
-    Code for Windows 95 and above
-}
-
-const
-    TH32CS_SNAPPROCESS  = $0002;
-    TH32CS_SNAPMODULE   = $0008;
-    TH32CS_SNAPMODULE32 = $0010;
-
-type
-    PROCESSENTRY32=record
-        dwSize,cntUsage,th32ProcessID:DWORD;
-        th32DefaultHeapID:ULONG_PTR;
-        th32ModuleID,cntThreads,th32ParentProcessID:DWORD;
-        pcPriClassBase:LONG;
-        dwFlags:DWORD;
-        szExeFile:array[1..MAX_PATH] of Char;
-    end;
-    MODULEENTRY32=record
-        dwSize,th32ModuleID,th32ProcessID,GlblcntUsage,ProccntUsage:DWORD;
-        modBaseAddr:BYTE_PTR;
-        modBaseSize:DWORD;
-        hModule:HMODULE;
-        szModule:array[1..MAX_MODULE_NAME32+1] of Char;
-        szExePath:array[1..MAX_PATH] of Char;
-    end;
-
-function CreateToolhelp32Snapshot(dwFlags,th32ProcessID:DWORD):THandle;
-external 'CreateToolhelp32Snapshot@Kernel32.dll stdcall delayload';
-
-function Process32First(hSnapshot:THandle;var lppe:PROCESSENTRY32):Boolean;
-#ifdef UNICODE
-external 'Process32FirstW@Kernel32.dll stdcall delayload';
-#else
-external 'Process32FirstA@Kernel32.dll stdcall delayload';
-#endif
-
-function Process32Next(hSnapshot:THandle;var lppe:PROCESSENTRY32):Boolean;
-#ifdef UNICODE
-external 'Process32NextW@Kernel32.dll stdcall delayload';
-#else
-external 'Process32NextA@Kernel32.dll stdcall delayload';
-#endif
-
-function Module32First(hSnapshot:THandle;var lpme:MODULEENTRY32):Boolean;
-#ifdef UNICODE
-external 'Module32FirstW@Kernel32.dll stdcall delayload';
-#else
-external 'Module32FirstA@Kernel32.dll stdcall delayload';
-#endif
-
-function Module32Next(hSnapshot:THandle;var lpme:MODULEENTRY32):Boolean;
-#ifdef UNICODE
-external 'Module32NextW@Kernel32.dll stdcall delayload';
-#else
-external 'Module32NextA@Kernel32.dll stdcall delayload';
-#endif
-
-// Returns a list of running processes that currectly use the specified module.
-// The module may be a filename to a DLL with or without path.
-function FindProcessesUsingModules_Win95(Modules:TArrayOfString;var Processes:ProcessList):DWORD;
-var
-    Success:Boolean;
-    ProcSnap:THandle;
-    ProcEntry:PROCESSENTRY32;
-    ModSnap:THandle;
-    ModEntry:MODULEENTRY32;
-    ModPath,ProcPath:String;
-    i:Longint;
-begin
-    SetArrayLength(Processes,0);
-    Result:=0;
-
-    ProcSnap:=CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS,0);
-    if ProcSnap=INVALID_HANDLE_VALUE then begin
-        Exit;
-    end;
-
-    // Compare strings case-insensitively.
-    for i:=0 to GetArraylength(Modules)-1 do begin
-        Modules[i]:=Lowercase(Modules[i]);
-    end;
-
-    // Loop over the processes in the system.
-    ProcEntry.dwSize:=SizeOf(ProcEntry);
-    Success:=Process32First(ProcSnap,ProcEntry);
-
-    while Success do begin
-        if ProcEntry.th32ProcessID>0 then begin
-            ModSnap:=CreateToolhelp32Snapshot(TH32CS_SNAPMODULE or TH32CS_SNAPMODULE32,ProcEntry.th32ProcessID);
-            if ModSnap<>INVALID_HANDLE_VALUE then begin
-                // Loop over the modules in the process.
-                ModEntry.dwSize:=SizeOf(ModEntry);
-                Success:=Module32First(ModSnap,ModEntry);
-
-                // Assume the first module always is the executable itself.
-                ProcPath:=ArrayToString(ModEntry.szExePath);
-                Success:=Module32Next(ModSnap,ModEntry);
-
-                while Success do begin
-                    ModPath:=ArrayToString(ModEntry.szExePath);
-
-                    for i:=0 to GetArraylength(Modules)-1 do begin
-                        if Pos(Modules[i],Lowercase(ModPath))>0 then begin
-                            i:=GetArrayLength(Processes);
-                            SetArrayLength(Processes,i+1);
-                            Processes[i].ID:=ProcEntry.th32ProcessID;
-                            Processes[i].Name:=GetFileDescription(ProcPath);
-                            if Length(Processes[i].Name)=0 then begin
-                                Processes[i].Name:=ExtractFileName(ProcPath);
-                            end;
-                            Processes[i].Restartable:=False;
-                        end;
-                    end;
-
-                    Success:=Module32Next(ModSnap,ModEntry);
-                end;
-
-                CloseHandle(ModSnap);
-            end;
-        end;
-
-        Success:=Process32Next(ProcSnap,ProcEntry);
-    end;
-
-    CloseHandle(ProcSnap);
-
-    Result:=1;
-end;
-
-// Returns a list of running processes that currectly use the specified module.
-// The module may be a filename to a DLL with or without path.
-function FindProcessesUsingModule_Win95(Module:String;var Processes:ProcessList):DWORD;
-var
-    Modules:TArrayOfString;
-begin
-    SetArrayLength(Modules,1);
-    Modules[0]:=Module;
-    Result:=FindProcessesUsingModules_Win95(Modules,Processes);
-end;
-
-{
-    Code for Windows 2000 and above
-}
-
 function EnumProcesses(pProcessIds:IdList;cb:DWORD;var pBytesReturned:DWORD):Boolean;
 external 'EnumProcesses@Psapi.dll stdcall delayload';
 
@@ -347,84 +199,6 @@ end;
 
 function OpenProcess(dwDesiredAccess:DWORD;bInheritHandle:BOOL;dwProcessId:DWORD):THandle;
 external 'OpenProcess@Kernel32.dll stdcall delayload';
-
-function GetModuleFileNameEx(hProcess:THandle;hModule:HMODULE;lpFilename:String;nSize:DWORD):DWORD;
-#ifdef UNICODE
-external 'GetModuleFileNameExW@Psapi.dll stdcall delayload';
-#else
-external 'GetModuleFileNameExA@Psapi.dll stdcall delayload';
-#endif
-
-// Returns a list of running processes that currectly use one of the specified modules.
-// Each module may be a filename to a DLL with or without path.
-function FindProcessesUsingModules_Win2000(Modules:TArrayOfString;var Processes:ProcessList):DWORD;
-var
-    ProcList,ModList:IdList;
-    p,m,i:Longint;
-    Process:THandle;
-    Path:String;
-    PathLength:DWORD;
-begin
-    SetArrayLength(Processes,0);
-    Result:=0;
-
-    if not GetProcessList(ProcList) then begin
-        Exit;
-    end;
-
-    // Compare strings case-insensitively.
-    for i:=0 to GetArraylength(Modules)-1 do begin
-        Modules[i]:=Lowercase(Modules[i]);
-    end;
-
-    for p:=0 to GetArraylength(ProcList)-1 do begin
-        Process:=OpenProcess(PROCESS_QUERY_INFORMATION or PROCESS_VM_READ,False,ProcList[p]);
-        if Process<>0 then begin
-            if GetModuleList(Process,ModList) then begin
-                for m:=0 to GetArraylength(ModList)-1 do begin
-                    SetLength(Path,MAX_PATH);
-                    PathLength:=GetModuleFileNameEx(Process,ModList[m],Path,MAX_PATH);
-                    SetLength(Path,PathLength);
-
-                    for i:=0 to GetArraylength(Modules)-1 do begin
-                        if Pos(Modules[i],Lowercase(Path))>0 then begin
-                            SetLength(Path,MAX_PATH);
-                            PathLength:=GetModuleFileNameEx(Process,0,Path,MAX_PATH);
-                            SetLength(Path,PathLength);
-
-                            i:=GetArrayLength(Processes);
-                            SetArrayLength(Processes,i+1);
-                            Processes[i].ID:=ProcList[p];
-                            Processes[i].Name:=GetFileDescription(Path);
-                            if Length(Processes[i].Name)=0 then begin
-                                Processes[i].Name:=ExtractFileName(Path);
-                            end;
-                            Processes[i].Restartable:=False;
-                        end;
-                    end;
-                end;
-            end;
-            CloseHandle(Process);
-        end;
-    end;
-
-    Result:=1;
-end;
-
-// Returns a list of running processes that currectly use the specified module.
-// The module may be a filename to a DLL with or without path.
-function FindProcessesUsingModule_Win2000(Module:String;var Processes:ProcessList):DWORD;
-var
-    Modules:TArrayOfString;
-begin
-    SetArrayLength(Modules,1);
-    Modules[0]:=Module;
-    Result:=FindProcessesUsingModules_Win2000(Modules,Processes);
-end;
-
-{
-    Code for Windows Vista and above
-}
 
 const
     CCH_RM_SESSION_KEY  = 32;
@@ -492,9 +266,19 @@ external 'RmShutdown@Rstrtmgr.dll stdcall delayload';
 function RmRestart(dwSessionHandle:DWORD;dwRestartFlags:DWORD;fnStatus:RM_WRITE_STATUS_CALLBACK):DWORD;
 external 'RmRestart@Rstrtmgr.dll stdcall delayload';
 
+// Returns true if the ProcessName matches the name of a known GPG daemon process
+function IsGPGDaemonProcess(ProcessName:String):Boolean;
+begin
+    Result:=('gpg-agent'=ProcessName) or ('scdaemon'=ProcessName) or ('dirmngr'=ProcessName) or ('keyboxd'=ProcessName);
+end;
+
+{
+    Wrapper code
+}
+
 // Returns a list of running processes that currectly use one of the specified modules.
-// Each module has to be a full path and filename to a DLL.
-function FindProcessesUsingModules_WinVista(Modules:TArrayOfString;var Processes:ProcessList):DWORD;
+// The return value is non-zero on success, and equals the Restart Manager session handle.
+function FindProcessesUsingModules(Modules:TArrayOfString;var Processes:ProcessList):DWORD;
 var
     Handle:DWORD;
     Name:SessionKey;
@@ -533,7 +317,7 @@ begin
                 Processes[Have].Name:=ArrayToString(AppList[i].strAppName);
                 Processes[Have].Restartable:=AppList[i].bRestartable;
                 ProcessName:=ChangeFileExt(Processes[Have].Name, '');
-                if ('ssh-add'=ProcessName) or ('ssh-agent'=ProcessName) or ('ssh-pageant'=ProcessName) or ('gpg-agent'=ProcessName) or ('scdaemon'=ProcessName) then
+                if ('ssh-add'=ProcessName) or ('ssh-agent'=ProcessName) or ('ssh-pageant'=ProcessName) or IsGPGDaemonProcess(ProcessName) then
                     Processes[Have].ToTerminate:=True;
             end;
             Result:=Handle;
@@ -542,54 +326,14 @@ begin
 end;
 
 // Returns a list of running processes that currectly use the specified module.
-// The module has to be a full path and filename to a DLL.
-function FindProcessesUsingModule_WinVista(Module:String;var Processes:ProcessList):DWORD;
+// The return value is non-zero on success, and equals the Restart Manager session handle.
+function FindProcessesUsingModule(Module:String;var Processes:ProcessList):DWORD;
 var
     Modules:TArrayOfString;
 begin
     SetArrayLength(Modules,1);
     Modules[0]:=Module;
-    Result:=FindProcessesUsingModules_WinVista(Modules,Processes);
-end;
-
-{
-    Wrapper code
-}
-
-// Returns a list of running processes that currectly use one of the specified modules.
-// Automatically calls the best implementation for the running OS. The return value is
-// non-zero on success, and equals the Restart Manager session handle on Vista and above.
-function FindProcessesUsingModules(Modules:TArrayOfString;var Processes:ProcessList):DWORD;
-var
-    Version:TWindowsVersion;
-begin
-    GetWindowsVersionEx(Version);
-
-    if (Version.Major<5) or (not Version.NTPlatform) then begin
-        Result:=FindProcessesUsingModules_Win95(Modules,Processes);
-    end else if Version.Major<6 then begin
-        Result:=FindProcessesUsingModules_Win2000(Modules,Processes);
-    end else begin
-        Result:=FindProcessesUsingModules_WinVista(Modules,Processes);
-    end;
-end;
-
-// Returns a list of running processes that currectly use the specified module.
-// Automatically calls the best implementation for the running OS. The return value is
-// non-zero on success, and equals the Restart Manager session handle on Vista and above.
-function FindProcessesUsingModule(Module:String;var Processes:ProcessList):DWORD;
-var
-    Version:TWindowsVersion;
-begin
-    GetWindowsVersionEx(Version);
-
-    if (Version.Major<5) or (not Version.NTPlatform) then begin
-        Result:=FindProcessesUsingModule_Win95(Module,Processes);
-    end else if Version.Major<6 then begin
-        Result:=FindProcessesUsingModule_Win2000(Module,Processes);
-    end else begin
-        Result:=FindProcessesUsingModule_WinVista(Module,Processes);
-    end;
+    Result:=FindProcessesUsingModules(Modules,Processes);
 end;
 
 {
