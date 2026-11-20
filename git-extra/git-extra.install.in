@@ -241,6 +241,13 @@ test -d "$TMPDIR" || test ! -d "$TMP" || {\
 	grep -q '^#define _POSIX_THREAD_SAFE_FUNCTIONS' $header ||
 	sed -i '$i#undef _POSIX_THREAD_SAFE_FUNCTIONS\n#define _POSIX_THREAD_SAFE_FUNCTIONS 200112L\n' $header
 
+	# Work around upstream Git not being prepared for OpenSSL v4;
+	# see git/git's `bb/imap-send-openssl-set-verify` branch
+	header=@@MINGW_PREFIX@@/include/openssl/asn1.h
+	needle='^OSSL_DEPRECATED.*ASN1_STRING_get_length'
+	! grep -q "$needle" "$header" ||
+	sed -i "s/$needle/\/\/ &/" "$header"
+
 	# We do not actually need the http.sslCAInfo setting anymore, as the
 	# cURL we ship with Git for Windows was patched to find the location of
 	# the TLS/SSL certificates.
