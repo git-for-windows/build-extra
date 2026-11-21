@@ -174,6 +174,17 @@ $BIN_DIR/busybox.exe
 	esac
 
 	rm "$SCRIPT_PATH/root/$BIN_DIR"/busybox.exe
+
+	# Ship BusyBox as sh.exe, too. Git looks up `sh` via the PATH and
+	# uses the result as argv[0] (see `git_shell_path()`). Without an
+	# sh.exe, the BusyBox fallback in compat/mingw.c returns the path
+	# of busybox.exe itself, and BusyBox then takes `-c` for the name of
+	# an applet ("-c: applet not found"). This breaks `!` aliases,
+	# clones from local paths and every other code path that runs a
+	# shell command. BusyBox picks the applet from its own file name,
+	# so a copy named sh.exe acts as `sh` without extra indirection.
+	cp "/$BIN_DIR"/busybox.exe "$SCRIPT_PATH/root/$BIN_DIR"/sh.exe ||
+	die "Could not copy busybox.exe to sh.exe"
 esac
 
 test ! -f "$TARGET" || rm "$TARGET" || die "Could not remove $TARGET"
