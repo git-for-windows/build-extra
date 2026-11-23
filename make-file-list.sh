@@ -32,7 +32,7 @@ esac
 
 SH_FOR_REBASE=dash
 PACKAGE_EXCLUDES="db info heimdal tcl git util-linux curl
-	git-for-windows-keyring gdbm libgdbm"
+	git-for-windows-keyring gdbm libgdbm libnghttp3 libngtcp2"
 EXTRA_FILE_EXCLUDES=
 UTIL_PACKAGES="sed awk grep findutils coreutils"
 if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
