@@ -31,7 +31,8 @@ aarch64)
 esac
 
 SH_FOR_REBASE=dash
-PACKAGE_EXCLUDES="db info heimdal tcl git util-linux curl git-for-windows-keyring"
+PACKAGE_EXCLUDES="db info heimdal tcl git util-linux curl
+	git-for-windows-keyring gdbm libgdbm libnghttp3 libngtcp2"
 EXTRA_FILE_EXCLUDES=
 UTIL_PACKAGES="sed awk grep findutils coreutils"
 if test -n "$MINIMAL_GIT_WITH_BUSYBOX"
@@ -304,8 +305,8 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e '^/usr/lib/\(itcl\|tdbc\|pkcs11/p11-kit-client\|thread\)' \
 	-e '^/usr/lib/ssh/sshd\($\|-\)' \
 	-e '^/usr/share.*/magic$' \
-	-e '^/usr/lib/perl5/core_perl/auto/DB_File/' \
-	-e '^/usr/lib/perl5/core_perl/DB_File\.pm$' \
+	-e '^/usr/lib/perl5/core_perl/auto/\(DB\|GDBM\|NDBM\)_File/' \
+	-e '^/usr/lib/perl5/core_perl/\(DB\|GDBM\|NDBM\)_File\.pm$' \
 	-e '^/usr/share/perl5/core_perl/Unicode/' \
 	-e '^/usr/share/perl5/core_perl/pods/' \
 	-e '^/usr/share/perl5/core_perl/Locale/' \
