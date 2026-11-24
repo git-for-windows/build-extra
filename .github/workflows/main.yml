@@ -171,6 +171,19 @@ jobs:
         with:
           name: ${{ steps.build.outputs.result }}
           path: ${{ steps.build.outputs.result }}
+      - name: uninstall pre-installed Git
+        if: matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          # The runner image installs Git with "Bash Terminal Option: ConHost".
+          # InnoSetup's ReplayChoice preserves previous settings during
+          # /VERYSILENT upgrades, so a reinstall would keep ConHost instead
+          # of defaulting to MinTTY. Uninstalling first ensures a clean slate.
+          $uninstaller = "$env:ProgramFiles\Git\unins000.exe"
+          if (Test-Path $uninstaller) {
+            $p = Start-Process -PassThru -Wait -FilePath $uninstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES"
+            Write-Host "Uninstall exit code: $($p.ExitCode)"
+          }
       - name: run the installer
         if: matrix.directory == 'installer'
         shell: pwsh
@@ -188,12 +201,80 @@ jobs:
         # run this even if the installation failed (actually, _in particular_ when the installation failed)
         if: always() && matrix.directory == 'installer'
         shell: bash
-        run: cat installer.log
-      - name: validate
+        run: |
+          cat installer.log
+          echo "--- install-options.txt ---"
+          cat "/c/Program Files/Git/etc/install-options.txt"
+      - name: Install AutoHotKey2 and configure MinTTY for UI tests
         if: matrix.directory == 'installer'
         shell: bash
         run: |
+          curl -fLo "$RUNNER_TEMP/ahk.zip" \
+            https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.31/AutoHotkey_2.0.31.zip &&
+          mkdir -p "$RUNNER_TEMP/ahk" &&
+          "$WINDIR/system32/tar.exe" -C "$RUNNER_TEMP/ahk" -xf "$RUNNER_TEMP/ahk.zip" &&
+          cygpath -aw "$RUNNER_TEMP/ahk" >>$GITHUB_PATH &&
+          printf '%s\n' \
+            'KeyFunctions=C+F5:export-html' \
+            'SaveFilename=/tmp/mintty-export' \
+            >>~/.minttyrc
+      - name: Set up Windows Terminal for the Git CMD UI tests
+        if: matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          # On windows-11-arm, Windows Terminal is installed but not
+          # registered for the runner user, so cmd.exe opens in conhost.
+          if (-not (Get-AppxPackage Microsoft.WindowsTerminal)) {
+            $p = Get-AppxPackage -AllUsers Microsoft.WindowsTerminal
+            Add-AppxPackage -Register "$($p.InstallLocation)\AppxManifest.xml" -DisableDevelopmentMode
+          }
+          $dir = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState"
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          $exportFile = "$env:RUNNER_TEMP/wt-export.txt" -replace '\\', '/'
+          Set-Content "$dir\settings.json" @"
+          {
+            "profiles": { "defaults": { "font": { "face": "Cascadia Mono", "size": 12 } } },
+            "actions": [ { "command": { "action": "exportBuffer", "path": "$exportFile" }, "id": "User.exportBuffer" } ],
+            "keybindings": [ { "keys": "ctrl+shift+f12", "id": "User.exportBuffer" } ]
+          }
+          "@
+      - name: Block WSL so that its prompt does not interfere with the UI tests
+        if: matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          # Something on the runner (so far only seen on windows-11-arm)
+          # launches wsl.exe, whose prompt to install WSL pops up at random
+          # times and covers the windows under test. Redirect every wsl.exe
+          # launch to a no-op, then close any prompt that is already open.
+          $ifeo = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\wsl.exe'
+          New-Item -Force $ifeo | Out-Null
+          Set-ItemProperty $ifeo Debugger "$env:SystemRoot\System32\systray.exe"
+          Stop-Process -Name wsl -Force -ErrorAction SilentlyContinue
+      - name: Minimize windows for UI tests
+        if: matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          # Give the search indexer time to index the newly installed shortcuts
+          Start-Sleep 10
+          & AutoHotkey64.exe /ErrorStdOut /force `
+            installer/ui-tests/minimize-windows.ahk 2>&1 | Out-Default
+      - name: validate
+        if: matrix.directory == 'installer'
+        timeout-minutes: 20
+        env:
+          REQUIRE_UI_TESTS: true
+        shell: bash
+        run: |
           set -x &&
+          # On the windows-latest runner with the Git for Windows SDK
+          # installed, $HOME defaults to /home/runneradmin (i.e. inside
+          # C:\msys64\home\), which differs from %USERPROFILE%
+          # (C:\Users\runneradmin). git resolves the global .gitconfig
+          # via $HOME, so the UI tests below that need to manipulate
+          # the global .gitconfig must agree with git on where it
+          # lives. Normalise HOME to %USERPROFILE% for this step so
+          # the tests can work from a single, well-known location.
+          export HOME="$USERPROFILE" &&
           grep 'Installation process succeeded' installer.log &&
           ! grep -iw failed installer.log &&
           cygpath -aw / &&
@@ -203,6 +284,27 @@ jobs:
           # cannot test SSH keys in read-only mode, skip test for now
           sed -i 's|git@ssh.dev.azure.com:v3/git-for-windows/git/git|https://github.com/git/git|' $checklist &&
           sh -x $checklist
+      - name: Take screenshot on failure
+        if: failure() && matrix.directory == 'installer'
+        shell: pwsh
+        run: |
+          [Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null
+          Add-Type -AssemblyName System.Windows.Forms
+          $screen = [System.Windows.Forms.Screen]::PrimaryScreen
+          $w = $screen.Bounds.Width
+          $h = $screen.Bounds.Height
+          $bmp = New-Object Drawing.Bitmap $w, $h
+          $graphics = [Drawing.Graphics]::FromImage($bmp)
+          $graphics.CopyFromScreen(0, 0, 0, 0, [Drawing.Size]::new($w, $h))
+          $bmp.Save("installer/ui-tests/screenshot.png")
+          $graphics.Dispose()
+          $bmp.Dispose()
+      - name: Upload UI test artifacts
+        if: always() && matrix.directory == 'installer'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ui-tests-${{ matrix.architecture.name }}
+          path: installer/ui-tests/
       - name: extract Portable Git
         if: matrix.directory == 'portable'
         shell: pwsh
@@ -309,6 +411,15 @@ jobs:
         with:
           name: installer-${{ matrix.arch.name }}
           path: installer-${{ matrix.arch.name }}
+      - name: uninstall pre-installed Git
+        if: matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
+        shell: pwsh
+        run: |
+          $uninstaller = "$env:ProgramFiles\Git\unins000.exe"
+          if (Test-Path $uninstaller) {
+            $p = Start-Process -PassThru -Wait -FilePath $uninstaller -ArgumentList "/VERYSILENT /SUPPRESSMSGBOXES"
+            Write-Host "Uninstall exit code: $($p.ExitCode)"
+          }
       - name: run the installer
         if: matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
         shell: pwsh
@@ -332,8 +443,57 @@ jobs:
         if: always() && matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
         shell: bash
         run: cat installer.log
+      - name: Install AutoHotKey2 and configure MinTTY for UI tests
+        if: matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
+        shell: bash
+        run: |
+          curl -fLo "$RUNNER_TEMP/ahk.zip" \
+            https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.31/AutoHotkey_2.0.31.zip &&
+          mkdir -p "$RUNNER_TEMP/ahk" &&
+          "$WINDIR/system32/tar.exe" -C "$RUNNER_TEMP/ahk" -xf "$RUNNER_TEMP/ahk.zip" &&
+          cygpath -aw "$RUNNER_TEMP/ahk" >>$GITHUB_PATH &&
+          printf '%s\n' \
+            'KeyFunctions=C+F5:export-html' \
+            'SaveFilename=/tmp/mintty-export' \
+            >>~/.minttyrc
+      - name: Set up Windows Terminal for the Git CMD UI tests
+        if: matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
+        shell: pwsh
+        run: |
+          if (-not (Get-AppxPackage Microsoft.WindowsTerminal)) {
+            $p = Get-AppxPackage -AllUsers Microsoft.WindowsTerminal
+            Add-AppxPackage -Register "$($p.InstallLocation)\AppxManifest.xml" -DisableDevelopmentMode
+          }
+          $dir = "$env:LOCALAPPDATA\Packages\Microsoft.WindowsTerminal_8wekyb3d8bbwe\LocalState"
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          $exportFile = "$env:RUNNER_TEMP/wt-export.txt" -replace '\\', '/'
+          Set-Content "$dir\settings.json" @"
+          {
+            "profiles": { "defaults": { "font": { "face": "Cascadia Mono", "size": 12 } } },
+            "actions": [ { "command": { "action": "exportBuffer", "path": "$exportFile" }, "id": "User.exportBuffer" } ],
+            "keybindings": [ { "keys": "ctrl+shift+f12", "id": "User.exportBuffer" } ]
+          }
+          "@
+      - name: Block WSL so that its prompt does not interfere with the UI tests
+        if: matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
+        shell: pwsh
+        run: |
+          $ifeo = 'HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Image File Execution Options\wsl.exe'
+          New-Item -Force $ifeo | Out-Null
+          Set-ItemProperty $ifeo Debugger "$env:SystemRoot\System32\systray.exe"
+          Stop-Process -Name wsl -Force -ErrorAction SilentlyContinue
+      - name: Minimize windows for UI tests
+        if: matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
+        shell: pwsh
+        run: |
+          Start-Sleep 10
+          & AutoHotkey64.exe /ErrorStdOut /force `
+            installer/ui-tests/minimize-windows.ahk 2>&1 | Out-Default
       - name: validate
         if: matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
+        timeout-minutes: 20
+        env:
+          REQUIRE_UI_TESTS: true
         shell: bash
         run: |
           set -x &&
@@ -348,6 +508,27 @@ jobs:
           sed -i 's|git@ssh.dev.azure.com:v3/git-for-windows/git/git|https://github.com/git/git|' $checklist &&
           sh -x $checklist &&
           git update-git-for-windows --test-version-compare
+      - name: Take screenshot on failure
+        if: failure() && matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
+        shell: pwsh
+        run: |
+          [Reflection.Assembly]::LoadWithPartialName("System.Drawing") | Out-Null
+          Add-Type -AssemblyName System.Windows.Forms
+          $screen = [System.Windows.Forms.Screen]::PrimaryScreen
+          $w = $screen.Bounds.Width
+          $h = $screen.Bounds.Height
+          $bmp = New-Object Drawing.Bitmap $w, $h
+          $graphics = [Drawing.Graphics]::FromImage($bmp)
+          $graphics.CopyFromScreen(0, 0, 0, 0, [Drawing.Size]::new($w, $h))
+          $bmp.Save("installer/ui-tests/screenshot.png")
+          $graphics.Dispose()
+          $bmp.Dispose()
+      - name: Upload UI test artifacts
+        if: always() && matrix.artifact == 'build-installers' && matrix.arch.name != 'i686'
+        uses: actions/upload-artifact@v7
+        with:
+          name: ui-tests-${{ matrix.arch.name }}
+          path: installer/ui-tests/
   check-for-missing-dlls:
     needs: determine-packages
     if: needs.determine-packages.outputs.test-sdk-artifacts == 'true' || needs.determine-packages.outputs.check-for-missing-dlls == 'true'
