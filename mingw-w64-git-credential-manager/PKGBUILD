@@ -5,7 +5,7 @@ pkgbase="mingw-w64-${_realname}"
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
 conflicts=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
 replaces=("${MINGW_PACKAGE_PREFIX}-git-credential-manager-core")
-pkgver=3.0.2
+pkgver=3.1.0
 pkgrel=1
 _realver=$pkgver
 _realtag=v${pkgver}
@@ -30,7 +30,7 @@ case "$CARCH" in
     ;;
   *)
     _arch=x64
-    _sha=9d2bef6e42a37654ea7ef33172bbcf1b6a1df6191fcf6a57dfbf39e1cbc27a0f
+    _sha=32876b9676a58c4d790918df7ea61078e972c1d031565ff923f0714384640e4b
     ;;
 esac
 
@@ -42,7 +42,7 @@ source=("${zip_url}" "$src_zip_url")
 noextract=("${zip_name}")
 
 sha256sums=("$_sha"
-            '7fae16820e83e110552f6a1129372f695f20eb6491aa7d23e1751af511023bbd')
+            'f41d824a0da952a971d5e622f3a0957f0f0d370291f22ab349fccf50647a794d')
 
 build() {
   markdown "${srcdir}/git-credential-manager-${_realtag#v}/README.md" > "${srcdir}/git-credential-manager-${_realtag#v}/git-credential-manager.html"
