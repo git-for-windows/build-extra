@@ -712,10 +712,10 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 			"${this_script_path%/*}/make-file-list.sh" |
 			# escape the `[` in `[.exe`
 			sed -e 's|[][]|\\&|g' >>"$sparse_checkout_file" &&
-			if git -C "$git_sdk_path" rev-parse -q --verify HEAD:.sparse/makepkg-git >/dev/null
+			if git -C "$git_sdk_path" rev-parse -q --verify "$head":.sparse/makepkg-git >/dev/null
 			then
 				printf '\n' >>"$sparse_checkout_file" &&
-				git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file"
+				git -C "$git_sdk_path" show "$head":.sparse/makepkg-git >>"$sparse_checkout_file"
 			else
 				cat <<-EOF >>"$sparse_checkout_file"
 
@@ -736,15 +736,15 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 				'/etc/msystem.d/' ''
 			;;
 		*)
-			git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
+			git -C "$git_sdk_path" show "$head":.sparse/minimal-sdk >"$sparse_checkout_file" &&
 			printf '\n' >>"$sparse_checkout_file" &&
-			git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git >>"$sparse_checkout_file" &&
+			git -C "$git_sdk_path" show "$head":.sparse/makepkg-git >>"$sparse_checkout_file" &&
 			if test x86_64 = $architecture &&
 				git -C "$git_sdk_path" rev-parse -q --verify \
-					HEAD:.sparse/makepkg-git-i686 >/dev/null
+					"$head":.sparse/makepkg-git-i686 >/dev/null
 			then
 				printf '\n' >>"$sparse_checkout_file" &&
-				git -C "$git_sdk_path" show HEAD:.sparse/makepkg-git-i686 >>"$sparse_checkout_file"
+				git -C "$git_sdk_path" show "$head":.sparse/makepkg-git-i686 >>"$sparse_checkout_file"
 			fi &&
 			printf '\n# For the /etc/msystem.d/ check\n/etc/msystem.d/\n\n' >>"$sparse_checkout_file" &&
 			printf '\n# markdown, to render the release notes\n/usr/bin/markdown\n\n' >>"$sparse_checkout_file" &&
@@ -769,17 +769,17 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		cp "$sparse_checkout_file" "$output_path/.sparse/build-installers"
 		;;
 	*)
-		git -C "$git_sdk_path" show HEAD:.sparse/minimal-sdk >"$sparse_checkout_file" &&
+		git -C "$git_sdk_path" show "$head":.sparse/minimal-sdk >"$sparse_checkout_file" &&
 		if test makepkg-git = $mode
 		then
 			printf '\n' >>"$sparse_checkout_file" &&
-			git -C "$git_sdk_path" show HEAD:.sparse/$mode >>"$sparse_checkout_file" &&
+			git -C "$git_sdk_path" show "$head":.sparse/$mode >>"$sparse_checkout_file" &&
 			if test x86_64 = $architecture &&
 				git -C "$git_sdk_path" rev-parse -q --verify \
-					HEAD:.sparse/$mode-i686 >/dev/null
+					"$head":.sparse/$mode-i686 >/dev/null
 			then
 				printf '\n' >>"$sparse_checkout_file" &&
-				git -C "$git_sdk_path" show HEAD:.sparse/$mode-i686 >>"$sparse_checkout_file"
+				git -C "$git_sdk_path" show "$head":.sparse/$mode-i686 >>"$sparse_checkout_file"
 			fi
 		fi
 		;;
