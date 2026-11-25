@@ -616,6 +616,18 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	sparse_checkout_file="$(git -C "$output_path" rev-parse --git-path info/sparse-checkout)" &&
 	git -C "$output_path" config --worktree core.sparseCheckout true &&
 	git -C "$output_path" config --worktree core.bare false &&
+	if git -C "$output_path" rev-parse -q --verify HEAD:.large-dll-filter.sh >/dev/null
+	then
+		# Unpack UPX-packed DLLs; keep the filter itself out of the artifact
+		worktree_git_dir="$(cygpath -au "$(git -C "$output_path" rev-parse --absolute-git-dir)")" &&
+		git -C "$output_path" show HEAD:.large-dll-filter.sh >"$worktree_git_dir/large-dll-filter.sh" &&
+		git -C "$output_path" show HEAD:${PREFIX#/}/bin/upx.exe >"$worktree_git_dir/upx.exe" &&
+		git -C "$output_path" config --worktree filter.upx.clean \
+			"PATH=\"$worktree_git_dir:\$PATH\" bash \"$worktree_git_dir/large-dll-filter.sh\" clean" &&
+		git -C "$output_path" config --worktree filter.upx.smudge \
+			"PATH=\"$worktree_git_dir:\$PATH\" bash \"$worktree_git_dir/large-dll-filter.sh\" smudge" &&
+		git -C "$output_path" config --worktree filter.upx.required true
+	fi &&
 	mkdir -p "${sparse_checkout_file%/*}" &&
 	case "$mode" in
 	build-installers)
