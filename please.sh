@@ -616,6 +616,18 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 	sparse_checkout_file="$(git -C "$output_path" rev-parse --git-path info/sparse-checkout)" &&
 	git -C "$output_path" config --worktree core.sparseCheckout true &&
 	git -C "$output_path" config --worktree core.bare false &&
+	if git -C "$output_path" rev-parse -q --verify HEAD:.large-dll-filter.sh >/dev/null
+	then
+		# Unpack UPX-packed DLLs; keep the filter itself out of the artifact
+		worktree_git_dir="$(cygpath -au "$(git -C "$output_path" rev-parse --absolute-git-dir)")" &&
+		git -C "$output_path" show HEAD:.large-dll-filter.sh >"$worktree_git_dir/large-dll-filter.sh" &&
+		git -C "$output_path" show HEAD:${PREFIX#/}/bin/upx.exe >"$worktree_git_dir/upx.exe" &&
+		git -C "$output_path" config --worktree filter.upx.clean \
+			"PATH=\"$worktree_git_dir:\$PATH\" bash \"$worktree_git_dir/large-dll-filter.sh\" clean" &&
+		git -C "$output_path" config --worktree filter.upx.smudge \
+			"PATH=\"$worktree_git_dir:\$PATH\" bash \"$worktree_git_dir/large-dll-filter.sh\" smudge" &&
+		git -C "$output_path" config --worktree filter.upx.required true
+	fi &&
 	mkdir -p "${sparse_checkout_file%/*}" &&
 	case "$mode" in
 	build-installers)
@@ -833,6 +845,21 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
   <rewriteURI uriStartString="http://docbook.sourceforge.net/release/xsl-ns/current" rewritePrefix="/usr/share/xml/docbook-xsl-ns-1.78.1"/>' \
 			"$output_path/etc/xml/catalog"
 	fi &&
+	# Hard-link identical files, so that `tar` stores them only once
+	(cd "$output_path" &&
+	 first_oid= &&
+	 git -c core.quotePath=false ls-files -st |
+	 sed -n 's/^H 100644 \([^ ]*\) 0\t/\1 /p' | sort | uniq -w 40 -D |
+	 while read -r oid path
+	 do
+		if test "$oid" = "$first_oid"
+		then
+			ln -f "$first_path" "$path" || exit
+		else
+			first_oid=$oid
+			first_path=$path
+		fi
+	 done) &&
 	if test -z "$keep_worktree"
 	then
 		rm -r "$(cat "$output_path/.git" | sed 's/^gitdir: //')" &&
