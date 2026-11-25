@@ -845,6 +845,21 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
   <rewriteURI uriStartString="http://docbook.sourceforge.net/release/xsl-ns/current" rewritePrefix="/usr/share/xml/docbook-xsl-ns-1.78.1"/>' \
 			"$output_path/etc/xml/catalog"
 	fi &&
+	# Hard-link identical files, so that `tar` stores them only once
+	(cd "$output_path" &&
+	 first_oid= &&
+	 git -c core.quotePath=false ls-files -st |
+	 sed -n 's/^H 100644 \([^ ]*\) 0\t/\1 /p' | sort | uniq -w 40 -D |
+	 while read -r oid path
+	 do
+		if test "$oid" = "$first_oid"
+		then
+			ln -f "$first_path" "$path" || exit
+		else
+			first_oid=$oid
+			first_path=$path
+		fi
+	 done) &&
 	if test -z "$keep_worktree"
 	then
 		rm -r "$(cat "$output_path/.git" | sed 's/^gitdir: //')" &&
