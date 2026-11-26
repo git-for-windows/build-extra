@@ -185,7 +185,8 @@ else
 
     ; === Test: Git CMD starts via Start Menu ===
     Info '=== Git CMD starts via Start Menu ==='
-    cmdHwnd := LaunchViaStartMenu('Git CMD', 'CASCADIA_HOSTING_WINDOW_CLASS', 'Git CMD')
+    cmdHwnd := LaunchViaStartMenu('Git CMD', 'CASCADIA_HOSTING_WINDOW_CLASS',
+                                 'Git CMD', , true)
     cmdWinId := 'ahk_id ' cmdHwnd
     WaitForRegExInWindowsTerminal(wtExportFile, wtHotkey, '>\s*$', 'Timed out waiting for CMD prompt', 'CMD prompt appeared', 30000, cmdWinId)
 

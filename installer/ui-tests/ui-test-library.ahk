@@ -258,14 +258,19 @@ WaitForNewWindow(winSpec, existing, timeout, titleFilter := '') {
     return 0
 }
 
-; Launch an application via the Start Menu and wait for a new window
-; of the given class to appear. Returns the window handle.
-; titleFilter, if non-empty, requires the new window's title to contain
-; the given substring.
-LaunchViaStartMenu(searchText, windowClass, titleFilter := '', timeout := 20000) {
-    winSpec := 'ahk_class ' windowClass
-    existing := WinGetList(winSpec)
+LogStartMenuLaunchTimeout(searchText, winSpec) {
+    Info 'Timed out waiting for a window after launching ' searchText
+    try Info 'Foreground: ' WinGetProcessName('A') ' (' WinGetClass('A') ')'
+    for spec in [winSpec, 'ahk_class ConsoleWindowClass']
+    {
+        windows := WinGetList(spec)
+        Info spec ': ' windows.Length ' visible window(s)'
+        for hwnd in windows
+            try Info '  ' hwnd ': ' WinGetTitle(hwnd)
+    }
+}
 
+SubmitStartMenuSearch(searchText) {
     ; Dismiss any stale Start Menu state before opening a fresh one.
     SendEvent('{Escape}')
     Sleep 500
@@ -303,12 +308,29 @@ LaunchViaStartMenu(searchText, windowClass, titleFilter := '', timeout := 20000)
     ; Give the search index time to find and highlight the result.
     Sleep 5000
     SendEvent('{Enter}')
-    hwnd := WaitForNewWindow(winSpec, existing, timeout, titleFilter)
-    if !hwnd
-        ExitWithError searchText ' window did not appear after Start Menu launch'
-    WinActivate('ahk_id ' hwnd)
-    Info searchText ' launched, hwnd: ' hwnd
-    return hwnd
+}
+
+; Launch an application via the Start Menu and return its new window.
+; A non-empty titleFilter must match the new window's title.
+LaunchViaStartMenu(searchText, windowClass, titleFilter := '', timeout := 20000,
+                   retry := false) {
+    winSpec := 'ahk_class ' windowClass
+    existing := WinGetList(winSpec)
+    Loop (retry ? 2 : 1)
+    {
+        SubmitStartMenuSearch(searchText)
+        hwnd := WaitForNewWindow(winSpec, existing, timeout, titleFilter)
+        if hwnd
+        {
+            WinActivate('ahk_id ' hwnd)
+            Info searchText ' launched, hwnd: ' hwnd
+            return hwnd
+        }
+        LogStartMenuLaunchTimeout(searchText, winSpec)
+        if retry && A_Index == 1
+            Info 'Retrying ' searchText ' Start Menu launch once'
+    }
+    ExitWithError searchText ' window did not appear after Start Menu launch'
 }
 
 ; --- Windows Terminal support ---
