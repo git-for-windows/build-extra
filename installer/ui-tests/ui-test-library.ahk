@@ -258,6 +258,18 @@ WaitForNewWindow(winSpec, existing, timeout, titleFilter := '') {
     return 0
 }
 
+LogStartMenuLaunchTimeout(searchText, winSpec) {
+    Info 'Timed out waiting for a window after launching ' searchText
+    try Info 'Foreground: ' WinGetProcessName('A') ' (' WinGetClass('A') ')'
+    for spec in [winSpec, 'ahk_class ConsoleWindowClass']
+    {
+        windows := WinGetList(spec)
+        Info spec ': ' windows.Length ' visible window(s)'
+        for hwnd in windows
+            try Info '  ' hwnd ': ' WinGetTitle(hwnd)
+    }
+}
+
 ; Launch an application via the Start Menu and wait for a new window
 ; of the given class to appear. Returns the window handle.
 ; titleFilter, if non-empty, requires the new window's title to contain
@@ -305,7 +317,10 @@ LaunchViaStartMenu(searchText, windowClass, titleFilter := '', timeout := 20000)
     SendEvent('{Enter}')
     hwnd := WaitForNewWindow(winSpec, existing, timeout, titleFilter)
     if !hwnd
+    {
+        LogStartMenuLaunchTimeout(searchText, winSpec)
         ExitWithError searchText ' window did not appear after Start Menu launch'
+    }
     WinActivate('ahk_id ' hwnd)
     Info searchText ' launched, hwnd: ' hwnd
     return hwnd
