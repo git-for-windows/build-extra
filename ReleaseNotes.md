@@ -48,6 +48,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 ### Bug Fixes
 
 * Checking out repositories with large numbers of symbolic links [used to take an unexpectedly long time](https://github.com/git-for-windows/git/issues/4059), which [has been addressed](https://github.com/git-for-windows/git/pull/6345).
+* In some sandboxes (as AI agents increasingly use), Git for Windows' `sh.exe` is hidden, inadvertently [causing `git.exe` to crash](https://github.com/git-for-windows/git/issues/6475). This bug has been fixed by [showing a proper error message instead](https://github.com/git-for-windows/git/pull/6358).
 
 ## Changes since Git for Windows v2.56.0(4) (October 26th 2026)
 
