@@ -44,6 +44,7 @@ Git for Windows is distributed with other components yet, such as Bash, zlib, cu
 * The startup cost of running `git.exe` [has been optimized a little](https://github.com/git-for-windows/git/pull/6512).
 * Comes with the MSYS2 runtime (Git for Windows flavor) based on [Cygwin v3.6.12](https://cygwin.com/pipermail/cygwin-announce/2026-October/013527.html).
 * Comes with [Git Credential Manager v3.1.0](https://github.com/git-ecosystem/git-credential-manager/releases/tag/v3.1.0).
+* Git for Windows now [offers hardware-accelerated](https://github.com/git-for-windows/git/pull/6508) implementations of [collision-detecting](https://github.com/cr-marcstevens/sha1collisiondetection) SHA-1. The original implementation remains the default; set `core.sha1dcBackend` to `accel` for accelerated C or to `rust` for the [Rust implementation](https://crates.io/crates/sha1dc), where available.
 
 ### Bug Fixes
 
