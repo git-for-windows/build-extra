@@ -307,7 +307,14 @@ SubmitStartMenuSearch(searchText) {
     SendInput(searchText)
     ; Give the search index time to find and highlight the result.
     Sleep 5000
-    SendEvent('{Enter}')
+    Loop 10
+    {
+        SendInput('{Enter}')
+	; Yes, this function accepts the timeout in _seconds_,
+	; not _milliseconds_ as everywhere else...
+        if WinWaitNotActive('ahk_exe SearchHost.exe', , 5)
+            return
+    }
 }
 
 ; Launch an application via the Start Menu and return its new window.
