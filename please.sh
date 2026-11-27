@@ -657,6 +657,7 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 
 		# Pacman
 		/usr/bin/pacman.exe
+		/usr/bin/pacman-conf.exe
 		/usr/bin/pactree.exe
 		/usr/bin/msys-gpg*.dll
 		/usr/bin/gpg.exe
