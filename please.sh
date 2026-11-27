@@ -621,7 +621,24 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		# Unpack UPX-packed DLLs; keep the filter itself out of the artifact
 		worktree_git_dir="$(cygpath -au "$(git -C "$output_path" rev-parse --absolute-git-dir)")" &&
 		git -C "$output_path" show HEAD:.large-dll-filter.sh >"$worktree_git_dir/large-dll-filter.sh" &&
-		git -C "$output_path" show HEAD:${PREFIX#/}/bin/upx.exe >"$worktree_git_dir/upx.exe" &&
+		todo=upx.exe &&
+		done= &&
+		while test -n "$todo"
+		do
+			file="${todo%% *}" &&
+			todo="${todo#"$file"}" &&
+			todo="${todo# }" &&
+			done="$done $file" &&
+			git -C "$output_path" show HEAD:${PREFIX#/}/bin/$file >"$worktree_git_dir/$file" ||
+			die "Could not extract %s\n" "$file"
+			for dll in $(git -C "$output_path" grep -a -h -o -E '[A-Za-z0-9_.+-]+\.[dD][lL][lL]' HEAD -- ${PREFIX#/}/bin/$file)
+			do
+				case " $done $todo " in *" $dll "*) continue;; esac
+				git -C "$output_path" rev-parse -q --verify HEAD:${PREFIX#/}/bin/$dll >/dev/null ||
+				continue
+				todo="${todo:+$todo }$dll"
+			done
+		done &&
 		git -C "$output_path" config --worktree filter.upx.clean \
 			"PATH=\"$worktree_git_dir:\$PATH\" bash \"$worktree_git_dir/large-dll-filter.sh\" clean" &&
 		git -C "$output_path" config --worktree filter.upx.smudge \
