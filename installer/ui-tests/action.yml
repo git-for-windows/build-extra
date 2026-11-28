@@ -5,9 +5,11 @@ runs:
   steps:
     - name: Install AutoHotkey and configure MinTTY
       shell: bash
+      env:
+        AUTOHOTKEY_VERSION: 2.0.32
       run: |
         curl -fLo "$RUNNER_TEMP/ahk.zip" \
-          https://github.com/AutoHotkey/AutoHotkey/releases/download/v2.0.31/AutoHotkey_2.0.31.zip &&
+          https://github.com/AutoHotkey/AutoHotkey/releases/download/v$AUTOHOTKEY_VERSION/AutoHotkey_$AUTOHOTKEY_VERSION.zip &&
         mkdir -p "$RUNNER_TEMP/ahk" &&
         "$WINDIR/system32/tar.exe" -C "$RUNNER_TEMP/ahk" -xf "$RUNNER_TEMP/ahk.zip" &&
         cygpath -aw "$RUNNER_TEMP/ahk" >>"$GITHUB_PATH" &&
