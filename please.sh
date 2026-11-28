@@ -451,6 +451,9 @@ create_sdk_artifact () { # [--out=<directory>] [--git-sdk=<directory>] [--archit
 		;;
 	--head=*)
 		head=${1#*=}
+		# prevent git.exe from mangling `$head:$path`
+		MSYS2_ARG_CONV_EXCL="${MSYS2_ARG_CONV_EXCL:+$MSYS2_ARG_CONV_EXCL;}$head"
+		export MSYS2_ARG_CONV_EXCL
 		;;
 	--keep-worktree)
 		keep_worktree=t
