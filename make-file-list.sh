@@ -90,9 +90,13 @@ fi
 # Newer `git.exe` no longer link to `libssp-0.dll` that has been made obsolete
 # by recent GCC updates
 EXCLUDE_MINGW_W64_DLLS=
+EXCLUDE_LIBUNWIND=
 test ! -f "/$MSYSTEM_LOWER/bin/git.exe" || {
 	grep -q libssp "/$MSYSTEM_LOWER/bin/git.exe" ||
 	EXCLUDE_MINGW_W64_DLLS='\|ssp'
+	# The Rust-enabled `git.exe` links to libunwind.dll on clangarm64
+	grep -q libunwind.dll "/$MSYSTEM_LOWER/bin/git.exe" ||
+	EXCLUDE_LIBUNWIND='\|unwind'
 	# libwinpthread-1 may be pulled in by the toolchain's
 	# package closure but at the same time not be a dependency of git.exe.
 	# It still is a dependency of libgcc_s_seh-1.dll, though, which is a
@@ -273,7 +277,7 @@ grep -v -e '\.[acho]$' -e '\.l[ao]$' -e '/aclocal/' \
 	-e "^/$MSYSTEM_LOWER/itcl/" \
 	-e "^/$MSYSTEM_LOWER/t\\(cl\\|k\\)[^/]*/\\(demos\\|msgs\\|encoding\\|tzdata\\)/" \
 	-e "^/$MSYSTEM_LOWER/bin/\\(autopoint\\|[a-z]*-config\\)$" \
-	-e "^/$MSYSTEM_LOWER/bin/lib\\(asprintf\\|gettext\\|gnutls\\|gnutlsxx\\|gmpxx\\|pcre[013-9a-oq-z]\\|pcre2-[13]\\|quadmath\\|stdc++\\|unwind\\|zip\\|zlibwapi\\)[^/]*\\.dll$" \
+	-e "^/$MSYSTEM_LOWER/bin/lib\\(asprintf\\|gettext\\|gnutls\\|gnutlsxx\\|gmpxx\\|pcre[013-9a-oq-z]\\|pcre2-[13]\\|quadmath\\|stdc++$EXCLUDE_LIBUNWIND\\|zip\\|zlibwapi\\)[^/]*\\.dll$" \
 	-e "^/$MSYSTEM_LOWER/bin/lib\\(atomic\\|charset\\|gomp\\|systre$EXCLUDE_MINGW_W64_DLLS\\)-[0-9]*\\.dll$" \
 	-e "^/$MSYSTEM_LOWER/bin/\\(asn1\\|gnutls\\|idn\\|mini\\|msg\\|nettle\\|ngettext\\|ocsp\\|pcre\\|rtmp\\|xgettext\\|zip\\)[^/]*\\.exe$" \
 	-e "^/$MSYSTEM_LOWER/bin/recode-sr-latin.exe$" \
